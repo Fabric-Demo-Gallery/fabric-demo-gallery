@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Fabric Demo Manifest",
+  "description": "Defines an industry-specific Microsoft Fabric demo that can be deployed end-to-end.",
+  "type": "object",
+  "required": ["id", "industry", "title", "description", "fabricItems"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique slug identifier for this demo"
+    },
+    "industry": {
+      "type": "string",
+      "description": "Industry name (e.g., Manufacturing, Retail)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable demo title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of what this demo does"
+    },
+    "longDescription": {
+      "type": "string",
+      "description": "Detailed multi-paragraph description"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji or icon identifier for the industry"
+    },
+    "estimatedTime": {
+      "type": "string",
+      "description": "Estimated deployment time (e.g., '5-10 min')"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of prerequisites (e.g., 'Fabric capacity F2+')"
+    },
+    "fabricItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "name"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Lakehouse", "Notebook", "Warehouse", "SemanticModel", "DataPipeline", "Report", "KQLDatabase", "Eventhouse", "Eventstream"]
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name for the Fabric item"
+          },
+          "definitionPath": {
+            "type": "string",
+            "description": "Relative path to the definition file or directory"
+          },
+          "description": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "description": "Execution order for notebooks (1 = first)"
+          }
+        }
+      }
+    },
+    "sampleData": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fileName": { "type": "string" },
+          "description": { "type": "string" },
+          "format": { "type": "string", "enum": ["csv", "parquet", "json"] },
+          "rows": { "type": "integer" }
+        }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "properties": {
+        "pattern": { "type": "string", "enum": ["medallion", "star-schema", "event-driven"] },
+        "layers": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

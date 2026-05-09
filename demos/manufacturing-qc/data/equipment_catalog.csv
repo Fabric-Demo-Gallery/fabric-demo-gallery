@@ -1,0 +1,51 @@
+machine_id,machine_name,machine_type,production_line,install_date
+MCH-0001,Machine 1,CNC Mill,Line-A,2021-07-17
+MCH-0002,Machine 2,Injection Molder,Line-B,2020-10-12
+MCH-0003,Machine 3,CNC Mill,Line-A,2023-04-24
+MCH-0004,Machine 4,Laser Cutter,Line-A,2020-03-02
+MCH-0005,Machine 5,CNC Mill,Line-B,2021-04-21
+MCH-0006,Machine 6,Assembly Robot,Line-A,2023-02-23
+MCH-0007,Machine 7,Injection Molder,Line-D,2021-03-27
+MCH-0008,Machine 8,Laser Cutter,Line-C,2020-01-14
+MCH-0009,Machine 9,Injection Molder,Line-D,2021-11-27
+MCH-0010,Machine 10,Press,Line-B,2021-03-16
+MCH-0011,Machine 11,Press,Line-A,2020-07-08
+MCH-0012,Machine 12,Laser Cutter,Line-A,2022-01-05
+MCH-0013,Machine 13,Press,Line-C,2020-03-29
+MCH-0014,Machine 14,Laser Cutter,Line-A,2022-02-14
+MCH-0015,Machine 15,CNC Mill,Line-C,2023-07-11
+MCH-0016,Machine 16,Assembly Robot,Line-C,2023-03-28
+MCH-0017,Machine 17,Injection Molder,Line-A,2020-04-03
+MCH-0018,Machine 18,Injection Molder,Line-C,2020-06-12
+MCH-0019,Machine 19,Injection Molder,Line-A,2022-02-17
+MCH-0020,Machine 20,Press,Line-D,2023-07-25
+MCH-0021,Machine 21,Press,Line-B,2022-01-28
+MCH-0022,Machine 22,Press,Line-B,2023-10-04
+MCH-0023,Machine 23,Press,Line-A,2023-06-01
+MCH-0024,Machine 24,Injection Molder,Line-B,2020-11-30
+MCH-0025,Machine 25,Laser Cutter,Line-D,2021-07-06
+MCH-0026,Machine 26,Assembly Robot,Line-B,2023-11-03
+MCH-0027,Machine 27,Press,Line-A,2021-04-14
+MCH-0028,Machine 28,CNC Mill,Line-C,2022-04-01
+MCH-0029,Machine 29,Press,Line-A,2021-03-08
+MCH-0030,Machine 30,Assembly Robot,Line-C,2021-03-11
+MCH-0031,Machine 31,Laser Cutter,Line-D,2023-08-09
+MCH-0032,Machine 32,Laser Cutter,Line-B,2021-06-26
+MCH-0033,Machine 33,Injection Molder,Line-B,2023-02-23
+MCH-0034,Machine 34,Assembly Robot,Line-C,2023-04-12
+MCH-0035,Machine 35,Laser Cutter,Line-D,2022-01-11
+MCH-0036,Machine 36,Injection Molder,Line-B,2022-11-09
+MCH-0037,Machine 37,Laser Cutter,Line-A,2020-04-06
+MCH-0038,Machine 38,CNC Mill,Line-B,2023-07-09
+MCH-0039,Machine 39,Injection Molder,Line-D,2023-05-06
+MCH-0040,Machine 40,CNC Mill,Line-D,2022-02-20
+MCH-0041,Machine 41,Assembly Robot,Line-D,2022-12-19
+MCH-0042,Machine 42,Press,Line-A,2023-10-25
+MCH-0043,Machine 43,CNC Mill,Line-C,2023-08-05
+MCH-0044,Machine 44,Press,Line-A,2021-08-24
+MCH-0045,Machine 45,Laser Cutter,Line-B,2022-07-18
+MCH-0046,Machine 46,CNC Mill,Line-C,2022-10-22
+MCH-0047,Machine 47,Injection Molder,Line-A,2023-07-04
+MCH-0048,Machine 48,Press,Line-B,2020-11-09
+MCH-0049,Machine 49,Press,Line-B,2023-01-09
+MCH-0050,Machine 50,Assembly Robot,Line-A,2023-05-11

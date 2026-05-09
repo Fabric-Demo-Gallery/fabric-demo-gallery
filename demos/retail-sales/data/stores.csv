@@ -1,0 +1,31 @@
+store_id,store_name,city,state,region,store_format
+STR-001,Store San Antonio #1,San Antonio,TX,South,Outlet
+STR-002,Store Houston #2,Houston,TX,South,Outlet
+STR-003,Store Houston #3,Houston,TX,South,Street
+STR-004,Store Houston #4,Houston,TX,South,Mall
+STR-005,Store San Diego #5,San Diego,CA,West,Mall
+STR-006,Store San Antonio #6,San Antonio,TX,South,Street
+STR-007,Store San Antonio #7,San Antonio,TX,South,Street
+STR-008,Store Chicago #8,Chicago,IL,Midwest,Street
+STR-009,Store Philadelphia #9,Philadelphia,PA,Northeast,Outlet
+STR-010,Store Chicago #10,Chicago,IL,Midwest,Street
+STR-011,Store Los Angeles #11,Los Angeles,CA,West,Street
+STR-012,Store San Antonio #12,San Antonio,TX,South,Mall
+STR-013,Store Philadelphia #13,Philadelphia,PA,Northeast,Mall
+STR-014,Store Los Angeles #14,Los Angeles,CA,West,Mall
+STR-015,Store Chicago #15,Chicago,IL,Midwest,Outlet
+STR-016,Store San Antonio #16,San Antonio,TX,South,Street
+STR-017,Store Phoenix #17,Phoenix,AZ,West,Mall
+STR-018,Store San Diego #18,San Diego,CA,West,Mall
+STR-019,Store Seattle #19,Seattle,WA,West,Street
+STR-020,Store Houston #20,Houston,TX,South,Outlet
+STR-021,Store New York #21,New York,NY,Northeast,Outlet
+STR-022,Store Chicago #22,Chicago,IL,Midwest,Outlet
+STR-023,Store Philadelphia #23,Philadelphia,PA,Northeast,Street
+STR-024,Store Philadelphia #24,Philadelphia,PA,Northeast,Outlet
+STR-025,Store San Diego #25,San Diego,CA,West,Street
+STR-026,Store Houston #26,Houston,TX,South,Outlet
+STR-027,Store New York #27,New York,NY,Northeast,Street
+STR-028,Store New York #28,New York,NY,Northeast,Mall
+STR-029,Store Dallas #29,Dallas,TX,South,Mall
+STR-030,Store Chicago #30,Chicago,IL,Midwest,Street

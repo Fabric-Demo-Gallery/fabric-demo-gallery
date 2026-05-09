@@ -1,0 +1,290 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "discourageImplicitMeasures": true,
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "relationships": [
+      {
+        "name": "prod_to_scorecard",
+        "fromTable": "gold_production_daily_summary",
+        "fromColumn": "production_line",
+        "toTable": "gold_line_scorecard",
+        "toColumn": "production_line",
+        "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "equip_to_scorecard",
+        "fromTable": "gold_equipment_health_daily",
+        "fromColumn": "production_line",
+        "toTable": "gold_line_scorecard",
+        "toColumn": "production_line",
+        "isActive": false
+      },
+      {
+        "name": "shift_to_scorecard",
+        "fromTable": "gold_shift_performance",
+        "fromColumn": "production_line",
+        "toTable": "gold_line_scorecard",
+        "toColumn": "production_line",
+        "isActive": false
+      },
+      {
+        "name": "weekly_to_scorecard",
+        "fromTable": "gold_weekly_trends",
+        "fromColumn": "production_line",
+        "toTable": "gold_line_scorecard",
+        "toColumn": "production_line",
+        "isActive": false
+      },
+      {
+        "name": "prod_to_product",
+        "fromTable": "gold_production_daily_summary",
+        "fromColumn": "product",
+        "toTable": "gold_product_quality",
+        "toColumn": "product"
+      },
+      {
+        "name": "prod_to_shift",
+        "fromTable": "gold_production_daily_summary",
+        "fromColumn": "shift",
+        "toTable": "gold_shift_performance",
+        "toColumn": "shift",
+        "isActive": false
+      }
+    ],
+    "tables": [
+      {
+        "name": "gold_production_daily_summary",
+        "columns": [
+          {"name": "production_date", "dataType": "string", "sourceColumn": "production_date"},
+          {"name": "production_line", "dataType": "string", "sourceColumn": "production_line"},
+          {"name": "shift", "dataType": "string", "sourceColumn": "shift"},
+          {"name": "product", "dataType": "string", "sourceColumn": "product"},
+          {"name": "batch_count", "dataType": "int64", "sourceColumn": "batch_count"},
+          {"name": "total_units_produced", "dataType": "int64", "sourceColumn": "total_units_produced"},
+          {"name": "total_defects", "dataType": "int64", "sourceColumn": "total_defects"},
+          {"name": "total_planned_units", "dataType": "int64", "sourceColumn": "total_planned_units"},
+          {"name": "total_downtime_minutes", "dataType": "double", "sourceColumn": "total_downtime_minutes"},
+          {"name": "avg_yield_pct", "dataType": "double", "sourceColumn": "avg_yield_pct"},
+          {"name": "avg_defect_rate", "dataType": "double", "sourceColumn": "avg_defect_rate"},
+          {"name": "oee", "dataType": "double", "sourceColumn": "oee"},
+          {"name": "oee_class", "dataType": "string", "sourceColumn": "oee_class"},
+          {"name": "availability", "dataType": "double", "sourceColumn": "availability"},
+          {"name": "performance", "dataType": "double", "sourceColumn": "performance"},
+          {"name": "quality", "dataType": "double", "sourceColumn": "quality"},
+          {"name": "production_week", "dataType": "int64", "sourceColumn": "production_week"},
+          {"name": "production_month", "dataType": "int64", "sourceColumn": "production_month"},
+          {"name": "day_of_week", "dataType": "int64", "sourceColumn": "day_of_week"}
+        ],
+        "measures": [
+          {"name": "Total Units Produced", "expression": "SUM('gold_production_daily_summary'[total_units_produced])", "formatString": "#,##0"},
+          {"name": "Total Defects", "expression": "SUM('gold_production_daily_summary'[total_defects])", "formatString": "#,##0"},
+          {"name": "Avg OEE %", "expression": "AVERAGE('gold_production_daily_summary'[oee])", "formatString": "0.0\"%\""},
+          {"name": "Avg Defect Rate %", "expression": "AVERAGE('gold_production_daily_summary'[avg_defect_rate])", "formatString": "0.00\"%\""},
+          {"name": "Avg Yield %", "expression": "AVERAGE('gold_production_daily_summary'[avg_yield_pct])", "formatString": "0.0\"%\""},
+          {"name": "Batch Count", "expression": "SUM('gold_production_daily_summary'[batch_count])", "formatString": "#,##0"},
+          {"name": "Total Downtime (min)", "expression": "SUM('gold_production_daily_summary'[total_downtime_minutes])", "formatString": "#,##0.0"},
+          {"name": "OEE World Class %", "expression": "DIVIDE(CALCULATE(COUNTROWS('gold_production_daily_summary'), 'gold_production_daily_summary'[oee_class] = \"World Class\"), COUNTROWS('gold_production_daily_summary'))", "formatString": "0.0%"},
+          {"name": "Avg Availability", "expression": "AVERAGE('gold_production_daily_summary'[availability])", "formatString": "0.0%"},
+          {"name": "Avg Performance", "expression": "AVERAGE('gold_production_daily_summary'[performance])", "formatString": "0.0%"},
+          {"name": "Avg Quality", "expression": "AVERAGE('gold_production_daily_summary'[quality])", "formatString": "0.0%"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_production_daily_summary",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_production_daily_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_equipment_health_daily",
+        "columns": [
+          {"name": "reading_date", "dataType": "string", "sourceColumn": "reading_date"},
+          {"name": "machine_id", "dataType": "string", "sourceColumn": "machine_id"},
+          {"name": "production_line", "dataType": "string", "sourceColumn": "production_line"},
+          {"name": "shift", "dataType": "string", "sourceColumn": "shift"},
+          {"name": "reading_count", "dataType": "int64", "sourceColumn": "reading_count"},
+          {"name": "avg_temperature", "dataType": "double", "sourceColumn": "avg_temperature"},
+          {"name": "avg_pressure", "dataType": "double", "sourceColumn": "avg_pressure"},
+          {"name": "avg_vibration", "dataType": "double", "sourceColumn": "avg_vibration"},
+          {"name": "avg_humidity", "dataType": "double", "sourceColumn": "avg_humidity"},
+          {"name": "temp_anomaly_count", "dataType": "int64", "sourceColumn": "temp_anomaly_count"},
+          {"name": "vibration_anomaly_count", "dataType": "int64", "sourceColumn": "vibration_anomaly_count"},
+          {"name": "anomaly_rate", "dataType": "double", "sourceColumn": "anomaly_rate"},
+          {"name": "health_score", "dataType": "double", "sourceColumn": "health_score"},
+          {"name": "health_status", "dataType": "string", "sourceColumn": "health_status"},
+          {"name": "temp_range", "dataType": "double", "sourceColumn": "temp_range"},
+          {"name": "vibration_range", "dataType": "double", "sourceColumn": "vibration_range"}
+        ],
+        "measures": [
+          {"name": "Avg Anomaly Rate %", "expression": "AVERAGE('gold_equipment_health_daily'[anomaly_rate])", "formatString": "0.00\"%\""},
+          {"name": "Total Readings", "expression": "SUM('gold_equipment_health_daily'[reading_count])", "formatString": "#,##0"},
+          {"name": "Avg Temperature", "expression": "AVERAGE('gold_equipment_health_daily'[avg_temperature])", "formatString": "0.0"},
+          {"name": "Avg Health Score", "expression": "AVERAGE('gold_equipment_health_daily'[health_score])", "formatString": "0.0"},
+          {"name": "Machines At Risk", "expression": "CALCULATE(DISTINCTCOUNT('gold_equipment_health_daily'[machine_id]), 'gold_equipment_health_daily'[health_status] IN {\"Critical\", \"At Risk\"})", "formatString": "#,##0"},
+          {"name": "Total Temp Anomalies", "expression": "SUM('gold_equipment_health_daily'[temp_anomaly_count])", "formatString": "#,##0"},
+          {"name": "Total Vibration Anomalies", "expression": "SUM('gold_equipment_health_daily'[vibration_anomaly_count])", "formatString": "#,##0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_equipment_health_daily",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_equipment_health_daily",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_shift_performance",
+        "columns": [
+          {"name": "shift", "dataType": "string", "sourceColumn": "shift"},
+          {"name": "production_line", "dataType": "string", "sourceColumn": "production_line"},
+          {"name": "total_batches", "dataType": "int64", "sourceColumn": "total_batches"},
+          {"name": "total_units", "dataType": "int64", "sourceColumn": "total_units"},
+          {"name": "total_defects", "dataType": "int64", "sourceColumn": "total_defects"},
+          {"name": "avg_yield", "dataType": "double", "sourceColumn": "avg_yield"},
+          {"name": "avg_defect_rate", "dataType": "double", "sourceColumn": "avg_defect_rate"},
+          {"name": "total_downtime", "dataType": "double", "sourceColumn": "total_downtime"},
+          {"name": "avg_downtime_per_batch", "dataType": "double", "sourceColumn": "avg_downtime_per_batch"},
+          {"name": "days_active", "dataType": "int64", "sourceColumn": "days_active"},
+          {"name": "units_per_batch", "dataType": "double", "sourceColumn": "units_per_batch"},
+          {"name": "defects_per_batch", "dataType": "double", "sourceColumn": "defects_per_batch"}
+        ],
+        "measures": [
+          {"name": "Avg Units/Batch", "expression": "AVERAGE('gold_shift_performance'[units_per_batch])", "formatString": "#,##0.0"},
+          {"name": "Avg Defects/Batch", "expression": "AVERAGE('gold_shift_performance'[defects_per_batch])", "formatString": "0.00"},
+          {"name": "Best Shift Yield", "expression": "MAX('gold_shift_performance'[avg_yield])", "formatString": "0.0\"%\""}
+        ],
+        "partitions": [
+          {
+            "name": "gold_shift_performance",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_shift_performance",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_product_quality",
+        "columns": [
+          {"name": "product", "dataType": "string", "sourceColumn": "product"},
+          {"name": "total_batches", "dataType": "int64", "sourceColumn": "total_batches"},
+          {"name": "total_units", "dataType": "int64", "sourceColumn": "total_units"},
+          {"name": "total_defects", "dataType": "int64", "sourceColumn": "total_defects"},
+          {"name": "avg_yield", "dataType": "double", "sourceColumn": "avg_yield"},
+          {"name": "avg_defect_rate", "dataType": "double", "sourceColumn": "avg_defect_rate"},
+          {"name": "total_downtime", "dataType": "double", "sourceColumn": "total_downtime"},
+          {"name": "lines_used", "dataType": "int64", "sourceColumn": "lines_used"},
+          {"name": "quality_rank", "dataType": "int64", "sourceColumn": "quality_rank"},
+          {"name": "quality_tier", "dataType": "string", "sourceColumn": "quality_tier"}
+        ],
+        "measures": [
+          {"name": "Best Yield", "expression": "MAX('gold_product_quality'[avg_yield])", "formatString": "0.0\"%\""},
+          {"name": "Premium Products", "expression": "CALCULATE(COUNTROWS('gold_product_quality'), 'gold_product_quality'[quality_tier] = \"Premium\")", "formatString": "#,##0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_product_quality",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_product_quality",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_weekly_trends",
+        "columns": [
+          {"name": "production_week", "dataType": "int64", "sourceColumn": "production_week"},
+          {"name": "production_line", "dataType": "string", "sourceColumn": "production_line"},
+          {"name": "weekly_units", "dataType": "int64", "sourceColumn": "weekly_units"},
+          {"name": "weekly_defects", "dataType": "int64", "sourceColumn": "weekly_defects"},
+          {"name": "weekly_avg_oee", "dataType": "double", "sourceColumn": "weekly_avg_oee"},
+          {"name": "weekly_downtime", "dataType": "double", "sourceColumn": "weekly_downtime"},
+          {"name": "weekly_batches", "dataType": "int64", "sourceColumn": "weekly_batches"},
+          {"name": "oee_wow_change", "dataType": "double", "sourceColumn": "oee_wow_change"},
+          {"name": "units_wow_pct", "dataType": "double", "sourceColumn": "units_wow_pct"},
+          {"name": "trend_direction", "dataType": "string", "sourceColumn": "trend_direction"}
+        ],
+        "measures": [
+          {"name": "Avg Weekly OEE", "expression": "AVERAGE('gold_weekly_trends'[weekly_avg_oee])", "formatString": "0.0\"%\""},
+          {"name": "Weeks Improving", "expression": "CALCULATE(COUNTROWS('gold_weekly_trends'), 'gold_weekly_trends'[trend_direction] = \"Improving\")", "formatString": "#,##0"},
+          {"name": "Weeks Declining", "expression": "CALCULATE(COUNTROWS('gold_weekly_trends'), 'gold_weekly_trends'[trend_direction] = \"Declining\")", "formatString": "#,##0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_weekly_trends",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_weekly_trends",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_line_scorecard",
+        "columns": [
+          {"name": "production_line", "dataType": "string", "sourceColumn": "production_line", "isKey": true},
+          {"name": "total_units_all_time", "dataType": "int64", "sourceColumn": "total_units_all_time"},
+          {"name": "total_defects_all_time", "dataType": "int64", "sourceColumn": "total_defects_all_time"},
+          {"name": "total_planned_all_time", "dataType": "int64", "sourceColumn": "total_planned_all_time"},
+          {"name": "total_batches_all_time", "dataType": "int64", "sourceColumn": "total_batches_all_time"},
+          {"name": "overall_yield", "dataType": "double", "sourceColumn": "overall_yield"},
+          {"name": "overall_defect_rate", "dataType": "double", "sourceColumn": "overall_defect_rate"},
+          {"name": "total_downtime_all_time", "dataType": "double", "sourceColumn": "total_downtime_all_time"},
+          {"name": "operating_days", "dataType": "int64", "sourceColumn": "operating_days"},
+          {"name": "products_produced", "dataType": "int64", "sourceColumn": "products_produced"},
+          {"name": "units_per_day", "dataType": "double", "sourceColumn": "units_per_day"},
+          {"name": "overall_oee", "dataType": "double", "sourceColumn": "overall_oee"}
+        ],
+        "measures": [
+          {"name": "Overall OEE", "expression": "AVERAGE('gold_line_scorecard'[overall_oee])", "formatString": "0.0\"%\""},
+          {"name": "Daily Output", "expression": "AVERAGE('gold_line_scorecard'[units_per_day])", "formatString": "#,##0"},
+          {"name": "Total Lines", "expression": "COUNTROWS('gold_line_scorecard')", "formatString": "#,##0"},
+          {"name": "Best Line OEE", "expression": "MAX('gold_line_scorecard'[overall_oee])", "formatString": "0.0\"%\""},
+          {"name": "Worst Line OEE", "expression": "MIN('gold_line_scorecard'[overall_oee])", "formatString": "0.0\"%\""}
+        ],
+        "partitions": [
+          {
+            "name": "gold_line_scorecard",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_line_scorecard",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

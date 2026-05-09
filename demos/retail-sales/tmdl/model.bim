@@ -1,0 +1,105 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "discourageImplicitMeasures": true,
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "relationships": [
+      {
+        "name": "sales_to_inv",
+        "fromTable": "gold_sales_daily_summary",
+        "fromColumn": "store_id",
+        "toTable": "gold_inventory_daily_summary",
+        "toColumn": "store_id",
+        "isActive": false
+      }
+    ],
+    "tables": [
+      {
+        "name": "gold_sales_daily_summary",
+        "columns": [
+          {"name": "transaction_date", "dataType": "string", "sourceColumn": "transaction_date"},
+          {"name": "store_id", "dataType": "string", "sourceColumn": "store_id"},
+          {"name": "store_name", "dataType": "string", "sourceColumn": "store_name"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "store_format", "dataType": "string", "sourceColumn": "store_format"},
+          {"name": "category", "dataType": "string", "sourceColumn": "category"},
+          {"name": "subcategory", "dataType": "string", "sourceColumn": "subcategory"},
+          {"name": "transaction_count", "dataType": "int64", "sourceColumn": "transaction_count"},
+          {"name": "line_item_count", "dataType": "int64", "sourceColumn": "line_item_count"},
+          {"name": "total_units_sold", "dataType": "int64", "sourceColumn": "total_units_sold"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "avg_line_total", "dataType": "double", "sourceColumn": "avg_line_total"},
+          {"name": "avg_discount_pct", "dataType": "double", "sourceColumn": "avg_discount_pct"},
+          {"name": "total_cost", "dataType": "double", "sourceColumn": "total_cost"},
+          {"name": "gross_margin", "dataType": "double", "sourceColumn": "gross_margin"},
+          {"name": "margin_pct", "dataType": "double", "sourceColumn": "margin_pct"},
+          {"name": "avg_basket_size", "dataType": "double", "sourceColumn": "avg_basket_size"},
+          {"name": "avg_items_per_basket", "dataType": "double", "sourceColumn": "avg_items_per_basket"}
+        ],
+        "measures": [
+          {"name": "Total Revenue", "expression": "SUM('gold_sales_daily_summary'[total_revenue])", "formatString": "$#,##0.00"},
+          {"name": "Total Units Sold", "expression": "SUM('gold_sales_daily_summary'[total_units_sold])", "formatString": "#,##0"},
+          {"name": "Avg Basket Size", "expression": "AVERAGE('gold_sales_daily_summary'[avg_basket_size])", "formatString": "$#,##0.00"},
+          {"name": "Gross Margin", "expression": "SUM('gold_sales_daily_summary'[gross_margin])", "formatString": "$#,##0.00"},
+          {"name": "Avg Margin %", "expression": "AVERAGE('gold_sales_daily_summary'[margin_pct])", "formatString": "0.0\"%\""},
+          {"name": "Transaction Count", "expression": "SUM('gold_sales_daily_summary'[transaction_count])", "formatString": "#,##0"},
+          {"name": "Avg Discount %", "expression": "AVERAGE('gold_sales_daily_summary'[avg_discount_pct])", "formatString": "0.0\"%\""},
+          {"name": "Avg Items/Basket", "expression": "AVERAGE('gold_sales_daily_summary'[avg_items_per_basket])", "formatString": "0.0"},
+          {"name": "Total Cost", "expression": "SUM('gold_sales_daily_summary'[total_cost])", "formatString": "$#,##0.00"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_sales_daily_summary",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_sales_daily_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_inventory_daily_summary",
+        "columns": [
+          {"name": "snapshot_date", "dataType": "string", "sourceColumn": "snapshot_date"},
+          {"name": "store_id", "dataType": "string", "sourceColumn": "store_id"},
+          {"name": "category", "dataType": "string", "sourceColumn": "category"},
+          {"name": "total_on_hand", "dataType": "int64", "sourceColumn": "total_on_hand"},
+          {"name": "total_on_order", "dataType": "int64", "sourceColumn": "total_on_order"},
+          {"name": "items_below_reorder", "dataType": "int64", "sourceColumn": "items_below_reorder"},
+          {"name": "sku_count", "dataType": "int64", "sourceColumn": "sku_count"},
+          {"name": "stockout_risk_pct", "dataType": "double", "sourceColumn": "stockout_risk_pct"}
+        ],
+        "measures": [
+          {"name": "Total On Hand", "expression": "SUM('gold_inventory_daily_summary'[total_on_hand])", "formatString": "#,##0"},
+          {"name": "Items Below Reorder", "expression": "SUM('gold_inventory_daily_summary'[items_below_reorder])", "formatString": "#,##0"},
+          {"name": "Avg Stockout Risk %", "expression": "AVERAGE('gold_inventory_daily_summary'[stockout_risk_pct])", "formatString": "0.0\"%\""},
+          {"name": "Total On Order", "expression": "SUM('gold_inventory_daily_summary'[total_on_order])", "formatString": "#,##0"},
+          {"name": "Total SKUs", "expression": "SUM('gold_inventory_daily_summary'[sku_count])", "formatString": "#,##0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_inventory_daily_summary",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_inventory_daily_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
