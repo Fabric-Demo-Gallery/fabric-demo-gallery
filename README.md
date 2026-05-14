@@ -43,7 +43,7 @@ One-click deployable industry demos for Microsoft Fabric. Browse industry-specif
 - Python 3.11+
 - Node.js 18+
 
-## Quick Start
+## Quick Start...
 
 ### Backend
 ```bash
