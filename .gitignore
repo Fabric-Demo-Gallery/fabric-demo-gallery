@@ -5,6 +5,7 @@ __pycache__/
 dist/
 .venv/
 venv/
+backend-deploy.zip
 
 # Node
 node_modules/

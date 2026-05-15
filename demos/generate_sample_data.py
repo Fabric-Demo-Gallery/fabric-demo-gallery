@@ -184,6 +184,116 @@ def _write_csv(path: Path, rows: list[dict]):
         writer.writerows(rows)
 
 
+def generate_energy_data():
+    out_dir = DEMOS_DIR / "energy-grid" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    substations = [f"SUB-{i:03d}" for i in range(1, 26)]
+    regions = ["North", "South", "East", "West", "Central"]
+    sub_region = {s: random.choice(regions) for s in substations}
+    base_date = datetime(2025, 3, 1)
+
+    # Grid sensor readings — 100k rows
+    sensors = []
+    for i in range(100000):
+        sub = random.choice(substations)
+        ts = base_date + timedelta(
+            days=random.randint(0, 59),
+            hours=random.randint(0, 23),
+            minutes=random.randint(0, 59),
+            seconds=random.randint(0, 59),
+        )
+        hour = ts.hour
+        # Voltage: ~230V nominal, slight dip during peak hours
+        base_v = 230.0 if random.random() > 0.02 else random.choice([210, 245, 250])
+        voltage = round(random.gauss(base_v - (2 if 17 <= hour <= 21 else 0), 3.5), 2)
+        # Frequency: ~50Hz nominal
+        freq = round(random.gauss(50.0, 0.05), 3)
+        # Load varies by time of day
+        base_load = 15 + 10 * (1 if 8 <= hour <= 20 else 0) + 5 * (1 if 17 <= hour <= 21 else 0)
+        sensors.append({
+            "reading_id": f"GS-{i+1:07d}",
+            "timestamp": ts.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "substation_id": sub,
+            "region": sub_region[sub],
+            "voltage_v": voltage,
+            "frequency_hz": freq,
+            "power_factor": round(random.uniform(0.85, 0.99), 3),
+            "load_mw": round(random.gauss(base_load, 4), 2),
+            "temperature_c": round(random.gauss(35 + 10 * (1 if 10 <= hour <= 16 else 0), 5), 1),
+        })
+    _write_csv(out_dir / "grid_sensors.csv", sensors)
+
+    # Power events — 5k rows
+    event_types = ["outage", "surge", "voltage_sag", "restoration", "equipment_fault", "overload"]
+    severities = ["low", "medium", "high", "critical"]
+    events = []
+    for i in range(5000):
+        sub = random.choice(substations)
+        etype = random.choice(event_types)
+        ts = base_date + timedelta(
+            days=random.randint(0, 59),
+            hours=random.randint(0, 23),
+            minutes=random.randint(0, 59),
+        )
+        dur = random.randint(1, 7200) if etype in ("outage", "equipment_fault") else random.randint(1, 300)
+        affected = random.randint(0, 5000) if etype == "outage" else random.randint(0, 500)
+        events.append({
+            "event_id": f"EVT-{i+1:06d}",
+            "timestamp": ts.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "substation_id": sub,
+            "region": sub_region[sub],
+            "event_type": etype,
+            "severity": random.choice(severities),
+            "duration_sec": dur,
+            "affected_customers": affected,
+            "resolved": random.choice(["true", "false"]) if etype != "restoration" else "true",
+        })
+    _write_csv(out_dir / "power_events.csv", events)
+
+    # Renewable generation — 20k rows
+    plants = []
+    plant_types = ["solar", "wind", "hydro"]
+    for pt in plant_types:
+        count = {"solar": 8, "wind": 6, "hydro": 3}[pt]
+        for j in range(1, count + 1):
+            cap = {"solar": random.uniform(20, 80), "wind": random.uniform(30, 120), "hydro": random.uniform(50, 200)}[pt]
+            plants.append({"plant_id": f"{pt.upper()}-{j:02d}", "plant_type": pt, "capacity_mw": round(cap, 1)})
+
+    weather_conditions = ["clear", "cloudy", "overcast", "rainy", "windy", "stormy"]
+    gen_rows = []
+    for i in range(20000):
+        plant = random.choice(plants)
+        ts = base_date + timedelta(
+            days=random.randint(0, 59),
+            hours=random.randint(0, 23),
+            minutes=random.choice([0, 15, 30, 45]),
+        )
+        weather = random.choice(weather_conditions)
+        hour = ts.hour
+        # Generation depends on plant type, hour, and weather
+        if plant["plant_type"] == "solar":
+            factor = max(0, (1 - abs(hour - 12) / 8)) * (0.3 if weather in ("cloudy", "overcast", "rainy") else 0.9)
+        elif plant["plant_type"] == "wind":
+            factor = random.uniform(0.2, 0.8) * (1.3 if weather in ("windy", "stormy") else 0.7)
+        else:  # hydro
+            factor = random.uniform(0.5, 0.95)
+        gen = round(plant["capacity_mw"] * factor * random.uniform(0.8, 1.1), 2)
+        gen_rows.append({
+            "reading_id": f"RG-{i+1:06d}",
+            "timestamp": ts.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "plant_id": plant["plant_id"],
+            "plant_type": plant["plant_type"],
+            "generation_mw": max(0, gen),
+            "capacity_mw": plant["capacity_mw"],
+            "capacity_factor": round(max(0, gen) / plant["capacity_mw"], 3),
+            "weather": weather,
+        })
+    _write_csv(out_dir / "renewable_generation.csv", gen_rows)
+    print(f"Energy data generated: {len(sensors)} sensor readings, {len(events)} events, {len(gen_rows)} renewable readings")
+
+
 if __name__ == "__main__":
     generate_manufacturing_data()
     generate_retail_data()
+    generate_energy_data()

@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   InteractionRequiredAuthError,
+  BrowserUtils,
   type AccountInfo,
 } from "@azure/msal-browser";
 import { msalInstance, fabricScopes, storageScopes } from "@/lib/msal";
@@ -17,6 +18,7 @@ import { msalInstance, fabricScopes, storageScopes } from "@/lib/msal";
 interface AuthState {
   initialized: boolean;
   account: AccountInfo | null;
+  authError: string;
   login: () => Promise<void>;
   logout: () => void;
   getFabricToken: () => Promise<string>;
@@ -26,6 +28,7 @@ interface AuthState {
 const AuthContext = createContext<AuthState>({
   initialized: false,
   account: null,
+  authError: "",
   login: async () => {},
   logout: () => {},
   getFabricToken: async () => "",
@@ -35,33 +38,43 @@ const AuthContext = createContext<AuthState>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [initialized, setInitialized] = useState(false);
   const [account, setAccount] = useState<AccountInfo | null>(null);
+  const [authError, setAuthError] = useState<string>("");
 
   useEffect(() => {
     msalInstance.initialize().then(async () => {
-      // Handle popup redirect response (closes the popup properly)
+      // Handle redirect response (if coming back from login)
       try {
         const response = await msalInstance.handleRedirectPromise();
         if (response?.account) {
           msalInstance.setActiveAccount(response.account);
           setAccount(response.account);
         }
-      } catch (e) {
-        console.error("Redirect handling failed:", e);
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error("MSAL redirect error:", msg, e);
+        setAuthError(msg);
       }
 
+      // Always check cached accounts
       const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
+      if (accounts.length > 0 && !account) {
         msalInstance.setActiveAccount(accounts[0]);
         setAccount(accounts[0]);
       }
       setInitialized(true);
+    }).catch((e) => {
+      console.error("MSAL init error:", e);
+      setAuthError(e instanceof Error ? e.message : String(e));
+      setInitialized(true);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = useCallback(async () => {
     try {
       await msalInstance.loginRedirect({
-        scopes: fabricScopes,
+        scopes: ["openid", "profile"],
+        extraScopesToConsent: ["https://api.fabric.microsoft.com/.default"],
       });
     } catch (e) {
       console.error("Login failed:", e);
@@ -83,11 +96,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return result.accessToken;
       } catch (e) {
-        if (e instanceof InteractionRequiredAuthError) {
+        // Any failure (interaction required, timeout, etc.) → use popup
+        try {
           const result = await msalInstance.acquireTokenPopup({ scopes });
           return result.accessToken;
+        } catch (popupErr) {
+          // If popup also fails, try redirect as last resort
+          console.error("Token popup failed:", popupErr);
+          await msalInstance.acquireTokenRedirect({ scopes });
+          throw new Error("Redirecting for token...");
         }
-        throw e;
       }
     },
     [account]
@@ -105,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ initialized, account, login, logout, getFabricToken, getStorageToken }}
+      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken }}
     >
       {children}
     </AuthContext.Provider>

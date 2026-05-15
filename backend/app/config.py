@@ -5,7 +5,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     azure_client_id: str
     azure_tenant_id: str
-    azure_client_secret: str
+    azure_client_secret: str = ""  # Not used for SPA flow, kept for future OBO
     frontend_url: str = "http://localhost:3000"
     fabric_api_base: str = "https://api.fabric.microsoft.com/v1"
 

@@ -15,7 +15,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen antialiased">
+      <body style={{
+        minHeight: "100vh",
+        margin: 0,
+        fontFamily: "'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
+        backgroundColor: "#0d1117",
+        WebkitFontSmoothing: "antialiased",
+      }}>
         <ClientShell>{children}</ClientShell>
       </body>
     </html>

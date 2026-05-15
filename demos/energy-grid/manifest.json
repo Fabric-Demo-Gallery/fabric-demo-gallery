@@ -1,0 +1,96 @@
+{
+  "id": "energy-grid",
+  "industry": "Energy & Utilities",
+  "title": "Smart Grid Monitoring",
+  "description": "Monitor power grid health with real-time sensor data, detect voltage anomalies, track outages, and analyze renewable energy generation using Eventhouse and KQL.",
+  "longDescription": "This demo deploys a real-time intelligence environment for smart grid monitoring. It provisions an Eventhouse with a KQL Database, then ingests synthetic grid sensor readings (voltage, frequency, power factor, load), outage events, and renewable generation data. PySpark notebooks load the data into a Lakehouse staging area, then batch-ingest into the KQL Database for high-performance time-series analytics. A Power BI dashboard provides grid health overview, outage analysis, and renewable performance tracking.",
+  "icon": "⚡",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "event-driven",
+    "layers": ["Ingest (CSV Landing)", "KQL Database (Time-Series)", "Analytics (KQL Queries & Dashboards)"]
+  },
+  "sampleData": [
+    {
+      "fileName": "grid_sensors.csv",
+      "description": "100,000 grid sensor readings: voltage, frequency, power factor, load, temperature per substation",
+      "format": "csv",
+      "rows": 100000
+    },
+    {
+      "fileName": "power_events.csv",
+      "description": "5,000 power events: outages, surges, sags, restorations with duration and affected customers",
+      "format": "csv",
+      "rows": 5000
+    },
+    {
+      "fileName": "renewable_generation.csv",
+      "description": "20,000 renewable generation readings from solar, wind, and hydro plants",
+      "format": "csv",
+      "rows": 20000
+    }
+  ],
+  "fabricItems": [
+    {
+      "type": "Lakehouse",
+      "name": "grid_lakehouse",
+      "description": "Staging area for CSV data before KQL ingestion"
+    },
+    {
+      "type": "Eventhouse",
+      "name": "grid_eventhouse",
+      "description": "Real-time analytics engine for time-series grid data"
+    },
+    {
+      "type": "KQLDatabase",
+      "name": "grid_telemetry_db",
+      "parentEventhouse": "grid_eventhouse",
+      "description": "KQL database storing sensor readings, power events, and renewable generation"
+    },
+    {
+      "type": "Notebook",
+      "name": "01_ingest_to_kql",
+      "definitionPath": "notebooks/01_ingest_to_kql.ipynb",
+      "description": "Create KQL tables and ingest CSV data from Lakehouse into KQL Database",
+      "order": 1
+    },
+    {
+      "type": "Notebook",
+      "name": "02_kql_analytics",
+      "definitionPath": "notebooks/02_kql_analytics.ipynb",
+      "description": "Run KQL queries for anomaly detection, time-series analysis, and grid health scoring",
+      "order": 2
+    },
+    {
+      "type": "Notebook",
+      "name": "03_simulate_realtime",
+      "definitionPath": "notebooks/03_simulate_realtime.ipynb",
+      "description": "Real-time simulator — generates fresh sensor readings with current timestamps and appends to KQL Database. Runs automatically via scheduled pipeline."
+    },
+    {
+      "type": "SemanticModel",
+      "name": "grid_analytics_model",
+      "definitionPath": "tmdl",
+      "description": "DirectQuery model over KQL Database with grid health measures"
+    },
+    {
+      "type": "Report",
+      "name": "Smart Grid Dashboard",
+      "description": "3-page Power BI dashboard: Grid Health, Outage Analysis, Renewable Performance"
+    },
+    {
+      "type": "KQLDashboard",
+      "name": "Grid Real-Time Dashboard",
+      "description": "Real-time KQL dashboard with live grid sensor queries, outage tracking, and renewable monitoring"
+    },
+    {
+      "type": "DataPipeline",
+      "name": "grid_monitoring_pipeline",
+      "description": "Orchestrates data ingestion and KQL analytics notebooks"
+    }
+  ]
+}

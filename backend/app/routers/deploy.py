@@ -1,9 +1,12 @@
 """Deployment endpoint — streams progress via SSE."""
 
 import json
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sse_starlette.sse import EventSourceResponse
 
 from app.auth import get_user_token, get_storage_token
@@ -11,6 +14,11 @@ from app.deployer import deploy_demo
 from app.fabric_client import FabricClient
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy"])
+limiter = Limiter(key_func=get_remote_address)
+
+_SAFE_ID = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
+_SAFE_NAME = re.compile(r"^[a-zA-Z0-9 &_\-().]{1,100}$")
+_UUID = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
 
 class DeployRequest(BaseModel):
@@ -19,8 +27,30 @@ class DeployRequest(BaseModel):
     workspace_id: str | None = None
     capacity_id: str | None = None
 
+    @field_validator("demo_id")
+    @classmethod
+    def validate_demo_id(cls, v: str) -> str:
+        if not _SAFE_ID.match(v):
+            raise ValueError("Invalid demo_id")
+        return v
+
+    @field_validator("workspace_name")
+    @classmethod
+    def validate_workspace_name(cls, v: str | None) -> str | None:
+        if v is not None and not _SAFE_NAME.match(v):
+            raise ValueError("Workspace name contains invalid characters")
+        return v
+
+    @field_validator("workspace_id", "capacity_id")
+    @classmethod
+    def validate_uuids(cls, v: str | None) -> str | None:
+        if v is not None and not _UUID.match(v):
+            raise ValueError("Invalid UUID format")
+        return v
+
 
 @router.post("/{demo_id}")
+@limiter.limit("5/hour")
 async def start_deployment(
     demo_id: str,
     body: DeployRequest,
@@ -28,6 +58,8 @@ async def start_deployment(
     token: str = Depends(get_user_token),
 ):
     """Start deploying a demo — returns an SSE stream with progress updates."""
+    if not _SAFE_ID.match(demo_id):
+        raise HTTPException(status_code=400, detail="Invalid demo_id")
     # Get storage token from header or az CLI fallback
     storage_tok = request.headers.get("x-storage-token", "")
     if not storage_tok:
@@ -69,11 +101,15 @@ async def start_deployment(
 
 
 @router.delete("/{workspace_id}")
+@limiter.limit("10/hour")
 async def teardown_deployment(
     workspace_id: str,
+    request: Request,
     token: str = Depends(get_user_token),
 ):
     """Delete a workspace and all its items (teardown a deployed demo)."""
+    if not _UUID.match(workspace_id):
+        raise HTTPException(status_code=400, detail="Invalid workspace_id")
     client = FabricClient(token)
     try:
         await client.delete_workspace(workspace_id)

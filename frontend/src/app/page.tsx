@@ -1,6 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Badge,
+  ToggleButton,
+  makeStyles,
+} from "@fluentui/react-components";
+import {
+  ClockRegular,
+  AppsFilled,
+  ChevronRightRegular,
+} from "@fluentui/react-icons";
 
 const DEMOS = [
   {
@@ -11,97 +21,423 @@ const DEMOS = [
     tags: ["Medallion Architecture", "IoT Sensors", "OEE", "PySpark", "Direct Lake"],
     time: "8–12 min",
     itemCount: 10,
+    color: "#117865",
+    itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
   },
   {
     id: "retail-sales",
     industry: "Retail",
     title: "Sales & Inventory Analytics",
-    desc: "Revenue trends, basket analysis, margin tracking, inventory turnover, and stockout risk analytics across stores and categories. Includes 2 Gold tables, 14 DAX measures, and a 3-page Power BI dashboard.",
+    desc: "Revenue trends, basket analysis, margin tracking, inventory turnover, and stockout risk analytics across stores and categories. Star-schema model with 6 tables, 40+ DAX measures, and a 3-page Power BI dashboard.",
     tags: ["Medallion Architecture", "POS Data", "Star Schema", "PySpark", "Direct Lake"],
     time: "8–12 min",
     itemCount: 7,
+    color: "#117865",
+    itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
+  },
+  {
+    id: "energy-grid",
+    industry: "Energy & Utilities",
+    title: "Smart Grid Monitoring",
+    desc: "Real-time grid health monitoring with voltage anomaly detection, outage tracking, and renewable energy analytics. Uses Eventhouse + KQL Database for high-performance time-series analysis.",
+    tags: ["Real-Time Intelligence", "Eventhouse", "KQL", "Time-Series", "Anomaly Detection"],
+    time: "10–15 min",
+    itemCount: 10,
+    color: "#2D7D3E",
+    itemTypes: ["Lakehouse", "Eventhouse", "KQLDatabase", "Notebook", "Report", "KQLDashboard", "DataPipeline"],
   },
 ];
 
+const useStyles = makeStyles({
+  /* ---- Hero ---- */
+  hero: {
+    background: "#0d1117",
+    color: "#e6edf3",
+    borderBottom: "1px solid #21262d",
+  },
+  heroInner: {
+    maxWidth: "1200px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    paddingLeft: "40px",
+    paddingRight: "40px",
+    paddingTop: "48px",
+    paddingBottom: "48px",
+  },
+  heroEyebrow: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "12px",
+    fontWeight: 600,
+    textTransform: "uppercase" as const,
+    letterSpacing: "1.5px",
+    color: "#3fb68b",
+    marginBottom: "12px",
+  },
+  heroTitle: {
+    fontSize: "32px",
+    fontWeight: 700,
+    lineHeight: "40px",
+    maxWidth: "560px",
+    marginBottom: "12px",
+    color: "#e6edf3",
+  },
+  heroDesc: {
+    fontSize: "15px",
+    lineHeight: "22px",
+    maxWidth: "520px",
+    color: "#8b949e",
+  },
+  heroStats: {
+    display: "flex",
+    gap: "40px",
+    marginTop: "32px",
+  },
+  heroStat: {},
+  heroStatNum: {
+    fontSize: "32px",
+    fontWeight: 700,
+    color: "#3fb68b",
+    lineHeight: "36px",
+  },
+  heroStatLabel: {
+    fontSize: "12px",
+    color: "#484f58",
+    marginTop: "4px",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+  },
+
+  /* ---- Content ---- */
+  content: {
+    maxWidth: "1200px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    paddingLeft: "40px",
+    paddingRight: "40px",
+    paddingTop: "32px",
+    paddingBottom: "48px",
+  },
+  toolbar: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "20px",
+  },
+  sectionLabel: {
+    fontSize: "16px",
+    fontWeight: 600,
+    color: "#e6edf3",
+  },
+  filterBar: {
+    display: "flex",
+    gap: "4px",
+  },
+
+  /* ---- Cards ---- */
+  cardGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))",
+    gap: "16px",
+    marginBottom: "40px",
+  },
+  card: {
+    cursor: "pointer",
+    backgroundColor: "#161b22",
+    border: "1px solid #30363d",
+    borderRadius: "8px",
+    overflow: "hidden",
+    transitionProperty: "box-shadow",
+    transitionDuration: "0.15s",
+    ":hover": {
+      boxShadow: "0 0 0 1px #3fb68b, 0 4px 12px rgba(0,0,0,0.3)",
+    },
+  },
+  cardAccent: {
+    height: "2px",
+    backgroundColor: "#3fb68b",
+  },
+  cardBody: {
+    padding: "20px 24px 24px",
+  },
+  cardHeader: {
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: "12px",
+  },
+  cardHeaderLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+  cardIcon: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#21262d",
+    flexShrink: 0,
+  },
+  cardTitleGroup: {},
+  cardTitle: {
+    fontSize: "16px",
+    fontWeight: 600,
+    color: "#e6edf3",
+    lineHeight: "22px",
+    marginBottom: "2px",
+  },
+  cardIndustry: {
+    fontSize: "12px",
+    color: "#8b949e",
+    fontWeight: 500,
+  },
+  cardArrow: {
+    color: "#484f58",
+    flexShrink: 0,
+    marginTop: "4px",
+  },
+  cardDesc: {
+    fontSize: "14px",
+    color: "#8b949e",
+    lineHeight: "22px",
+    marginBottom: "16px",
+  },
+  cardFooter: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  cardMeta: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+  },
+  metaItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    fontSize: "12px",
+    color: "#484f58",
+  },
+  tagRow: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "4px",
+  },
+
+  /* ---- Items strip ---- */
+  itemStrip: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    paddingTop: "12px",
+    marginTop: "12px",
+    borderTop: "1px solid #21262d",
+  },
+  itemStripLabel: {
+    fontSize: "11px",
+    color: "#484f58",
+    fontWeight: 500,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+    marginRight: "4px",
+  },
+  itemStripIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "26px",
+    height: "26px",
+    borderRadius: "6px",
+    backgroundColor: "#21262d",
+    border: "1px solid #30363d",
+  },
+
+  /* ---- How it works ---- */
+  howSection: {
+    marginBottom: "40px",
+  },
+  howTitle: {
+    fontSize: "16px",
+    fontWeight: 600,
+    color: "#e6edf3",
+    marginBottom: "16px",
+  },
+  stepsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "12px",
+  },
+  stepCard: {
+    backgroundColor: "#161b22",
+    border: "1px solid #30363d",
+    borderRadius: "8px",
+    padding: "24px 16px",
+    textAlign: "center" as const,
+  },
+  stepNum: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    color: "#ffffff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "14px",
+    fontWeight: 700,
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginBottom: "12px",
+  },
+  stepTitle: {
+    fontSize: "14px",
+    fontWeight: 600,
+    color: "#e6edf3",
+    marginBottom: "4px",
+  },
+  stepDesc: {
+    fontSize: "12px",
+    color: "#8b949e",
+    lineHeight: "16px",
+  },
+});
+
+const STEP_COLORS = ["#3fb68b", "#2da882", "#1a9b80", "#117865"];
+
+const STEPS = [
+  { n: 1, t: "Browse", d: "Choose an industry demo" },
+  { n: 2, t: "Authenticate", d: "Sign in with Microsoft Entra" },
+  { n: 3, t: "Configure", d: "Name workspace & pick capacity" },
+  { n: 4, t: "Deploy", d: "Watch real-time provisioning" },
+];
+
+/* Fabric workload icons — official SVGs from Microsoft */
+function FabricItemIcon({ type, size = 14 }: { type: string; size?: number }) {
+  const FILE_MAP: Record<string, string> = {
+    Lakehouse: "lakehouse_24_item.svg",
+    Notebook: "notebook_24_item.svg",
+    SemanticModel: "semantic_model_24_item.svg",
+    Report: "report_24_item.svg",
+    DataPipeline: "pipeline_24_item.svg",
+    Dashboard: "dashboard_24_item.svg",
+    Eventhouse: "eventhouse_24_item.svg",
+    KQLDatabase: "kql_database_24_item.svg",
+    KQLDashboard: "kql_dashboard_24_item.svg",
+  };
+  const file = FILE_MAP[type];
+  if (!file) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
+}
+
+const ITEM_TYPES = ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline", "Eventhouse", "KQLDatabase", "KQLDashboard"];
+
 export default function Home() {
+  const styles = useStyles();
   const [filter, setFilter] = useState("All");
   const industries = ["All", ...new Set(DEMOS.map((d) => d.industry))];
   const filtered = filter === "All" ? DEMOS : DEMOS.filter((d) => d.industry === filter);
 
   return (
     <>
-      {/* Hero banner */}
-      <div className="bg-gradient-to-b from-[#0f6cbd] to-[#0a5199]">
-        <div className="mx-auto max-w-[1280px] px-8 py-14">
-          <p className="text-[13px] font-medium text-white/70 uppercase tracking-wider mb-2">Microsoft Fabric</p>
-          <h1 className="text-[32px] font-bold text-white leading-tight max-w-lg">
-            Industry Demo Gallery
-          </h1>
-          <p className="mt-3 text-[16px] text-white/80 max-w-xl leading-relaxed">
-            Deploy complete analytics environments — lakehouse, notebooks, semantic models, Power BI dashboards, and pipelines — into your Fabric tenant with one click.
-          </p>
+      {/* Hero */}
+      <div className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroEyebrow}>Microsoft Fabric</div>
+          <div className={styles.heroTitle}>Industry Demo Gallery</div>
+          <div className={styles.heroDesc}>
+            Deploy complete analytics environments — lakehouse, notebooks,
+            semantic models, Power BI dashboards, and pipelines — into your
+            Fabric tenant with one click.
+          </div>
+          <div className={styles.heroStats}>
+            <div className={styles.heroStat}>
+              <div className={styles.heroStatNum}>{DEMOS.length}</div>
+              <div className={styles.heroStatLabel}>Demos</div>
+            </div>
+            <div className={styles.heroStat}>
+              <div className={styles.heroStatNum}>{DEMOS.reduce((s, d) => s + d.itemCount, 0)}</div>
+              <div className={styles.heroStatLabel}>Fabric items</div>
+            </div>
+            <div className={styles.heroStat}>
+              <div className={styles.heroStatNum}>1</div>
+              <div className={styles.heroStatLabel}>Click deploy</div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="mx-auto max-w-[1280px] px-8 py-8">
-        {/* Breadcrumb + filter */}
-        <div className="flex items-center justify-between mb-6">
-          <nav className="text-[13px] text-[#616161]">
-            <span className="text-[#0f6cbd]">Home</span>
-            <span className="mx-2 text-[#d1d1d1]">/</span>
-            <span>Demos</span>
-          </nav>
-          <div className="flex bg-white rounded-[4px] border border-[#e0e0e0] overflow-hidden">
+      <div className={styles.content}>
+        {/* Toolbar */}
+        <div className={styles.toolbar}>
+          <span className={styles.sectionLabel}>Available demos</span>
+          <div className={styles.filterBar}>
             {industries.map((ind) => (
-              <button
+              <ToggleButton
                 key={ind}
+                size="small"
+                appearance={filter === ind ? "primary" : "subtle"}
+                checked={filter === ind}
                 onClick={() => setFilter(ind)}
-                className={`px-4 py-[6px] text-[13px] font-medium transition-colors ${
-                  filter === ind
-                    ? "bg-[#0f6cbd] text-white"
-                    : "text-[#424242] hover:bg-[#f5f5f5]"
-                }`}
               >
                 {ind}
-              </button>
+              </ToggleButton>
             ))}
           </div>
         </div>
 
         {/* Cards */}
-        <div className="grid gap-5 md:grid-cols-2 mb-12">
+        <div className={styles.cardGrid}>
           {filtered.map((demo) => (
-            <a
-              key={demo.id}
-              href={`/demos/${demo.id}`}
-              className="group block bg-white rounded-[8px] border border-[#e0e0e0] overflow-hidden hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] hover:border-[#c7c7c7] transition-all hover:no-underline"
-            >
-              {/* Card header with blue accent */}
-              <div className="h-[4px] bg-[#0f6cbd]" />
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[12px] font-semibold text-[#0f6cbd] bg-[#ebf3fc] rounded-[4px] px-2 py-[2px]">
-                    {demo.industry}
-                  </span>
-                  <span className="text-[12px] text-[#9e9e9e]">{demo.time}</span>
-                  <span className="text-[12px] text-[#9e9e9e]">{demo.itemCount} Fabric items</span>
-                </div>
-
-                <h2 className="text-[18px] font-semibold text-[#242424] mb-2 group-hover:text-[#0f6cbd] transition-colors">
-                  {demo.title}
-                </h2>
-                <p className="text-[14px] text-[#616161] leading-relaxed mb-4">
-                  {demo.desc}
-                </p>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-[6px]">
-                  {demo.tags.map((tag) => (
-                    <span key={tag} className="text-[12px] text-[#616161] bg-[#f5f5f5] rounded-[4px] px-[8px] py-[3px] border border-[#e8e8e8]">
-                      {tag}
-                    </span>
-                  ))}
+            <a key={demo.id} href={`/demos/${demo.id}`} style={{ textDecoration: "none" }}>
+              <div className={styles.card}>
+                <div className={styles.cardAccent} />
+                <div className={styles.cardBody}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardHeaderLeft}>
+                      <div className={styles.cardIcon}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/fabric-logo.png" alt="" width={24} height={24} style={{ objectFit: "contain" }} />
+                      </div>
+                      <div className={styles.cardTitleGroup}>
+                        <div className={styles.cardTitle}>{demo.title}</div>
+                        <div className={styles.cardIndustry}>{demo.industry}</div>
+                      </div>
+                    </div>
+                    <ChevronRightRegular className={styles.cardArrow} fontSize={16} />
+                  </div>
+                  <div className={styles.cardDesc}>{demo.desc}</div>
+                  <div className={styles.cardFooter}>
+                    <div className={styles.cardMeta}>
+                      <span className={styles.metaItem}>
+                        <ClockRegular fontSize={12} /> {demo.time}
+                      </span>
+                      <span className={styles.metaItem}>
+                        <AppsFilled fontSize={12} /> {demo.itemCount} items
+                      </span>
+                    </div>
+                    <div className={styles.tagRow}>
+                      {demo.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} appearance="tint" color="informative" size="small">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Item type strip */}
+                  <div className={styles.itemStrip}>
+                    <span className={styles.itemStripLabel}>Includes</span>
+                    {(demo.itemTypes || ITEM_TYPES).map((type) => (
+                      <span key={type} className={styles.itemStripIcon} title={type}>
+                        <FabricItemIcon type={type} size={16} />
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </a>
@@ -109,23 +445,14 @@ export default function Home() {
         </div>
 
         {/* How it works */}
-        <div className="bg-white rounded-[8px] border border-[#e0e0e0] p-8 mb-12">
-          <h2 className="text-[20px] font-semibold text-[#242424] mb-6">How it works</h2>
-          <div className="grid grid-cols-4 gap-0 relative">
-            {/* Connector line */}
-            <div className="absolute top-[18px] left-[36px] right-[36px] h-[2px] bg-[#e0e0e0]" />
-            {[
-              { n: 1, t: "Browse", d: "Choose an industry demo from the gallery" },
-              { n: 2, t: "Authenticate", d: "Sign in with your Microsoft Entra account" },
-              { n: 3, t: "Configure", d: "Name your workspace and select a Fabric capacity" },
-              { n: 4, t: "Deploy", d: "Watch real-time progress as each item is provisioned" },
-            ].map(({ n, t, d }) => (
-              <div key={n} className="relative text-center px-4">
-                <div className="mx-auto w-[36px] h-[36px] rounded-full bg-[#0f6cbd] flex items-center justify-center text-white text-[14px] font-bold mb-3 relative z-10">
-                  {n}
-                </div>
-                <div className="text-[14px] font-semibold text-[#242424] mb-1">{t}</div>
-                <div className="text-[13px] text-[#616161] leading-snug">{d}</div>
+        <div className={styles.howSection}>
+          <div className={styles.howTitle}>How it works</div>
+          <div className={styles.stepsRow}>
+            {STEPS.map(({ n, t, d }, i) => (
+              <div key={n} className={styles.stepCard}>
+                <div className={styles.stepNum} style={{ backgroundColor: STEP_COLORS[i] }}>{n}</div>
+                <div className={styles.stepTitle}>{t}</div>
+                <div className={styles.stepDesc}>{d}</div>
               </div>
             ))}
           </div>

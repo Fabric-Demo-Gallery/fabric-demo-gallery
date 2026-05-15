@@ -362,3 +362,85 @@ def build_retail_report_definition(semantic_model_id: str) -> dict:
             {"path": "report.json", "payload": base64.b64encode(report.encode()).decode(), "payloadType": "InlineBase64"},
         ]
     }
+
+
+def build_energy_report_definition(semantic_model_id: str) -> dict:
+    """Build a 3-page Power BI report for the energy smart grid demo."""
+
+    G = "gold_grid_health"
+    O = "gold_outage_summary"
+    R = "gold_renewable_summary"
+
+    p1 = [
+        _textbox("eh1", 20, 5, 500, 35, "Smart Grid Monitoring", "20"),
+        _textbox("es1", 520, 12, 400, 25, "Grid Health Overview", "11", False),
+        _kpi_card("e_volt",    20,  45, G, "Avg Voltage",        "Avg Voltage (V)",      "#0078D4"),
+        _kpi_card("e_freq",   230,  45, G, "Avg Frequency",      "Frequency (Hz)",       "#107C10"),
+        _kpi_card("e_load",   440,  45, G, "Avg Load MW",        "Avg Load (MW)",        "#5C2D91"),
+        _kpi_card("e_anom",   650,  45, G, "Total Anomalies",    "Voltage Anomalies",    "#D83B01"),
+        _kpi_card("e_pf",     860,  45, G, "Avg Power Factor",   "Power Factor",         "#107C10"),
+        _card("e_score", 1060, 45, 200, 100, G, "Grid Health Score", "Health Score",      "#004E8C"),
+        _line("e_vtrend", 20, 155, 620, 260, G, "date", "Avg Voltage", "Daily Avg Voltage by Region", "region"),
+        _bar("e_sub_anom", 655, 155, 300, 260, G, "substation_id", "Total Anomalies", "Anomalies by Substation", True),
+        _donut("e_region", 970, 155, 290, 260, G, "region", "Total Readings", "Readings by Region"),
+        _line("e_ltrend", 20, 430, 620, 270, G, "date", "Avg Load MW", "Daily Load Trend by Region", "region"),
+        _bar("e_hour_load", 655, 430, 300, 270, G, "hour", "Avg Load MW", "Avg Load by Hour"),
+        _table("e_tbl", 970, 430, 290, 270, G, ["substation_id", "avg_voltage", "avg_frequency", "avg_load", "voltage_anomalies"], "Substation Details"),
+    ]
+
+    p2 = [
+        _textbox("oh1", 20, 5, 500, 35, "Outage & Event Analysis", "20"),
+        _textbox("os1", 520, 12, 400, 25, "Reliability Metrics", "11", False),
+        _kpi_card("o_tot",     20,  45, O, "Total Events",             "Total Events",         "#0078D4"),
+        _kpi_card("o_out",    230,  45, O, "Total Outages",            "Outages",              "#D83B01"),
+        _kpi_card("o_cust",   440,  45, O, "Total Affected Customers", "Affected Customers",   "#A4262C"),
+        _kpi_card("o_dur",    650,  45, O, "Avg Outage Duration Min",  "Avg Duration (min)",   "#5C2D91"),
+        _kpi_card("o_crit",   860,  45, O, "Critical Events",          "Critical Events",      "#A4262C"),
+        _card("o_saidi", 1060, 45, 200, 100, O, "SAIDI", "SAIDI Index",                        "#004E8C"),
+        _line("o_trend", 20, 155, 620, 260, O, "date", "Total Events", "Daily Events by Region", "region"),
+        _multi_bar("o_types", 655, 155, 300, 260, O, "region", ["outages", "surges", "sags", "faults"], "Event Types by Region"),
+        _donut("o_reg", 970, 155, 290, 260, O, "region", "Total Outages", "Outages by Region"),
+        _line("o_cust_trend", 20, 430, 620, 270, O, "date", "Total Affected Customers", "Affected Customers Trend"),
+        _bar("o_dur_reg", 655, 430, 300, 270, O, "region", "Avg Outage Duration Min", "Avg Duration by Region"),
+        _table("o_tbl", 970, 430, 290, 270, O, ["date", "region", "total_events", "outages", "total_affected", "critical_events"], "Daily Summary"),
+    ]
+
+    p3 = [
+        _textbox("rh2", 20, 5, 500, 35, "Renewable Energy Performance", "20"),
+        _textbox("rs2", 520, 12, 400, 25, "Solar, Wind & Hydro", "11", False),
+        _kpi_card("r_gen",     20,  45, R, "Total Generation MW",  "Total Generation (MW)",   "#107C10"),
+        _kpi_card("r_cap",    230,  45, R, "Total Capacity MW",    "Total Capacity (MW)",     "#0078D4"),
+        _kpi_card("r_cf",     440,  45, R, "Avg Capacity Factor",  "Avg Capacity Factor",     "#5C2D91"),
+        _kpi_card("r_util",   650,  45, R, "Utilization %",        "Utilization %",           "#D83B01"),
+        _line("r_gen_trend", 20, 155, 620, 260, R, "date", "Total Generation MW", "Daily Generation by Type", "plant_type"),
+        _bar("r_type_gen", 655, 155, 300, 260, R, "plant_type", "Total Generation MW", "Generation by Type"),
+        _donut("r_type_cap", 970, 155, 290, 260, R, "plant_type", "Avg Capacity Factor", "Capacity Factor by Type"),
+        _line("r_cf_trend", 20, 430, 620, 270, R, "date", "Avg Capacity Factor", "Capacity Factor Trend", "plant_type"),
+        _table("r_tbl", 655, 430, 605, 270, R, ["date", "plant_type", "total_generation_mw", "avg_capacity_factor", "total_capacity_mw"], "Daily Renewable Summary"),
+    ]
+
+    config = {"version": "5.54", "themeCollection": {"baseTheme": {"name": "CY25SU12", "version": "2.5.0", "type": 2}}, "activeSectionIndex": 0, "defaultDrillFilterOtherVisuals": True}
+
+    report = json.dumps({
+        "config": json.dumps(config),
+        "layoutOptimization": 0,
+        "resourcePackages": [{"resourcePackage": {"name": "SharedResources", "type": 2, "items": [{"type": 202, "name": "CY25SU12", "path": "BaseThemes/CY25SU12.json"}]}}],
+        "sections": [
+            {"name": "pg_grid", "displayName": "Grid Health", "displayOption": 2, "width": 1280, "height": 720, "visualContainers": p1},
+            {"name": "pg_outage", "displayName": "Outage Analysis", "displayOption": 2, "width": 1280, "height": 720, "visualContainers": p2},
+            {"name": "pg_renewable", "displayName": "Renewable Performance", "displayOption": 2, "width": 1280, "height": 720, "visualContainers": p3},
+        ],
+    })
+
+    pbir_e = json.dumps({
+        "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json",
+        "version": "4.0",
+        "datasetReference": {"byConnection": {"connectionString": f"semanticmodelid={semantic_model_id}"}},
+    })
+
+    return {
+        "parts": [
+            {"path": "definition.pbir", "payload": base64.b64encode(pbir_e.encode()).decode(), "payloadType": "InlineBase64"},
+            {"path": "report.json", "payload": base64.b64encode(report.encode()).decode(), "payloadType": "InlineBase64"},
+        ]
+    }
