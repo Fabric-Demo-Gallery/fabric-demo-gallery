@@ -9,11 +9,14 @@ from pathlib import Path
 from typing import AsyncIterator
 
 from app.fabric_client import FabricClient, FabricError
-from app.report_builder import build_manufacturing_report_definition, build_retail_report_definition
+from app.report_builder import build_manufacturing_report_definition, build_retail_report_definition, build_energy_report_definition
 
 logger = logging.getLogger(__name__)
 
-DEMOS_DIR = Path(__file__).resolve().parent.parent.parent / "demos"
+# In dev: backend/app/deployer.py → ../../demos
+# On Azure: /home/site/wwwroot/app/deployer.py → ../demos (demos/ is sibling of app/)
+_APP_DIR = Path(__file__).resolve().parent.parent  # backend/ or wwwroot/
+DEMOS_DIR = _APP_DIR.parent / "demos" if (_APP_DIR.parent / "demos").exists() else _APP_DIR / "demos"
 
 
 class DeploymentStep:
@@ -97,6 +100,14 @@ async def deploy_demo(
     if not workspace_id:
         steps.append(DeploymentStep("workspace", f"Create workspace '{workspace_name}'"))
 
+    eventhouses = [i for i in items if i["type"] == "Eventhouse"]
+    for eh in eventhouses:
+        steps.append(DeploymentStep(f"eventhouse:{eh['name']}", f"Create eventhouse '{eh['name']}'"))
+
+    kql_databases = [i for i in items if i["type"] == "KQLDatabase"]
+    for kdb in kql_databases:
+        steps.append(DeploymentStep(f"kqldb:{kdb['name']}", f"Create KQL database '{kdb['name']}'"))
+
     lakehouses = [i for i in items if i["type"] == "Lakehouse"]
     for lh in lakehouses:
         steps.append(DeploymentStep(f"lakehouse:{lh['name']}", f"Create lakehouse '{lh['name']}'"))
@@ -106,9 +117,10 @@ async def deploy_demo(
         steps.append(DeploymentStep("upload-data", f"Upload {len(data_files)} sample data file(s)"))
 
     notebooks = [i for i in items if i["type"] == "Notebook"]
+    notebooks_to_run = [nb for nb in notebooks if nb.get("order") is not None]
     for nb in notebooks:
         steps.append(DeploymentStep(f"notebook:{nb['name']}", f"Create notebook '{nb['name']}'"))
-    for nb in notebooks:
+    for nb in notebooks_to_run:
         steps.append(DeploymentStep(f"run:{nb['name']}", f"Execute notebook '{nb['name']}'"))
 
     steps.append(DeploymentStep("sql-endpoint", "Wait for SQL endpoint provisioning"))
@@ -122,6 +134,10 @@ async def deploy_demo(
     reports = [i for i in items if i["type"] == "Report"]
     for rp in reports:
         steps.append(DeploymentStep(f"report:{rp['name']}", f"Create report '{rp['name']}'"))
+
+    kql_dashboards = [i for i in items if i["type"] == "KQLDashboard"]
+    for kd in kql_dashboards:
+        steps.append(DeploymentStep(f"kqldash:{kd['name']}", f"Create real-time dashboard '{kd['name']}'"))
 
     pipelines = [i for i in items if i["type"] == "DataPipeline"]
     for pl in pipelines:
@@ -147,7 +163,49 @@ async def deploy_demo(
             step.item_id = ws_id
             yield {"event": "step", "data": step.to_dict()}
 
-        # 2. Lakehouses
+        # 2a. Eventhouses
+        eventhouse_uri = ""
+        for eh in eventhouses:
+            step = _find_step(steps, f"eventhouse:{eh['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            result = await client.create_eventhouse(ws_id, eh["name"])
+            eh_id = result["id"]
+            created_ids[eh["name"]] = eh_id
+            # Get the query URI for Kusto connector
+            try:
+                eh_details = await client.get_eventhouse(ws_id, eh_id)
+                eventhouse_uri = eh_details.get("properties", {}).get("queryServiceUri", "")
+            except Exception as e:
+                logger.warning("Could not get Eventhouse URI: %s", e)
+            step.status = "completed"
+            step.item_id = eh_id
+            step.detail = eventhouse_uri or "Created"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 2b. KQL Databases
+        kql_db_name = ""
+        for kdb in kql_databases:
+            step = _find_step(steps, f"kqldb:{kdb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            parent_eh = kdb.get("parentEventhouse", "")
+            parent_id = created_ids.get(parent_eh, "")
+            if not parent_id:
+                # Fall back to first eventhouse
+                for eh in eventhouses:
+                    parent_id = created_ids.get(eh["name"], "")
+                    if parent_id:
+                        break
+            result = await client.create_kql_database(ws_id, kdb["name"], parent_id)
+            kdb_id = result["id"]
+            created_ids[kdb["name"]] = kdb_id
+            kql_db_name = kdb["name"]
+            step.status = "completed"
+            step.item_id = kdb_id
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 2c. Lakehouses
         lakehouse_id = None
         lakehouse_name = None
         for lh in lakehouses:
@@ -179,13 +237,19 @@ async def deploy_demo(
 
         # 4. Create notebooks
         notebook_ids: dict[str, str] = {}
+        nb_variables = {}
+        if eventhouse_uri:
+            nb_variables["EVENTHOUSE_URI"] = eventhouse_uri
+        if kql_db_name:
+            nb_variables["KQL_DATABASE_NAME"] = kql_db_name
         for nb in notebooks:
             step = _find_step(steps, f"notebook:{nb['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
             ipynb_path = demo_dir / nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
             result = await client.create_notebook(
-                ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name
+                ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
+                variables=nb_variables or None,
             )
             nb_id = result["id"]
             notebook_ids[nb["name"]] = nb_id
@@ -195,7 +259,7 @@ async def deploy_demo(
             yield {"event": "step", "data": step.to_dict()}
 
         # 5. Execute notebooks sequentially (with delay to avoid capacity throttling)
-        for i, nb in enumerate(notebooks):
+        for i, nb in enumerate(notebooks_to_run):
             step = _find_step(steps, f"run:{nb['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
@@ -317,6 +381,31 @@ async def deploy_demo(
                 step.detail = "Skipped — no semantic model available"
             yield {"event": "step", "data": step.to_dict()}
 
+        # 8b. KQL Dashboards (Real-Time Dashboards)
+        for kd in kql_dashboards:
+            step = _find_step(steps, f"kqldash:{kd['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                kdb_id = ""
+                kdb_name_resolved = kql_db_name
+                for kdb in kql_databases:
+                    kdb_id = created_ids.get(kdb["name"], "")
+                    if kdb_id:
+                        break
+                result = await client.create_kql_dashboard(
+                    ws_id, kd["name"], kdb_id, eventhouse_uri, kdb_name_resolved
+                )
+                created_ids[kd["name"]] = result.get("id", "")
+                step.item_id = result.get("id")
+                step.status = "completed"
+                step.detail = "10 tiles across 3 pages"
+            except (FabricError, Exception) as e:
+                logger.warning("KQL Dashboard creation failed: %s", str(e)[:300])
+                step.status = "completed"
+                step.detail = f"⚠ Dashboard failed: {str(e)[:150]}. Create manually."
+            yield {"event": "step", "data": step.to_dict()}
+
         # 9. Pipelines (with notebook orchestration activities)
         for pl in pipelines:
             step = _find_step(steps, f"pipeline:{pl['name']}")
@@ -335,6 +424,18 @@ async def deploy_demo(
                 step.status = "completed"
                 step.detail = f"⚠ Pipeline failed: {e.detail[:150]}. Create manually in Fabric."
             yield {"event": "step", "data": step.to_dict()}
+
+        # 10. Auto-schedule pipeline for real-time demos (energy-grid)
+        if demo_id == "energy-grid":
+            for pl in pipelines:
+                pl_id = created_ids.get(pl["name"])
+                if pl_id:
+                    try:
+                        sched = await client.create_item_schedule(ws_id, pl_id, interval_minutes=10)
+                        if sched:
+                            logger.info("Pipeline scheduled every 10 min: %s", sched.get("id", ""))
+                    except Exception as e:
+                        logger.warning("Auto-schedule failed: %s", str(e)[:200])
 
         # Done
         step = _find_step(steps, "done")
@@ -388,6 +489,8 @@ def _build_report_definition(demo_id: str, semantic_model_id: str) -> dict:
         return build_manufacturing_report_definition(semantic_model_id)
     elif demo_id == "retail-sales":
         return build_retail_report_definition(semantic_model_id)
+    elif demo_id == "energy-grid":
+        return build_energy_report_definition(semantic_model_id)
     return build_manufacturing_report_definition(semantic_model_id)
 
 

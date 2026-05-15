@@ -1,58 +1,204 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import {
+  FluentProvider,
+  webDarkTheme,
+  Button,
+  Avatar,
+  Text,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
+
+const fabricFont = "'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif";
+const fabricTheme = {
+  ...webDarkTheme,
+  fontFamilyBase: fabricFont,
+  fontFamilyMonospace: "'Cascadia Code', 'Consolas', monospace",
+  fontFamilyNumeric: fabricFont,
+};
+
+import {
+  PersonRegular,
+  SignOutRegular,
+  OpenRegular,
+} from "@fluentui/react-icons";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import type { ReactNode } from "react";
 
+/* Microsoft Fabric "F" ribbon logo */
+function FabricLogo({ size = 20 }: { size?: number }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/fabric-logo.png" alt="Microsoft Fabric" width={size} height={size} style={{ objectFit: "contain" }} />
+  );
+}
+
+const useStyles = makeStyles({
+  topBar: {
+    position: "sticky",
+    top: 0,
+    zIndex: 50,
+    backgroundColor: "#010409",
+    height: "48px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingLeft: "24px",
+    paddingRight: "24px",
+    borderBottom: "1px solid #21262d",
+  },
+  leftGroup: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+  },
+  brandLink: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    textDecoration: "none",
+    color: "#e6edf3",
+    fontSize: "14px",
+    fontWeight: 600,
+    ":hover": { textDecoration: "none", color: "#ffffff" },
+  },
+  separator: {
+    width: "1px",
+    height: "20px",
+    backgroundColor: "#30363d",
+  },
+  navLink: {
+    textDecoration: "none",
+    color: "#8b949e",
+    fontSize: "13px",
+    fontWeight: 500,
+    paddingTop: "4px",
+    paddingBottom: "4px",
+    paddingLeft: "8px",
+    paddingRight: "8px",
+    borderRadius: "6px",
+    ":hover": {
+      color: "#e6edf3",
+      backgroundColor: "#21262d",
+      textDecoration: "none",
+    },
+  },
+  rightGroup: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  userName: {
+    color: "#8b949e",
+    fontSize: "13px",
+  },
+  main: {
+    minHeight: "calc(100vh - 48px)",
+    backgroundColor: "#0d1117",
+  },
+  footer: {
+    backgroundColor: "#010409",
+    borderTop: "1px solid #21262d",
+    paddingTop: "24px",
+    paddingBottom: "24px",
+    textAlign: "center" as const,
+  },
+});
+
 function Navbar() {
   const { account, login, logout, initialized } = useAuth();
+  const styles = useStyles();
 
   return (
-    <header className="bg-white border-b border-[#e0e0e0] sticky top-0 z-50">
-      <div className="mx-auto max-w-[1280px] flex items-center justify-between px-8 h-[48px]">
-        <div className="flex items-center gap-5">
-          <a href="/" className="flex items-center gap-2.5 text-[15px] font-semibold text-[#242424] hover:no-underline">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect width="8" height="8" rx="1" fill="#0078d4"/>
-              <rect x="10" width="8" height="8" rx="1" fill="#0078d4" opacity="0.6"/>
-              <rect y="10" width="8" height="8" rx="1" fill="#0078d4" opacity="0.6"/>
-              <rect x="10" y="10" width="8" height="8" rx="1" fill="#0078d4"/>
-            </svg>
-            Fabric Demo Gallery
-          </a>
-          <span className="text-[#d1d1d1]">|</span>
-          <a href="/" className="text-[14px] text-[#616161] hover:text-[#242424]">Demos</a>
-          <a href="https://github.com/microsoft/skills-for-fabric" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#616161] hover:text-[#242424]">GitHub</a>
-        </div>
-        <div className="flex items-center gap-3">
-          {initialized && (
-            account ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-[28px] h-[28px] rounded-full bg-[#0f6cbd] flex items-center justify-center text-white text-[12px] font-semibold">
-                    {account.username?.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-[13px] text-[#616161] hidden md:inline">{account.username}</span>
-                </div>
-                <button onClick={logout} className="text-[13px] text-[#616161] hover:text-[#242424]">Sign out</button>
-              </div>
-            ) : (
-              <button onClick={login} className="rounded-[4px] bg-[#0f6cbd] px-4 py-[5px] text-[13px] font-medium text-white hover:bg-[#115ea3] active:bg-[#0c5a9e] transition-colors">
-                Sign in
-              </button>
-            )
-          )}
-        </div>
+    <header className={styles.topBar}>
+      <div className={styles.leftGroup}>
+        <a href="/" className={styles.brandLink}>
+          <FabricLogo size={22} />
+          Demo Gallery
+        </a>
+        <div className={styles.separator} />
+        <a href="/" className={styles.navLink}>Demos</a>
+        <a
+          href="https://github.com/microsoft/skills-for-fabric"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.navLink}
+        >
+          GitHub <OpenRegular fontSize={11} style={{ marginLeft: 3, verticalAlign: "middle" }} />
+        </a>
+      </div>
+      <div className={styles.rightGroup}>
+        {initialized && (
+          account ? (
+            <>
+              <Avatar
+                name={account.username || "User"}
+                size={28}
+                color="colorful"
+              />
+              <span className={styles.userName}>{account.username}</span>
+              <Button
+                appearance="subtle"
+                size="small"
+                icon={<SignOutRegular />}
+                onClick={logout}
+                style={{ color: "#8b949e" }}
+              >
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="small"
+              icon={<PersonRegular />}
+              onClick={login}
+              style={{
+                backgroundColor: "#238636",
+                color: "#ffffff",
+                border: "1px solid rgba(240,246,252,0.1)",
+                borderRadius: "6px",
+              }}
+            >
+              Sign in
+            </Button>
+          )
+        )}
       </div>
     </header>
   );
 }
 
 export default function ClientShell({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return (
+      <div style={{ backgroundColor: "#0d1117", minHeight: "100vh" }}>
+        <div style={{ backgroundColor: "#010409", height: 48, borderBottom: "1px solid #21262d" }} />
+      </div>
+    );
+  }
+
+  return <ClientShellInner>{children}</ClientShellInner>;
+}
+
+function ClientShellInner({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   return (
-    <AuthProvider>
-      <Navbar />
-      <main>{children}</main>
-    </AuthProvider>
+    <FluentProvider theme={fabricTheme}>
+      <AuthProvider>
+        <Navbar />
+        <main className={styles.main}>{children}</main>
+        <footer className={styles.footer}>
+          <Text size={200} style={{ color: "#484f58" }}>
+            Built with Microsoft Fabric REST APIs
+          </Text>
+        </footer>
+      </AuthProvider>
+    </FluentProvider>
   );
 }

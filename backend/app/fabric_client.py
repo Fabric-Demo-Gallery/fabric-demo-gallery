@@ -246,6 +246,7 @@ class FabricClient:
         ipynb_path: str | Path,
         lakehouse_id: str,
         lakehouse_name: str,
+        variables: dict[str, str] | None = None,
     ) -> dict:
         """Create a notebook, then update its definition with content and lakehouse binding."""
         # Step 1: Create empty notebook
@@ -255,6 +256,10 @@ class FabricClient:
 
         # Step 2: Build Fabric .py notebook format from .ipynb
         ipynb_content = Path(ipynb_path).read_text(encoding="utf-8")
+        # Substitute variables (e.g. {{EVENTHOUSE_URI}}, {{KQL_DATABASE_NAME}})
+        if variables:
+            for key, value in variables.items():
+                ipynb_content = ipynb_content.replace(f"{{{{{key}}}}}", value)
         ipynb = json.loads(ipynb_content)
 
         py_lines = ["# Fabric notebook source", ""]
@@ -400,3 +405,199 @@ class FabricClient:
         self, workspace_id: str, name: str, definition: dict | None = None
     ) -> dict:
         return await self.create_item(workspace_id, "DataPipeline", name, definition)
+
+    # ── Eventhouse & KQL Database ────────────────────────────────────────
+
+    async def create_eventhouse(self, workspace_id: str, name: str) -> dict:
+        """Create an Eventhouse in the workspace."""
+        url = f"{FABRIC_API}/workspaces/{workspace_id}/eventhouses"
+        resp = await self._request("POST", url, json={"displayName": name})
+        if resp.status_code == 201:
+            return resp.json()
+        if resp.status_code == 202:
+            location = resp.headers.get("Location", "")
+            if location:
+                await self._poll_lro(location)
+            # Eventhouse may take a moment — list to find it
+            items = await self.list_items(workspace_id, "Eventhouse")
+            for item in items:
+                if item["displayName"] == name:
+                    return item
+            raise FabricError(404, f"Eventhouse '{name}' not found after creation")
+        raise FabricError(resp.status_code, resp.text[:300])
+
+    async def get_eventhouse(self, workspace_id: str, eventhouse_id: str) -> dict:
+        """Get Eventhouse details including queryServiceUri and ingestionServiceUri."""
+        url = f"{FABRIC_API}/workspaces/{workspace_id}/eventhouses/{eventhouse_id}"
+        resp = await self._request("GET", url)
+        if resp.status_code == 200:
+            return resp.json()
+        raise FabricError(resp.status_code, resp.text[:300])
+
+    async def create_kql_database(
+        self, workspace_id: str, name: str, eventhouse_id: str
+    ) -> dict:
+        """Create a KQL Database within an Eventhouse."""
+        url = f"{FABRIC_API}/workspaces/{workspace_id}/kqlDatabases"
+        body = {
+            "displayName": name,
+            "creationPayload": {
+                "databaseType": "ReadWrite",
+                "parentEventhouseItemId": eventhouse_id,
+            },
+        }
+        resp = await self._request("POST", url, json=body)
+        if resp.status_code == 201:
+            return resp.json()
+        if resp.status_code == 202:
+            location = resp.headers.get("Location", "")
+            if location:
+                await self._poll_lro(location)
+            items = await self.list_items(workspace_id, "KQLDatabase")
+            for item in items:
+                if item["displayName"] == name:
+                    return item
+            raise FabricError(404, f"KQL Database '{name}' not found after creation")
+        raise FabricError(resp.status_code, resp.text[:300])
+
+    async def create_kql_dashboard(
+        self, workspace_id: str, name: str, kql_database_id: str, eventhouse_uri: str, kql_database_name: str
+    ) -> dict:
+        """Create a Real-Time Dashboard (KQL Dashboard) with pre-built tiles."""
+        import uuid
+
+        ds_id = str(uuid.uuid4())
+        page1_id = str(uuid.uuid4())
+        page2_id = str(uuid.uuid4())
+        page3_id = str(uuid.uuid4())
+
+        def _tile(title, query, page_id, vis_type, x, y, w, h):
+            t = {
+                "id": str(uuid.uuid4()),
+                "title": title,
+                "query": query,
+                "dataSourceId": ds_id,
+                "pageId": page_id,
+                "visualType": vis_type,
+                "layout": {"x": x, "y": y, "width": w, "height": h},
+                "usedParamVariables": [],
+                "visualOptions": {},
+            }
+            if vis_type in ("bar", "line"):
+                t["visualOptions"] = {
+                    "xColumn": {"type": "infer"},
+                    "yColumns": {"type": "infer"},
+                    "seriesColumns": {"type": "infer"},
+                    "hideLegend": False,
+                    "xColumnTitle": "",
+                    "yColumnTitle": "",
+                    "xAxisScale": "linear",
+                    "yAxisScale": "linear",
+                    "crossFilterDisabled": False,
+                    "hideTileTitle": False,
+                    "multipleYAxes": {"base": {"id": "-1", "columns": [], "label": "", "yAxisMinimumValue": None, "yAxisMaximumValue": None, "yAxisScale": "linear", "horizontalLines": []}, "additional": []},
+                }
+            return t
+
+        dashboard_def = {
+            "$schema": "https://dataexplorer.azure.com/static/d/schema/20/dashboard.json",
+            "schema_version": "20",
+            "title": name,
+            "autoRefresh": {"enabled": True, "defaultInterval": "5m", "minInterval": "1m"},
+            "dataSources": [
+                {
+                    "id": ds_id,
+                    "name": kql_database_name,
+                    "clusterUri": eventhouse_uri,
+                    "database": kql_database_id,
+                    "kind": "kusto-trident",
+                    "scopeId": "kusto",
+                    "workspace": workspace_id,
+                }
+            ],
+            "pages": [
+                {"name": "Grid Health", "id": page1_id},
+                {"name": "Outages & Events", "id": page2_id},
+                {"name": "Renewable Generation", "id": page3_id},
+            ],
+            "parameters": [],
+            "tiles": [
+                _tile("Avg Voltage by Substation",
+                      "GridSensors\n| summarize AvgVoltage=round(avg(voltage_v),1) by substation_id\n| order by AvgVoltage asc",
+                      page1_id, "bar", 0, 0, 8, 6),
+                _tile("Voltage Anomalies by Substation",
+                      "GridSensors\n| where voltage_v < 220 or voltage_v > 240\n| summarize AnomalyCount=count() by substation_id, region\n| order by AnomalyCount desc\n| take 15",
+                      page1_id, "table", 8, 0, 4, 6),
+                _tile("Hourly Load Pattern (MW)",
+                      "GridSensors\n| extend Hour=datetime_part('hour', todatetime(timestamp))\n| summarize AvgLoad=round(avg(load_mw),1) by Hour\n| order by Hour asc",
+                      page1_id, "line", 0, 6, 6, 5),
+                _tile("Avg Frequency by Region",
+                      "GridSensors\n| summarize AvgFreq=round(avg(frequency_hz),3), AvgVoltage=round(avg(voltage_v),1), Readings=count() by region\n| order by Readings desc",
+                      page1_id, "table", 6, 6, 6, 5),
+
+                _tile("Events by Type and Region",
+                      "PowerEvents\n| summarize Count=count() by event_type, region\n| order by Count desc",
+                      page2_id, "bar", 0, 0, 6, 6),
+                _tile("Outages by Region",
+                      "PowerEvents\n| where event_type == 'outage'\n| summarize Outages=count(), AffectedCustomers=sum(affected_customers), AvgDurationMin=round(avg(duration_sec)/60.0,1) by region\n| order by Outages desc",
+                      page2_id, "table", 6, 0, 6, 6),
+                _tile("Critical Events Timeline",
+                      "PowerEvents\n| where severity == 'critical'\n| extend Day=format_datetime(todatetime(timestamp), 'yyyy-MM-dd')\n| summarize CriticalCount=count() by Day\n| order by Day asc",
+                      page2_id, "line", 0, 6, 12, 5),
+
+                _tile("Generation by Plant Type",
+                      "RenewableGeneration\n| summarize TotalGen=round(sum(generation_mw),0), AvgCapacityFactor=round(avg(capacity_factor),2) by plant_type",
+                      page3_id, "bar", 0, 0, 6, 6),
+                _tile("Daily Renewable Output by Type",
+                      "RenewableGeneration\n| extend Day=format_datetime(todatetime(timestamp), 'yyyy-MM-dd')\n| summarize DailyGen=round(sum(generation_mw),0) by Day, plant_type\n| order by Day asc",
+                      page3_id, "line", 6, 0, 6, 6),
+                _tile("Capacity Factor by Plant and Weather",
+                      "RenewableGeneration\n| summarize AvgCF=round(avg(capacity_factor),3), Readings=count() by plant_type, weather\n| order by AvgCF desc",
+                      page3_id, "table", 0, 6, 12, 5),
+            ],
+        }
+
+        dashboard_json = json.dumps(dashboard_def)
+        payload = base64.b64encode(dashboard_json.encode()).decode()
+
+        definition = {
+            "parts": [
+                {
+                    "path": "RealTimeDashboard.json",
+                    "payload": payload,
+                    "payloadType": "InlineBase64",
+                }
+            ]
+        }
+
+        return await self.create_item(workspace_id, "KQLDashboard", name, definition)
+
+    async def create_item_schedule(
+        self, workspace_id: str, item_id: str, interval_minutes: int = 10, job_type: str = "Pipeline"
+    ) -> dict | None:
+        """Create a Cron schedule for an item (e.g. pipeline) to run every N minutes."""
+        from datetime import datetime, timedelta
+        now = datetime.utcnow()
+        start = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        end = (now + timedelta(days=365)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        url = f"{FABRIC_API}/workspaces/{workspace_id}/items/{item_id}/jobs/{job_type}/schedules"
+        body = {
+            "enabled": True,
+            "configuration": {
+                "type": "Cron",
+                "startDateTime": start,
+                "endDateTime": end,
+                "localTimeZoneId": "UTC",
+                "interval": interval_minutes,
+            },
+        }
+        try:
+            resp = await self._request("POST", url, json=body)
+            if resp.status_code == 201:
+                return resp.json()
+            logger.warning("Schedule creation returned %s: %s", resp.status_code, resp.text[:200])
+            return None
+        except Exception as e:
+            logger.warning("Failed to create schedule: %s", str(e)[:200])
+            return None
