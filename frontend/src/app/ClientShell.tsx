@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   FluentProvider,
   webDarkTheme,
@@ -8,7 +9,6 @@ import {
   Avatar,
   Text,
   makeStyles,
-  tokens,
 } from "@fluentui/react-components";
 
 const fabricFont = "'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif";
@@ -115,12 +115,12 @@ function Navbar() {
   return (
     <header className={styles.topBar}>
       <div className={styles.leftGroup}>
-        <a href="/" className={styles.brandLink}>
+        <Link href="/" className={styles.brandLink}>
           <FabricLogo size={22} />
           Demo Gallery
-        </a>
+        </Link>
         <div className={styles.separator} />
-        <a href="/" className={styles.navLink}>Demos</a>
+        <Link href="/" className={styles.navLink}>Demos</Link>
         <a
           href="https://github.com/microsoft/skills-for-fabric"
           target="_blank"
