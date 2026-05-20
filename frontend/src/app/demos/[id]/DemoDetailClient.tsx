@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import NextLink from "next/link";
 import { useState, useRef } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import {
@@ -21,7 +22,7 @@ import {
   MessageBarBody,
   MessageBarTitle,
   MessageBarActions,
-  Link,
+  Link as FluentLink,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
@@ -188,6 +189,7 @@ type DeployStep = {
   description: string;
   status: "pending" | "running" | "completed" | "failed";
   detail?: string | null;
+  itemId?: string;
 };
 
 /* Fabric workload icons — official SVGs from Microsoft */
@@ -494,9 +496,9 @@ export default function DemoDetailPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 32px", textAlign: "center" }}>
         <Title2>Demo not found</Title2>
         <div style={{ marginTop: 12 }}>
-          <Link href="/">
+          <FluentLink href="/">
             <ArrowLeftRegular /> Back to gallery
-          </Link>
+          </FluentLink>
         </div>
       </div>
     );
@@ -590,8 +592,8 @@ export default function DemoDetailPage() {
                     } catch { /* detail might not be JSON */ }
                   }
                 }
-                if (step.name === "workspace" && (step as any).itemId) {
-                  setDeployedWorkspaceId((step as any).itemId);
+                if (step.name === "workspace" && step.itemId) {
+                  setDeployedWorkspaceId(step.itemId);
                 }
               } else if (currentEvent === "error") {
                 setError(data.message || "Deployment failed");
@@ -635,7 +637,7 @@ export default function DemoDetailPage() {
     setCleaning(true);
     try {
       const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      let headers: Record<string, string> = {};
+      const headers: Record<string, string> = {};
       if (account) {
         try {
           const t = await getFabricToken();
@@ -722,9 +724,6 @@ export default function DemoDetailPage() {
       {/* Header bar */}
       <div className={styles.headerBar}>
         <div className={styles.headerInner}>
-          <a href="/" className={styles.backLink}>
-            <ArrowLeftRegular fontSize={12} /> All demos
-          </a>
           <div className={styles.titleRow}>
             <div className={styles.titleLeft}>
               <div className={styles.metaRow}>
@@ -981,13 +980,13 @@ export default function DemoDetailPage() {
                       <MessageBar intent="success" style={{ marginBottom: 12 }}>
                         <MessageBarBody>
                           Deployment complete.{" "}
-                          <Link
+                          <FluentLink
                             href={deployedWorkspaceId ? `https://app.fabric.microsoft.com/groups/${deployedWorkspaceId}` : "https://app.fabric.microsoft.com"}
                             target="_blank"
                             inline
                           >
                             Open workspace <OpenRegular fontSize={12} />
-                          </Link>
+                          </FluentLink>
                         </MessageBarBody>
                       </MessageBar>
                       {deployedWorkspaceId && !cleaned && (

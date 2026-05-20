@@ -1,52 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Badge,
-  ToggleButton,
-  makeStyles,
-} from "@fluentui/react-components";
-import {
-  ClockRegular,
-  AppsFilled,
-  ChevronRightRegular,
-} from "@fluentui/react-icons";
 
-const DEMOS = [
-  {
-    id: "manufacturing-qc",
-    industry: "Manufacturing",
-    title: "Quality Control Analytics",
-    desc: "End-to-end OEE tracking, defect analysis, equipment health monitoring, and shift performance analytics across production lines. Includes 6 Gold tables, 30+ DAX measures, and a 4-page Power BI dashboard.",
-    tags: ["Medallion Architecture", "IoT Sensors", "OEE", "PySpark", "Direct Lake"],
-    time: "8–12 min",
-    itemCount: 10,
-    color: "#117865",
-    itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
-  },
-  {
-    id: "retail-sales",
-    industry: "Retail",
-    title: "Sales & Inventory Analytics",
-    desc: "Revenue trends, basket analysis, margin tracking, inventory turnover, and stockout risk analytics across stores and categories. Star-schema model with 6 tables, 40+ DAX measures, and a 3-page Power BI dashboard.",
-    tags: ["Medallion Architecture", "POS Data", "Star Schema", "PySpark", "Direct Lake"],
-    time: "8–12 min",
-    itemCount: 7,
-    color: "#117865",
-    itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
-  },
-  {
-    id: "energy-grid",
-    industry: "Energy & Utilities",
-    title: "Smart Grid Monitoring",
-    desc: "Real-time grid health monitoring with voltage anomaly detection, outage tracking, and renewable energy analytics. Uses Eventhouse + KQL Database for high-performance time-series analysis.",
-    tags: ["Real-Time Intelligence", "Eventhouse", "KQL", "Time-Series", "Anomaly Detection"],
-    time: "10–15 min",
-    itemCount: 10,
-    color: "#2D7D3E",
-    itemTypes: ["Lakehouse", "Eventhouse", "KQLDatabase", "Notebook", "Report", "KQLDashboard", "DataPipeline"],
-  },
-];
+import Link from "next/link";
+import { makeStyles } from "@fluentui/react-components";
+import { industries } from "@/lib/industryCatalog";
 
 const useStyles = makeStyles({
   /* ---- Hero ---- */
@@ -338,9 +295,6 @@ const ITEM_TYPES = ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPip
 
 export default function Home() {
   const styles = useStyles();
-  const [filter, setFilter] = useState("All");
-  const industries = ["All", ...new Set(DEMOS.map((d) => d.industry))];
-  const filtered = filter === "All" ? DEMOS : DEMOS.filter((d) => d.industry === filter);
 
   return (
     <>
@@ -350,112 +304,38 @@ export default function Home() {
           <div className={styles.heroEyebrow}>Microsoft Fabric</div>
           <div className={styles.heroTitle}>Industry Demo Gallery</div>
           <div className={styles.heroDesc}>
-            Deploy complete analytics environments — lakehouse, notebooks,
-            semantic models, Power BI dashboards, and pipelines — into your
-            Fabric tenant with one click.
-          </div>
-          <div className={styles.heroStats}>
-            <div className={styles.heroStat}>
-              <div className={styles.heroStatNum}>{DEMOS.length}</div>
-              <div className={styles.heroStatLabel}>Demos</div>
-            </div>
-            <div className={styles.heroStat}>
-              <div className={styles.heroStatNum}>{DEMOS.reduce((s, d) => s + d.itemCount, 0)}</div>
-              <div className={styles.heroStatLabel}>Fabric items</div>
-            </div>
-            <div className={styles.heroStat}>
-              <div className={styles.heroStatNum}>1</div>
-              <div className={styles.heroStatLabel}>Click deploy</div>
-            </div>
+            Explore and deploy analytics solutions for your industry. Start by choosing an industry below, then select a use case and deployment type. Easily extendable for future industries and scenarios.
           </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content: Industry Tiles */}
       <div className={styles.content}>
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <span className={styles.sectionLabel}>Available demos</span>
-          <div className={styles.filterBar}>
-            {industries.map((ind) => (
-              <ToggleButton
-                key={ind}
-                size="small"
-                appearance={filter === ind ? "primary" : "subtle"}
-                checked={filter === ind}
-                onClick={() => setFilter(ind)}
-              >
-                {ind}
-              </ToggleButton>
-            ))}
-          </div>
-        </div>
-
-        {/* Cards */}
         <div className={styles.cardGrid}>
-          {filtered.map((demo) => (
-            <a key={demo.id} href={`/demos/${demo.id}`} style={{ textDecoration: "none" }}>
+          {industries.filter((ind) => ind.enabled).map((industry) => (
+            <Link
+              key={industry.slug}
+              href={`/industries/${industry.slug}`}
+              style={{ textDecoration: "none" }}
+            >
               <div className={styles.card}>
                 <div className={styles.cardAccent} />
                 <div className={styles.cardBody}>
                   <div className={styles.cardHeader}>
                     <div className={styles.cardHeaderLeft}>
                       <div className={styles.cardIcon}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/fabric-logo.png" alt="" width={24} height={24} style={{ objectFit: "contain" }} />
+                        <img src={industry.icon.startsWith("/") ? industry.icon : `/icons/${industry.icon}`} alt="" width={32} height={32} style={{ objectFit: "contain" }} />
                       </div>
                       <div className={styles.cardTitleGroup}>
-                        <div className={styles.cardTitle}>{demo.title}</div>
-                        <div className={styles.cardIndustry}>{demo.industry}</div>
+                        <div className={styles.cardTitle}>{industry.title}</div>
                       </div>
                     </div>
-                    <ChevronRightRegular className={styles.cardArrow} fontSize={16} />
                   </div>
-                  <div className={styles.cardDesc}>{demo.desc}</div>
-                  <div className={styles.cardFooter}>
-                    <div className={styles.cardMeta}>
-                      <span className={styles.metaItem}>
-                        <ClockRegular fontSize={12} /> {demo.time}
-                      </span>
-                      <span className={styles.metaItem}>
-                        <AppsFilled fontSize={12} /> {demo.itemCount} items
-                      </span>
-                    </div>
-                    <div className={styles.tagRow}>
-                      {demo.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} appearance="tint" color="informative" size="small">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Item type strip */}
-                  <div className={styles.itemStrip}>
-                    <span className={styles.itemStripLabel}>Includes</span>
-                    {(demo.itemTypes || ITEM_TYPES).map((type) => (
-                      <span key={type} className={styles.itemStripIcon} title={type}>
-                        <FabricItemIcon type={type} size={16} />
-                      </span>
-                    ))}
-                  </div>
+                  <div className={styles.cardDesc}>{industry.description}</div>
                 </div>
               </div>
-            </a>
+            </Link>
           ))}
-        </div>
-
-        {/* How it works */}
-        <div className={styles.howSection}>
-          <div className={styles.howTitle}>How it works</div>
-          <div className={styles.stepsRow}>
-            {STEPS.map(({ n, t, d }, i) => (
-              <div key={n} className={styles.stepCard}>
-                <div className={styles.stepNum} style={{ backgroundColor: STEP_COLORS[i] }}>{n}</div>
-                <div className={styles.stepTitle}>{t}</div>
-                <div className={styles.stepDesc}>{d}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </>
