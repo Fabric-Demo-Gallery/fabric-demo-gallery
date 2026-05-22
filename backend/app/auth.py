@@ -1,5 +1,7 @@
 """Authentication utilities for Azure AD token validation and Fabric API access."""
 
+import base64
+import json
 import os
 import subprocess
 import logging
@@ -54,3 +56,23 @@ async def get_storage_token(
     if request and request.headers.get("x-storage-token"):
         return request.headers["x-storage-token"]
     return _get_az_cli_token("https://storage.azure.com")
+
+
+def get_user_id(token: str) -> str:
+    """Extract user ID (oid or sub claim) from a JWT token without verification.
+
+    We trust Azure AD issued the token — no signature check needed.
+    Returns 'dev-user' for az CLI tokens or on parse failure.
+    """
+    try:
+        parts = token.split(".")
+        if len(parts) < 2:
+            return "dev-user"
+        # Add padding for base64 decoding
+        payload = parts[1]
+        payload += "=" * (4 - len(payload) % 4)
+        decoded = base64.urlsafe_b64decode(payload)
+        claims = json.loads(decoded)
+        return claims.get("oid") or claims.get("sub") or "dev-user"
+    except Exception:
+        return "dev-user"

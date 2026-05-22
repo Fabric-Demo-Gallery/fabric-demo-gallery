@@ -1,0 +1,44 @@
+2026-05-14T23:12:58.3143575Z State: Starting, Action: EstablishingSiteNetworks, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-14T23:13:08.3085297Z State: Starting, Action: StartingSiteContainers, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: , DetailsLevel: INFO
+2026-05-14T23:13:08.3089181Z Container start method called.
+2026-05-14T23:13:08.3861686Z State: Starting, Action: PullingImage, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pulling image 10.1.0.5:13209/appsvc/python:3.12_20260203.2.tuxprod for fabric-demo-gallery-api., DetailsLevel: INFO
+2026-05-14T23:13:08.3864060Z Establishing network.
+2026-05-14T23:13:08.3865436Z Pulling image: appsvc/python:3.12_20260203.2.tuxprod.
+2026-05-14T23:13:09.9313437Z Container is starting.
+2026-05-14T23:13:09.9381180Z State: Starting, Action: MountingVolumes, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Mounting volumes for fabric-demo-gallery-api., DetailsLevel: INFO
+2026-05-14T23:13:09.9398850Z Establishing user namespace if not established already.
+2026-05-14T23:13:09.9400806Z Establishing network if not established already.
+2026-05-14T23:13:09.9402226Z Mounting volumes.
+2026-05-14T23:13:09.9763336Z Nested mountpoint 
+2026-05-14T23:13:10.8011348Z Nested mountpoint volatile/logs
+2026-05-14T23:13:11.7569754Z Nested mountpoint 
+2026-05-14T23:13:13.3819764Z Nested mountpoint 
+2026-05-14T23:13:13.8810880Z Nested mountpoint 
+2026-05-14T23:13:16.3692803Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Finished pulling container image and mounting volumes for fabric-demo-gallery-api. Allocatinng the rest of the container resources to finish container creation., DetailsLevel: INFO
+2026-05-14T23:13:16.4075946Z Creating container.
+2026-05-14T23:13:16.4082944Z Creating pipes for streaming container io.
+2026-05-14T23:13:16.4084553Z Creating stdout named pipe at /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stdout_fbc1db5b2d71401193ca5c04be40cff6.
+2026-05-14T23:13:16.4086952Z Successfully created stdout named pipe at: /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stdout_fbc1db5b2d71401193ca5c04be40cff6.
+2026-05-14T23:13:16.4087904Z Opening named pipe /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stdout_fbc1db5b2d71401193ca5c04be40cff6 for reading in non-blocking mode.
+2026-05-14T23:13:16.4089157Z Successfully opened named pipe: /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stdout_fbc1db5b2d71401193ca5c04be40cff6.
+2026-05-14T23:13:16.4090100Z Successfully removed non-blocking flag from /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stdout_fbc1db5b2d71401193ca5c04be40cff6.
+2026-05-14T23:13:16.4273286Z Creating stderr named pipe at /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stderr_52c20fd3d93a4d91b6633f956a4e0496.
+2026-05-14T23:13:16.4275729Z Successfully created stderr named pipe at: /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stderr_52c20fd3d93a4d91b6633f956a4e0496.
+2026-05-14T23:13:16.4276684Z Opening named pipe /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stderr_52c20fd3d93a4d91b6633f956a4e0496 for reading in non-blocking mode.
+2026-05-14T23:13:16.4277929Z Successfully opened named pipe: /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stderr_52c20fd3d93a4d91b6633f956a4e0496.
+2026-05-14T23:13:16.4278856Z Successfully removed non-blocking flag from /podr/container/pipe/6742286b98a4_fabric-demo-gallery-api/stderr_52c20fd3d93a4d91b6633f956a4e0496.
+2026-05-14T23:13:16.4462938Z Creating container with image: appsvc/python:3.12_20260203.2.tuxprod from registry: 10.1.0.5:13209 and fully qualified image name: 10.1.0.5:13209/appsvc/python:3.12_20260203.2.tuxprod
+2026-05-14T23:13:20.3592459Z Starting container: 6742286b98a4_fabric-demo-gallery-api.
+2026-05-14T23:13:20.9667105Z Starting watchers and probes.
+2026-05-14T23:13:20.9760683Z Starting metrics collection.
+2026-05-14T23:13:21.0710183Z Container is running.
+2026-05-14T23:13:21.0711947Z State: Starting, Action: CreatingContainer, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container fabric-demo-gallery-api successfully created and is running., DetailsLevel: INFO
+2026-05-14T23:13:24.5284343Z Container start method finished after 16219 ms.
+2026-05-14T23:13:24.5300731Z State: Starting, Action: InitiatingSiteWarmUpProbe, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Container fabric-demo-gallery-api successfully created and is running., DetailsLevel: INFO
+2026-05-14T23:13:24.5302946Z State: Starting, Action: WaitingForSiteWarmUpProbeSuccess, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Pinging warmup path to ensure container is ready to receive requests., DetailsLevel: INFO
+2026-05-14T23:15:08.0191761Z Site startup probe succeeded after 103.481275 seconds.
+2026-05-14T23:15:08.2256541Z State: Starting, Action: WarmUpProbeSucceeded, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site startup probe succeeded after 103.481275 seconds., DetailsLevel: INFO
+2026-05-14T23:15:09.6459929Z Site is running with deployment version: 1fdd7593-d5f5-4ddd-869a-b2a88fe1662f
+2026-05-14T23:15:09.6618077Z Site started.
+2026-05-14T23:15:09.6619458Z State: Started, Action: None, LastError: , LastErrorTimestamp: 01/01/0001 00:00:00, LastErrorDetails: , Details: Site started at 05/14/2026 23:15:09 (UTC), DetailsLevel: INFO
+2026-05-14T23:15:09.6633399Z Site is running with patch version PYTHON 3.12.12
