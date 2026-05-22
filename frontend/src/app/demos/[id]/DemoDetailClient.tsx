@@ -1,8 +1,11 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useState, useRef } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import NextLink from "next/link";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/AuthProvider";
+import { useDeployment } from "@/lib/DeploymentContext";
+import type { DeployStep } from "@/lib/DeploymentContext";
 import {
   Button,
   Card,
@@ -182,13 +185,6 @@ interface DemoDetail {
   sampleData: { fileName: string; description: string; format: string; rows: number }[];
   fabricItems: { type: string; name: string; description: string; order?: number }[];
 }
-
-type DeployStep = {
-  name: string;
-  description: string;
-  status: "pending" | "running" | "completed" | "failed";
-  detail?: string | null;
-};
 
 /* Fabric workload icons — official SVGs from Microsoft */
 function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
@@ -470,49 +466,56 @@ const useStyles = makeStyles({
 
 export default function DemoDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.id as string;
   const demo = DEMOS[id];
   const { account, authError, login, getFabricToken, getStorageToken } = useAuth();
+  const deployment = useDeployment();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
   const [workspaceName, setWorkspaceName] = useState("");
-  const [deploying, setDeploying] = useState(false);
-  const [steps, setSteps] = useState<DeployStep[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [completed, setCompleted] = useState(false);
   const [capacities, setCapacities] = useState<{id: string; displayName: string; sku: string; isTrial?: boolean}[]>([]);
   const [selectedCapacity, setSelectedCapacity] = useState("");
   const [loadingCapacities, setLoadingCapacities] = useState(false);
-  const [deployedWorkspaceId, setDeployedWorkspaceId] = useState("");
-  const [cleaning, setCleaning] = useState(false);
-  const [cleaned, setCleaned] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
+  const [capacityError, setCapacityError] = useState<string | null>(null);
+
+  // Reconnect to an existing job if ?job_id= is in URL
+  const reconnectAttempted = useRef(false);
+  useEffect(() => {
+    const jobId = searchParams.get("job_id");
+    if (jobId && account && !reconnectAttempted.current) {
+      reconnectAttempted.current = true;
+      getFabricToken().then((token) => {
+        deployment.reconnectJob(jobId, id, token);
+      }).catch(() => { /* ignore token errors */ });
+    }
+  }, [searchParams, account, id, getFabricToken, deployment]);
+
+  // Alias deployment context values for this demo
+  const isThisDemo = deployment.demoId === id || (deployment.jobId !== null && deployment.deploying);
+  const deploying = isThisDemo && deployment.deploying;
+  const steps = isThisDemo ? deployment.steps : [];
+  const error = isThisDemo ? deployment.error : null;
+  const completed = isThisDemo && deployment.completed;
+  const deployedWorkspaceId = isThisDemo ? deployment.deployedWorkspaceId : "";
+  const cleaning = isThisDemo && deployment.cleaning;
+  const cleaned = isThisDemo && deployment.cleaned;
 
   if (!demo) {
     return (
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 32px", textAlign: "center" }}>
         <Title2>Demo not found</Title2>
         <div style={{ marginTop: 12 }}>
-          <Link href="/">
+          <NextLink href="/" style={{ color: '#3fb68b', textDecoration: 'none' }}>
             <ArrowLeftRegular /> Back to gallery
-          </Link>
+          </NextLink>
         </div>
       </div>
     );
   }
 
   const handleDeploy = async () => {
-    setDeploying(true);
-    setError(null);
-    setCompleted(false);
-    setSteps([]);
-
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-
     try {
       let fabricToken = "";
       let storageToken = "";
@@ -522,117 +525,28 @@ export default function DemoDetailPage() {
           getStorageToken(),
         ]);
       }
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (fabricToken) {
-        headers["Authorization"] = `Bearer ${fabricToken}`;
-        headers["X-Storage-Token"] = storageToken;
-      }
-
-      const resp = await fetch(`${API}/api/deploy/${id}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          demo_id: id,
-          workspace_name: workspaceName || `${demo.title} Demo`,
-          capacity_id: selectedCapacity || undefined,
-        }),
-        signal: controller.signal,
+      // Fire and forget — startDeploy manages its own state
+      deployment.startDeploy({
+        demoId: id,
+        workspaceName: workspaceName || `${demo.title} Demo`,
+        capacityId: selectedCapacity || undefined,
+        fabricToken,
+        storageToken,
+      }).catch((e: unknown) => {
+        deployment.setError(e instanceof Error ? e.message : "Deployment failed");
       });
-
-      if (!resp.ok) {
-        const text = await resp.text();
-        setError(`Backend error ${resp.status}: ${text.slice(0, 200)}`);
-        setDeploying(false);
-        return;
-      }
-
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      if (!reader) {
-        setError("No response stream");
-        setDeploying(false);
-        return;
-      }
-
-      let buffer = "";
-      let currentEvent = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("event: ")) {
-            currentEvent = line.slice(7).trim();
-          } else if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (currentEvent === "plan") {
-                setSteps(data as DeployStep[]);
-              } else if (currentEvent === "step") {
-                const step = data as DeployStep;
-                setSteps((prev) =>
-                  prev.map((s) => (s.name === step.name ? { ...s, ...step } : s))
-                );
-                if (step.name === "done" && step.status === "completed") {
-                  setCompleted(true);
-                  if (step.detail) {
-                    try {
-                      const info = JSON.parse(step.detail as string);
-                      if (info.workspaceId) setDeployedWorkspaceId(info.workspaceId);
-                    } catch { /* detail might not be JSON */ }
-                  }
-                }
-                if (step.name === "workspace" && (step as any).itemId) {
-                  setDeployedWorkspaceId((step as any).itemId);
-                }
-              } else if (currentEvent === "error") {
-                setError(data.message || "Deployment failed");
-                if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
-              }
-            } catch {
-              // ignore malformed data lines
-            }
-            currentEvent = "";
-          }
-        }
-      }
-
-      if (!completed) setCompleted(true);
     } catch (e: unknown) {
-      if (e instanceof DOMException && e.name === "AbortError") {
-        setError("Deployment stopped by user. The workspace may be partially created.");
-      } else {
-        setError(e instanceof Error ? e.message : "Connection failed");
-      }
-    } finally {
-      abortRef.current = null;
-      setDeploying(false);
+      deployment.setError(e instanceof Error ? e.message : "Failed to get tokens");
     }
   };
 
   const handleStop = () => {
-    if (abortRef.current) {
-      abortRef.current.abort();
-      // Mark currently running steps as stopped
-      setSteps((prev) =>
-        prev.map((s) =>
-          s.status === "running" ? { ...s, status: "failed" as const, detail: "Stopped by user" } : s
-        )
-      );
-    }
+    deployment.stopDeploy();
   };
 
   const handleCleanup = async () => {
     if (!confirm("Delete the entire workspace and all items?")) return;
-    setCleaning(true);
+    deployment.setCleaning(true);
     try {
       const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
       let headers: Record<string, string> = {};
@@ -643,47 +557,27 @@ export default function DemoDetailPage() {
         } catch { /* ignore */ }
       }
       const res = await fetch(`${API}/api/deploy/${deployedWorkspaceId}`, { method: "DELETE", headers });
-      if (res.ok) setCleaned(true);
+      if (res.ok) deployment.setCleaned(true);
       else alert(`Failed: ${res.statusText}`);
     } catch (e) {
       alert(`Error: ${e}`);
     } finally {
-      setCleaning(false);
-    }
-  };
-
-  const handlePartialCleanup = async () => {
-    if (!confirm("Delete the partially created workspace?")) return;
-    setCleaning(true);
-    try {
-      const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const res = await fetch(`${API}/api/deploy/${deployedWorkspaceId}`, { method: "DELETE" });
-      if (res.ok) { setCleaned(true); setError(null); }
-      else alert(`Failed: ${res.statusText}`);
-    } catch (e) {
-      alert(`Error: ${e}`);
-    } finally {
-      setCleaning(false);
+      deployment.setCleaning(false);
     }
   };
 
   const resetState = () => {
     setShowDeploy(false);
-    setDeploying(false);
-    setCompleted(false);
-    setSteps([]);
-    setError(null);
-    setDeployedWorkspaceId("");
-    setCleaned(false);
+    deployment.resetState();
   };
 
   const loadCapacities = async () => {
     setShowDeploy(true);
     setLoadingCapacities(true);
-    setError(null);
+    setCapacityError(null);
     try {
       if (!account) {
-        setError("Please sign in first.");
+        setCapacityError("Please sign in first.");
         setLoadingCapacities(false);
         return;
       }
@@ -707,11 +601,11 @@ export default function DemoDetailPage() {
         if (caps.length > 0) setSelectedCapacity(caps[0].id);
       } else {
         const text = await res.text();
-        setError(`Fabric API error ${res.status}: ${text.slice(0, 200)}`);
+        setCapacityError(`Fabric API error ${res.status}: ${text.slice(0, 200)}`);
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setError(`Failed to load capacities: ${msg}`);
+      setCapacityError(`Failed to load capacities: ${msg}`);
     } finally {
       setLoadingCapacities(false);
     }
@@ -722,9 +616,9 @@ export default function DemoDetailPage() {
       {/* Header bar */}
       <div className={styles.headerBar}>
         <div className={styles.headerInner}>
-          <a href="/" className={styles.backLink}>
+          <NextLink href="/" className={styles.backLink}>
             <ArrowLeftRegular fontSize={12} /> All demos
-          </a>
+          </NextLink>
           <div className={styles.titleRow}>
             <div className={styles.titleLeft}>
               <div className={styles.metaRow}>
@@ -880,7 +774,7 @@ export default function DemoDetailPage() {
                 </div>
               )}
 
-              {showDeploy && !deploying && !completed && (
+              {showDeploy && !deploying && !completed && !error && steps.length === 0 && (
                 <div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Workspace name</label>
@@ -912,7 +806,7 @@ export default function DemoDetailPage() {
                       </Select>
                     ) : (
                       <MessageBar intent="error">
-                        <MessageBarBody>{error || "No capacities found."}</MessageBarBody>
+                        <MessageBarBody>{capacityError || "No capacities found."}</MessageBarBody>
                       </MessageBar>
                     )}
                   </div>
@@ -934,8 +828,14 @@ export default function DemoDetailPage() {
                 </div>
               )}
 
-              {(deploying || completed) && (
+              {(deploying || completed || error || steps.length > 0) && (
                 <div>
+                  {deploying && steps.length === 0 && !error && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}>
+                      <Spinner size="tiny" />
+                      <Caption1>Connecting to deployment service...</Caption1>
+                    </div>
+                  )}
                   {steps.map((step, i) => (
                     <div key={i} className={styles.stepRow}>
                       <span className={styles.stepIcon}>
@@ -1024,11 +924,11 @@ export default function DemoDetailPage() {
                         <Button
                           appearance="outline"
                           icon={<DeleteRegular />}
-                          onClick={handlePartialCleanup}
+                          onClick={handleCleanup}
                           disabled={cleaning}
                           style={{ width: "100%", marginBottom: 8 }}
                         >
-                          {cleaning ? "Cleaning up..." : "Delete partial workspace"}
+                          {cleaning ? "Deleting..." : "Delete workspace"}
                         </Button>
                       )}
                       {cleaned && <Caption1>Workspace deleted.</Caption1>}

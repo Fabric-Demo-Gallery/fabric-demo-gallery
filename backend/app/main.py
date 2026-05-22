@@ -10,7 +10,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
-from app.routers import demos, deploy, workspaces
+from app.routers import demos, deploy, jobs, workspaces
 
 
 limiter = Limiter(key_func=get_remote_address)
@@ -57,6 +57,7 @@ app.add_middleware(
 app.include_router(demos.router)
 app.include_router(workspaces.router)
 app.include_router(deploy.router)
+app.include_router(jobs.router)
 
 
 @app.get("/api/health")

@@ -11,6 +11,7 @@ import {
   AppsFilled,
   ChevronRightRegular,
 } from "@fluentui/react-icons";
+import NextLink from "next/link";
 
 const DEMOS = [
   {
@@ -394,7 +395,7 @@ export default function Home() {
         {/* Cards */}
         <div className={styles.cardGrid}>
           {filtered.map((demo) => (
-            <a key={demo.id} href={`/demos/${demo.id}`} style={{ textDecoration: "none" }}>
+            <NextLink key={demo.id} href={`/demos/${demo.id}`} style={{ textDecoration: "none" }}>
               <div className={styles.card}>
                 <div className={styles.cardAccent} />
                 <div className={styles.cardBody}>
@@ -440,7 +441,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </a>
+            </NextLink>
           ))}
         </div>
 

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import DemoDetailClient from "./DemoDetailClient";
 
 export function generateStaticParams() {
@@ -9,5 +10,9 @@ export function generateStaticParams() {
 }
 
 export default function DemoDetailPage() {
-  return <DemoDetailClient />;
+  return (
+    <Suspense>
+      <DemoDetailClient />
+    </Suspense>
+  );
 }

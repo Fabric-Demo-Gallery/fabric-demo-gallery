@@ -267,8 +267,8 @@ async def deploy_demo(
 
             # Wait between notebook runs to avoid Spark rate limits
             if i > 0:
-                logger.info("Waiting 30s before next notebook to avoid capacity throttling...")
-                await asyncio.sleep(30)
+                logger.info("Waiting 45s before next notebook to avoid capacity throttling...")
+                await asyncio.sleep(45)
 
             # Retry once on throttling errors
             try:
@@ -285,9 +285,9 @@ async def deploy_demo(
                     await asyncio.sleep(60)
                     await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
                 elif "Session_Statements_Failed" in e.detail or "Cancelled" in e.detail:
-                    step.detail = f"Notebook code error — retrying in 30s..."
+                    step.detail = f"Notebook code error — retrying in 45s..."
                     yield {"event": "step", "data": step.to_dict()}
-                    await asyncio.sleep(30)
+                    await asyncio.sleep(45)
                     try:
                         await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
                     except FabricError:
