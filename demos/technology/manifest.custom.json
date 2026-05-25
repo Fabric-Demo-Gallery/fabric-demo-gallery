@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Application Telemetry" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "System Anomaly Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Churn Prediction" },
+    { "id": "data-virtualization-batch", "titleOverride": "API Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Product Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "SaaS / Data Lake Integration" },
+    { "id": "genai-applications",        "titleOverride": "Tech Ops Copilot" }
+  ]
+}

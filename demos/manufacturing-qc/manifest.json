@@ -1,0 +1,95 @@
+{
+  "id": "manufacturing-qc",
+  "industry": "Manufacturing",
+  "title": "Quality Control Analytics",
+  "description": "Monitor production quality with IoT sensor data, track OEE, defect rates, and yield across production lines using a medallion architecture.",
+  "longDescription": "This demo deploys a complete manufacturing quality control analytics environment. It ingests synthetic IoT sensor data (temperature, pressure, vibration) from production lines along with batch production records. The data flows through a Bronze-Silver-Gold medallion architecture, producing KPIs like Overall Equipment Effectiveness (OEE), defect rates, yield percentages, and Mean Time Between Failures (MTBF). A Power BI semantic model with Direct Lake connectivity powers real-time dashboards with control charts and trend analysis.",
+  "icon": "🏭",
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": ["Bronze (Raw Sensor Data)", "Silver (Cleaned & Enriched)", "Gold (KPI Aggregations)"]
+  },
+  "sampleData": [
+    {
+      "fileName": "sensor_readings.csv",
+      "description": "IoT sensor readings from production line equipment (temperature, pressure, vibration, humidity)",
+      "format": "csv",
+      "rows": 50000
+    },
+    {
+      "fileName": "production_batches.csv",
+      "description": "Production batch records with product, line, shift, start/end times, units produced, and defect counts",
+      "format": "csv",
+      "rows": 2000
+    },
+    {
+      "fileName": "equipment_catalog.csv",
+      "description": "Equipment master data — machine ID, type, production line, install date",
+      "format": "csv",
+      "rows": 50
+    }
+  ],
+  "fabricItems": [
+    {
+      "type": "Lakehouse",
+      "name": "quality_lakehouse",
+      "description": "Central lakehouse for all quality control data"
+    },
+    {
+      "type": "Notebook",
+      "name": "01_bronze_ingest",
+      "definitionPath": "notebooks/01_bronze_ingest.ipynb",
+      "description": "Ingest raw CSV files into Bronze Delta tables with metadata columns",
+      "order": 1
+    },
+    {
+      "type": "Notebook",
+      "name": "02_silver_transform",
+      "definitionPath": "notebooks/02_silver_transform.ipynb",
+      "description": "Clean, deduplicate, and enrich sensor data; calculate per-reading quality flags",
+      "order": 2
+    },
+    {
+      "type": "Notebook",
+      "name": "03_gold_aggregate",
+      "definitionPath": "notebooks/03_gold_aggregate.ipynb",
+      "description": "6 Gold tables: production summary, equipment health, shift performance, product rankings, weekly trends, line scorecards",
+      "order": 3
+    },
+    {
+      "type": "Notebook",
+      "name": "04_reporting_views",
+      "definitionPath": "notebooks/04_reporting_views.ipynb",
+      "description": "SQL reporting views: executive dashboard, equipment alerts, production trends, quality scorecard",
+      "order": 4
+    },
+    {
+      "type": "Notebook",
+      "name": "05_dashboard",
+      "definitionPath": "notebooks/05_dashboard.ipynb",
+      "description": "Interactive HTML dashboard with KPI cards, OEE trends, equipment health, shift comparison, product rankings",
+      "order": 5
+    },
+    {
+      "type": "SemanticModel",
+      "name": "quality_analytics_model",
+      "definitionPath": "tmdl",
+      "description": "Direct Lake semantic model with OEE, defect, and yield measures"
+    },
+    {
+      "type": "Report",
+      "name": "Quality Control Dashboard",
+      "description": "3-page Power BI dashboard with KPIs, OEE trends, equipment health, and product quality"
+    },
+    {
+      "type": "DataPipeline",
+      "name": "daily_quality_pipeline",
+      "description": "Orchestrates Bronze → Silver → Gold notebook execution daily"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "data-warehouse",
+  "title": "Data Warehouse",
+  "description": "Fabric Warehouse with SQL-native ingestion, T-SQL transformations, semantic model, and Power BI report.",
+  "icon": "🗄️",
+  "estimatedTime": "12-18 min",
+  "tags": ["warehouse", "sql", "power-bi"],
+  "prerequisites": [
+    "Fabric capacity (F2+, Trial, or PPU)"
+  ],
+  "azureParams": [],
+  "fabricItemTemplate": [
+    { "type": "Warehouse",     "name": "analytics_warehouse" },
+    { "type": "Notebook",      "name": "01_load_warehouse",   "definitionPath": "notebooks/warehouse/01_load_warehouse.ipynb",   "order": 1 },
+    { "type": "Notebook",      "name": "02_transform_views",  "definitionPath": "notebooks/warehouse/02_transform_views.ipynb",  "order": 2 },
+    { "type": "SemanticModel", "name": "warehouse_model",     "definitionPath": "tmdl" },
+    { "type": "Report",        "name": "warehouse_report" }
+  ]
+}

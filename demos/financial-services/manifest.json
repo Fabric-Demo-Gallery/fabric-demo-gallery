@@ -1,0 +1,13 @@
+{
+  "id": "financial-services",
+  "industry": "Financial Services",
+  "title": "Financial Services Analytics",
+  "description": "Banking, insurance, and capital markets analytics — risk, fraud detection, and portfolio performance.",
+  "status": "coming-soon",
+  "icon": "💰",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

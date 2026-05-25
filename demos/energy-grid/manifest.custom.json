@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Real-Time Grid Monitoring" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "Grid Fault Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Renewable Output Forecasting" },
+    { "id": "data-virtualization-batch", "titleOverride": "SCADA Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Energy Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "SCADA / Historian Integration" },
+    { "id": "genai-applications",        "titleOverride": "Energy Operations Copilot" }
+  ]
+}

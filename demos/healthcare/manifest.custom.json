@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Patient Vitals Monitoring" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "Clinical Anomaly Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Readmission Risk Prediction" },
+    { "id": "data-virtualization-batch", "titleOverride": "EHR Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Healthcare Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "EHR / Claims Integration" },
+    { "id": "genai-applications",        "titleOverride": "Clinical Copilot" }
+  ]
+}

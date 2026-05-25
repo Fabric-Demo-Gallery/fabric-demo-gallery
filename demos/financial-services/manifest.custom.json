@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Transaction Monitoring" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "Fraud Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Credit Risk Scoring" },
+    { "id": "data-virtualization-batch", "titleOverride": "External Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Financial Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "Core Banking Integration" },
+    { "id": "genai-applications",        "titleOverride": "Financial Services Copilot" }
+  ]
+}

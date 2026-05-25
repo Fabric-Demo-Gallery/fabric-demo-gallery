@@ -1,0 +1,121 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "gold_grid_health",
+        "columns": [
+          {"name": "date", "dataType": "string", "sourceColumn": "date"},
+          {"name": "hour", "dataType": "int64", "sourceColumn": "hour"},
+          {"name": "substation_id", "dataType": "string", "sourceColumn": "substation_id"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "avg_voltage", "dataType": "double", "sourceColumn": "avg_voltage"},
+          {"name": "avg_frequency", "dataType": "double", "sourceColumn": "avg_frequency"},
+          {"name": "avg_load", "dataType": "double", "sourceColumn": "avg_load"},
+          {"name": "avg_power_factor", "dataType": "double", "sourceColumn": "avg_power_factor"},
+          {"name": "avg_temperature", "dataType": "double", "sourceColumn": "avg_temperature"},
+          {"name": "reading_count", "dataType": "int64", "sourceColumn": "reading_count"},
+          {"name": "voltage_anomalies", "dataType": "int64", "sourceColumn": "voltage_anomalies"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_grid_health",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Readings", "expression": "SUM(gold_grid_health[reading_count])"},
+          {"name": "Avg Voltage", "expression": "AVERAGE(gold_grid_health[avg_voltage])", "formatString": "0.00"},
+          {"name": "Avg Frequency", "expression": "AVERAGE(gold_grid_health[avg_frequency])", "formatString": "0.000"},
+          {"name": "Avg Load MW", "expression": "AVERAGE(gold_grid_health[avg_load])", "formatString": "0.0"},
+          {"name": "Total Anomalies", "expression": "SUM(gold_grid_health[voltage_anomalies])"},
+          {"name": "Anomaly Rate %", "expression": "DIVIDE(SUM(gold_grid_health[voltage_anomalies]), SUM(gold_grid_health[reading_count]), 0) * 100", "formatString": "0.0"},
+          {"name": "Avg Power Factor", "expression": "AVERAGE(gold_grid_health[avg_power_factor])", "formatString": "0.000"},
+          {"name": "Max Load MW", "expression": "MAX(gold_grid_health[avg_load])", "formatString": "0.0"},
+          {"name": "Grid Health Score", "expression": "100 - ([Anomaly Rate %] * 5) - IF([Avg Voltage] < 225 || [Avg Voltage] > 235, 10, 0) - IF([Avg Frequency] < 49.9 || [Avg Frequency] > 50.1, 10, 0)", "formatString": "0.0"}
+        ]
+      },
+      {
+        "name": "gold_outage_summary",
+        "columns": [
+          {"name": "date", "dataType": "string", "sourceColumn": "date"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "total_events", "dataType": "int64", "sourceColumn": "total_events"},
+          {"name": "outages", "dataType": "int64", "sourceColumn": "outages"},
+          {"name": "surges", "dataType": "int64", "sourceColumn": "surges"},
+          {"name": "sags", "dataType": "int64", "sourceColumn": "sags"},
+          {"name": "faults", "dataType": "int64", "sourceColumn": "faults"},
+          {"name": "total_affected", "dataType": "int64", "sourceColumn": "total_affected"},
+          {"name": "avg_duration_min", "dataType": "double", "sourceColumn": "avg_duration_min"},
+          {"name": "critical_events", "dataType": "int64", "sourceColumn": "critical_events"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_outage_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Events", "expression": "SUM(gold_outage_summary[total_events])"},
+          {"name": "Total Outages", "expression": "SUM(gold_outage_summary[outages])"},
+          {"name": "Total Affected Customers", "expression": "SUM(gold_outage_summary[total_affected])", "formatString": "#,##0"},
+          {"name": "Avg Outage Duration Min", "expression": "AVERAGE(gold_outage_summary[avg_duration_min])", "formatString": "0.0"},
+          {"name": "Critical Events", "expression": "SUM(gold_outage_summary[critical_events])"},
+          {"name": "SAIDI", "expression": "DIVIDE(SUM(gold_outage_summary[total_affected]) * AVERAGE(gold_outage_summary[avg_duration_min]), 100000, 0)", "formatString": "0.00"}
+        ]
+      },
+      {
+        "name": "gold_renewable_summary",
+        "columns": [
+          {"name": "date", "dataType": "string", "sourceColumn": "date"},
+          {"name": "plant_type", "dataType": "string", "sourceColumn": "plant_type"},
+          {"name": "total_generation_mw", "dataType": "double", "sourceColumn": "total_generation_mw"},
+          {"name": "avg_capacity_factor", "dataType": "double", "sourceColumn": "avg_capacity_factor"},
+          {"name": "total_capacity_mw", "dataType": "double", "sourceColumn": "total_capacity_mw"},
+          {"name": "readings", "dataType": "int64", "sourceColumn": "readings"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_renewable_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Generation MW", "expression": "SUM(gold_renewable_summary[total_generation_mw])", "formatString": "#,##0.0"},
+          {"name": "Avg Capacity Factor", "expression": "AVERAGE(gold_renewable_summary[avg_capacity_factor])", "formatString": "0.0%"},
+          {"name": "Total Capacity MW", "expression": "SUM(gold_renewable_summary[total_capacity_mw])", "formatString": "#,##0.0"},
+          {"name": "Utilization %", "expression": "DIVIDE(SUM(gold_renewable_summary[total_generation_mw]), SUM(gold_renewable_summary[total_capacity_mw]), 0) * 100", "formatString": "0.0"}
+        ]
+      }
+    ],
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "annotations": [
+      {"name": "PBI_QueryOrder", "value": "[\"gold_grid_health\",\"gold_outage_summary\",\"gold_renewable_summary\"]"}
+    ]
+  }
+}

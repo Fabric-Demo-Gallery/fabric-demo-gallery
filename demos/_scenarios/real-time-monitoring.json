@@ -1,0 +1,21 @@
+{
+  "id": "real-time-monitoring",
+  "title": "Real-Time Monitoring",
+  "description": "Eventhouse + KQL Database for streaming ingestion, real-time analytics, and a live KQL Dashboard with auto-refresh.",
+  "icon": "⚡",
+  "estimatedTime": "12-18 min",
+  "tags": ["eventhouse", "kql", "streaming", "real-time"],
+  "prerequisites": [
+    "Fabric capacity (F2+, Trial, or PPU)"
+  ],
+  "azureParams": [],
+  "fabricItemTemplate": [
+    { "type": "Eventhouse",    "name": "monitoring_eventhouse" },
+    { "type": "KQLDatabase",   "name": "monitoring_db", "parentEventhouse": "monitoring_eventhouse" },
+    { "type": "Notebook",      "name": "01_ingest_to_kql",      "definitionPath": "notebooks/realtime/01_ingest_to_kql.ipynb",      "order": 1 },
+    { "type": "Notebook",      "name": "02_kql_analytics",      "definitionPath": "notebooks/realtime/02_kql_analytics.ipynb",      "order": 2 },
+    { "type": "Notebook",      "name": "03_simulate_realtime",  "definitionPath": "notebooks/realtime/03_simulate_realtime.ipynb",  "order": 3 },
+    { "type": "KQLDashboard",  "name": "monitoring_dashboard" },
+    { "type": "DataPipeline",  "name": "realtime_pipeline" }
+  ]
+}

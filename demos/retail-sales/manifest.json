@@ -1,0 +1,87 @@
+{
+  "id": "retail-sales",
+  "industry": "Retail",
+  "title": "Sales & Inventory Analytics",
+  "description": "Analyze POS transactions, track sales trends, monitor inventory turnover, and identify top-performing products across store locations.",
+  "longDescription": "This demo deploys a retail analytics environment built on the medallion architecture. It ingests synthetic point-of-sale transaction data along with product catalog, store location, and inventory snapshot dimensions. The pipeline produces daily and weekly sales aggregations, basket analysis metrics, inventory turnover rates, and demand indicators. A star-schema semantic model powers dashboards showing revenue trends, top products, store-level comparisons, and inventory health alerts.",
+  "icon": "🛒",
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": ["Bronze (Raw Transactions)", "Silver (Cleaned & Conformed)", "Gold (Sales & Inventory KPIs)"]
+  },
+  "sampleData": [
+    {
+      "fileName": "pos_transactions.csv",
+      "description": "Point-of-sale transactions with transaction ID, store, product, quantity, price, discount, timestamp",
+      "format": "csv",
+      "rows": 100000
+    },
+    {
+      "fileName": "products.csv",
+      "description": "Product catalog — SKU, name, category, subcategory, brand, unit cost",
+      "format": "csv",
+      "rows": 500
+    },
+    {
+      "fileName": "stores.csv",
+      "description": "Store locations — store ID, name, city, state, region, format (mall/street/outlet)",
+      "format": "csv",
+      "rows": 30
+    },
+    {
+      "fileName": "inventory_snapshots.csv",
+      "description": "Daily inventory levels per store per product",
+      "format": "csv",
+      "rows": 15000
+    }
+  ],
+  "fabricItems": [
+    {
+      "type": "Lakehouse",
+      "name": "retail_lakehouse",
+      "description": "Central lakehouse for all retail analytics data"
+    },
+    {
+      "type": "Notebook",
+      "name": "01_bronze_ingest",
+      "definitionPath": "notebooks/01_bronze_ingest.ipynb",
+      "description": "Ingest raw CSV files into Bronze Delta tables",
+      "order": 1
+    },
+    {
+      "type": "Notebook",
+      "name": "02_silver_transform",
+      "definitionPath": "notebooks/02_silver_transform.ipynb",
+      "description": "Clean transactions, conform product/store dimensions, calculate line totals",
+      "order": 2
+    },
+    {
+      "type": "Notebook",
+      "name": "03_gold_aggregate",
+      "definitionPath": "notebooks/03_gold_aggregate.ipynb",
+      "description": "Aggregate daily sales, inventory turnover, basket metrics",
+      "order": 3
+    },
+    {
+      "type": "SemanticModel",
+      "name": "retail_analytics_model",
+      "definitionPath": "tmdl",
+      "description": "Direct Lake model — sales & inventory tables with revenue, margin, and stockout measures"
+    },
+    {
+      "type": "Report",
+      "name": "Retail Sales Dashboard",
+      "description": "3-page dashboard: Sales Overview, Inventory & Risk, Margin & Basket Analysis"
+    },
+    {
+      "type": "DataPipeline",
+      "name": "daily_retail_pipeline",
+      "description": "Orchestrates Bronze → Silver → Gold notebook execution daily"
+    }
+  ]
+}

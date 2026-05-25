@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Live Fleet Tracking" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "Route Anomaly Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Delivery Time Prediction" },
+    { "id": "data-virtualization-batch", "titleOverride": "Telematics Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Logistics Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "TMS / WMS Integration" },
+    { "id": "genai-applications",        "titleOverride": "Logistics Copilot" }
+  ]
+}

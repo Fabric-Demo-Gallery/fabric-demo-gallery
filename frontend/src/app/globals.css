@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Segoe UI Variable Display', 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-small: 'Segoe UI Variable Small', 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  body {
+    font-family: var(--font-sans);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    font-optical-sizing: auto;
+    background-color: #0d1117;
+    color: #e6edf3;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+}

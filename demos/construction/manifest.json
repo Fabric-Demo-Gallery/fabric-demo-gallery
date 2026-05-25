@@ -1,0 +1,13 @@
+{
+  "id": "construction",
+  "industry": "Construction & Real Estate",
+  "title": "Construction & Real Estate Analytics",
+  "description": "Project, asset, and property analytics — schedule variance, cost overruns, and portfolio performance.",
+  "status": "coming-soon",
+  "icon": "🏗️",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Store Operations Monitoring" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "Fraud & Anomaly Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Demand Forecasting" },
+    { "id": "data-virtualization-batch", "titleOverride": "Supplier Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Retail Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "POS / ERP Integration" },
+    { "id": "genai-applications",        "titleOverride": "Retail Copilot" }
+  ]
+}

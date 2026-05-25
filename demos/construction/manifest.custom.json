@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Site Operations Monitoring" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "Cost Overrun Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Project Delay Prediction" },
+    { "id": "data-virtualization-batch", "titleOverride": "BIM Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Construction Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "ERP / BIM Integration" },
+    { "id": "genai-applications",        "titleOverride": "Construction Copilot" }
+  ]
+}
