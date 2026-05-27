@@ -49,6 +49,9 @@ export const fabricScopes = [
   "https://api.fabric.microsoft.com/OneLake.ReadWrite.All",
 ];
 
+// Separate OneLake scope — needs its own token for shortcut creation (OneLake.ReadWrite.All)
+export const oneLakeScopes = ["https://api.fabric.microsoft.com/OneLake.ReadWrite.All"];
+
 // Scopes needed for OneLake (storage)
 export const storageScopes = ["https://storage.azure.com/.default"];
 

@@ -1,15 +1,18 @@
 "use client";
 
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import NextLink from "next/link";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/AuthProvider";
+import { oneLakeScopes } from "@/lib/msal";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 import {
   fetchSubscriptions, fetchResourceGroups,
 } from "@/lib/api";
 import type { ScenarioInfo, AzureSubscription, AzureResourceGroup } from "@/lib/api";
+import NextLink from "next/link";
+import { useDeployment } from "@/lib/DeploymentContext";
+// import type { DeployStep } from "@/lib/DeploymentContext";
 import {
   Button,
   Card,
@@ -673,6 +676,7 @@ export default function DemoDetailPage() {
   const [cleaning, setCleaning] = useState(false);
   const [cleaned, setCleaned] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const currentJobIdRef = useRef<string | null>(null);
 
   // ── Scenario state — derived from URL (?scenario=<id>) ──────────────────
   const selectedScenario = ALL_SCENARIOS.find(s => s.id === searchParams.get("scenario")) ?? null;
@@ -693,6 +697,41 @@ export default function DemoDetailPage() {
       setShowDeploy(true);
     }
   }, [isCustomMode, showDeploy]);
+
+  // Fetch capacities whenever a scenario is selected (including on page refresh)
+  const stableGetFabricToken = useCallback(getFabricToken, [getFabricToken]);
+  useEffect(() => {
+    if (!selectedScenario || !account) return;
+    setLoadingCapacities(true);
+    setError(null);
+    stableGetFabricToken()
+      .then((token) =>
+        fetch("https://api.fabric.microsoft.com/v1/capacities", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      )
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          const caps = (data.value || [])
+            .filter((c: { state: string }) => c.state === "Active")
+            .map((c: { id: string; displayName: string; sku: string }) => ({
+              id: c.id,
+              displayName: c.displayName,
+              sku: c.sku,
+              isTrial: c.sku?.startsWith("FT") || false,
+            }));
+          setCapacities(caps);
+          if (caps.length > 0) setSelectedCapacity((prev) => prev || caps[0].id);
+        } else {
+          setError("Failed to load Fabric capacities");
+        }
+      })
+      .catch((e: unknown) => {
+        setError(`Failed to load capacities: ${e instanceof Error ? e.message : String(e)}`);
+      })
+      .finally(() => setLoadingCapacities(false));
+  }, [selectedScenario, account, stableGetFabricToken]);
 
   // Fetch Azure subscriptions once a scenario requiring Azure is selected
   const stableGetManagementToken = useCallback(getManagementToken, [getManagementToken]);
@@ -719,6 +758,105 @@ export default function DemoDetailPage() {
       .finally(() => setLoadingRGs(false));
   }, [selectedSub, account, stableGetManagementToken]);
 
+  // Reconnect to an existing job when ?job_id= is in the URL (e.g. from Monitoring → View)
+  const jobIdParam = searchParams.get("job_id");
+  useEffect(() => {
+    if (!jobIdParam || !account) return;
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    currentJobIdRef.current = jobIdParam;
+    let cancelled = false;
+    setShowDeploy(true);
+    setDeploying(true);
+    setError(null);
+    setCompleted(false);
+    setSteps([]);
+
+    const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+    (async () => {
+      try {
+        const token = await getFabricToken();
+        const streamResp = await fetch(`${API}/api/jobs/${jobIdParam}/stream`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+        if (!streamResp.ok) {
+          if (!cancelled) setError(`Could not reconnect to job: ${streamResp.status}`);
+          return;
+        }
+
+        const reader = streamResp.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) { return; }
+
+        let buffer = "";
+        let currentEvent = "";
+        let streamHadError = false;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("event: ")) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (currentEvent === "plan") {
+                  setSteps(data as DeployStep[]);
+                } else if (currentEvent === "step") {
+                  const step = data as DeployStep;
+                  setSteps((prev) =>
+                    prev.map((s) => (s.name === step.name ? { ...s, ...step } : s))
+                  );
+                  if (step.name === "done" && step.status === "completed") {
+                    setCompleted(true);
+                    if (step.detail) {
+                      try {
+                        const info = JSON.parse(step.detail as string);
+                        if (info.workspaceId) setDeployedWorkspaceId(info.workspaceId);
+                      } catch { /* not JSON */ }
+                    }
+                  }
+                  if (step.name === "workspace" && step.itemId) {
+                    setDeployedWorkspaceId(step.itemId);
+                  }
+                } else if (currentEvent === "error") {
+                  streamHadError = true;
+                  setError(data.message || "Deployment failed");
+                  if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
+                }
+              } catch { /* ignore malformed lines */ }
+              currentEvent = "";
+            }
+          }
+        }
+        if (!cancelled && !streamHadError) setCompleted((prev) => prev || true);
+      } catch (e: unknown) {
+        if (!(e instanceof DOMException && e.name === "AbortError") && !cancelled) {
+          setError(e instanceof Error ? e.message : "Connection failed");
+        }
+      } finally {
+        if (!cancelled) {
+          abortRef.current = null;
+          setDeploying(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobIdParam, account]);
+
   if (!demo) {
     return (
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 32px", textAlign: "center" }}>
@@ -732,35 +870,9 @@ export default function DemoDetailPage() {
     );
   }
 
-  const handleSelectScenario = async (sc: ScenarioInfo) => {
+  const handleSelectScenario = (sc: ScenarioInfo) => {
     router.replace(`/demos/${id}?mode=custom&scenario=${sc.id}`);
-    setLoadingCapacities(true);
-    setError(null);
-    try {
-      const token = await getFabricToken();
-      const res = await fetch("https://api.fabric.microsoft.com/v1/capacities", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const caps = (data.value || [])
-          .filter((c: { state: string }) => c.state === "Active")
-          .map((c: { id: string; displayName: string; sku: string }) => ({
-            id: c.id,
-            displayName: c.displayName,
-            sku: c.sku,
-            isTrial: c.sku?.startsWith("FT") || false,
-          }));
-        setCapacities(caps);
-        if (caps.length > 0) setSelectedCapacity(caps[0].id);
-      } else {
-        setError("Failed to load Fabric capacities");
-      }
-    } catch (e: unknown) {
-      setError(`Failed to load capacities: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setLoadingCapacities(false);
-    }
+    // Capacities will be fetched by the useEffect watching selectedScenario
   };
 
   const handleDeploy = async () => {
@@ -777,11 +889,22 @@ export default function DemoDetailPage() {
     try {
       let fabricToken = "";
       let storageToken = "";
+      let oneLakeToken = "";
       if (account) {
+        const { msalInstance } = await import("@/lib/msal");
         [fabricToken, storageToken] = await Promise.all([
           getFabricToken(),
           getStorageToken(),
         ]);
+        try {
+          const res = await msalInstance.acquireTokenSilent({ scopes: oneLakeScopes, account });
+          oneLakeToken = res.accessToken;
+        } catch {
+          try {
+            const res = await msalInstance.acquireTokenPopup({ scopes: oneLakeScopes });
+            oneLakeToken = res.accessToken;
+          } catch { /* proceed without OneLake token */ }
+        }
       }
 
       const headers: Record<string, string> = {
@@ -791,7 +914,9 @@ export default function DemoDetailPage() {
         headers["Authorization"] = `Bearer ${fabricToken}`;
         headers["X-Storage-Token"] = storageToken;
       }
-      // Include management token when scenario requires Azure provisioning
+      if (oneLakeToken) {
+        headers["X-OneLake-Token"] = oneLakeToken;
+      }
       if (selectedScenario?.requiresAzure) {
         try {
           const mgmtTok = await getManagementToken();
@@ -799,12 +924,15 @@ export default function DemoDetailPage() {
         } catch { /* continue without management token */ }
       }
 
-      const resp = await fetch(`${API}/api/deploy/${id}`, {
+      // Step 1: Create the job — returns immediately with a job_id
+      const createResp = await fetch(`${API}/api/jobs`, {
         method: "POST",
         headers,
         body: JSON.stringify({
           demo_id: id,
-          workspace_name: workspaceName || `${selectedScenario?.title ?? demo.title} Demo`,
+          workspace_name: workspaceName || (isCustomMode
+            ? `${demo.industry} - Custom - ${selectedScenario?.title ?? demo.title}`
+            : `${demo.industry} - Standard`),
           capacity_id: selectedCapacity || undefined,
           ...(selectedScenario && { scenario_id: selectedScenario.id }),
           ...(selectedSub && { subscription_id: selectedSub }),
@@ -816,14 +944,30 @@ export default function DemoDetailPage() {
         signal: controller.signal,
       });
 
-      if (!resp.ok) {
-        const text = await resp.text();
-        setError(`Backend error ${resp.status}: ${text.slice(0, 200)}`);
+      if (!createResp.ok) {
+        const text = await createResp.text();
+        setError(`Backend error ${createResp.status}: ${text.slice(0, 200)}`);
         setDeploying(false);
         return;
       }
 
-      const reader = resp.body?.getReader();
+      const { job_id } = await createResp.json();
+      currentJobIdRef.current = job_id;
+
+      // Step 2: Stream progress from the job's SSE endpoint
+      const streamResp = await fetch(`${API}/api/jobs/${job_id}/stream`, {
+        headers: fabricToken ? { Authorization: `Bearer ${fabricToken}` } : {},
+        signal: controller.signal,
+      });
+
+      if (!streamResp.ok) {
+        const text = await streamResp.text();
+        setError(`Stream error ${streamResp.status}: ${text.slice(0, 200)}`);
+        setDeploying(false);
+        return;
+      }
+
+      const reader = streamResp.body?.getReader();
       const decoder = new TextDecoder();
       if (!reader) {
         setError("No response stream");
@@ -833,6 +977,7 @@ export default function DemoDetailPage() {
 
       let buffer = "";
       let currentEvent = "";
+      let streamHadError = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -868,6 +1013,7 @@ export default function DemoDetailPage() {
                   setDeployedWorkspaceId(step.itemId);
                 }
               } else if (currentEvent === "error") {
+                streamHadError = true;
                 setError(data.message || "Deployment failed");
                 if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
               }
@@ -879,7 +1025,7 @@ export default function DemoDetailPage() {
         }
       }
 
-      if (!completed) setCompleted(true);
+      if (!completed && !streamHadError) setCompleted(true);
     } catch (e: unknown) {
       if (e instanceof DOMException && e.name === "AbortError") {
         setError("Deployment stopped by user. The workspace may be partially created.");
@@ -893,6 +1039,17 @@ export default function DemoDetailPage() {
   };
 
   const handleStop = () => {
+    // Cancel the backend job first (fire-and-forget)
+    if (currentJobIdRef.current && account) {
+      const jobId = currentJobIdRef.current;
+      const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      getFabricToken().then((tok) => {
+        fetch(`${API}/api/jobs/${jobId}`, {
+          method: "DELETE",
+          headers: tok ? { Authorization: `Bearer ${tok}` } : {},
+        }).catch(() => { /* best-effort */ });
+      }).catch(() => { /* ignore token errors */ });
+    }
     if (abortRef.current) {
       abortRef.current.abort();
       // Mark currently running steps as stopped
@@ -1337,7 +1494,7 @@ export default function DemoDetailPage() {
               )}
 
               {/* ── Phase 2: Configure (workspace + capacity + Azure params) ── */}
-              {showDeploy && (!isCustomMode || !!selectedScenario) && !deploying && !completed && (
+              {showDeploy && (!isCustomMode || !!selectedScenario) && !deploying && !completed && !(!!jobIdParam && !!error) && (
                 <div>
                   {/* Selected scenario chip */}
                   {selectedScenario && (
@@ -1360,7 +1517,9 @@ export default function DemoDetailPage() {
                     <Input
                       value={workspaceName}
                       onChange={(_, data) => setWorkspaceName(data.value)}
-                      placeholder={`${selectedScenario?.title ?? demo.title} Demo`}
+                      placeholder={isCustomMode
+                        ? `${demo.industry} - Custom - ${selectedScenario?.title ?? demo.title}`
+                        : `${demo.industry} - Standard`}
                       style={{ width: "100%" }}
                     />
                   </div>
@@ -1483,7 +1642,7 @@ export default function DemoDetailPage() {
                 </div>
               )}
 
-              {(deploying || completed) && (
+              {(deploying || completed || (!!jobIdParam && !!error)) && (
                 <div>
                   {steps.map((step, i) => (
                     <div key={i} className={styles.stepRow}>
@@ -1512,6 +1671,11 @@ export default function DemoDetailPage() {
                         styles.stepPending
                       }>
                         {step.description}
+                        {(step.status === "failed" || step.status === "skipped") && step.detail && (
+                          <span style={{ display: "block", fontSize: 11, opacity: 0.7, marginTop: 2 }}>
+                            {step.detail}
+                          </span>
+                        )}
                       </span>
                     </div>
                   ))}

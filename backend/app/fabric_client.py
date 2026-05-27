@@ -849,6 +849,7 @@ class FabricClient:
         adls_location: str,
         adls_subpath: str,
         connection_id: str,
+        onelake_token: str | None = None,
     ) -> dict:
         """
         Create an ADLS Gen2 shortcut in a lakehouse.
@@ -859,6 +860,8 @@ class FabricClient:
             adls_location: e.g. "https://myaccount.dfs.core.windows.net"
             adls_subpath: e.g. "/containername"  (leading slash, no trailing)
             connection_id: Fabric connection ID returned by create_connection()
+            onelake_token: Optional dedicated token with OneLake.ReadWrite.All scope.
+                           If provided, used instead of the main Fabric token.
         """
         url = (
             f"{FABRIC_API}/workspaces/{workspace_id}"
@@ -875,5 +878,8 @@ class FabricClient:
                 },
             },
         }
+        # Always use the main Fabric token (self._request) — it includes both
+        # Item.ReadWrite.All and OneLake.ReadWrite.All which the Shortcuts REST API requires.
+        # The onelake_token (OneLake.ReadWrite.All only) is for OneLake DFS file uploads, not REST.
         resp = await self._request("POST", url, json=body)
         return resp.json()

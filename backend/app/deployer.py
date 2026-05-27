@@ -130,6 +130,7 @@ async def deploy_demo(
     capacity_id: str | None = None,
     manifest_override: dict | None = None,
     azure_client: AzureClient | None = None,
+    onelake_token: str | None = None,
     subscription_id: str | None = None,
     resource_group: str | None = None,
     storage_account_name: str | None = None,
@@ -369,13 +370,19 @@ async def deploy_demo(
             connection_id = ""
             try:
                 conn_result = await client.create_connection_oauth(
-                    display_name=f"{demo_id}-adls-connection",
+                    display_name=f"{demo_id}-{acct_name}-conn",
                     adls_account_url=adls_dfs_url,
                     container=container,
                 )
-                connection_id = conn_result.get("id", "")
-                step.status = "completed"
-                step.detail = f"Connection ID: {connection_id}"
+                connection_id = conn_result.get("id") or conn_result.get("connectionId") or ""
+                if not connection_id:
+                    logger.warning("[shortcut] connection_id empty after connection step; conn_result keys: %s",
+                                   list(conn_result.keys()))
+                    step.status = "failed"
+                    step.detail = f"Connection created but no ID in response. Keys: {list(conn_result.keys())}"
+                else:
+                    step.status = "completed"
+                    step.detail = f"Connection ID: {connection_id}"
             except FabricError as conn_err:
                 logger.warning("Fabric connection failed (HTTP %s): %s",
                                conn_err.status, conn_err.detail)
@@ -401,15 +408,23 @@ async def deploy_demo(
                             adls_location=adls_dfs_url,
                             adls_subpath=f"/{container}",
                             connection_id=connection_id,
+                            onelake_token=onelake_token,
                         )
                         created_ids[sc["name"]] = sc_result.get("name", sc["name"])
                         step.status = "completed"
                         step.detail = f"Files/{sc['name']} → {adls_dfs_url}/{container}"
                         shortcut_created = True
                     except FabricError as sc_err:
-                        logger.warning("Shortcut creation failed (HTTP %s): %s", sc_err.status, sc_err.detail[:300])
-                        step.status = "skipped"
-                        step.detail = f"Skipped: {sc_err.detail[:100]}"
+                        if sc_err.status == 409:
+                            # Shortcut already exists (e.g. re-deploying same workspace)
+                            logger.info("[shortcut] 409 — shortcut '%s' already exists, treating as success", sc["name"])
+                            step.status = "completed"
+                            step.detail = f"Files/{sc['name']} already exists (reused)"
+                            shortcut_created = True
+                        else:
+                            logger.warning("Shortcut creation failed (HTTP %s): %s", sc_err.status, sc_err.detail[:300])
+                            step.status = "skipped"
+                            step.detail = f"HTTP {sc_err.status}: {sc_err.detail[:200]}"
                     yield {"event": "step", "data": step.to_dict()}
             else:
                 for sc in shortcuts:
@@ -464,14 +479,19 @@ async def deploy_demo(
         # 5. Execute notebooks sequentially (with delay to avoid capacity throttling)
         for i, nb in enumerate(notebooks_to_run):
             step = _find_step(steps, f"run:{nb['name']}")
+            nb_id = notebook_ids.get(nb["name"])
+            if not nb_id:
+                step.status = "failed"
+                step.detail = "Notebook was not created — skipping execution"
+                yield {"event": "step", "data": step.to_dict()}
+                continue
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
-            nb_id = notebook_ids[nb["name"]]
 
             # Wait between notebook runs to avoid Spark rate limits
             if i > 0:
-                logger.info("Waiting 30s before next notebook to avoid capacity throttling...")
-                await asyncio.sleep(30)
+                logger.info("Waiting 45s before next notebook to avoid capacity throttling...")
+                await asyncio.sleep(45)
 
             # Retry once on throttling errors
             try:
@@ -488,9 +508,9 @@ async def deploy_demo(
                     await asyncio.sleep(60)
                     await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
                 elif "Session_Statements_Failed" in e.detail or "Cancelled" in e.detail:
-                    step.detail = f"Notebook code error — retrying in 30s..."
+                    step.detail = f"Notebook code error — retrying in 45s..."
                     yield {"event": "step", "data": step.to_dict()}
-                    await asyncio.sleep(30)
+                    await asyncio.sleep(45)
                     try:
                         await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
                     except FabricError:
@@ -501,13 +521,18 @@ async def deploy_demo(
             step.status = "completed"
             yield {"event": "step", "data": step.to_dict()}
 
-        # 6. Wait for SQL endpoint
+        # 6. Wait for SQL endpoint (only relevant for lakehouse-based demos)
+        conn_string = ""
         step = _find_step(steps, "sql-endpoint")
-        step.status = "running"
-        yield {"event": "step", "data": step.to_dict()}
-        conn_string = await client.wait_for_sql_endpoint(ws_id, lakehouse_id)
-        step.status = "completed"
-        step.detail = conn_string
+        if lakehouse_id:
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            conn_string = await client.wait_for_sql_endpoint(ws_id, lakehouse_id)
+            step.status = "completed"
+            step.detail = conn_string
+        else:
+            step.status = "completed"
+            step.detail = "Skipped — no lakehouse"
         yield {"event": "step", "data": step.to_dict()}
 
         # 7. Semantic models (with dynamic SQL endpoint injection)

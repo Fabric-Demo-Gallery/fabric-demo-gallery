@@ -6,11 +6,13 @@ export function Breadcrumbs({
   deploymentType,
   scenarioTitle,
   demoId,
+  pageName,
 }: {
   industrySlug?: string;
   deploymentType?: "standard" | "custom";
   scenarioTitle?: string;
   demoId?: string;
+  pageName?: string;
 }) {
   const crumbs: Array<{ label: string; href?: string }> = [
     { label: "Industries", href: "/" },
@@ -33,6 +35,8 @@ export function Breadcrumbs({
     if (scenarioTitle) {
       crumbs.push({ label: scenarioTitle });
     }
+  } else if (pageName) {
+    crumbs.push({ label: pageName });
   }
 
   return (

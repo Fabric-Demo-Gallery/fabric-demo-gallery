@@ -211,3 +211,91 @@ export async function fetchScenarios(demoId: string): Promise<ScenarioInfo[]> {
   if (!res.ok) return [];
   return res.json();
 }
+// ── Job-based deployment API ────────────────────────────────────────
+
+export interface JobSummary {
+  job_id: string;
+  demo_id: string;
+  workspace_name: string;
+  scenario_id: string | null;
+  status: "pending" | "running" | "completed" | "failed";
+  created_at: string;
+  updated_at: string;
+  workspace_id: string | null;
+  error: string | null;
+  step_summary: {
+    total: number;
+    completed: number;
+    failed: number;
+    running: number;
+  };
+}
+
+export interface JobDetail extends JobSummary {
+  steps: DeploymentStep[];
+}
+
+export async function createJob(
+  token: string,
+  storageToken: string,
+  params: {
+    demoId: string;
+    workspaceName?: string;
+    capacityId?: string;
+  }
+): Promise<{ job_id: string }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+  if (storageToken) {
+    headers["X-Storage-Token"] = storageToken;
+  }
+  const res = await fetch(`${API_BASE}/api/jobs`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      demo_id: params.demoId,
+      workspace_name: params.workspaceName,
+      capacity_id: params.capacityId || undefined,
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Backend error ${res.status}: ${text.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
+export async function getJobs(token: string): Promise<JobSummary[]> {
+  const res = await fetch(`${API_BASE}/api/jobs`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch jobs");
+  return res.json();
+}
+
+export async function getJob(
+  token: string,
+  jobId: string
+): Promise<JobDetail> {
+  const res = await fetch(`${API_BASE}/api/jobs/${jobId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch job");
+  return res.json();
+}
+
+export async function deleteJobWorkspace(
+  token: string,
+  jobId: string
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/jobs/${jobId}/workspace`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to delete workspace: ${text.slice(0, 200)}`);
+  }
+}

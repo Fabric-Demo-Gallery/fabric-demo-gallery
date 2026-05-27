@@ -26,6 +26,8 @@ import {
 } from "@fluentui/react-icons";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/AuthProvider";
+import { DeploymentProvider } from "@/lib/DeploymentContext";
+import NextLink from "next/link";
 import type { ReactNode } from "react";
 
 /* Microsoft Fabric "F" ribbon logo */
@@ -115,12 +117,15 @@ function Navbar() {
   return (
     <header className={styles.topBar}>
       <div className={styles.leftGroup}>
-        <Link href="/" className={styles.brandLink}>
+        <NextLink href="/" className={styles.brandLink}>
           <FabricLogo size={22} />
           Demo Gallery
-        </Link>
+        </NextLink>
         <div className={styles.separator} />
-        <Link href="/" className={styles.navLink}>Demos</Link>
+        <NextLink href="/" className={styles.navLink}>Demos</NextLink>
+        {account && (
+          <NextLink href="/monitoring" className={styles.navLink}>Monitoring</NextLink>
+        )}
         <a
           href="https://github.com/microsoft/skills-for-fabric"
           target="_blank"
@@ -191,6 +196,7 @@ function ClientShellInner({ children }: { children: ReactNode }) {
   return (
     <FluentProvider theme={fabricTheme}>
       <AuthProvider>
+        <DeploymentProvider>
         <Navbar />
         <main className={styles.main}>{children}</main>
         <footer className={styles.footer}>
@@ -198,6 +204,7 @@ function ClientShellInner({ children }: { children: ReactNode }) {
             Built with Microsoft Fabric REST APIs
           </Text>
         </footer>
+      </DeploymentProvider>
       </AuthProvider>
     </FluentProvider>
   );
