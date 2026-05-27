@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 
-from app.deployer import deploy_demo, load_scenario
+from app.deployer import deploy_demo, load_manifest, load_scenario
 from app.azure_client import AzureClient
 from app.fabric_client import FabricClient
 from app.job_store import job_store
@@ -41,10 +41,19 @@ async def run_job(
         if scenario_id:
             try:
                 sc = load_scenario(scenario_id)
+                demo_manifest = load_manifest(demo_id)
+                # Scenario template defines the structural additions (e.g. ADLS Shortcut).
+                # Notebooks and other items must come from the demo's own manifest so the
+                # actual .ipynb files on disk are found (scenario has generic placeholder names).
+                scenario_shortcut_items = [
+                    i for i in sc.get("fabricItemTemplate", []) if i["type"] == "Shortcut"
+                ]
                 manifest_override = {
-                    "id": scenario_id,
+                    "id": demo_id,
                     "title": sc.get("title", scenario_id),
-                    "fabricItems": sc.get("fabricItemTemplate", []),
+                    # Shortcut additions first (so they're provisioned before notebooks run)
+                    # then the full demo item list (correct notebook names + demo-specific items)
+                    "fabricItems": scenario_shortcut_items + demo_manifest.get("fabricItems", []),
                 }
             except FileNotFoundError:
                 job_store.emit_event(job_id, {
@@ -97,8 +106,6 @@ async def run_job(
         }
         job_store.emit_event(job_id, error_event)
         job_store.set_status(job_id, "failed")
-    finally:
-        await client.close()
     finally:
         await client.close()
 

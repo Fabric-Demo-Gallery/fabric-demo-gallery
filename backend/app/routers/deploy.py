@@ -1,8 +1,10 @@
 """Deployment endpoint — streams progress via SSE."""
 
 import json
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, field_validator
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sse_starlette.sse import EventSourceResponse
@@ -12,6 +14,10 @@ from app.azure_client import AzureClient
 from app.deployer import deploy_demo, load_scenario
 from app.fabric_client import FabricClient
 from app.models import DeployRequest, SAFE_ID, UUID_RE
+
+_SAFE_NAME = re.compile(r"^[a-zA-Z0-9 &_\-().]{1,100}$")
+_SAFE_RG = re.compile(r"^[a-zA-Z0-9._\-()]{1,90}$")
+_SAFE_STORAGE_ACCT = re.compile(r"^[a-z0-9]{3,24}$")
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy"])
 limiter = Limiter(key_func=get_remote_address)
@@ -119,7 +125,7 @@ class CustomDeployRequest(BaseModel):
     @field_validator("workspace_id", "capacity_id", "subscription_id")
     @classmethod
     def validate_uuids(cls, v: str | None) -> str | None:
-        if v is not None and not _UUID.match(v):
+        if v is not None and not UUID_RE.match(v):
             raise ValueError("Invalid UUID format")
         return v
 
