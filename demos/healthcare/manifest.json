@@ -1,13 +1,95 @@
 {
   "id": "healthcare",
   "industry": "Healthcare & Life Sciences",
-  "title": "Healthcare Analytics",
-  "description": "Patient, provider, and research analytics — outcomes, operational efficiency, and clinical insights.",
-  "status": "coming-soon",
+  "title": "Patient & Care Quality Analytics",
+  "description": "Analyze patient admissions, track readmission rates, monitor clinical outcomes, and measure operational efficiency across departments.",
+  "longDescription": "This demo deploys a healthcare analytics environment using a medallion architecture. It ingests synthetic patient admission records, clinical vital-sign readings, and staff roster data. The pipeline produces KPIs including readmission rates, average length of stay, bed occupancy, department throughput, and staff-to-patient ratios. A Direct Lake semantic model powers dashboards showing patient flow, outcome trends, and department performance.",
   "icon": "🏥",
-  "estimatedTime": "10-15 min",
-  "prerequisites": [],
-  "architecture": { "pattern": "medallion", "layers": [] },
-  "sampleData": [],
-  "fabricItems": []
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": ["Bronze (Raw Admissions & Vitals)", "Silver (Cleaned & Enriched)", "Gold (Outcome & Efficiency KPIs)"]
+  },
+  "sampleData": [
+    {
+      "fileName": "patient_admissions.csv",
+      "description": "Patient admission records with department, admission/discharge dates, diagnosis code, insurance type, and readmission flag",
+      "format": "csv",
+      "rows": 20000
+    },
+    {
+      "fileName": "clinical_records.csv",
+      "description": "Vital-sign readings per patient — blood pressure, heart rate, temperature, O2 saturation",
+      "format": "csv",
+      "rows": 80000
+    },
+    {
+      "fileName": "staff_catalog.csv",
+      "description": "Staff master data — ID, role (doctor/nurse/technician), department, shift",
+      "format": "csv",
+      "rows": 200
+    }
+  ],
+  "fabricItems": [
+    {
+      "type": "Lakehouse",
+      "name": "healthcare_lakehouse",
+      "description": "Central lakehouse for all healthcare analytics data"
+    },
+    {
+      "type": "Notebook",
+      "name": "01_bronze_ingest",
+      "definitionPath": "notebooks/01_bronze_ingest.ipynb",
+      "description": "Ingest raw CSV files into Bronze Delta tables with metadata columns",
+      "order": 1
+    },
+    {
+      "type": "Notebook",
+      "name": "02_silver_transform",
+      "definitionPath": "notebooks/02_silver_transform.ipynb",
+      "description": "Clean, validate, and enrich admissions and vitals; derive length of stay and risk flags",
+      "order": 2
+    },
+    {
+      "type": "Notebook",
+      "name": "03_gold_aggregate",
+      "definitionPath": "notebooks/03_gold_aggregate.ipynb",
+      "description": "6 Gold tables: department summary, readmission analysis, patient flow, staff utilisation, weekly trends, outcome scorecards",
+      "order": 3
+    },
+    {
+      "type": "Notebook",
+      "name": "04_reporting_views",
+      "definitionPath": "notebooks/04_reporting_views.ipynb",
+      "description": "SQL reporting views: executive dashboard, bed occupancy, readmission hotspots, department scorecards",
+      "order": 4
+    },
+    {
+      "type": "Notebook",
+      "name": "05_dashboard",
+      "definitionPath": "notebooks/05_dashboard.ipynb",
+      "description": "Interactive HTML dashboard with KPI cards, patient flow trends, readmission risk, department comparison",
+      "order": 5
+    },
+    {
+      "type": "SemanticModel",
+      "name": "healthcare_analytics_model",
+      "definitionPath": "tmdl",
+      "description": "Direct Lake semantic model with admissions, outcomes, and operational measures"
+    },
+    {
+      "type": "Report",
+      "name": "Healthcare Analytics Dashboard",
+      "description": "3-page Power BI dashboard: Patient Flow, Care Quality & Outcomes, Operational Efficiency"
+    },
+    {
+      "type": "DataPipeline",
+      "name": "daily_healthcare_pipeline",
+      "description": "Orchestrates Bronze → Silver → Gold notebook execution daily"
+    }
+  ]
 }

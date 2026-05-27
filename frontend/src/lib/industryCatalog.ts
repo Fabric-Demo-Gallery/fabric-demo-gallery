@@ -40,6 +40,7 @@ export const industries: Industry[] = [
     description: "Banking, insurance, and capital markets analytics.",
     icon: "financial.svg",
     enabled: true,
+    demoId: "financial-services",
   },
   {
     slug: "professional-services",
@@ -54,6 +55,7 @@ export const industries: Industry[] = [
     description: "Patient, provider, and research analytics for healthcare organizations.",
     icon: "healthcare.svg",
     enabled: true,
+    demoId: "healthcare",
   },
   {
     slug: "technology",
