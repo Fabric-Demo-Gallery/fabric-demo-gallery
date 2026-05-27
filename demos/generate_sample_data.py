@@ -440,9 +440,226 @@ def generate_financial_services_data():
     print(f"Financial-services data generated: {len(customers)} customers, {len(accounts)} accounts, {len(transactions)} transactions")
 
 
+def generate_hospitality_data():
+    out_dir = DEMOS_DIR / "hospitality" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Properties — 50 hotels
+    cities = [
+        ("New York", "US"), ("London", "UK"), ("Paris", "FR"), ("Dubai", "AE"),
+        ("Singapore", "SG"), ("Tokyo", "JP"), ("Sydney", "AU"), ("Barcelona", "ES"),
+        ("Miami", "US"), ("Las Vegas", "US"),
+    ]
+    property_types = ["Hotel", "Resort", "Boutique", "Airport", "Business"]
+    properties = []
+    for i in range(1, 51):
+        city, country = random.choice(cities)
+        prop_type = random.choice(property_types)
+        star = random.choices([3, 4, 5], weights=[20, 50, 30])[0]
+        rooms = random.choice([80, 120, 150, 200, 250, 350, 500])
+        properties.append({
+            "property_id": f"PROP-{i:03d}",
+            "property_name": f"{city} {prop_type} {i}",
+            "city": city,
+            "country": country,
+            "property_type": prop_type,
+            "star_rating": star,
+            "room_count": rooms,
+        })
+    _write_csv(out_dir / "properties.csv", properties)
+
+    # Guests — 5 000
+    loyalty_tiers = ["Bronze", "Silver", "Gold", "Platinum"]
+    regions = ["North America", "Europe", "Asia Pacific", "Middle East", "Latin America"]
+    age_groups = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+    channels = ["Direct", "OTA", "Corporate", "Group"]
+    guests = []
+    for i in range(1, 5001):
+        total_stays = random.randint(1, 50)
+        tier_idx = min(3, total_stays // 10)
+        guests.append({
+            "guest_id": f"GST-{i:05d}",
+            "loyalty_tier": loyalty_tiers[tier_idx],
+            "region": random.choice(regions),
+            "age_group": random.choice(age_groups),
+            "nationality": random.choice(["US", "UK", "DE", "FR", "JP", "AU", "AE", "SG", "CA", "CN"]),
+            "total_stays": total_stays,
+            "total_spend": round(total_stays * random.uniform(150, 800), 2),
+            "preferred_channel": random.choice(channels),
+            "signup_date": (datetime(2018, 1, 1) + timedelta(days=random.randint(0, 2000))).strftime("%Y-%m-%d"),
+        })
+    _write_csv(out_dir / "guests.csv", guests)
+
+    # Bookings — 50 000
+    room_types = ["Standard", "Deluxe", "Suite", "Junior Suite", "Executive"]
+    meal_plans = ["Room Only", "Bed & Breakfast", "Half Board", "Full Board"]
+    statuses = ["completed", "completed", "completed", "completed", "cancelled", "no_show"]
+    base_date = datetime(2025, 1, 1)
+    bookings = []
+    for i in range(1, 50001):
+        prop = random.choice(properties)
+        guest = random.choice(guests)
+        nights = random.choices([1, 2, 3, 4, 5, 7, 10, 14], weights=[20, 25, 20, 10, 8, 8, 5, 4])[0]
+        check_in = base_date + timedelta(days=random.randint(0, 89))
+        check_out = check_in + timedelta(days=nights)
+        rate = prop["star_rating"] * random.uniform(40, 80) + random.uniform(-20, 60)
+        rate = round(max(50, rate), 2)
+        status = random.choice(statuses)
+        total = round(rate * nights, 2) if status == "completed" else 0.0
+        bookings.append({
+            "booking_id": f"BK-{i:07d}",
+            "property_id": prop["property_id"],
+            "guest_id": guest["guest_id"],
+            "check_in_date": check_in.strftime("%Y-%m-%d"),
+            "check_out_date": check_out.strftime("%Y-%m-%d"),
+            "nights": nights,
+            "room_type": random.choice(room_types),
+            "channel": random.choice(channels),
+            "meal_plan": random.choice(meal_plans),
+            "room_rate": rate,
+            "total_amount": total,
+            "status": status,
+            "is_repeat_guest": 1 if guest["total_stays"] > 1 else 0,
+        })
+    _write_csv(out_dir / "bookings.csv", bookings)
+
+    # Reviews — 20 000
+    sentiments = ["Positive", "Positive", "Positive", "Neutral", "Negative"]
+    platforms = ["TripAdvisor", "Google", "Booking.com", "Expedia", "Direct"]
+    completed_bookings = [b for b in bookings if b["status"] == "completed"]
+    reviews = []
+    review_sample = random.sample(completed_bookings, min(20000, len(completed_bookings)))
+    for i, bk in enumerate(review_sample):
+        sentiment = random.choice(sentiments)
+        base_score = {"Positive": 8, "Neutral": 6, "Negative": 4}[sentiment]
+        reviews.append({
+            "review_id": f"REV-{i+1:06d}",
+            "booking_id": bk["booking_id"],
+            "property_id": bk["property_id"],
+            "guest_id": bk["guest_id"],
+            "review_date": (datetime.strptime(bk["check_out_date"], "%Y-%m-%d") + timedelta(days=random.randint(1, 14))).strftime("%Y-%m-%d"),
+            "overall_score": min(10, max(1, base_score + random.randint(-2, 2))),
+            "cleanliness_score": min(10, max(1, base_score + random.randint(-1, 2))),
+            "service_score": min(10, max(1, base_score + random.randint(-2, 2))),
+            "value_score": min(10, max(1, base_score + random.randint(-2, 1))),
+            "food_score": min(10, max(1, base_score + random.randint(-2, 2))),
+            "sentiment": sentiment,
+            "platform": random.choice(platforms),
+        })
+    _write_csv(out_dir / "reviews.csv", reviews)
+    print(f"Hospitality data generated: {len(bookings)} bookings, {len(guests)} guests, {len(properties)} properties, {len(reviews)} reviews")
+
+
+def generate_media_data():
+    out_dir = DEMOS_DIR / "media" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Content catalog — 2 000
+    genres = ["Drama", "Comedy", "Action", "Thriller", "Documentary", "Romance", "Sci-Fi", "Sports", "Kids", "News"]
+    content_types = ["Movie", "Series", "Live", "Documentary"]
+    languages = ["English", "Spanish", "French", "German", "Japanese", "Korean"]
+    cost_buckets = ["Low (<$1M)", "Medium ($1M-$10M)", "High ($10M-$50M)", "Blockbuster (>$50M)"]
+    content = []
+    for i in range(1, 2001):
+        ctype = random.choice(content_types)
+        content.append({
+            "content_id": f"CNT-{i:05d}",
+            "title": f"{random.choice(genres)} {ctype} {i}",
+            "genre": random.choice(genres),
+            "content_type": ctype,
+            "release_year": random.randint(2018, 2025),
+            "duration_mins": random.randint(20, 180) if ctype != "Series" else random.randint(20, 60),
+            "production_cost_bucket": random.choices(cost_buckets, weights=[40, 35, 15, 10])[0],
+            "language": random.choice(languages),
+        })
+    _write_csv(out_dir / "content_catalog.csv", content)
+
+    # Subscribers — 10 000
+    plans = ["Basic", "Standard", "Premium"]
+    plan_fees = {"Basic": 7.99, "Standard": 13.99, "Premium": 19.99}
+    regions = ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East"]
+    age_groups = ["18-24", "25-34", "35-44", "45-54", "55+"]
+    payment_methods = ["Credit Card", "Debit Card", "PayPal", "Apple Pay", "Google Pay"]
+    subscribers = []
+    churn_date_map = {}
+    base_date = datetime(2025, 1, 1)
+    for i in range(1, 10001):
+        plan = random.choices(plans, weights=[30, 45, 25])[0]
+        signup = datetime(2022, 1, 1) + timedelta(days=random.randint(0, 1095))
+        is_churned = random.random() < 0.15  # 15% churn
+        churn_date = None
+        if is_churned:
+            churn_date = (signup + timedelta(days=random.randint(30, 730))).strftime("%Y-%m-%d")
+        sub_id = f"SUB-{i:06d}"
+        churn_date_map[sub_id] = churn_date
+        subscribers.append({
+            "subscriber_id": sub_id,
+            "plan_type": plan,
+            "region": random.choice(regions),
+            "age_group": random.choice(age_groups),
+            "payment_method": random.choice(payment_methods),
+            "monthly_fee": plan_fees[plan],
+            "signup_date": signup.strftime("%Y-%m-%d"),
+            "churn_date": churn_date if churn_date else "",
+            "is_churned": 1 if is_churned else 0,
+        })
+    _write_csv(out_dir / "subscribers.csv", subscribers)
+
+    # Viewing history — 200 000
+    device_types = ["TV", "Mobile", "Tablet", "Web", "Gaming Console"]
+    active_subs = [s for s in subscribers if not s["is_churned"]]
+    views = []
+    for i in range(200000):
+        sub = random.choice(active_subs)
+        item = random.choice(content)
+        view_date = base_date + timedelta(days=random.randint(0, 89))
+        max_watch = item["duration_mins"]
+        watch_mins = round(random.uniform(1, max_watch), 1)
+        is_completed = 1 if watch_mins >= max_watch * 0.85 else 0
+        rating = random.choices([None, 1, 2, 3, 4, 5], weights=[60, 2, 3, 10, 20, 5])[0]
+        views.append({
+            "view_id": f"VW-{i+1:08d}",
+            "subscriber_id": sub["subscriber_id"],
+            "content_id": item["content_id"],
+            "view_date": view_date.strftime("%Y-%m-%d"),
+            "watch_duration_mins": watch_mins,
+            "is_completed": is_completed,
+            "device_type": random.choice(device_types),
+            "rating": rating if rating else "",
+        })
+    _write_csv(out_dir / "viewing_history.csv", views)
+
+    # Ad impressions — 100 000
+    ad_types = ["Pre-roll", "Mid-roll", "Display", "Sponsored"]
+    ad_rows = []
+    for i in range(100000):
+        item = random.choice(content)
+        ad_date = base_date + timedelta(days=random.randint(0, 89))
+        ad_type = random.choice(ad_types)
+        imps = random.randint(100, 10000)
+        ctr = random.uniform(0.005, 0.05)
+        clicks = int(imps * ctr)
+        cpm = round(random.uniform(3.0, 15.0), 2)
+        revenue = round(imps * cpm / 1000, 4)
+        ad_rows.append({
+            "impression_id": f"AD-{i+1:08d}",
+            "content_id": item["content_id"],
+            "ad_date": ad_date.strftime("%Y-%m-%d"),
+            "ad_type": ad_type,
+            "impressions": imps,
+            "clicks": clicks,
+            "revenue_usd": revenue,
+            "cpm": cpm,
+        })
+    _write_csv(out_dir / "ad_impressions.csv", ad_rows)
+    print(f"Media data generated: {len(subscribers)} subscribers, {len(content)} content items, {len(views)} views, {len(ad_rows)} ad impressions")
+
+
 if __name__ == "__main__":
     generate_manufacturing_data()
     generate_retail_data()
     generate_energy_data()
     generate_healthcare_data()
     generate_financial_services_data()
+    generate_hospitality_data()
+    generate_media_data()

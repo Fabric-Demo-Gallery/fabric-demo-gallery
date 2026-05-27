@@ -4,7 +4,7 @@ import re
 from pydantic import BaseModel, field_validator
 
 SAFE_ID = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
-SAFE_NAME = re.compile(r"^[a-zA-Z0-9 &_\-().]{1,100}$")
+SAFE_NAME = re.compile(r"^[a-zA-Z0-9 ,&_\-().]{1,100}$")
 UUID_RE = re.compile(
     r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 )

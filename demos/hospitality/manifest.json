@@ -1,13 +1,39 @@
 {
   "id": "hospitality",
   "industry": "Hospitality & Travel",
-  "title": "Hospitality & Travel Analytics",
-  "description": "Guest, booking, and operations analytics — RevPAR, occupancy, guest satisfaction, and loyalty.",
-  "status": "coming-soon",
+  "title": "Guest Experience & Revenue Analytics",
+  "description": "Monitor RevPAR, occupancy rates, guest satisfaction scores, and loyalty programme performance across properties.",
+  "lakehouse": "hospitality_lakehouse",
+  "status": "available",
   "icon": "🏨",
-  "estimatedTime": "10-15 min",
-  "prerequisites": [],
-  "architecture": { "pattern": "medallion", "layers": [] },
-  "sampleData": [],
-  "fabricItems": []
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": [
+      "Bronze (Raw Bookings, Guests, Properties, Reviews)",
+      "Silver (Cleaned & Enriched)",
+      "Gold (Revenue, Occupancy & Loyalty KPIs)"
+    ]
+  },
+  "sampleData": [
+    { "fileName": "bookings.csv",    "description": "50,000 hotel bookings with channel, room type, rate, and status", "format": "csv", "rows": 50000 },
+    { "fileName": "guests.csv",      "description": "5,000 guest profiles with loyalty tier, region, and stay history", "format": "csv", "rows": 5000 },
+    { "fileName": "properties.csv",  "description": "50 hotel properties with star rating, city, and room count", "format": "csv", "rows": 50 },
+    { "fileName": "reviews.csv",     "description": "20,000 guest reviews with category scores and sentiment", "format": "csv", "rows": 20000 }
+  ],
+  "fabricItems": [
+    { "type": "Lakehouse",     "name": "hospitality_lakehouse",         "description": "Central lakehouse for all hospitality analytics data" },
+    { "type": "Notebook",     "name": "01_bronze_ingest",              "description": "Ingest raw CSV files into Bronze Delta tables",                                        "order": 1 },
+    { "type": "Notebook",     "name": "02_silver_transform",           "description": "Clean, validate, and derive ADR, RevPAR inputs, and satisfaction scores",            "order": 2 },
+    { "type": "Notebook",     "name": "03_gold_aggregate",             "description": "6 Gold tables: daily revenue, occupancy, loyalty segments, channel performance, weekly trends, property scorecards", "order": 3 },
+    { "type": "Notebook",     "name": "04_reporting_views",            "description": "SQL views: executive summary, revenue heatmap, loyalty analysis, property performance", "order": 4 },
+    { "type": "Notebook",     "name": "05_dashboard",                  "description": "Interactive HTML dashboard with KPI cards, revenue trends, and property comparison",  "order": 5 },
+    { "type": "SemanticModel","name": "hospitality_analytics_model",   "description": "Direct Lake model with revenue, occupancy, and guest satisfaction measures" },
+    { "type": "Report",       "name": "Guest Experience Dashboard",    "description": "3-page dashboard: Revenue & Occupancy, Guest Satisfaction, Loyalty Performance" },
+    { "type": "DataPipeline", "name": "daily_hospitality_pipeline",    "description": "Orchestrates all notebooks sequentially with retry" }
+  ]
 }
