@@ -371,4 +371,124 @@ export const DEMOS: Record<string, DemoDetail> = {
       { type: "DataPipeline",  name: "daily_education_pipeline",      description: "Orchestrates all notebooks sequentially with retry" },
     ],
   },
+
+  "transportation": {
+    id: "transportation",
+    industry: "Transportation & Logistics",
+    title: "Fleet & Route Performance Analytics",
+    description:
+      "Track fleet utilisation, on-time delivery rates, route efficiency, fuel costs, and depot scorecards across a logistics network.",
+    longDescription:
+      "This demo deploys a transportation analytics environment using the medallion architecture. It ingests synthetic vehicle registrations, route definitions, delivery records, and fuel logs. The pipeline derives delay bands, load utilisation percentages, and fuel efficiency metrics. Six Gold tables power analysis of fleet performance, delivery on-time rates, route profitability, weekly trends, late-delivery alerts, and depot scorecards. A Direct Lake semantic model connects to a three-page Power BI dashboard for operations, route planning, and fuel management teams.",
+    estimatedTime: "8-12 min",
+    prerequisites: [
+      "Microsoft Fabric capacity (F2+ or Trial)",
+      "Azure AD account with Fabric workspace creation permissions",
+    ],
+    architecture: {
+      pattern: "medallion",
+      layers: [
+        "Bronze (Raw Vehicles, Routes, Deliveries, Fuel Logs)",
+        "Silver (Cleaned & Enriched with derived metrics)",
+        "Gold (Fleet, Delivery, Route & Depot KPIs)",
+      ],
+    },
+    sampleData: [
+      { fileName: "vehicles.csv",   description: "100 fleet vehicles with type, depot, capacity, and registration year", format: "csv", rows: 100 },
+      { fileName: "routes.csv",     description: "500 route definitions with origin, destination, distance, SLA, and toll cost", format: "csv", rows: 500 },
+      { fileName: "deliveries.csv", description: "50,000 delivery records with timing, load, delay, and on-time status", format: "csv", rows: 50000 },
+      { fileName: "fuel_logs.csv",  description: "20,000 fuel fill events with litres, cost, and fuel type per vehicle", format: "csv", rows: 20000 },
+    ],
+    fabricItems: [
+      { type: "Lakehouse",     name: "transportation_lakehouse",          description: "Central lakehouse for all fleet and logistics analytics data" },
+      { type: "Notebook",      name: "01_bronze_ingest",                  description: "Ingest raw CSV files into Bronze Delta tables with metadata columns", order: 1 },
+      { type: "Notebook",      name: "02_silver_transform",               description: "Derive delay bands, load utilisation percentages, and fuel efficiency metrics", order: 2 },
+      { type: "Notebook",      name: "03_gold_aggregate",                 description: "6 Gold tables: fleet summary, delivery performance, route analysis, weekly trends, late alerts, depot scorecards", order: 3 },
+      { type: "Notebook",      name: "04_reporting_views",                description: "SQL reporting views: executive summary, late deliveries, fuel analysis, route efficiency", order: 4 },
+      { type: "Notebook",      name: "05_dashboard",                      description: "Interactive HTML dashboard with KPI cards, top late routes, and fleet performance by vehicle type", order: 5 },
+      { type: "SemanticModel", name: "transportation_analytics_model",    description: "Direct Lake model with fleet, delivery, and route performance measures" },
+      { type: "Report",        name: "Fleet Performance Dashboard",       description: "3-page dashboard: Operations Overview, Route Analysis, Fuel & Depot" },
+      { type: "DataPipeline",  name: "daily_transportation_pipeline",     description: "Orchestrates all notebooks sequentially with retry" },
+    ],
+  },
+
+  "technology": {
+    id: "technology",
+    industry: "Technology & Software",
+    title: "SaaS Product & Customer Analytics",
+    description:
+      "Monitor account health, MRR, churn risk, feature adoption, and support SLA performance across a SaaS customer base.",
+    longDescription:
+      "This demo deploys a SaaS analytics environment using the medallion architecture. It ingests synthetic account records, user profiles, product events, and support tickets. The pipeline derives churn risk flags, engagement bands, feature categories, and SLA margin metrics. Six Gold tables power analysis of account health, feature adoption, churn patterns, support performance, weekly engagement trends, and multi-signal account scorecards. A Direct Lake semantic model connects to a three-page Power BI dashboard for customer success, product, and support operations teams.",
+    estimatedTime: "8-12 min",
+    prerequisites: [
+      "Microsoft Fabric capacity (F2+ or Trial)",
+      "Azure AD account with Fabric workspace creation permissions",
+    ],
+    architecture: {
+      pattern: "medallion",
+      layers: [
+        "Bronze (Raw Accounts, Users, Events, Support Tickets)",
+        "Silver (Cleaned & Enriched with churn and engagement signals)",
+        "Gold (Account Health, Feature Adoption & Support KPIs)",
+      ],
+    },
+    sampleData: [
+      { fileName: "accounts.csv",         description: "2,000 customer accounts with plan, MRR, health score, and churn status", format: "csv", rows: 2000 },
+      { fileName: "users.csv",            description: "10,000 user records with role, activity, and login frequency", format: "csv", rows: 10000 },
+      { fileName: "events.csv",           description: "200,000 product events with feature, action, session, and duration", format: "csv", rows: 200000 },
+      { fileName: "support_tickets.csv",  description: "20,000 support tickets with category, priority, SLA, and CSAT score", format: "csv", rows: 20000 },
+    ],
+    fabricItems: [
+      { type: "Lakehouse",     name: "technology_lakehouse",          description: "Central lakehouse for all SaaS product and customer analytics data" },
+      { type: "Notebook",      name: "01_bronze_ingest",              description: "Ingest raw CSV files into Bronze Delta tables with metadata columns", order: 1 },
+      { type: "Notebook",      name: "02_silver_transform",           description: "Derive churn risk flags, engagement bands, feature categories, and SLA margins", order: 2 },
+      { type: "Notebook",      name: "03_gold_aggregate",             description: "6 Gold tables: account health, feature adoption, churn analysis, support performance, engagement trends, account scorecards", order: 3 },
+      { type: "Notebook",      name: "04_reporting_views",            description: "SQL reporting views: executive summary, churn risk accounts, feature usage, SLA breaches", order: 4 },
+      { type: "Notebook",      name: "05_dashboard",                  description: "Interactive HTML dashboard with KPI cards, churn risk table, and feature adoption table", order: 5 },
+      { type: "SemanticModel", name: "technology_analytics_model",    description: "Direct Lake model with MRR, churn, engagement, and support measures" },
+      { type: "Report",        name: "SaaS Analytics Dashboard",      description: "3-page dashboard: Account Health, Product Engagement, Support Operations" },
+      { type: "DataPipeline",  name: "daily_technology_pipeline",     description: "Orchestrates all notebooks sequentially with retry" },
+    ],
+  },
+
+  "professional-services": {
+    id: "professional-services",
+    industry: "Professional Services",
+    title: "Project Profitability & Utilisation Analytics",
+    description:
+      "Track consultant utilisation, project margin, client revenue concentration, and delivery health across a professional services portfolio.",
+    longDescription:
+      "This demo deploys a professional services analytics environment using the medallion architecture. It ingests synthetic consultant profiles, client accounts, engagement records, and weekly timesheets. The pipeline derives grade bands, NPS sentiment, margin bands, delivery health flags, and billable utilisation rates. Six Gold tables power analysis of consultant utilisation, project profitability, client revenue, delivery health, weekly billing trends, and practice-level portfolio scorecards. A Direct Lake semantic model connects to a three-page Power BI dashboard for practice leads, account managers, and finance teams.",
+    estimatedTime: "8-12 min",
+    prerequisites: [
+      "Microsoft Fabric capacity (F2+ or Trial)",
+      "Azure AD account with Fabric workspace creation permissions",
+    ],
+    architecture: {
+      pattern: "medallion",
+      layers: [
+        "Bronze (Raw Consultants, Clients, Engagements, Timesheets)",
+        "Silver (Cleaned & Enriched with margin and utilisation metrics)",
+        "Gold (Utilisation, Profitability, Client & Delivery KPIs)",
+      ],
+    },
+    sampleData: [
+      { fileName: "consultants.csv",  description: "200 consultants with grade, practice, region, daily rate, and billability", format: "csv", rows: 200 },
+      { fileName: "clients.csv",      description: "100 client accounts with tier, industry, contract value, and NPS score", format: "csv", rows: 100 },
+      { fileName: "engagements.csv",  description: "1,000 project engagements with budget, actual spend, margin, and delivery status", format: "csv", rows: 1000 },
+      { fileName: "timesheets.csv",   description: "50,000 weekly timesheet entries with task type, hours, billability, and billed value", format: "csv", rows: 50000 },
+    ],
+    fabricItems: [
+      { type: "Lakehouse",     name: "proservices_lakehouse",              description: "Central lakehouse for all professional services analytics data" },
+      { type: "Notebook",      name: "01_bronze_ingest",                   description: "Ingest raw CSV files into Bronze Delta tables with metadata columns", order: 1 },
+      { type: "Notebook",      name: "02_silver_transform",                description: "Derive grade bands, NPS bands, margin bands, delivery health flags, and billable utilisation rates", order: 2 },
+      { type: "Notebook",      name: "03_gold_aggregate",                  description: "6 Gold tables: consultant utilisation, project profitability, client revenue, delivery health, weekly trends, portfolio scorecards", order: 3 },
+      { type: "Notebook",      name: "04_reporting_views",                 description: "SQL reporting views: executive summary, low-margin projects, underutilised consultants, client revenue concentration", order: 4 },
+      { type: "Notebook",      name: "05_dashboard",                       description: "Interactive HTML dashboard with KPI cards, low-margin projects table, and consultant utilisation table", order: 5 },
+      { type: "SemanticModel", name: "proservices_analytics_model",        description: "Direct Lake model with utilisation, margin, revenue, and delivery health measures" },
+      { type: "Report",        name: "Professional Services Dashboard",    description: "3-page dashboard: Portfolio Overview, Project Profitability, Client & Revenue" },
+      { type: "DataPipeline",  name: "daily_proservices_pipeline",         description: "Orchestrates all notebooks sequentially with retry" },
+    ],
+  },
 };

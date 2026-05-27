@@ -48,6 +48,7 @@ export const industries: Industry[] = [
     description: "Consulting, legal, and business services analytics.",
     icon: "briefcase.svg",
     enabled: true,
+    demoId: "professional-services",
   },
   {
     slug: "healthcare",
@@ -63,6 +64,7 @@ export const industries: Industry[] = [
     description: "Analytics for software, SaaS, and technology companies.",
     icon: "chip.svg",
     enabled: true,
+    demoId: "technology",
   },
   {
     slug: "transportation",
@@ -70,6 +72,7 @@ export const industries: Industry[] = [
     description: "Fleet, route, and logistics analytics for transportation providers.",
     icon: "truck.svg",
     enabled: true,
+    demoId: "transportation",
   },
   {
     slug: "construction",

@@ -1,0 +1,101 @@
+client_id,client_name,industry,region,tier,contract_value_gbp,relationship_years,nps_score
+CLI-0001,Client 1 Retail,Manufacturing,Paris,Standard,176764.18,7,10
+CLI-0002,Client 2 Energy,Manufacturing,London,Standard,96164.79,11,9
+CLI-0003,Client 3 Energy,Finance,London,Key,767514.76,3,-77
+CLI-0004,Client 4 Finance,Retail,Sydney,Key,360852.8,18,-16
+CLI-0005,Client 5 Energy,Technology,Frankfurt,Standard,188814.68,2,-27
+CLI-0006,Client 6 Manufacturing,Energy,New York,Standard,50420.37,4,-11
+CLI-0007,Client 7 Technology,Energy,Paris,Standard,119079.0,18,96
+CLI-0008,Client 8 Manufacturing,Technology,Frankfurt,Standard,14988.23,9,-93
+CLI-0009,Client 9 Finance,Healthcare,Paris,Key,316289.28,5,44
+CLI-0010,Client 10 Finance,Manufacturing,Sydney,Standard,194643.96,7,-4
+CLI-0011,Client 11 Technology,Retail,Sydney,Key,359037.16,3,-87
+CLI-0012,Client 12 Energy,Manufacturing,Dubai,Key,134833.74,16,55
+CLI-0013,Client 13 Energy,Finance,Singapore,Key,628460.2,19,24
+CLI-0014,Client 14 Finance,Finance,New York,Standard,197044.68,10,-46
+CLI-0015,Client 15 Energy,Manufacturing,Dubai,Standard,32797.03,6,-67
+CLI-0016,Client 16 Technology,Government,London,Key,450183.64,13,89
+CLI-0017,Client 17 Retail,Energy,Sydney,Strategic,584336.91,13,81
+CLI-0018,Client 18 Healthcare,Technology,Sydney,Standard,193577.94,15,76
+CLI-0019,Client 19 Retail,Energy,Sydney,Standard,56230.13,3,1
+CLI-0020,Client 20 Finance,Retail,Frankfurt,Standard,158032.4,4,35
+CLI-0021,Client 21 Technology,Manufacturing,Paris,Standard,148202.03,5,-40
+CLI-0022,Client 22 Technology,Manufacturing,London,Strategic,1651857.0,6,97
+CLI-0023,Client 23 Manufacturing,Retail,Frankfurt,Standard,120098.94,20,-18
+CLI-0024,Client 24 Energy,Manufacturing,Singapore,Standard,22974.39,9,51
+CLI-0025,Client 25 Finance,Government,Paris,Strategic,2783015.98,10,-81
+CLI-0026,Client 26 Energy,Energy,Sydney,Standard,122875.17,18,89
+CLI-0027,Client 27 Government,Retail,Dubai,Standard,133849.12,17,-62
+CLI-0028,Client 28 Manufacturing,Finance,Sydney,Standard,169101.66,6,-90
+CLI-0029,Client 29 Healthcare,Government,Singapore,Key,407595.25,10,-1
+CLI-0030,Client 30 Manufacturing,Government,London,Key,518520.1,11,-76
+CLI-0031,Client 31 Retail,Technology,New York,Standard,171797.59,11,-80
+CLI-0032,Client 32 Manufacturing,Manufacturing,Dubai,Standard,193862.34,5,52
+CLI-0033,Client 33 Government,Technology,New York,Standard,132263.72,17,-77
+CLI-0034,Client 34 Healthcare,Healthcare,Singapore,Standard,78893.56,16,-51
+CLI-0035,Client 35 Finance,Retail,Paris,Key,154015.56,18,89
+CLI-0036,Client 36 Healthcare,Retail,Dubai,Standard,155598.44,5,-59
+CLI-0037,Client 37 Manufacturing,Energy,London,Key,537318.34,14,-7
+CLI-0038,Client 38 Manufacturing,Technology,Dubai,Standard,64136.31,8,36
+CLI-0039,Client 39 Healthcare,Government,Frankfurt,Key,649059.17,19,12
+CLI-0040,Client 40 Healthcare,Technology,New York,Standard,110217.36,20,-65
+CLI-0041,Client 41 Finance,Manufacturing,Paris,Standard,80530.3,17,-69
+CLI-0042,Client 42 Healthcare,Technology,Dubai,Key,290953.91,3,-44
+CLI-0043,Client 43 Energy,Retail,Singapore,Standard,88830.41,8,-2
+CLI-0044,Client 44 Technology,Manufacturing,Frankfurt,Standard,186856.92,11,-63
+CLI-0045,Client 45 Healthcare,Technology,Frankfurt,Strategic,1790957.29,16,14
+CLI-0046,Client 46 Healthcare,Retail,Frankfurt,Standard,50974.4,20,35
+CLI-0047,Client 47 Healthcare,Energy,Frankfurt,Key,266348.16,20,17
+CLI-0048,Client 48 Manufacturing,Retail,Sydney,Strategic,4265094.74,8,83
+CLI-0049,Client 49 Energy,Healthcare,Frankfurt,Strategic,2431575.02,3,34
+CLI-0050,Client 50 Retail,Retail,London,Standard,106392.26,13,20
+CLI-0051,Client 51 Government,Technology,London,Strategic,2240965.95,12,-39
+CLI-0052,Client 52 Government,Healthcare,London,Standard,149685.53,12,39
+CLI-0053,Client 53 Manufacturing,Energy,Frankfurt,Key,681268.56,6,-66
+CLI-0054,Client 54 Finance,Technology,New York,Strategic,3992856.8,2,-20
+CLI-0055,Client 55 Government,Finance,Paris,Standard,113175.83,7,-27
+CLI-0056,Client 56 Finance,Technology,Singapore,Key,706058.79,14,2
+CLI-0057,Client 57 Energy,Manufacturing,Dubai,Standard,195007.48,12,32
+CLI-0058,Client 58 Technology,Healthcare,Sydney,Key,397149.76,10,-18
+CLI-0059,Client 59 Manufacturing,Energy,New York,Strategic,1975639.57,15,-11
+CLI-0060,Client 60 Energy,Government,Frankfurt,Key,738125.06,2,-81
+CLI-0061,Client 61 Healthcare,Finance,New York,Standard,152480.62,20,73
+CLI-0062,Client 62 Government,Government,Dubai,Standard,157917.92,19,-92
+CLI-0063,Client 63 Technology,Finance,Sydney,Standard,80682.54,5,35
+CLI-0064,Client 64 Finance,Manufacturing,New York,Key,295082.84,16,32
+CLI-0065,Client 65 Energy,Healthcare,Sydney,Key,283243.67,10,77
+CLI-0066,Client 66 Energy,Healthcare,Frankfurt,Standard,172037.0,15,-78
+CLI-0067,Client 67 Manufacturing,Finance,Sydney,Standard,136889.56,18,-26
+CLI-0068,Client 68 Manufacturing,Healthcare,Paris,Standard,186191.65,12,30
+CLI-0069,Client 69 Energy,Finance,Singapore,Key,654445.97,18,46
+CLI-0070,Client 70 Finance,Finance,Singapore,Key,486152.85,13,83
+CLI-0071,Client 71 Finance,Healthcare,Singapore,Standard,166434.49,3,15
+CLI-0072,Client 72 Retail,Manufacturing,Sydney,Standard,167520.21,6,96
+CLI-0073,Client 73 Finance,Retail,New York,Standard,20528.44,10,-58
+CLI-0074,Client 74 Retail,Government,Paris,Key,257829.2,3,-36
+CLI-0075,Client 75 Retail,Retail,London,Key,292115.72,17,64
+CLI-0076,Client 76 Manufacturing,Retail,Singapore,Key,207935.99,19,-90
+CLI-0077,Client 77 Retail,Government,Frankfurt,Standard,131876.21,7,96
+CLI-0078,Client 78 Retail,Government,Frankfurt,Standard,178909.41,10,23
+CLI-0079,Client 79 Manufacturing,Finance,New York,Key,384264.77,15,6
+CLI-0080,Client 80 Manufacturing,Government,Frankfurt,Standard,69390.67,12,2
+CLI-0081,Client 81 Energy,Finance,Singapore,Strategic,2167430.89,15,-37
+CLI-0082,Client 82 Energy,Healthcare,Paris,Strategic,727723.81,6,-17
+CLI-0083,Client 83 Retail,Energy,Dubai,Standard,40275.06,10,27
+CLI-0084,Client 84 Healthcare,Retail,Singapore,Strategic,4753547.62,2,-88
+CLI-0085,Client 85 Government,Retail,London,Key,689994.75,4,10
+CLI-0086,Client 86 Finance,Energy,London,Strategic,1690128.05,19,43
+CLI-0087,Client 87 Technology,Retail,Singapore,Key,151472.22,20,74
+CLI-0088,Client 88 Government,Retail,Singapore,Standard,80907.68,5,-50
+CLI-0089,Client 89 Manufacturing,Government,Paris,Standard,17393.65,16,32
+CLI-0090,Client 90 Retail,Government,New York,Standard,72313.51,13,57
+CLI-0091,Client 91 Retail,Energy,Frankfurt,Standard,167374.98,19,-24
+CLI-0092,Client 92 Energy,Retail,Singapore,Standard,30824.87,1,52
+CLI-0093,Client 93 Retail,Healthcare,Frankfurt,Standard,157470.78,2,49
+CLI-0094,Client 94 Energy,Healthcare,Paris,Standard,157175.16,8,-92
+CLI-0095,Client 95 Energy,Healthcare,Dubai,Standard,93797.33,7,5
+CLI-0096,Client 96 Manufacturing,Finance,Frankfurt,Standard,171191.63,5,32
+CLI-0097,Client 97 Government,Healthcare,Dubai,Key,563558.76,18,-13
+CLI-0098,Client 98 Technology,Manufacturing,Singapore,Standard,139341.72,20,23
+CLI-0099,Client 99 Government,Technology,Singapore,Key,490660.66,7,76
+CLI-0100,Client 100 Technology,Manufacturing,Singapore,Standard,187403.07,10,-69
