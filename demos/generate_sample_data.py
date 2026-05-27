@@ -293,7 +293,156 @@ def generate_energy_data():
     print(f"Energy data generated: {len(sensors)} sensor readings, {len(events)} events, {len(gen_rows)} renewable readings")
 
 
+def generate_healthcare_data():
+    out_dir = DEMOS_DIR / "healthcare" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    departments   = ["Cardiology", "Orthopaedics", "Oncology", "Neurology", "General Medicine", "Emergency", "Paediatrics"]
+    admission_types = ["Emergency", "Elective", "Transfer", "Outpatient"]
+    insurance_types = ["NHS", "Private", "International"]
+    age_groups    = ["0-17", "18-34", "35-54", "55-74", "75+"]
+    roles         = ["Doctor", "Nurse", "Consultant", "Technician", "Physiotherapist"]
+    shifts        = ["Morning", "Afternoon", "Night"]
+    vital_types   = ["Heart Rate", "Blood Pressure Systolic", "Temperature", "O2 Saturation"]
+    dx_codes      = [f"I{i:02d}" for i in range(10, 30)] + [f"M{i:02d}" for i in range(10, 25)]
+
+    # staff_catalog — 200 rows
+    staff = []
+    for i in range(1, 201):
+        dept = random.choice(departments)
+        staff.append({
+            "staff_id":   f"ST-{i:04d}",
+            "role":       random.choice(roles),
+            "department": dept,
+            "shift":      random.choice(shifts),
+            "hire_date":  (datetime(2015, 1, 1) + timedelta(days=random.randint(0, 3000))).strftime("%Y-%m-%d"),
+        })
+    _write_csv(out_dir / "staff_catalog.csv", staff)
+
+    # patient_admissions — 20 000 rows
+    admissions = []
+    base = datetime(2025, 1, 1)
+    for i in range(1, 20001):
+        adm_date = base + timedelta(days=random.randint(0, 89), hours=random.randint(0, 23))
+        los = random.randint(1, 21)
+        dis_date = adm_date + timedelta(days=los)
+        dept = random.choice(departments)
+        admissions.append({
+            "patient_id":        f"P-{random.randint(1, 8000):05d}",
+            "admission_id":      f"ADM-{i:06d}",
+            "department":        dept,
+            "admission_type":    random.choice(admission_types),
+            "admission_date":    adm_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "discharge_date":    dis_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "length_of_stay_days": los,
+            "primary_dx_code":   random.choice(dx_codes),
+            "insurance_type":    random.choice(insurance_types),
+            "is_readmission":    random.random() < 0.12,
+            "age_group":         random.choice(age_groups),
+            "assigned_staff_id": random.choice(staff)["staff_id"],
+        })
+    _write_csv(out_dir / "patient_admissions.csv", admissions)
+
+    # clinical_records — 80 000 rows (4 vitals per admission on average)
+    records = []
+    for i in range(1, 80001):
+        adm = random.choice(admissions)
+        vt = random.choice(vital_types)
+        if vt == "Heart Rate":
+            val = round(random.gauss(78, 14), 1)
+        elif vt == "Blood Pressure Systolic":
+            val = round(random.gauss(125, 18), 1)
+        elif vt == "Temperature":
+            val = round(random.gauss(37.0, 0.6), 2)
+        else:
+            val = round(random.gauss(96, 2.5), 1)
+        ts = datetime.strptime(adm["admission_date"], "%Y-%m-%d %H:%M:%S") + timedelta(hours=random.randint(0, 72))
+        records.append({
+            "record_id":    f"REC-{i:07d}",
+            "admission_id": adm["admission_id"],
+            "patient_id":   adm["patient_id"],
+            "department":   adm["department"],
+            "recorded_at":  ts.strftime("%Y-%m-%d %H:%M:%S"),
+            "vital_type":   vt,
+            "value":        val,
+            "recorded_by":  random.choice(staff)["staff_id"],
+        })
+    _write_csv(out_dir / "clinical_records.csv", records)
+    print(f"Healthcare data generated: {len(admissions)} admissions, {len(records)} clinical records, {len(staff)} staff")
+
+
+def generate_financial_services_data():
+    out_dir = DEMOS_DIR / "financial-services" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    segments     = ["Retail", "SME", "Corporate", "Private Banking"]
+    regions      = ["London", "South East", "North West", "Midlands", "Scotland", "Wales"]
+    risk_tiers   = ["Low", "Medium", "High", "Very High"]
+    account_types = ["Current", "Savings", "Credit Card", "Mortgage", "Business Current"]
+    tx_types     = ["Purchase", "Transfer", "ATM Withdrawal", "Online Payment", "Direct Debit"]
+    categories   = ["Retail", "Groceries", "Travel", "Hospitality", "Technology", "Healthcare", "Education", "Utilities"]
+    channels     = ["Online", "Mobile", "Branch", "ATM", "POS"]
+    countries    = ["UK"] * 7 + ["US", "FR", "DE", "ES", "AE", "SG", "AU"]
+
+    # customers — 2 000 rows
+    customers = []
+    for i in range(1, 2001):
+        customers.append({
+            "customer_id": f"C-{i:05d}",
+            "age_group":   random.choice(["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]),
+            "segment":     random.choice(segments),
+            "region":      random.choice(regions),
+            "risk_tier":   random.choice(risk_tiers),
+            "since_year":  random.randint(2000, 2024),
+        })
+    _write_csv(out_dir / "customers.csv", customers)
+
+    # accounts — 5 000 rows
+    accounts = []
+    for i in range(1, 5001):
+        cust = random.choice(customers)
+        balance = round(random.uniform(100, 50000), 2)
+        limit   = round(random.choice([0, 2000, 5000, 10000, 25000]), 2)
+        util    = round(random.uniform(0, 100), 2) if limit > 0 else 0.0
+        accounts.append({
+            "account_id":             f"A-{i:06d}",
+            "customer_id":            cust["customer_id"],
+            "account_type":           random.choice(account_types),
+            "balance":                balance,
+            "credit_limit":           limit,
+            "credit_utilisation_pct": util,
+            "open_date":              (datetime(2005, 1, 1) + timedelta(days=random.randint(0, 7000))).strftime("%Y-%m-%d"),
+            "status":                 random.choices(["Active", "Dormant", "Closed"], weights=[80, 15, 5])[0],
+        })
+    _write_csv(out_dir / "accounts.csv", accounts)
+
+    # transactions — 100 000 rows
+    transactions = []
+    base = datetime(2025, 1, 1)
+    for i in range(1, 100001):
+        acct = random.choice(accounts)
+        cust_ids = {a["account_id"]: a["customer_id"] for a in accounts}
+        ts = base + timedelta(days=random.randint(0, 89), hours=random.randint(0, 23), minutes=random.randint(0, 59))
+        is_fraud = random.random() < 0.025
+        transactions.append({
+            "transaction_id":   f"T-{i:08d}",
+            "account_id":       acct["account_id"],
+            "customer_id":      cust_ids[acct["account_id"]],
+            "transaction_date": ts.strftime("%Y-%m-%d %H:%M:%S"),
+            "transaction_type": random.choice(tx_types),
+            "merchant_category": random.choice(categories),
+            "amount":           round(random.lognormvariate(4.5, 1.5), 2),
+            "is_flagged_fraud": is_fraud,
+            "channel":          random.choice(channels),
+            "country":          random.choice(countries),
+        })
+    _write_csv(out_dir / "transactions.csv", transactions)
+    print(f"Financial-services data generated: {len(customers)} customers, {len(accounts)} accounts, {len(transactions)} transactions")
+
+
 if __name__ == "__main__":
     generate_manufacturing_data()
     generate_retail_data()
     generate_energy_data()
+    generate_healthcare_data()
+    generate_financial_services_data()

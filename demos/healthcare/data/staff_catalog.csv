@@ -1,0 +1,201 @@
+staff_id,role,department,shift,hire_date
+STF-0001,Doctor,Emergency,Night,2018-01-31
+STF-0002,Nurse,Orthopedics,Day,2016-02-24
+STF-0003,Radiologist,Emergency,Evening,2015-05-11
+STF-0004,Doctor,Cardiology,Day,2017-08-10
+STF-0005,Radiologist,Cardiology,Day,2023-01-11
+STF-0006,Nurse,General Surgery,Evening,2021-08-10
+STF-0007,Doctor,Pediatrics,Day,2022-10-30
+STF-0008,Technician,General Surgery,Evening,2016-09-28
+STF-0009,Technician,Orthopedics,Day,2016-01-15
+STF-0010,Doctor,General Surgery,Evening,2018-11-09
+STF-0011,Doctor,Pediatrics,Night,2020-02-25
+STF-0012,Pharmacist,Emergency,Day,2021-03-11
+STF-0013,Radiologist,Pediatrics,Evening,2021-06-22
+STF-0014,Doctor,Orthopedics,Day,2022-06-01
+STF-0015,Technician,Orthopedics,Day,2017-08-11
+STF-0016,Pharmacist,Emergency,Evening,2020-02-01
+STF-0017,Nurse,Neurology,Evening,2018-12-26
+STF-0018,Technician,Orthopedics,Night,2022-08-31
+STF-0019,Radiologist,Emergency,Night,2016-12-01
+STF-0020,Nurse,Orthopedics,Evening,2019-04-04
+STF-0021,Radiologist,Pediatrics,Day,2022-09-05
+STF-0022,Doctor,Neurology,Day,2015-05-12
+STF-0023,Pharmacist,Neurology,Evening,2015-09-29
+STF-0024,Radiologist,Orthopedics,Night,2018-07-12
+STF-0025,Pharmacist,Orthopedics,Evening,2022-03-18
+STF-0026,Nurse,ICU,Evening,2016-07-25
+STF-0027,Radiologist,Orthopedics,Night,2017-12-12
+STF-0028,Radiologist,General Surgery,Evening,2019-01-22
+STF-0029,Nurse,Orthopedics,Night,2020-07-14
+STF-0030,Doctor,Emergency,Day,2016-09-18
+STF-0031,Pharmacist,Oncology,Night,2015-09-18
+STF-0032,Pharmacist,General Surgery,Night,2020-04-01
+STF-0033,Radiologist,Pediatrics,Day,2022-08-18
+STF-0034,Radiologist,Emergency,Evening,2022-03-10
+STF-0035,Doctor,Neurology,Evening,2019-11-16
+STF-0036,Pharmacist,Oncology,Day,2023-02-05
+STF-0037,Radiologist,Pediatrics,Day,2020-09-10
+STF-0038,Technician,Emergency,Night,2020-09-10
+STF-0039,Nurse,Orthopedics,Evening,2016-10-23
+STF-0040,Radiologist,Cardiology,Evening,2020-06-24
+STF-0041,Doctor,Cardiology,Evening,2018-06-13
+STF-0042,Doctor,Orthopedics,Day,2021-05-12
+STF-0043,Doctor,Emergency,Night,2020-06-13
+STF-0044,Radiologist,Emergency,Day,2016-06-09
+STF-0045,Radiologist,ICU,Day,2017-12-21
+STF-0046,Nurse,General Surgery,Night,2023-03-09
+STF-0047,Technician,Orthopedics,Evening,2022-07-14
+STF-0048,Pharmacist,Neurology,Night,2020-01-24
+STF-0049,Nurse,Emergency,Day,2015-09-20
+STF-0050,Doctor,Neurology,Night,2021-03-18
+STF-0051,Radiologist,Orthopedics,Day,2015-01-30
+STF-0052,Doctor,Emergency,Day,2015-10-04
+STF-0053,Technician,Cardiology,Day,2020-10-06
+STF-0054,Technician,Orthopedics,Night,2020-06-11
+STF-0055,Radiologist,Orthopedics,Day,2023-02-10
+STF-0056,Nurse,ICU,Evening,2019-07-26
+STF-0057,Doctor,Orthopedics,Day,2022-05-23
+STF-0058,Technician,General Surgery,Evening,2019-08-11
+STF-0059,Doctor,ICU,Night,2022-04-30
+STF-0060,Doctor,Emergency,Evening,2023-03-02
+STF-0061,Doctor,Neurology,Day,2017-02-23
+STF-0062,Radiologist,Orthopedics,Evening,2016-07-28
+STF-0063,Nurse,General Surgery,Evening,2020-03-09
+STF-0064,Doctor,Orthopedics,Evening,2021-03-04
+STF-0065,Doctor,Emergency,Night,2021-01-23
+STF-0066,Doctor,Cardiology,Day,2016-11-12
+STF-0067,Pharmacist,General Surgery,Evening,2017-05-25
+STF-0068,Doctor,General Surgery,Day,2019-04-02
+STF-0069,Pharmacist,Cardiology,Evening,2020-02-07
+STF-0070,Pharmacist,Pediatrics,Night,2023-03-12
+STF-0071,Nurse,ICU,Day,2018-04-30
+STF-0072,Doctor,Orthopedics,Night,2021-01-29
+STF-0073,Technician,Cardiology,Day,2015-07-25
+STF-0074,Radiologist,ICU,Night,2016-10-06
+STF-0075,Radiologist,Cardiology,Day,2017-01-31
+STF-0076,Radiologist,Emergency,Day,2022-07-28
+STF-0077,Pharmacist,Orthopedics,Day,2021-05-22
+STF-0078,Radiologist,Orthopedics,Night,2015-06-12
+STF-0079,Pharmacist,Emergency,Night,2021-07-18
+STF-0080,Technician,Neurology,Day,2022-07-06
+STF-0081,Nurse,Neurology,Evening,2019-06-10
+STF-0082,Technician,Oncology,Evening,2018-07-19
+STF-0083,Doctor,Emergency,Evening,2021-12-19
+STF-0084,Doctor,Emergency,Night,2017-05-23
+STF-0085,Nurse,Pediatrics,Evening,2015-10-09
+STF-0086,Technician,Orthopedics,Evening,2016-10-08
+STF-0087,Radiologist,ICU,Night,2018-05-24
+STF-0088,Radiologist,Cardiology,Evening,2022-06-10
+STF-0089,Nurse,Emergency,Evening,2016-04-17
+STF-0090,Radiologist,Emergency,Day,2018-01-20
+STF-0091,Radiologist,Pediatrics,Day,2023-01-18
+STF-0092,Nurse,Neurology,Night,2022-02-10
+STF-0093,Radiologist,Pediatrics,Evening,2017-10-25
+STF-0094,Doctor,Cardiology,Night,2019-10-01
+STF-0095,Doctor,Pediatrics,Day,2018-09-28
+STF-0096,Technician,Oncology,Day,2019-12-15
+STF-0097,Radiologist,General Surgery,Day,2016-04-03
+STF-0098,Nurse,Emergency,Night,2015-05-28
+STF-0099,Radiologist,Neurology,Night,2016-08-29
+STF-0100,Nurse,General Surgery,Day,2018-06-16
+STF-0101,Doctor,Neurology,Evening,2017-05-10
+STF-0102,Doctor,Orthopedics,Evening,2021-04-12
+STF-0103,Radiologist,General Surgery,Night,2016-09-25
+STF-0104,Nurse,Orthopedics,Day,2019-08-16
+STF-0105,Nurse,Cardiology,Night,2018-09-22
+STF-0106,Nurse,General Surgery,Evening,2016-10-14
+STF-0107,Pharmacist,Emergency,Day,2020-04-11
+STF-0108,Nurse,Orthopedics,Evening,2018-12-03
+STF-0109,Nurse,Pediatrics,Day,2015-04-07
+STF-0110,Pharmacist,Orthopedics,Evening,2018-02-15
+STF-0111,Technician,Emergency,Evening,2022-03-12
+STF-0112,Radiologist,General Surgery,Evening,2015-04-24
+STF-0113,Technician,Emergency,Day,2021-07-06
+STF-0114,Doctor,Pediatrics,Day,2021-09-09
+STF-0115,Technician,General Surgery,Night,2018-07-08
+STF-0116,Radiologist,General Surgery,Night,2016-04-18
+STF-0117,Radiologist,General Surgery,Day,2017-11-09
+STF-0118,Pharmacist,Cardiology,Day,2020-10-30
+STF-0119,Technician,Orthopedics,Evening,2015-10-14
+STF-0120,Radiologist,Neurology,Evening,2022-06-10
+STF-0121,Technician,Emergency,Night,2018-06-20
+STF-0122,Technician,General Surgery,Evening,2022-10-26
+STF-0123,Radiologist,Pediatrics,Day,2017-02-24
+STF-0124,Pharmacist,General Surgery,Night,2016-12-13
+STF-0125,Pharmacist,Pediatrics,Night,2015-01-02
+STF-0126,Technician,Pediatrics,Day,2019-10-27
+STF-0127,Pharmacist,Neurology,Evening,2019-12-17
+STF-0128,Radiologist,Orthopedics,Evening,2016-11-26
+STF-0129,Technician,Emergency,Night,2022-06-12
+STF-0130,Doctor,Neurology,Day,2022-07-18
+STF-0131,Nurse,Pediatrics,Day,2016-08-26
+STF-0132,Doctor,Cardiology,Day,2020-04-30
+STF-0133,Pharmacist,Emergency,Evening,2022-01-23
+STF-0134,Pharmacist,Orthopedics,Evening,2019-06-25
+STF-0135,Nurse,Orthopedics,Night,2022-09-17
+STF-0136,Doctor,Cardiology,Evening,2017-06-15
+STF-0137,Radiologist,Oncology,Evening,2015-07-25
+STF-0138,Doctor,Orthopedics,Evening,2016-06-30
+STF-0139,Radiologist,ICU,Night,2021-09-04
+STF-0140,Pharmacist,Neurology,Night,2023-01-25
+STF-0141,Radiologist,General Surgery,Evening,2016-10-13
+STF-0142,Pharmacist,ICU,Evening,2017-10-09
+STF-0143,Radiologist,Pediatrics,Evening,2022-01-11
+STF-0144,Technician,Orthopedics,Evening,2015-11-14
+STF-0145,Nurse,Pediatrics,Evening,2018-10-07
+STF-0146,Radiologist,Neurology,Day,2016-07-20
+STF-0147,Nurse,Oncology,Evening,2022-10-13
+STF-0148,Nurse,Oncology,Day,2019-08-27
+STF-0149,Technician,General Surgery,Night,2020-03-23
+STF-0150,Doctor,General Surgery,Day,2019-09-17
+STF-0151,Radiologist,General Surgery,Night,2015-03-22
+STF-0152,Pharmacist,General Surgery,Day,2018-12-11
+STF-0153,Pharmacist,Pediatrics,Evening,2021-01-13
+STF-0154,Pharmacist,Orthopedics,Day,2018-01-22
+STF-0155,Pharmacist,General Surgery,Day,2019-05-12
+STF-0156,Pharmacist,Neurology,Night,2016-11-07
+STF-0157,Nurse,ICU,Night,2020-12-27
+STF-0158,Pharmacist,Cardiology,Night,2021-04-30
+STF-0159,Doctor,Cardiology,Night,2019-10-22
+STF-0160,Pharmacist,Oncology,Day,2015-07-25
+STF-0161,Pharmacist,Pediatrics,Evening,2017-05-16
+STF-0162,Technician,ICU,Evening,2019-04-02
+STF-0163,Pharmacist,Pediatrics,Evening,2015-12-02
+STF-0164,Doctor,ICU,Night,2021-01-18
+STF-0165,Technician,Cardiology,Day,2022-04-16
+STF-0166,Doctor,Emergency,Day,2017-10-09
+STF-0167,Doctor,Orthopedics,Night,2016-09-16
+STF-0168,Nurse,Orthopedics,Evening,2022-07-05
+STF-0169,Radiologist,Emergency,Day,2020-03-19
+STF-0170,Technician,Pediatrics,Day,2021-10-17
+STF-0171,Nurse,Emergency,Evening,2016-03-18
+STF-0172,Technician,Cardiology,Night,2022-08-06
+STF-0173,Pharmacist,General Surgery,Night,2017-03-23
+STF-0174,Radiologist,Emergency,Night,2022-01-13
+STF-0175,Doctor,Orthopedics,Night,2018-05-20
+STF-0176,Radiologist,Emergency,Day,2018-11-23
+STF-0177,Technician,General Surgery,Day,2020-09-03
+STF-0178,Doctor,Neurology,Evening,2020-06-30
+STF-0179,Pharmacist,Emergency,Evening,2022-02-16
+STF-0180,Nurse,ICU,Evening,2016-12-22
+STF-0181,Radiologist,Pediatrics,Night,2020-06-03
+STF-0182,Pharmacist,ICU,Night,2021-08-23
+STF-0183,Technician,Pediatrics,Day,2015-12-21
+STF-0184,Pharmacist,Pediatrics,Day,2020-03-18
+STF-0185,Technician,General Surgery,Day,2020-07-17
+STF-0186,Nurse,Neurology,Evening,2017-05-18
+STF-0187,Technician,Neurology,Evening,2018-02-19
+STF-0188,Radiologist,Pediatrics,Day,2020-10-17
+STF-0189,Doctor,Orthopedics,Day,2023-01-28
+STF-0190,Pharmacist,General Surgery,Night,2017-09-11
+STF-0191,Pharmacist,ICU,Evening,2015-03-12
+STF-0192,Technician,Emergency,Day,2019-07-15
+STF-0193,Technician,Orthopedics,Night,2021-07-10
+STF-0194,Pharmacist,Neurology,Night,2020-12-14
+STF-0195,Pharmacist,Neurology,Night,2021-03-04
+STF-0196,Technician,Neurology,Night,2020-02-02
+STF-0197,Technician,Pediatrics,Evening,2017-08-02
+STF-0198,Nurse,Emergency,Evening,2016-05-04
+STF-0199,Nurse,Oncology,Day,2020-06-06
+STF-0200,Radiologist,Pediatrics,Night,2021-09-10
