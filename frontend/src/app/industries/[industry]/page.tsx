@@ -77,10 +77,17 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
               <div style={styles.cardDesc}>Preconfigured, ready-to-deploy solution for this industry.</div>
             </div>
           </Link>
-          <Link href="#" style={{ textDecoration: "none", pointerEvents: "none", opacity: 0.5 }}>
+          <Link
+            href={industry.demoId ? `/demos/${industry.demoId}?mode=custom` : '#'}
+            style={{ textDecoration: "none", pointerEvents: industry.demoId ? undefined : "none", opacity: industry.demoId ? 1 : 0.5 }}
+          >
             <div style={styles.card}>
               <div style={styles.cardTitle}>Custom Deployment</div>
-              <div style={styles.cardDesc}>Customizable deployment (coming soon).</div>
+              <div style={styles.cardDesc}>
+                {industry.demoId
+                  ? "Choose a deployment pattern — shortcut, real-time, AI, and more."
+                  : "Customizable deployment (coming soon)."}
+              </div>
             </div>
           </Link>
         </div>

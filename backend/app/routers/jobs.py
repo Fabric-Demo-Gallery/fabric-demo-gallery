@@ -59,9 +59,13 @@ async def create_job(
         demo_id=body.demo_id,
         workspace_name=workspace_name,
         user_id=user_id,
+        scenario_id=body.scenario_id,
     )
 
-    asyncio.create_task(
+    management_tok = request.headers.get("x-management-token", "")
+    onelake_tok = request.headers.get("x-onelake-token", "")
+
+    task = asyncio.create_task(
         run_job(
             job_id=job.job_id,
             client=client,
@@ -69,8 +73,17 @@ async def create_job(
             workspace_name=workspace_name,
             workspace_id=body.workspace_id,
             capacity_id=cap_id,
+            scenario_id=body.scenario_id,
+            management_token=management_tok or None,
+            onelake_token=onelake_tok or None,
+            subscription_id=body.subscription_id,
+            resource_group=body.resource_group,
+            storage_account_name=body.storage_account_name,
+            azure_location=body.azure_location or "eastus",
+            create_resource_group=body.create_resource_group,
         )
     )
+    job_store.set_task(job.job_id, task)
 
     return {"job_id": job.job_id}
 
@@ -161,6 +174,29 @@ async def stream_job(
             job_store.unsubscribe(job_id, queue)
 
     return EventSourceResponse(event_generator())
+
+
+@router.delete("/{job_id}")
+@limiter.limit("30/hour")
+async def cancel_job(
+    job_id: str,
+    request: Request,
+    token: str = Depends(get_user_token),
+):
+    """Cancel a running deployment job."""
+    if not UUID_RE.match(job_id):
+        raise HTTPException(status_code=400, detail="Invalid job_id")
+    job = job_store.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    user_id = get_user_id(token)
+    if job.user_id != user_id and job.user_id != "dev-user":
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status in ("completed", "failed", "cancelled"):
+        return {"status": job.status, "message": "Job already finished"}
+    cancelled = job_store.cancel_job(job_id)
+    job_store.set_status(job_id, "cancelled")
+    return {"status": "cancelled", "cancelled": cancelled}
 
 
 @router.delete("/{job_id}/workspace")

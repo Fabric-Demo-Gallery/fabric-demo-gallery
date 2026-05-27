@@ -148,12 +148,76 @@ export async function teardownDeployment(
   if (!res.ok) throw new Error("Failed to teardown deployment");
 }
 
+// ── Azure subscription / resource group helpers ──────────────────────────────
+
+export interface AzureSubscription {
+  id: string;
+  displayName: string;
+}
+
+export interface AzureResourceGroup {
+  name: string;
+  location: string;
+}
+
+export async function fetchSubscriptions(
+  managementToken: string
+): Promise<AzureSubscription[]> {
+  const res = await fetch(`${API_BASE}/api/azure/subscriptions`, {
+    headers: { "X-Management-Token": managementToken },
+  });
+  if (!res.ok) throw new Error(`Failed to fetch subscriptions: ${res.statusText}`);
+  return res.json();
+}
+
+export async function fetchResourceGroups(
+  managementToken: string,
+  subscriptionId: string
+): Promise<AzureResourceGroup[]> {
+  const res = await fetch(
+    `${API_BASE}/api/azure/resource-groups?subscriptionId=${encodeURIComponent(subscriptionId)}`,
+    { headers: { "X-Management-Token": managementToken } }
+  );
+  if (!res.ok) throw new Error(`Failed to fetch resource groups: ${res.statusText}`);
+  return res.json();
+}
+
+// ── Deployment scenario helpers ──────────────────────────────────────────────
+
+export interface ScenarioAzureParam {
+  name: string;
+  label: string;
+  type: string;
+  required: boolean;
+  default?: string | boolean;
+  description?: string;
+  validation?: string;
+}
+
+export interface ScenarioInfo {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  estimatedTime: string;
+  tags: string[];
+  enabled: boolean;
+  requiresAzure: boolean;
+  azureParams: ScenarioAzureParam[];
+}
+
+export async function fetchScenarios(demoId: string): Promise<ScenarioInfo[]> {
+  const res = await fetch(`${API_BASE}/api/demos/${encodeURIComponent(demoId)}/scenarios`);
+  if (!res.ok) return [];
+  return res.json();
+}
 // ── Job-based deployment API ────────────────────────────────────────
 
 export interface JobSummary {
   job_id: string;
   demo_id: string;
   workspace_name: string;
+  scenario_id: string | null;
   status: "pending" | "running" | "completed" | "failed";
   created_at: string;
   updated_at: string;

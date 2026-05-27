@@ -37,12 +37,25 @@ const msalConfig: Configuration = {
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
-// Scopes needed for Fabric API
-// Using .default avoids admin consent requirements — Fabric handles authorization
-// at the resource level based on the user's actual permissions
+// All Fabric API scopes requested at sign-in so consent happens once upfront.
+// These must be added to the app registration under:
+//   API permissions → Power BI Service → Delegated
+// Required: Workspace.ReadWrite.All, Item.ReadWrite.All,
+//           Connection.ReadWrite.All, OneLake.ReadWrite.All
 export const fabricScopes = [
-  "https://api.fabric.microsoft.com/.default",
+  "https://api.fabric.microsoft.com/Workspace.ReadWrite.All",
+  "https://api.fabric.microsoft.com/Item.ReadWrite.All",
+  "https://api.fabric.microsoft.com/Connection.ReadWrite.All",
+  "https://api.fabric.microsoft.com/OneLake.ReadWrite.All",
 ];
+
+// Separate OneLake scope — needs its own token for shortcut creation (OneLake.ReadWrite.All)
+export const oneLakeScopes = ["https://api.fabric.microsoft.com/OneLake.ReadWrite.All"];
 
 // Scopes needed for OneLake (storage)
 export const storageScopes = ["https://storage.azure.com/.default"];
+
+// Scopes needed for Azure Resource Manager (ARM) — used for ADLS Gen2 provisioning
+export const managementScopes = ["https://management.azure.com/user_impersonation"];
+
+

@@ -1,0 +1,13 @@
+{
+  "id": "education",
+  "industry": "Education",
+  "title": "Education Analytics",
+  "description": "Student outcomes, faculty performance, and institutional analytics — enrollment, retention, and learning effectiveness.",
+  "status": "coming-soon",
+  "icon": "🎓",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

@@ -1,0 +1,35 @@
+{
+  "id": "external-data-integration",
+  "title": "External Database Integration (Mirroring)",
+  "description": "Mirror an Azure SQL Database or Databricks catalog into Fabric OneLake for near-real-time analytics without moving data.",
+  "icon": "🪞",
+  "estimatedTime": "10-15 min",
+  "tags": ["mirroring", "azure-sql", "databricks", "external"],
+  "prerequisites": [
+    "Fabric capacity (F2+, Trial, or PPU)",
+    "Azure SQL Database or Databricks workspace (existing)"
+  ],
+  "azureParams": [
+    {
+      "name": "source_type",
+      "label": "Source Type",
+      "type": "select",
+      "options": ["AzureSqlDatabase", "Databricks"],
+      "required": true,
+      "description": "The external database type to mirror."
+    },
+    {
+      "name": "connection_string",
+      "label": "Connection String / Server",
+      "type": "string",
+      "required": true,
+      "description": "Server name (Azure SQL) or workspace URL (Databricks)."
+    }
+  ],
+  "fabricItemTemplate": [
+    { "type": "MirroredDatabase", "name": "mirrored_source" },
+    { "type": "Notebook",         "name": "01_explore_mirrored",  "definitionPath": "notebooks/mirroring/01_explore_mirrored.ipynb",  "order": 1 },
+    { "type": "SemanticModel",    "name": "mirrored_model",       "definitionPath": "tmdl" },
+    { "type": "Report",           "name": "mirrored_report" }
+  ]
+}

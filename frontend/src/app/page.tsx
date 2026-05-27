@@ -1,6 +1,7 @@
 "use client";
 
-import NextLink from "next/link";
+
+import Link from "next/link";
 import { makeStyles } from "@fluentui/react-components";
 import { industries } from "@/lib/industryCatalog";
 
@@ -312,7 +313,7 @@ export default function Home() {
       <div className={styles.content}>
         <div className={styles.cardGrid}>
           {industries.filter((ind) => ind.enabled).map((industry) => (
-            <NextLink
+            <Link
               key={industry.slug}
               href={`/industries/${industry.slug}`}
               style={{ textDecoration: "none" }}
@@ -333,7 +334,7 @@ export default function Home() {
                   <div className={styles.cardDesc}>{industry.description}</div>
                 </div>
               </div>
-            </NextLink>
+            </Link>
           ))}
         </div>
       </div>

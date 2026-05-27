@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import DemoDetailClient from "./DemoDetailClient";
-import { Breadcrumbs } from "@/lib/Breadcrumbs";
-import { industries } from "@/lib/industryCatalog";
 
 export function generateStaticParams() {
   return [
@@ -12,11 +10,9 @@ export function generateStaticParams() {
 }
 
 export default async function DemoDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const industry = industries.find((i) => i.demoId === id);
+  await params; // consume params (id used by client component via useParams)
   return (
     <div>
-      {industry && <Breadcrumbs industrySlug={industry.slug} deploymentType="standard" />}
       <Suspense>
         <DemoDetailClient />
       </Suspense>

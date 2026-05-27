@@ -1,0 +1,13 @@
+{
+  "id": "transportation",
+  "industry": "Transportation & Logistics",
+  "title": "Transportation & Logistics Analytics",
+  "description": "Fleet, route, and last-mile analytics — on-time delivery, utilization, and fuel efficiency.",
+  "status": "coming-soon",
+  "icon": "🚛",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

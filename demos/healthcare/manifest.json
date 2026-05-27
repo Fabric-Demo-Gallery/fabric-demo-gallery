@@ -1,0 +1,13 @@
+{
+  "id": "healthcare",
+  "industry": "Healthcare & Life Sciences",
+  "title": "Healthcare Analytics",
+  "description": "Patient, provider, and research analytics — outcomes, operational efficiency, and clinical insights.",
+  "status": "coming-soon",
+  "icon": "🏥",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

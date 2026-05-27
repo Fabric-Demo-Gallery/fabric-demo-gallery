@@ -63,6 +63,7 @@ export function useDeployment() {
 export function DeploymentProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DeploymentState>(initialState);
   const abortRef = useRef<AbortController | null>(null);
+  const fabricTokenRef = useRef<string>("");
 
   /** Subscribe to a job's SSE stream (replay + live). */
   const subscribeToJob = useCallback((jobId: string, fabricToken: string) => {
@@ -71,6 +72,7 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
       abortRef.current.abort();
     }
 
+    fabricTokenRef.current = fabricToken;
     const controller = new AbortController();
     abortRef.current = controller;
 
@@ -104,6 +106,7 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
 
         let buffer = "";
         let currentEvent = "";
+        let streamHadError = false;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -148,6 +151,7 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
                     return { ...prev, ...updates };
                   });
                 } else if (currentEvent === "error") {
+                  streamHadError = true;
                   setState((prev) => ({
                     ...prev,
                     error: data.message || "Deployment failed",
@@ -163,12 +167,16 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Stream ended normally
-        setState((prev) => ({
-          ...prev,
-          completed: prev.completed || true,
-          deploying: false,
-        }));
+        // Stream ended — only mark completed if no error was received
+        if (!streamHadError) {
+          setState((prev) => ({
+            ...prev,
+            completed: true,
+            deploying: false,
+          }));
+        } else {
+          setState((prev) => ({ ...prev, deploying: false }));
+        }
       } catch (e: unknown) {
         if (e instanceof DOMException && e.name === "AbortError") {
           // User disconnected — deployment continues on backend
@@ -243,7 +251,18 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
   );
 
   const stopDeploy = useCallback(() => {
-    // Only disconnects the SSE subscription — backend job continues running
+    // Cancel the backend job (fire-and-forget)
+    setState((prev) => {
+      if (prev.jobId && fabricTokenRef.current) {
+        const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+        fetch(`${API}/api/jobs/${prev.jobId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${fabricTokenRef.current}` },
+        }).catch(() => { /* best-effort */ });
+      }
+      return prev;
+    });
+    // Disconnect the SSE stream
     if (abortRef.current) {
       abortRef.current.abort();
       abortRef.current = null;

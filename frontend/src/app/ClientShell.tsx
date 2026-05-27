@@ -126,7 +126,7 @@ function Navbar() {
         {account && (
           <NextLink href="/monitoring" className={styles.navLink}>Monitoring</NextLink>
         )}
-        <aa
+        <a
           href="https://github.com/microsoft/skills-for-fabric"
           target="_blank"
           rel="noopener noreferrer"

@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Engagement Monitoring" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "Billing Anomaly Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Project Outcome Prediction" },
+    { "id": "data-virtualization-batch", "titleOverride": "Client Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Services Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "CRM / PSA Integration" },
+    { "id": "genai-applications",        "titleOverride": "Professional Services Copilot" }
+  ]
+}

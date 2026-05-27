@@ -1,0 +1,13 @@
+{
+  "id": "technology",
+  "industry": "Technology & Software",
+  "title": "Technology Analytics",
+  "description": "SaaS metrics, product telemetry, and engineering analytics — churn, feature usage, and system health.",
+  "status": "coming-soon",
+  "icon": "💻",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

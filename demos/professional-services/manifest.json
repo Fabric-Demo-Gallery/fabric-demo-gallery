@@ -1,0 +1,13 @@
+{
+  "id": "professional-services",
+  "industry": "Professional Services",
+  "title": "Professional Services Analytics",
+  "description": "Consulting, legal, and business services analytics — project profitability, utilization, and client insights.",
+  "status": "coming-soon",
+  "icon": "💼",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

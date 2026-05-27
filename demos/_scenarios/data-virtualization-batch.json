@@ -1,0 +1,96 @@
+{
+  "id": "data-virtualization-batch",
+  "title": "Data Virtualization & Batch Analytics",
+  "description": "Provision ADLS Gen2, connect external data in-place via Fabric Shortcuts (no copy), then process through Bronze→Silver→Gold medallion layers, orchestrated with a Data Factory pipeline.",
+  "icon": "🔗",
+  "estimatedTime": "20-30 min",
+  "tags": [
+    "shortcut", "adls", "lakehouse", "medallion", "pipeline", "data-factory"
+  ],
+  "prerequisites": [
+    "Fabric capacity (F2+, Trial, or PPU)",
+    "Azure subscription with permissions to create Storage Accounts (Storage Account Contributor or Contributor role)"
+  ],
+  "azureParams": [
+    {
+      "name": "subscription_id",
+      "label": "Azure Subscription",
+      "type": "subscription",
+      "required": true,
+      "description": "The Azure subscription where the ADLS Gen2 storage account will be created."
+    },
+    {
+      "name": "resource_group",
+      "label": "Resource Group",
+      "type": "resource_group",
+      "required": true,
+      "description": "Existing resource group or name for a new one to be created."
+    },
+    {
+      "name": "storage_account_name",
+      "label": "Storage Account Name",
+      "type": "storage_account_name",
+      "required": false,
+      "description": "Globally unique name (3–24 lowercase alphanumeric). Leave blank to auto-generate.",
+      "validation": "^[a-z0-9]{3,24}$"
+    },
+    {
+      "name": "azure_location",
+      "label": "Azure Region",
+      "type": "location",
+      "required": false,
+      "default": "eastus",
+      "description": "Azure region for the storage account (e.g. eastus, westeurope)."
+    },
+    {
+      "name": "create_resource_group",
+      "label": "Create Resource Group if missing",
+      "type": "boolean",
+      "required": false,
+      "default": false
+    }
+  ],
+  "fabricItemTemplate": [
+    {
+      "type": "Lakehouse",
+      "name": "analytics_lakehouse"
+    },
+    {
+      "type": "Shortcut",
+      "name": "raw_data",
+      "path": "Files",
+      "parentLakehouse": "analytics_lakehouse",
+      "target": {
+        "type": "AdlsGen2"
+      }
+    },
+    {
+      "type": "Notebook",
+      "name": "01_bronze_ingest",
+      "order": 1
+    },
+    {
+      "type": "Notebook",
+      "name": "02_silver_transform",
+      "order": 2
+    },
+    {
+      "type": "Notebook",
+      "name": "03_gold_aggregate",
+      "order": 3
+    },
+    {
+      "type": "SemanticModel",
+      "name": "analytics_model",
+      "definitionPath": "tmdl"
+    },
+    {
+      "type": "Report",
+      "name": "analytics_report"
+    },
+    {
+      "type": "DataPipeline",
+      "name": "orchestration_pipeline"
+    }
+  ]
+}

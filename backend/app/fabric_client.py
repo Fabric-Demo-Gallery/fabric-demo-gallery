@@ -601,3 +601,285 @@ class FabricClient:
         except Exception as e:
             logger.warning("Failed to create schedule: %s", str(e)[:200])
             return None
+
+    # ── connections ──────────────────────────────────────────────────────
+
+    async def upload_blob_oauth(
+        self,
+        account_name: str,
+        container: str,
+        blob_name: str,
+        data: bytes,
+    ) -> None:
+        """
+        Upload bytes to Azure Blob Storage using OAuth Bearer token.
+        Uses the storage-scoped token already held by this client.
+        Requires the caller to have Storage Blob Data Contributor (or Owner) on the account.
+        """
+        url = f"https://{account_name}.blob.core.windows.net/{container}/{blob_name}"
+        content_type = "text/csv" if blob_name.endswith(".csv") else "application/octet-stream"
+        headers = {
+            "x-ms-version": "2020-04-08",
+            "x-ms-blob-type": "BlockBlob",
+            "Content-Type": content_type,
+        }
+        # Retry up to 5 times — RBAC propagation after role assignment can take ~60s
+        for attempt in range(5):
+            resp = await self._storage_client.put(url, content=data, headers=headers)
+            if resp.status_code in (200, 201):
+                return
+            if resp.status_code == 403 and attempt < 4:
+                wait = 20 + attempt * 5
+                logger.info("Blob upload 403 (RBAC propagation), retry %d/4 in %ds", attempt + 1, wait)
+                await asyncio.sleep(wait)
+                continue
+            raise FabricError(resp.status_code, f"Blob upload failed: {resp.text[:300]}")
+
+    async def create_connection(
+        self,
+        display_name: str,
+        adls_account_url: str,
+        account_key: str,
+    ) -> dict:
+        """
+        Create a shareable cloud connection using account key.
+        NOTE: blocked when allowSharedKeyAccess=false — use create_connection_oauth() instead.
+        """
+        body = {
+            "connectivityType": "ShareableCloud",
+            "displayName": display_name,
+            "connectionDetails": {
+                "type": "AzureDataLakeStorage",
+                "parameters": [
+                    {"name": "account", "value": adls_account_url}
+                ],
+            },
+            "credentialDetails": {
+                "singleSignOn": False,
+                "connectionEncryption": "NotEncrypted",
+                "skipTestConnection": False,
+                "credentials": {
+                    "credentialType": "Key",
+                    "key": account_key,
+                },
+            },
+        }
+        resp = await self._request("POST", f"{FABRIC_API}/connections", json=body)
+        return resp.json()
+
+    async def _generate_user_delegation_sas(self, account_name: str, container: str) -> str:
+        """
+        Generate a read-only User Delegation SAS for an ADLS Gen2 container.
+        Uses the storage OAuth2 token — works even when allowSharedKeyAccess=false.
+        """
+        import hmac as _hmac
+        import hashlib
+        import base64
+        import urllib.parse
+        from datetime import datetime, timezone, timedelta
+        from xml.etree import ElementTree as ET
+
+        now = datetime.now(timezone.utc)
+        start = (now - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (now + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        version = "2020-12-06"
+
+        # 1. Get User Delegation Key
+        xml_body = (
+            '<?xml version="1.0" encoding="utf-8"?>'
+            f'<KeyInfo><Start>{start}</Start><Expiry>{expiry}</Expiry></KeyInfo>'
+        )
+        async with httpx.AsyncClient(timeout=30.0) as c:
+            resp = await c.post(
+                f"https://{account_name}.blob.core.windows.net/?restype=service&comp=userdelegationkey",
+                content=xml_body.encode(),
+                headers={
+                    "Authorization": f"Bearer {self._storage_token}",
+                    "x-ms-version": version,
+                    "Content-Type": "application/xml",
+                },
+            )
+        if resp.status_code >= 400:
+            raise FabricError(resp.status_code, f"UserDelegationKey failed: {resp.text[:200]}")
+
+        root = ET.fromstring(resp.text)
+        def _get(tag: str) -> str:
+            el = root.find(tag)
+            return el.text if el is not None else ""
+
+        signed_oid = _get("SignedOid")
+        signed_tid = _get("SignedTid")
+        signed_start = _get("SignedStart")
+        signed_expiry = _get("SignedExpiry")
+        signed_service = _get("SignedService")
+        signed_version = _get("SignedVersion")
+        key_value = _get("Value")
+
+        # 2. Build string-to-sign (container SAS, version 2020-12-06)
+        string_to_sign = "\n".join([
+            "rl",                                   # signedPermissions
+            start,                                  # signedStart
+            expiry,                                 # signedExpiry
+            f"/blob/{account_name}/{container}",    # canonicalizedResource
+            signed_oid,                             # signedKeyObjectId
+            signed_tid,                             # signedKeyTenantId
+            signed_start,                           # signedKeyStart
+            signed_expiry,                          # signedKeyExpiry
+            signed_service,                         # signedKeyService
+            signed_version,                         # signedKeyVersion
+            "", "", "",                             # authorizedOid, unauthorizedOid, correlationId
+            "", "",                                 # IP, protocol
+            version,                                # signedVersion
+            "c",                                    # signedResource (container)
+            "", "",                                 # snapshotTime, encryptionScope
+            "", "", "", "", "",                     # rscc, rscd, rsce, rscl, rsct
+        ])
+
+        key_bytes = base64.b64decode(key_value)
+        sig = base64.b64encode(
+            _hmac.new(key_bytes, string_to_sign.encode("utf-8"), hashlib.sha256).digest()
+        ).decode()
+
+        # 3. Build SAS query string
+        q = urllib.parse.quote
+        return "&".join([
+            f"sv={version}",
+            f"st={q(start, safe='')}",
+            f"se={q(expiry, safe='')}",
+            "sr=c",
+            "sp=rl",
+            f"skoid={signed_oid}",
+            f"sktid={signed_tid}",
+            f"skt={q(signed_start, safe='')}",
+            f"ske={q(signed_expiry, safe='')}",
+            f"sks={signed_service}",
+            f"skv={signed_version}",
+            f"sig={q(sig, safe='')}",
+        ])
+
+    async def create_connection_oauth(
+        self,
+        display_name: str,
+        adls_account_url: str,
+        container: str = "",
+    ) -> dict:
+        """
+        Create a shareable cloud connection to ADLS Gen2 using a User Delegation SAS.
+        Requires the fabric token to include Connection.ReadWrite.All scope.
+        """
+        # Generate User Delegation SAS for the container (OAuth2-based, no account key needed)
+        account_name = adls_account_url.replace("https://", "").rstrip("/").split(".")[0]
+        sas_token = ""
+        if container:
+            try:
+                sas_token = await self._generate_user_delegation_sas(account_name, container)
+                logger.info("[connection] user delegation SAS generated for container: %s", container)
+            except Exception as sas_err:
+                logger.warning("[connection] SAS generation failed: %s", sas_err)
+
+        conn_path = f"/{container}" if container else "/"
+        body = {
+            "connectivityType": "ShareableCloud",
+            "displayName": display_name,
+            "connectionDetails": {
+                "type": "AzureDataLakeStorage",
+                # creationMethod is required by the Fabric Connections API
+                "creationMethod": "AzureDataLakeStorage",
+                # API requires "server" (hostname only, no scheme) and "path"
+                "parameters": [
+                    {
+                        "dataType": "Text",
+                        "name": "server",
+                        "value": adls_account_url.replace("https://", "").rstrip("/"),
+                    },
+                    {
+                        "dataType": "Text",
+                        "name": "path",
+                        "value": conn_path,
+                    },
+                ],
+            },
+            "credentialDetails": {
+                # SharedAccessSignature using a User Delegation SAS (OAuth2-based).
+                # Works even when allowSharedKeyAccess=false (MSIT tenant policy).
+                # SAS is generated below and scoped to the specific container.
+                "singleSignOnType": "None",
+                "connectionEncryption": "NotEncrypted",
+                "skipTestConnection": False,
+                "credentials": {
+                    "credentialType": "SharedAccessSignature",
+                    "token": sas_token,
+                },
+            },
+        }
+        async with httpx.AsyncClient(timeout=60.0) as c:
+            resp = await c.post(
+                f"{FABRIC_API}/connections",
+                json=body,
+                headers={
+                    "Authorization": f"Bearer {self._token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            if resp.status_code == 409:
+                # Connection with this display name already exists — find and reuse it.
+                logger.info("[connection] 409 DuplicateConnectionName — looking up existing connection '%s'", display_name)
+                list_resp = await c.get(
+                    f"{FABRIC_API}/connections",
+                    headers={"Authorization": f"Bearer {self._token}"},
+                )
+                if list_resp.status_code == 200:
+                    for conn in list_resp.json().get("value", []):
+                        if conn.get("displayName") == display_name:
+                            logger.info("[connection] reusing existing connection id=%s", conn.get("id"))
+                            return conn
+                raise FabricError(resp.status_code, resp.text[:500])
+        if resp.status_code >= 400:
+            raise FabricError(resp.status_code, resp.text[:500])
+        return resp.json()
+
+    # ── shortcuts ────────────────────────────────────────────────────────
+
+    async def create_shortcut(
+        self,
+        workspace_id: str,
+        lakehouse_id: str,
+        name: str,
+        parent_path: str,
+        adls_location: str,
+        adls_subpath: str,
+        connection_id: str,
+        onelake_token: str | None = None,
+    ) -> dict:
+        """
+        Create an ADLS Gen2 shortcut in a lakehouse.
+        Requires the fabric token to include OneLake.ReadWrite.All scope.
+
+        Args:
+            parent_path:  e.g. "Files"
+            adls_location: e.g. "https://myaccount.dfs.core.windows.net"
+            adls_subpath: e.g. "/containername"  (leading slash, no trailing)
+            connection_id: Fabric connection ID returned by create_connection()
+            onelake_token: Optional dedicated token with OneLake.ReadWrite.All scope.
+                           If provided, used instead of the main Fabric token.
+        """
+        url = (
+            f"{FABRIC_API}/workspaces/{workspace_id}"
+            f"/items/{lakehouse_id}/shortcuts"
+        )
+        body = {
+            "name": name,
+            "path": parent_path,
+            "target": {
+                "adlsGen2": {
+                    "location": adls_location,
+                    "subpath": adls_subpath,
+                    "connectionId": connection_id,
+                },
+            },
+        }
+        # Always use the main Fabric token (self._request) — it includes both
+        # Item.ReadWrite.All and OneLake.ReadWrite.All which the Shortcuts REST API requires.
+        # The onelake_token (OneLake.ReadWrite.All only) is for OneLake DFS file uploads, not REST.
+        resp = await self._request("POST", url, json=body)
+        return resp.json()

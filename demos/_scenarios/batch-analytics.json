@@ -1,0 +1,21 @@
+{
+  "id": "batch-analytics",
+  "title": "Batch Analytics (Medallion)",
+  "description": "Bronze → Silver → Gold medallion architecture with Delta tables, semantic model (Direct Lake), and Power BI report.",
+  "icon": "📊",
+  "estimatedTime": "10-15 min",
+  "tags": ["lakehouse", "medallion", "power-bi", "delta"],
+  "prerequisites": [
+    "Fabric capacity (F2+, Trial, or PPU)"
+  ],
+  "azureParams": [],
+  "fabricItemTemplate": [
+    { "type": "Lakehouse",     "name": "analytics_lakehouse" },
+    { "type": "Notebook",      "name": "01_bronze_ingest",    "definitionPath": "notebooks/batch/01_bronze_ingest.ipynb",   "order": 1 },
+    { "type": "Notebook",      "name": "02_silver_transform", "definitionPath": "notebooks/batch/02_silver_transform.ipynb", "order": 2 },
+    { "type": "Notebook",      "name": "03_gold_aggregate",   "definitionPath": "notebooks/batch/03_gold_aggregate.ipynb",   "order": 3 },
+    { "type": "SemanticModel", "name": "analytics_model",     "definitionPath": "tmdl" },
+    { "type": "Report",        "name": "analytics_report" },
+    { "type": "DataPipeline",  "name": "orchestration_pipeline" }
+  ]
+}

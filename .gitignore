@@ -7,6 +7,11 @@ dist/
 venv/
 backend-deploy.zip
 
+# Logs
+backend-logs/
+backend-logs.zip
+backend/app.log
+
 # Node
 node_modules/
 .next/

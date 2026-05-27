@@ -1,0 +1,13 @@
+{
+  "id": "hospitality",
+  "industry": "Hospitality & Travel",
+  "title": "Hospitality & Travel Analytics",
+  "description": "Guest, booking, and operations analytics — RevPAR, occupancy, guest satisfaction, and loyalty.",
+  "status": "coming-soon",
+  "icon": "🏨",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

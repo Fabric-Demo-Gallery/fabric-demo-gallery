@@ -1,0 +1,13 @@
+{
+  "id": "media",
+  "industry": "Media, Telecommunications & Entertainment",
+  "title": "Media & Telecom Analytics",
+  "description": "Audience, content, and ad analytics — subscriber churn, content performance, and network usage.",
+  "status": "coming-soon",
+  "icon": "📺",
+  "estimatedTime": "10-15 min",
+  "prerequisites": [],
+  "architecture": { "pattern": "medallion", "layers": [] },
+  "sampleData": [],
+  "fabricItems": []
+}

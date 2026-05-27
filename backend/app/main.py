@@ -1,5 +1,6 @@
 """FastAPI application entry point."""
 
+import logging
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -10,7 +11,18 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
-from app.routers import demos, deploy, jobs, workspaces
+from app.routers import azure, demos, deploy, jobs, workspaces
+
+# ── File logging ─────────────────────────────────────────────────────────────
+_log_file = os.path.join(os.path.dirname(__file__), "..", "app.log")
+_file_handler = logging.FileHandler(_log_file, encoding="utf-8")
+_file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+for _log_name in ("app", "httpx"):
+    _lg = logging.getLogger(_log_name)
+    _lg.setLevel(logging.INFO)
+    if not any(isinstance(h, logging.FileHandler) for h in _lg.handlers):
+        _lg.addHandler(_file_handler)
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 limiter = Limiter(key_func=get_remote_address)
@@ -51,12 +63,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Storage-Token"],
+    allow_headers=["Authorization", "Content-Type", "X-Storage-Token", "X-Management-Token", "X-OneLake-Token"],
 )
 
 app.include_router(demos.router)
 app.include_router(workspaces.router)
 app.include_router(deploy.router)
+app.include_router(azure.router)
 app.include_router(jobs.router)
 
 
