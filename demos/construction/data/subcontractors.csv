@@ -1,0 +1,101 @@
+subcontractor_id,company_name,trade,region,rating,years_active,accredited
+SUB-0001,Sub-Contractor 1 Ltd,Structural Steel,London,4.4,8,Y
+SUB-0002,Sub-Contractor 2 Ltd,MEP,Wales,2.8,24,Y
+SUB-0003,Sub-Contractor 3 Ltd,Plumbing,Midlands,2.6,3,Y
+SUB-0004,Sub-Contractor 4 Ltd,Roofing,Scotland,4.0,18,Y
+SUB-0005,Sub-Contractor 5 Ltd,Electrical,Midlands,3.1,19,N
+SUB-0006,Sub-Contractor 6 Ltd,Civil Engineering,South West,4.5,23,N
+SUB-0007,Sub-Contractor 7 Ltd,Groundworks,North West,2.9,25,N
+SUB-0008,Sub-Contractor 8 Ltd,Structural Steel,London,3.4,12,N
+SUB-0009,Sub-Contractor 9 Ltd,Plumbing,North West,4.5,24,N
+SUB-0010,Sub-Contractor 10 Ltd,Electrical,London,4.9,13,Y
+SUB-0011,Sub-Contractor 11 Ltd,Electrical,North West,4.6,20,N
+SUB-0012,Sub-Contractor 12 Ltd,Plumbing,South East,4.3,2,Y
+SUB-0013,Sub-Contractor 13 Ltd,Glazing,London,4.6,28,Y
+SUB-0014,Sub-Contractor 14 Ltd,Fit-Out,North West,3.6,27,N
+SUB-0015,Sub-Contractor 15 Ltd,MEP,North West,3.4,22,N
+SUB-0016,Sub-Contractor 16 Ltd,Structural Steel,Scotland,4.1,18,Y
+SUB-0017,Sub-Contractor 17 Ltd,MEP,Midlands,3.4,30,Y
+SUB-0018,Sub-Contractor 18 Ltd,Groundworks,South West,4.4,2,Y
+SUB-0019,Sub-Contractor 19 Ltd,Civil Engineering,South West,3.3,9,Y
+SUB-0020,Sub-Contractor 20 Ltd,Roofing,Scotland,4.7,11,Y
+SUB-0021,Sub-Contractor 21 Ltd,Landscaping,Midlands,4.7,21,N
+SUB-0022,Sub-Contractor 22 Ltd,MEP,North West,2.8,24,N
+SUB-0023,Sub-Contractor 23 Ltd,Plumbing,Midlands,4.7,13,N
+SUB-0024,Sub-Contractor 24 Ltd,Roofing,South East,3.8,3,Y
+SUB-0025,Sub-Contractor 25 Ltd,Structural Steel,South East,4.1,26,N
+SUB-0026,Sub-Contractor 26 Ltd,Plumbing,London,3.5,20,N
+SUB-0027,Sub-Contractor 27 Ltd,Electrical,North West,4.9,28,Y
+SUB-0028,Sub-Contractor 28 Ltd,Structural Steel,Wales,4.7,25,N
+SUB-0029,Sub-Contractor 29 Ltd,Groundworks,London,3.2,6,N
+SUB-0030,Sub-Contractor 30 Ltd,Civil Engineering,Wales,4.7,9,Y
+SUB-0031,Sub-Contractor 31 Ltd,Electrical,London,4.7,10,Y
+SUB-0032,Sub-Contractor 32 Ltd,MEP,North West,4.4,18,Y
+SUB-0033,Sub-Contractor 33 Ltd,Plumbing,North West,3.7,4,N
+SUB-0034,Sub-Contractor 34 Ltd,Glazing,South East,2.6,29,Y
+SUB-0035,Sub-Contractor 35 Ltd,Structural Steel,Wales,3.7,3,Y
+SUB-0036,Sub-Contractor 36 Ltd,MEP,Wales,3.7,18,Y
+SUB-0037,Sub-Contractor 37 Ltd,Glazing,Scotland,4.7,14,Y
+SUB-0038,Sub-Contractor 38 Ltd,Electrical,South West,4.3,7,N
+SUB-0039,Sub-Contractor 39 Ltd,Fit-Out,Wales,4.1,15,N
+SUB-0040,Sub-Contractor 40 Ltd,Structural Steel,South East,3.1,11,Y
+SUB-0041,Sub-Contractor 41 Ltd,Plumbing,Scotland,3.1,8,Y
+SUB-0042,Sub-Contractor 42 Ltd,Structural Steel,Wales,4.1,8,Y
+SUB-0043,Sub-Contractor 43 Ltd,Civil Engineering,South West,3.3,17,Y
+SUB-0044,Sub-Contractor 44 Ltd,Glazing,Wales,3.7,18,Y
+SUB-0045,Sub-Contractor 45 Ltd,Plumbing,Scotland,3.7,26,N
+SUB-0046,Sub-Contractor 46 Ltd,Fit-Out,South East,2.7,22,N
+SUB-0047,Sub-Contractor 47 Ltd,Groundworks,Midlands,3.5,28,Y
+SUB-0048,Sub-Contractor 48 Ltd,Structural Steel,London,3.5,11,Y
+SUB-0049,Sub-Contractor 49 Ltd,Roofing,South East,3.0,15,Y
+SUB-0050,Sub-Contractor 50 Ltd,Fit-Out,South East,3.2,8,Y
+SUB-0051,Sub-Contractor 51 Ltd,Landscaping,South West,4.7,18,Y
+SUB-0052,Sub-Contractor 52 Ltd,Civil Engineering,Wales,5.0,27,Y
+SUB-0053,Sub-Contractor 53 Ltd,Structural Steel,South West,4.6,6,N
+SUB-0054,Sub-Contractor 54 Ltd,Landscaping,Midlands,3.0,13,Y
+SUB-0055,Sub-Contractor 55 Ltd,MEP,Midlands,2.5,13,N
+SUB-0056,Sub-Contractor 56 Ltd,Landscaping,North West,3.6,24,N
+SUB-0057,Sub-Contractor 57 Ltd,MEP,South East,3.2,2,Y
+SUB-0058,Sub-Contractor 58 Ltd,Groundworks,London,2.6,16,Y
+SUB-0059,Sub-Contractor 59 Ltd,Civil Engineering,Scotland,2.7,6,Y
+SUB-0060,Sub-Contractor 60 Ltd,Plumbing,London,4.2,8,N
+SUB-0061,Sub-Contractor 61 Ltd,Structural Steel,Scotland,3.1,20,Y
+SUB-0062,Sub-Contractor 62 Ltd,Plumbing,London,3.5,19,N
+SUB-0063,Sub-Contractor 63 Ltd,Glazing,South East,4.2,11,Y
+SUB-0064,Sub-Contractor 64 Ltd,Glazing,Midlands,2.8,21,N
+SUB-0065,Sub-Contractor 65 Ltd,Landscaping,North West,4.8,30,Y
+SUB-0066,Sub-Contractor 66 Ltd,Civil Engineering,Midlands,4.1,19,Y
+SUB-0067,Sub-Contractor 67 Ltd,Structural Steel,Scotland,3.0,9,Y
+SUB-0068,Sub-Contractor 68 Ltd,Groundworks,London,4.7,12,N
+SUB-0069,Sub-Contractor 69 Ltd,MEP,Midlands,4.6,23,N
+SUB-0070,Sub-Contractor 70 Ltd,Plumbing,South West,4.1,1,N
+SUB-0071,Sub-Contractor 71 Ltd,Structural Steel,South East,3.2,29,Y
+SUB-0072,Sub-Contractor 72 Ltd,Electrical,South East,3.2,20,Y
+SUB-0073,Sub-Contractor 73 Ltd,Groundworks,South East,4.2,28,N
+SUB-0074,Sub-Contractor 74 Ltd,Electrical,Midlands,3.1,30,Y
+SUB-0075,Sub-Contractor 75 Ltd,Structural Steel,Wales,3.6,9,Y
+SUB-0076,Sub-Contractor 76 Ltd,Civil Engineering,North West,4.4,21,N
+SUB-0077,Sub-Contractor 77 Ltd,MEP,Wales,3.6,23,N
+SUB-0078,Sub-Contractor 78 Ltd,Electrical,London,2.8,29,Y
+SUB-0079,Sub-Contractor 79 Ltd,Electrical,London,4.6,19,Y
+SUB-0080,Sub-Contractor 80 Ltd,Fit-Out,South East,2.6,12,Y
+SUB-0081,Sub-Contractor 81 Ltd,Groundworks,South East,4.2,22,Y
+SUB-0082,Sub-Contractor 82 Ltd,Groundworks,South West,3.9,28,N
+SUB-0083,Sub-Contractor 83 Ltd,Plumbing,Wales,2.9,30,Y
+SUB-0084,Sub-Contractor 84 Ltd,MEP,South West,4.5,29,N
+SUB-0085,Sub-Contractor 85 Ltd,Civil Engineering,South East,4.3,11,N
+SUB-0086,Sub-Contractor 86 Ltd,Roofing,North West,2.9,23,Y
+SUB-0087,Sub-Contractor 87 Ltd,Fit-Out,South West,2.6,16,Y
+SUB-0088,Sub-Contractor 88 Ltd,Roofing,South West,4.8,12,N
+SUB-0089,Sub-Contractor 89 Ltd,Roofing,South East,2.6,7,N
+SUB-0090,Sub-Contractor 90 Ltd,Groundworks,North West,4.7,25,N
+SUB-0091,Sub-Contractor 91 Ltd,Groundworks,Wales,3.8,22,N
+SUB-0092,Sub-Contractor 92 Ltd,Civil Engineering,London,4.7,9,Y
+SUB-0093,Sub-Contractor 93 Ltd,Plumbing,North West,2.6,20,N
+SUB-0094,Sub-Contractor 94 Ltd,Groundworks,Wales,4.5,14,Y
+SUB-0095,Sub-Contractor 95 Ltd,Fit-Out,Scotland,3.0,2,N
+SUB-0096,Sub-Contractor 96 Ltd,Civil Engineering,Scotland,4.8,18,Y
+SUB-0097,Sub-Contractor 97 Ltd,Groundworks,Midlands,2.7,22,N
+SUB-0098,Sub-Contractor 98 Ltd,Plumbing,North West,4.2,4,N
+SUB-0099,Sub-Contractor 99 Ltd,Electrical,North West,4.2,11,N
+SUB-0100,Sub-Contractor 100 Ltd,Glazing,Scotland,2.8,14,N

@@ -291,4 +291,84 @@ export const DEMOS: Record<string, DemoDetail> = {
       { type: "DataPipeline",   name: "daily_media_pipeline",       description: "Orchestrates all notebooks sequentially with retry" },
     ],
   },
+
+  "construction": {
+    id: "construction",
+    industry: "Construction & Real Estate",
+    title: "Project Cost & Portfolio Analytics",
+    description:
+      "Track project schedule variance, cost overruns, subcontractor performance, and property portfolio health across active developments.",
+    longDescription:
+      "This demo deploys a construction and real estate analytics environment using the medallion architecture. It ingests synthetic project records, task schedules, a detailed cost ledger, and subcontractor profiles. The pipeline produces schedule risk bands, cost variance analysis by category and supplier, subcontractor performance scorecards, and weekly spend trends. A Direct Lake semantic model powers portfolio dashboards showing on-time delivery rates, budget utilisation, and overrun alerts across regions and project types.",
+    estimatedTime: "8-12 min",
+    prerequisites: [
+      "Microsoft Fabric capacity (F2+ or Trial)",
+      "Azure AD account with Fabric workspace creation permissions",
+    ],
+    architecture: {
+      pattern: "medallion",
+      layers: [
+        "Bronze (Raw Projects, Tasks, Subcontractors, Cost Ledger)",
+        "Silver (Cleaned & Enriched)",
+        "Gold (Schedule, Cost & Portfolio KPIs)",
+      ],
+    },
+    sampleData: [
+      { fileName: "projects.csv",       description: "200 construction projects with type, region, budget, planned/actual dates, and schedule variance", format: "csv", rows: 200 },
+      { fileName: "tasks.csv",          description: "10,000 project tasks with planned/actual dates, completion status, and assigned subcontractor", format: "csv", rows: 10000 },
+      { fileName: "cost_ledger.csv",    description: "50,000 cost entries with category, supplier, planned vs actual spend, and overrun flag", format: "csv", rows: 50000 },
+      { fileName: "subcontractors.csv", description: "100 subcontractors with trade, region, rating, and accreditation status", format: "csv", rows: 100 },
+    ],
+    fabricItems: [
+      { type: "Lakehouse",     name: "construction_lakehouse",           description: "Central lakehouse for all construction analytics data" },
+      { type: "Notebook",      name: "01_bronze_ingest",                 description: "Ingest raw CSV files into Bronze Delta tables with metadata columns", order: 1 },
+      { type: "Notebook",      name: "02_silver_transform",              description: "Clean data, derive schedule variance bands, cost overrun flags, and task completion rates", order: 2 },
+      { type: "Notebook",      name: "03_gold_aggregate",                description: "6 Gold tables: project summary, cost analysis, subcontractor performance, weekly trends, overrun alerts, portfolio scorecards", order: 3 },
+      { type: "Notebook",      name: "04_reporting_views",               description: "SQL reporting views: executive summary, cost overruns, schedule risk, subcontractor scorecard", order: 4 },
+      { type: "Notebook",      name: "05_dashboard",                     description: "Interactive HTML dashboard with KPI cards, top overrun projects, and subcontractor performance table", order: 5 },
+      { type: "SemanticModel", name: "construction_analytics_model",     description: "Direct Lake model with project, cost, and subcontractor performance measures" },
+      { type: "Report",        name: "Construction Portfolio Dashboard", description: "3-page dashboard: Portfolio Overview, Cost Analysis, Subcontractor Health" },
+      { type: "DataPipeline",  name: "daily_construction_pipeline",      description: "Orchestrates all notebooks sequentially with retry" },
+    ],
+  },
+
+  "education": {
+    id: "education",
+    industry: "Education",
+    title: "Student Outcomes & Institutional Analytics",
+    description:
+      "Monitor student pass rates, cohort retention, at-risk identification, course performance, and faculty workload across departments.",
+    longDescription:
+      "This demo deploys a higher-education analytics environment using the medallion architecture. It ingests synthetic student records, enrolment data, assessment submissions, and faculty profiles. The pipeline produces cohort-level pass rates, GPA proxies, retention risk scores, course-level performance rankings, resit rates, and faculty load bands. A Direct Lake semantic model powers dashboards for institutional effectiveness teams showing at-risk students, low-performing courses, and department benchmarks.",
+    estimatedTime: "8-12 min",
+    prerequisites: [
+      "Microsoft Fabric capacity (F2+ or Trial)",
+      "Azure AD account with Fabric workspace creation permissions",
+    ],
+    architecture: {
+      pattern: "medallion",
+      layers: [
+        "Bronze (Raw Students, Enrolments, Assessments, Faculty)",
+        "Silver (Cleaned & Enriched)",
+        "Gold (Cohort, Course & Retention KPIs)",
+      ],
+    },
+    sampleData: [
+      { fileName: "students.csv",    description: "5,000 student records with programme, department, level, cohort year, and status", format: "csv", rows: 5000 },
+      { fileName: "enrolments.csv",  description: "20,000 course enrolment records with credits, completion, and withdrawal status", format: "csv", rows: 20000 },
+      { fileName: "assessments.csv", description: "80,000 assessment submissions with score, grade, pass flag, and attempt number", format: "csv", rows: 80000 },
+      { fileName: "faculty.csv",     description: "200 faculty members with department, role, courses assigned, and research status", format: "csv", rows: 200 },
+    ],
+    fabricItems: [
+      { type: "Lakehouse",     name: "education_lakehouse",           description: "Central lakehouse for all education analytics data" },
+      { type: "Notebook",      name: "01_bronze_ingest",              description: "Ingest raw CSV files into Bronze Delta tables with metadata columns", order: 1 },
+      { type: "Notebook",      name: "02_silver_transform",           description: "Derive GPA proxy, pass rates, retention risk flags, grade bands, and faculty load bands", order: 2 },
+      { type: "Notebook",      name: "03_gold_aggregate",             description: "6 Gold tables: cohort outcomes, course performance, retention analysis, faculty workload, weekly trends, student scorecards", order: 3 },
+      { type: "Notebook",      name: "04_reporting_views",            description: "SQL reporting views: executive summary, at-risk students, course pass rates, faculty performance", order: 4 },
+      { type: "Notebook",      name: "05_dashboard",                  description: "Interactive HTML dashboard with KPI cards, lowest-performing courses, and department performance table", order: 5 },
+      { type: "SemanticModel", name: "education_analytics_model",     description: "Direct Lake model with cohort, course performance, and retention measures" },
+      { type: "Report",        name: "Student Outcomes Dashboard",    description: "3-page dashboard: Cohort Health, Course Performance, Faculty & Workload" },
+      { type: "DataPipeline",  name: "daily_education_pipeline",      description: "Orchestrates all notebooks sequentially with retry" },
+    ],
+  },
 };

@@ -77,6 +77,7 @@ export const industries: Industry[] = [
     description: "Project, asset, and property analytics for construction and real estate.",
     icon: "building.svg",
     enabled: true,
+    demoId: "construction",
   },
   {
     slug: "media",
@@ -92,6 +93,7 @@ export const industries: Industry[] = [
     description: "Student, faculty, and learning analytics for education organizations.",
     icon: "education.svg",
     enabled: true,
+    demoId: "education",
   },
   {
     slug: "hospitality",
