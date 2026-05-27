@@ -211,4 +211,84 @@ export const DEMOS: Record<string, DemoDetail> = {
       { type: "DataPipeline", name: "daily_financial_pipeline", description: "Orchestrates all notebooks sequentially with retry" },
     ],
   },
+
+  "hospitality": {
+    id: "hospitality",
+    industry: "Hospitality & Travel",
+    title: "Guest Experience & Revenue Analytics",
+    description:
+      "Monitor RevPAR, occupancy rates, guest satisfaction scores, and loyalty programme performance across properties.",
+    longDescription:
+      "This demo deploys a hospitality analytics environment on the medallion architecture. It ingests synthetic booking records, guest profiles, property master data, and guest review scores. The pipeline produces KPIs including Revenue Per Available Room (RevPAR), Average Daily Rate (ADR), occupancy rate, guest satisfaction score, Net Promoter indicators, and loyalty tier distributions. A Direct Lake semantic model powers dashboards with revenue heat-maps, property comparisons, and loyalty cohort analysis.",
+    estimatedTime: "8-12 min",
+    prerequisites: [
+      "Microsoft Fabric capacity (F2+ or Trial)",
+      "Azure AD account with Fabric workspace creation permissions",
+    ],
+    architecture: {
+      pattern: "medallion",
+      layers: [
+        "Bronze (Raw Bookings, Guests, Properties, Reviews)",
+        "Silver (Cleaned & Enriched)",
+        "Gold (Revenue, Occupancy & Loyalty KPIs)",
+      ],
+    },
+    sampleData: [
+      { fileName: "bookings.csv",   description: "50,000 hotel bookings with channel, room type, nightly rate, and status", format: "csv", rows: 50000 },
+      { fileName: "guests.csv",     description: "5,000 guest profiles with loyalty tier, region, and lifetime stay history", format: "csv", rows: 5000 },
+      { fileName: "properties.csv", description: "50 hotel properties with star rating, city, country, and room count", format: "csv", rows: 50 },
+      { fileName: "reviews.csv",    description: "20,000 guest reviews with category scores and sentiment classification", format: "csv", rows: 20000 },
+    ],
+    fabricItems: [
+      { type: "Lakehouse",      name: "hospitality_lakehouse",       description: "Central lakehouse for all hospitality analytics data" },
+      { type: "Notebook",       name: "01_bronze_ingest",            description: "Ingest raw CSV files into Bronze Delta tables with metadata columns", order: 1 },
+      { type: "Notebook",       name: "02_silver_transform",         description: "Clean bookings, derive ADR, length of stay, satisfaction scores, and repeat-guest flags", order: 2 },
+      { type: "Notebook",       name: "03_gold_aggregate",           description: "6 Gold tables: daily revenue, occupancy analysis, loyalty segments, channel performance, weekly trends, property scorecards", order: 3 },
+      { type: "Notebook",       name: "04_reporting_views",          description: "SQL reporting views: executive summary, revenue heat-map, loyalty analysis, property performance", order: 4 },
+      { type: "Notebook",       name: "05_dashboard",                description: "Interactive HTML dashboard with KPI cards, revenue trends, and property comparison table", order: 5 },
+      { type: "SemanticModel",  name: "hospitality_analytics_model", description: "Direct Lake model with revenue, occupancy, and guest satisfaction measures" },
+      { type: "Report",         name: "Guest Experience Dashboard",  description: "3-page dashboard: Revenue & Occupancy, Guest Satisfaction, Loyalty Performance" },
+      { type: "DataPipeline",   name: "daily_hospitality_pipeline",  description: "Orchestrates all notebooks sequentially with retry" },
+    ],
+  },
+
+  "media": {
+    id: "media",
+    industry: "Media, Telecommunications & Entertainment",
+    title: "Subscriber & Content Analytics",
+    description:
+      "Track subscriber churn, content performance, ad revenue, and audience engagement across streaming plans and content genres.",
+    longDescription:
+      "This demo deploys a media and telecom analytics environment using the medallion architecture. It ingests synthetic subscriber records, a content catalog, viewing history, and ad impression data. The pipeline produces subscriber churn rates, ARPU (Average Revenue Per User), content completion rates, top-performing genres, and ad revenue by type. A Direct Lake semantic model powers dashboards with churn cohort analysis, content performance rankings, and ad revenue trends.",
+    estimatedTime: "8-12 min",
+    prerequisites: [
+      "Microsoft Fabric capacity (F2+ or Trial)",
+      "Azure AD account with Fabric workspace creation permissions",
+    ],
+    architecture: {
+      pattern: "medallion",
+      layers: [
+        "Bronze (Raw Subscribers, Content, Viewing History, Ads)",
+        "Silver (Cleaned & Enriched)",
+        "Gold (Churn, Content & Ad Revenue KPIs)",
+      ],
+    },
+    sampleData: [
+      { fileName: "subscribers.csv",     description: "10,000 subscriber records with plan type, region, churn flag, and monthly fee", format: "csv", rows: 10000 },
+      { fileName: "content_catalog.csv", description: "2,000 content items with genre, type, duration, release year, and cost bucket", format: "csv", rows: 2000 },
+      { fileName: "viewing_history.csv", description: "200,000 viewing records with watch duration, completion flag, device type, and rating", format: "csv", rows: 200000 },
+      { fileName: "ad_impressions.csv",  description: "100,000 ad impression records with clicks, CPM, revenue, and ad type", format: "csv", rows: 100000 },
+    ],
+    fabricItems: [
+      { type: "Lakehouse",      name: "media_lakehouse",            description: "Central lakehouse for all media analytics data" },
+      { type: "Notebook",       name: "01_bronze_ingest",           description: "Ingest raw CSV files into Bronze Delta tables with metadata columns", order: 1 },
+      { type: "Notebook",       name: "02_silver_transform",        description: "Clean subscribers, derive tenure, churn flags, content completion rates, and ad CTR", order: 2 },
+      { type: "Notebook",       name: "03_gold_aggregate",          description: "6 Gold tables: daily subscriber metrics, content performance, churn analysis, ad revenue, weekly trends, subscriber scorecards", order: 3 },
+      { type: "Notebook",       name: "04_reporting_views",         description: "SQL reporting views: executive summary, churn risk, content performance, ad revenue breakdown", order: 4 },
+      { type: "Notebook",       name: "05_dashboard",               description: "Interactive HTML dashboard with KPI cards, churn trends, content top-10, and ad revenue by type", order: 5 },
+      { type: "SemanticModel",  name: "media_analytics_model",     description: "Direct Lake model with subscriber, content performance, and ad revenue measures" },
+      { type: "Report",         name: "Subscriber & Content Dashboard", description: "3-page dashboard: Subscriber Health, Content Performance, Ad Revenue" },
+      { type: "DataPipeline",   name: "daily_media_pipeline",       description: "Orchestrates all notebooks sequentially with retry" },
+    ],
+  },
 };

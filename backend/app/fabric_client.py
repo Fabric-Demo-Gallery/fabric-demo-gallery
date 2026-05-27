@@ -216,7 +216,28 @@ class FabricClient:
     # ── lakehouses ───────────────────────────────────────────────────────
 
     async def create_lakehouse(self, workspace_id: str, name: str) -> dict:
-        return await self.create_item(workspace_id, "Lakehouse", name)
+        body: dict[str, Any] = {
+            "displayName": name,
+            "creationPayload": {
+                "enableSchemas": True,
+            },
+        }
+        resp = await self._request(
+            "POST", f"{FABRIC_API}/workspaces/{workspace_id}/lakehouses", json=body
+        )
+        if resp.status_code == 202:
+            location = resp.headers.get("Location")
+            if location:
+                await self._poll_lro(location)
+            for attempt in range(3):
+                if attempt > 0:
+                    await asyncio.sleep(2)
+                items = await self.list_items(workspace_id, "Lakehouse")
+                for item in items:
+                    if item.get("displayName") == name:
+                        return item
+            raise FabricError(500, f"Lakehouse '{name}' was created but could not be located.")
+        return resp.json()
 
     async def get_lakehouse(self, workspace_id: str, lakehouse_id: str) -> dict:
         resp = await self._request(

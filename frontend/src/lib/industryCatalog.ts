@@ -84,6 +84,7 @@ export const industries: Industry[] = [
     description: "Audience, content, and ad analytics for media and entertainment.",
     icon: "media.svg",
     enabled: true,
+    demoId: "media",
   },
   {
     slug: "education",
@@ -98,5 +99,6 @@ export const industries: Industry[] = [
     description: "Guest, booking, and operations analytics for hospitality and travel.",
     icon: "hotel.svg",
     enabled: true,
+    demoId: "hospitality",
   },
 ];

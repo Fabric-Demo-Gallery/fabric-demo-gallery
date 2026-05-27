@@ -1,0 +1,51 @@
+property_id,property_name,city,country,property_type,star_rating,room_count
+PROP-001,London Hotel 1,London,UK,Hotel,5,120
+PROP-002,Dubai Resort 2,Dubai,AE,Resort,5,350
+PROP-003,Miami Hotel 3,Miami,US,Hotel,4,80
+PROP-004,New York Hotel 4,New York,US,Hotel,4,250
+PROP-005,Las Vegas Hotel 5,Las Vegas,US,Hotel,4,350
+PROP-006,Miami Airport 6,Miami,US,Airport,4,250
+PROP-007,Singapore Hotel 7,Singapore,SG,Hotel,5,120
+PROP-008,Sydney Boutique 8,Sydney,AU,Boutique,4,120
+PROP-009,Tokyo Hotel 9,Tokyo,JP,Hotel,3,80
+PROP-010,Tokyo Boutique 10,Tokyo,JP,Boutique,4,500
+PROP-011,New York Airport 11,New York,US,Airport,4,200
+PROP-012,London Business 12,London,UK,Business,4,350
+PROP-013,Las Vegas Boutique 13,Las Vegas,US,Boutique,4,350
+PROP-014,London Hotel 14,London,UK,Hotel,4,500
+PROP-015,Singapore Hotel 15,Singapore,SG,Hotel,5,500
+PROP-016,London Airport 16,London,UK,Airport,4,350
+PROP-017,Tokyo Resort 17,Tokyo,JP,Resort,4,120
+PROP-018,Singapore Hotel 18,Singapore,SG,Hotel,4,120
+PROP-019,Miami Resort 19,Miami,US,Resort,3,200
+PROP-020,Singapore Business 20,Singapore,SG,Business,4,150
+PROP-021,New York Resort 21,New York,US,Resort,5,500
+PROP-022,Tokyo Airport 22,Tokyo,JP,Airport,4,120
+PROP-023,Las Vegas Boutique 23,Las Vegas,US,Boutique,4,200
+PROP-024,Sydney Airport 24,Sydney,AU,Airport,3,120
+PROP-025,Dubai Business 25,Dubai,AE,Business,4,350
+PROP-026,Las Vegas Airport 26,Las Vegas,US,Airport,5,200
+PROP-027,Tokyo Resort 27,Tokyo,JP,Resort,5,120
+PROP-028,Miami Airport 28,Miami,US,Airport,3,80
+PROP-029,London Resort 29,London,UK,Resort,4,500
+PROP-030,Sydney Business 30,Sydney,AU,Business,3,200
+PROP-031,Las Vegas Airport 31,Las Vegas,US,Airport,4,250
+PROP-032,New York Hotel 32,New York,US,Hotel,4,250
+PROP-033,Singapore Boutique 33,Singapore,SG,Boutique,3,200
+PROP-034,Paris Airport 34,Paris,FR,Airport,3,350
+PROP-035,Singapore Business 35,Singapore,SG,Business,5,250
+PROP-036,London Boutique 36,London,UK,Boutique,5,250
+PROP-037,Las Vegas Resort 37,Las Vegas,US,Resort,3,500
+PROP-038,Paris Business 38,Paris,FR,Business,5,250
+PROP-039,New York Business 39,New York,US,Business,4,80
+PROP-040,London Boutique 40,London,UK,Boutique,5,500
+PROP-041,Singapore Resort 41,Singapore,SG,Resort,3,250
+PROP-042,London Hotel 42,London,UK,Hotel,5,500
+PROP-043,London Business 43,London,UK,Business,5,120
+PROP-044,Barcelona Business 44,Barcelona,ES,Business,3,250
+PROP-045,Las Vegas Airport 45,Las Vegas,US,Airport,5,250
+PROP-046,Dubai Boutique 46,Dubai,AE,Boutique,4,350
+PROP-047,Tokyo Airport 47,Tokyo,JP,Airport,5,200
+PROP-048,London Resort 48,London,UK,Resort,4,150
+PROP-049,New York Business 49,New York,US,Business,4,250
+PROP-050,Dubai Hotel 50,Dubai,AE,Hotel,3,350
