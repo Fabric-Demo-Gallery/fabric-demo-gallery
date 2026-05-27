@@ -1,13 +1,39 @@
 {
   "id": "education",
   "industry": "Education",
-  "title": "Education Analytics",
-  "description": "Student outcomes, faculty performance, and institutional analytics — enrollment, retention, and learning effectiveness.",
-  "status": "coming-soon",
+  "title": "Student Outcomes & Institutional Analytics",
+  "description": "Monitor student enrolment, retention rates, assessment performance, faculty workload, and course completion across departments.",
+  "lakehouse": "education_lakehouse",
+  "status": "available",
   "icon": "🎓",
-  "estimatedTime": "10-15 min",
-  "prerequisites": [],
-  "architecture": { "pattern": "medallion", "layers": [] },
-  "sampleData": [],
-  "fabricItems": []
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": [
+      "Bronze (Raw Students, Enrolments, Assessments, Faculty)",
+      "Silver (Cleaned & Enriched)",
+      "Gold (Outcomes, Retention & Performance KPIs)"
+    ]
+  },
+  "sampleData": [
+    { "fileName": "students.csv",    "description": "5,000 student records with programme, enrolment date, cohort, and demographics", "format": "csv", "rows": 5000 },
+    { "fileName": "enrolments.csv",  "description": "20,000 course enrolment records with status and completion flag", "format": "csv", "rows": 20000 },
+    { "fileName": "assessments.csv", "description": "80,000 assessment results with score, grade, and attempt number", "format": "csv", "rows": 80000 },
+    { "fileName": "faculty.csv",     "description": "200 faculty records with department, role, and course load", "format": "csv", "rows": 200 }
+  ],
+  "fabricItems": [
+    { "type": "Lakehouse",     "name": "education_lakehouse",         "description": "Central lakehouse for all education analytics data" },
+    { "type": "Notebook",     "name": "01_bronze_ingest",             "description": "Ingest raw CSV files into Bronze Delta tables",                                                          "order": 1 },
+    { "type": "Notebook",     "name": "02_silver_transform",          "description": "Clean data, derive GPA, pass/fail flags, retention risk scores, and faculty load bands",              "order": 2 },
+    { "type": "Notebook",     "name": "03_gold_aggregate",            "description": "6 Gold tables: cohort outcomes, course performance, retention analysis, faculty workload, weekly trends, student scorecards", "order": 3 },
+    { "type": "Notebook",     "name": "04_reporting_views",           "description": "SQL views: executive summary, at-risk students, course pass rates, faculty performance",               "order": 4 },
+    { "type": "Notebook",     "name": "05_dashboard",                 "description": "Interactive HTML dashboard with KPI cards, retention trends, and department comparison",               "order": 5 },
+    { "type": "SemanticModel","name": "education_analytics_model",   "description": "Direct Lake model with student outcomes, retention, and faculty workload measures" },
+    { "type": "Report",       "name": "Student Outcomes Dashboard",   "description": "3-page dashboard: Student Outcomes, Course Performance, Faculty & Resources" },
+    { "type": "DataPipeline", "name": "daily_education_pipeline",     "description": "Orchestrates all notebooks sequentially with retry" }
+  ]
 }

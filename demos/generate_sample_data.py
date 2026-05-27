@@ -655,6 +655,231 @@ def generate_media_data():
     print(f"Media data generated: {len(subscribers)} subscribers, {len(content)} content items, {len(views)} views, {len(ad_rows)} ad impressions")
 
 
+def generate_construction_data():
+    out_dir = DEMOS_DIR / "construction" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    regions = ["London", "South East", "North West", "Midlands", "Scotland", "Wales", "South West"]
+    project_types = ["Residential", "Commercial", "Infrastructure", "Industrial", "Renovation"]
+    statuses = ["Planning", "In Progress", "Completed", "On Hold", "Cancelled"]
+    trades = ["Civil Engineering", "Structural Steel", "MEP", "Roofing", "Glazing",
+              "Groundworks", "Fit-Out", "Landscaping", "Electrical", "Plumbing"]
+
+    # subcontractors — 100 rows
+    subcontractors = []
+    for i in range(1, 101):
+        subcontractors.append({
+            "subcontractor_id": f"SUB-{i:04d}",
+            "company_name": f"Sub-Contractor {i} Ltd",
+            "trade": random.choice(trades),
+            "region": random.choice(regions),
+            "rating": round(random.uniform(2.5, 5.0), 1),
+            "years_active": random.randint(1, 30),
+            "accredited": random.choice(["Y", "N"]),
+        })
+    _write_csv(out_dir / "subcontractors.csv", subcontractors)
+
+    # projects — 200 rows
+    base_date = datetime(2024, 1, 1)
+    projects = []
+    for i in range(1, 201):
+        planned_start = base_date + timedelta(days=random.randint(0, 365))
+        planned_dur = random.randint(90, 730)
+        planned_end = planned_start + timedelta(days=planned_dur)
+        slip_days = random.randint(-10, 120)
+        actual_start = planned_start + timedelta(days=random.randint(-5, 30))
+        status = random.choice(statuses)
+        budget = round(random.uniform(500_000, 50_000_000), 2)
+        cost_var_pct = round(random.uniform(-5, 30), 2)
+        projects.append({
+            "project_id": f"PRJ-{i:04d}",
+            "project_name": f"Project {i} - {random.choice(project_types)}",
+            "project_type": random.choice(project_types),
+            "region": random.choice(regions),
+            "status": status,
+            "budget": budget,
+            "planned_start_date": planned_start.strftime("%Y-%m-%d"),
+            "planned_end_date": planned_end.strftime("%Y-%m-%d"),
+            "actual_start_date": actual_start.strftime("%Y-%m-%d"),
+            "forecast_end_date": (planned_end + timedelta(days=slip_days)).strftime("%Y-%m-%d"),
+            "schedule_variance_days": slip_days,
+            "cost_variance_pct": cost_var_pct,
+            "lead_subcontractor_id": random.choice(subcontractors)["subcontractor_id"],
+        })
+    _write_csv(out_dir / "projects.csv", projects)
+
+    # tasks — 10 000 rows
+    task_names = ["Site Preparation", "Foundation", "Framing", "Roofing", "MEP Rough-In",
+                  "Insulation", "Drywall", "Electrical Fit-Out", "Plumbing Fit-Out",
+                  "Finishing", "Inspection", "Commissioning", "Handover"]
+    task_statuses = ["Not Started", "In Progress", "Completed", "Delayed", "Blocked"]
+    tasks = []
+    for i in range(1, 10001):
+        prj = random.choice(projects)
+        planned_start = datetime.strptime(prj["planned_start_date"], "%Y-%m-%d") + timedelta(days=random.randint(0, 200))
+        dur = random.randint(3, 60)
+        planned_end = planned_start + timedelta(days=dur)
+        slip = random.randint(-2, 30)
+        pct = round(random.uniform(0, 100), 1)
+        tasks.append({
+            "task_id": f"TSK-{i:06d}",
+            "project_id": prj["project_id"],
+            "task_name": random.choice(task_names),
+            "assigned_subcontractor_id": random.choice(subcontractors)["subcontractor_id"],
+            "planned_start_date": planned_start.strftime("%Y-%m-%d"),
+            "planned_end_date": planned_end.strftime("%Y-%m-%d"),
+            "actual_start_date": (planned_start + timedelta(days=random.randint(0, 5))).strftime("%Y-%m-%d"),
+            "forecast_end_date": (planned_end + timedelta(days=slip)).strftime("%Y-%m-%d"),
+            "schedule_variance_days": slip,
+            "status": random.choice(task_statuses),
+            "pct_complete": pct,
+        })
+    _write_csv(out_dir / "tasks.csv", tasks)
+
+    # cost_ledger — 50 000 rows
+    cost_categories = ["Labour", "Materials", "Equipment", "Subcontractor", "Overheads", "Permits & Fees"]
+    cost_rows = []
+    for i in range(1, 50001):
+        prj = random.choice(projects)
+        planned = round(random.uniform(1_000, 500_000), 2)
+        variance_pct = round(random.uniform(-10, 40), 2)
+        actual = round(planned * (1 + variance_pct / 100), 2)
+        entry_date = datetime.strptime(prj["actual_start_date"], "%Y-%m-%d") + timedelta(days=random.randint(0, 300))
+        cost_rows.append({
+            "cost_id": f"CST-{i:07d}",
+            "project_id": prj["project_id"],
+            "entry_date": entry_date.strftime("%Y-%m-%d"),
+            "cost_category": random.choice(cost_categories),
+            "supplier": f"Supplier-{random.randint(1, 200):03d}",
+            "planned_cost": planned,
+            "actual_cost": actual,
+            "cost_variance": round(actual - planned, 2),
+            "cost_variance_pct": variance_pct,
+            "approved": random.choice(["Y", "Y", "Y", "N"]),
+        })
+    _write_csv(out_dir / "cost_ledger.csv", cost_rows)
+    print(f"Construction data generated: {len(projects)} projects, {len(tasks)} tasks, {len(cost_rows)} cost entries, {len(subcontractors)} subcontractors")
+
+
+def generate_education_data():
+    out_dir = DEMOS_DIR / "education" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    programmes = ["Computer Science", "Business Administration", "Engineering", "Medicine",
+                  "Arts & Humanities", "Law", "Education", "Social Sciences"]
+    departments = ["Computing", "Business", "Engineering", "Medical School",
+                   "Arts", "Law School", "Education Dept", "Social Sciences"]
+    prog_dept = dict(zip(programmes, departments))
+    course_levels = ["Undergraduate", "Postgraduate", "PhD"]
+    genders = ["Male", "Female", "Non-binary", "Prefer not to say"]
+    regions = ["London", "South East", "North West", "Midlands", "Scotland", "Wales", "International"]
+    statuses = ["Active", "Graduated", "Withdrawn", "Deferred"]
+    enrol_statuses = ["Enrolled", "Completed", "Withdrawn", "Failed"]
+    assessment_types = ["Exam", "Coursework", "Dissertation", "Lab Report", "Presentation", "Group Project"]
+    faculty_roles = ["Professor", "Associate Professor", "Lecturer", "Senior Lecturer", "Research Fellow"]
+
+    # faculty — 200 rows
+    faculty = []
+    for i in range(1, 201):
+        dept = random.choice(departments)
+        faculty.append({
+            "faculty_id": f"FAC-{i:04d}",
+            "department": dept,
+            "role": random.choice(faculty_roles),
+            "years_at_institution": random.randint(1, 35),
+            "courses_assigned": random.randint(1, 6),
+            "research_active": random.choice(["Y", "Y", "N"]),
+            "hire_date": (datetime(2000, 1, 1) + timedelta(days=random.randint(0, 9000))).strftime("%Y-%m-%d"),
+        })
+    _write_csv(out_dir / "faculty.csv", faculty)
+
+    # students — 5 000 rows
+    base_date = datetime(2022, 9, 1)
+    students = []
+    for i in range(1, 5001):
+        prog = random.choice(programmes)
+        cohort_year = random.choice([2022, 2023, 2024, 2025])
+        enrol_date = datetime(cohort_year, 9, 1) + timedelta(days=random.randint(0, 14))
+        students.append({
+            "student_id": f"STU-{i:05d}",
+            "programme": prog,
+            "department": prog_dept[prog],
+            "level": random.choice(course_levels),
+            "cohort_year": cohort_year,
+            "enrolment_date": enrol_date.strftime("%Y-%m-%d"),
+            "status": random.choices(statuses, weights=[70, 20, 7, 3])[0],
+            "gender": random.choice(genders),
+            "region": random.choice(regions),
+            "age_at_enrolment": random.randint(18, 45),
+        })
+    _write_csv(out_dir / "students.csv", students)
+
+    # courses pool
+    course_pool = []
+    cid = 1
+    for dept in departments:
+        for lvl in course_levels:
+            for j in range(1, 6):
+                fac = random.choice([f["faculty_id"] for f in faculty if f["department"] == dept] or [faculty[0]["faculty_id"]])
+                course_pool.append({
+                    "course_id": f"CRS-{cid:04d}",
+                    "course_name": f"{dept} {lvl} Module {j}",
+                    "department": dept,
+                    "level": lvl,
+                    "credits": random.choice([10, 15, 20, 30]),
+                    "lead_faculty_id": fac,
+                })
+                cid += 1
+
+    # enrolments — 20 000 rows
+    enrolments = []
+    for i in range(1, 20001):
+        stu = random.choice(students)
+        dept_courses = [c for c in course_pool if c["department"] == prog_dept[stu["programme"]]]
+        course = random.choice(dept_courses if dept_courses else course_pool)
+        enrol_date = datetime.strptime(stu["enrolment_date"], "%Y-%m-%d") + timedelta(days=random.randint(0, 30))
+        est = random.choices(enrol_statuses, weights=[30, 50, 10, 10])[0]
+        enrolments.append({
+            "enrolment_id": f"ENR-{i:06d}",
+            "student_id": stu["student_id"],
+            "course_id": course["course_id"],
+            "department": course["department"],
+            "level": course["level"],
+            "credits": course["credits"],
+            "enrolment_date": enrol_date.strftime("%Y-%m-%d"),
+            "status": est,
+            "is_completed": 1 if est == "Completed" else 0,
+            "is_withdrawn": 1 if est == "Withdrawn" else 0,
+        })
+    _write_csv(out_dir / "enrolments.csv", enrolments)
+
+    # assessments — 80 000 rows
+    grade_bands = ["A", "B", "C", "D", "F"]
+    assessments = []
+    for i in range(1, 80001):
+        enr = random.choice(enrolments)
+        score = round(random.gauss(62, 16), 1)
+        score = max(0, min(100, score))
+        grade = "A" if score >= 70 else "B" if score >= 60 else "C" if score >= 50 else "D" if score >= 40 else "F"
+        submitted_date = datetime.strptime(enr["enrolment_date"], "%Y-%m-%d") + timedelta(days=random.randint(30, 200))
+        assessments.append({
+            "assessment_id": f"ASM-{i:07d}",
+            "enrolment_id": enr["enrolment_id"],
+            "student_id": enr["student_id"],
+            "course_id": enr["course_id"],
+            "department": enr["department"],
+            "assessment_type": random.choice(assessment_types),
+            "attempt_number": random.choices([1, 2, 3], weights=[80, 15, 5])[0],
+            "submitted_date": submitted_date.strftime("%Y-%m-%d"),
+            "score": score,
+            "grade": grade,
+            "is_pass": 1 if score >= 40 else 0,
+            "word_count": random.randint(500, 5000) if random.random() > 0.4 else None,
+        })
+    _write_csv(out_dir / "assessments.csv", assessments)
+    print(f"Education data generated: {len(students)} students, {len(enrolments)} enrolments, {len(assessments)} assessments, {len(faculty)} faculty")
+
+
 if __name__ == "__main__":
     generate_manufacturing_data()
     generate_retail_data()
@@ -663,3 +888,5 @@ if __name__ == "__main__":
     generate_financial_services_data()
     generate_hospitality_data()
     generate_media_data()
+    generate_construction_data()
+    generate_education_data()
