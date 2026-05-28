@@ -880,6 +880,306 @@ def generate_education_data():
     print(f"Education data generated: {len(students)} students, {len(enrolments)} enrolments, {len(assessments)} assessments, {len(faculty)} faculty")
 
 
+def generate_transportation_data():
+    out_dir = DEMOS_DIR / "transportation" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    random.seed(42)
+
+    vehicle_types = ["HGV", "Van", "Refrigerated", "Flatbed", "Tanker"]
+    depots = ["London", "Birmingham", "Manchester", "Leeds", "Glasgow", "Bristol", "Liverpool", "Sheffield"]
+    statuses = ["Active", "Active", "Active", "Maintenance", "Decommissioned"]
+
+    # Vehicles — 100
+    vehicles = []
+    for i in range(1, 101):
+        vtype = random.choice(vehicle_types)
+        capacity = {"HGV": random.randint(20, 44), "Van": random.randint(1, 3),
+                    "Refrigerated": random.randint(10, 20), "Flatbed": random.randint(15, 30), "Tanker": random.randint(20, 40)}[vtype]
+        vehicles.append({
+            "vehicle_id":       f"VEH-{i:04d}",
+            "vehicle_type":     vtype,
+            "depot":            random.choice(depots),
+            "capacity_tonnes":  capacity,
+            "year_registered":  random.randint(2015, 2024),
+            "status":           random.choice(statuses),
+            "driver_id":        f"DRV-{random.randint(1, 150):04d}",
+        })
+    _write_csv(out_dir / "vehicles.csv", vehicles)
+
+    # Routes — 500
+    cities = ["London", "Birmingham", "Manchester", "Leeds", "Glasgow", "Bristol", "Liverpool",
+              "Sheffield", "Edinburgh", "Cardiff", "Newcastle", "Nottingham", "Leicester", "Southampton"]
+    route_types = ["Long Haul", "Regional", "Last Mile", "Express", "Overnight"]
+    routes = []
+    for i in range(1, 501):
+        orig, dest = random.sample(cities, 2)
+        dist = round(random.uniform(20, 600), 1)
+        routes.append({
+            "route_id":         f"RT-{i:04d}",
+            "origin":           orig,
+            "destination":      dest,
+            "distance_km":      dist,
+            "route_type":       random.choice(route_types),
+            "sla_hours":        round(dist / random.uniform(60, 90), 1),
+            "toll_cost_gbp":    round(random.uniform(0, 50), 2),
+        })
+    _write_csv(out_dir / "routes.csv", routes)
+
+    # Deliveries — 50k
+    base_date = datetime(2025, 1, 1)
+    delivery_statuses = ["Delivered", "Delivered", "Delivered", "Delivered", "Late", "Failed", "In Transit"]
+    deliveries = []
+    for i in range(1, 50001):
+        veh = random.choice(vehicles)
+        route = random.choice(routes)
+        planned_dep = base_date + timedelta(days=random.randint(0, 89), hours=random.randint(5, 22))
+        travel_h = route["distance_km"] / random.uniform(55, 85)
+        delay_h = random.choices([0, 0, 0, random.uniform(0.5, 4)], weights=[60, 20, 10, 10])[0]
+        status = random.choice(delivery_statuses)
+        actual_arr = planned_dep + timedelta(hours=travel_h + delay_h) if status not in ("Failed", "In Transit") else None
+        deliveries.append({
+            "delivery_id":          f"DEL-{i:07d}",
+            "vehicle_id":           veh["vehicle_id"],
+            "route_id":             route["route_id"],
+            "planned_departure":    planned_dep.strftime("%Y-%m-%d %H:%M:%S"),
+            "actual_arrival":       actual_arr.strftime("%Y-%m-%d %H:%M:%S") if actual_arr else "",
+            "planned_duration_hrs": round(travel_h, 2),
+            "actual_duration_hrs":  round(travel_h + delay_h, 2) if actual_arr else "",
+            "delay_hrs":            round(delay_h, 2),
+            "distance_km":          route["distance_km"],
+            "load_tonnes":          round(random.uniform(0.5, veh["capacity_tonnes"]), 1),
+            "status":               status,
+            "is_late":              1 if delay_h > 0 and status not in ("Failed", "In Transit") else 0,
+        })
+    _write_csv(out_dir / "deliveries.csv", deliveries)
+
+    # Fuel logs — 20k
+    fuel_logs = []
+    for i in range(1, 20001):
+        veh = random.choice(vehicles)
+        log_date = base_date + timedelta(days=random.randint(0, 89))
+        odometer = random.randint(50000, 300000)
+        litres = round(random.uniform(30, 250), 1)
+        fuel_logs.append({
+            "log_id":           f"FL-{i:07d}",
+            "vehicle_id":       veh["vehicle_id"],
+            "log_date":         log_date.strftime("%Y-%m-%d"),
+            "depot":            veh["depot"],
+            "odometer_km":      odometer,
+            "litres_filled":    litres,
+            "cost_per_litre":   round(random.uniform(1.45, 1.85), 3),
+            "total_cost_gbp":   round(litres * random.uniform(1.45, 1.85), 2),
+            "fuel_type":        random.choices(["Diesel", "AdBlue", "HVO"], weights=[75, 20, 5])[0],
+        })
+    _write_csv(out_dir / "fuel_logs.csv", fuel_logs)
+    print(f"Transportation data generated: {len(vehicles)} vehicles, {len(routes)} routes, {len(deliveries)} deliveries, {len(fuel_logs)} fuel logs")
+
+
+def generate_technology_data():
+    out_dir = DEMOS_DIR / "technology" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    random.seed(42)
+
+    plans = ["Starter", "Growth", "Professional", "Enterprise"]
+    plan_mrr = {"Starter": 99, "Growth": 499, "Professional": 1499, "Enterprise": 4999}
+    industries = ["Finance", "Healthcare", "Retail", "Manufacturing", "Technology", "Education", "Professional Services", "Logistics"]
+    regions = ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East"]
+    roles = ["Admin", "Manager", "Analyst", "Developer", "Viewer"]
+    features = ["Dashboard", "Reports", "API", "Automation", "Integrations", "Data Export", "User Management", "Alerts", "ML Insights", "Mobile App"]
+    actions = ["view", "create", "update", "delete", "export", "share", "configure"]
+    ticket_categories = ["Bug", "Feature Request", "Billing", "Onboarding", "Performance", "Integration"]
+    priorities = ["Low", "Medium", "High", "Critical"]
+
+    base_date = datetime(2025, 1, 1)
+
+    # Accounts — 2 000
+    accounts = []
+    for i in range(1, 2001):
+        plan = random.choices(plans, weights=[30, 35, 25, 10])[0]
+        is_churned = random.random() < 0.12
+        signup = datetime(2021, 1, 1) + timedelta(days=random.randint(0, 1460))
+        churn_date = (signup + timedelta(days=random.randint(60, 900))).strftime("%Y-%m-%d") if is_churned else ""
+        accounts.append({
+            "account_id":       f"ACC-{i:05d}",
+            "plan":             plan,
+            "mrr_usd":          plan_mrr[plan],
+            "industry":         random.choice(industries),
+            "region":           random.choice(regions),
+            "signup_date":      signup.strftime("%Y-%m-%d"),
+            "churn_date":       churn_date,
+            "is_churned":       1 if is_churned else 0,
+            "seat_count":       random.randint(1, {"Starter": 5, "Growth": 25, "Professional": 100, "Enterprise": 500}[plan]),
+            "health_score":     round(random.uniform(20, 100) if not is_churned else random.uniform(10, 50), 1),
+        })
+    _write_csv(out_dir / "accounts.csv", accounts)
+
+    # Users — 10 000
+    active_accounts = [a for a in accounts if not a["is_churned"]]
+    users = []
+    for i in range(1, 10001):
+        acc = random.choice(active_accounts)
+        last_login = base_date + timedelta(days=random.randint(0, 89))
+        is_active = random.random() < 0.75
+        users.append({
+            "user_id":              f"USR-{i:07d}",
+            "account_id":           acc["account_id"],
+            "role":                 random.choice(roles),
+            "is_active":            1 if is_active else 0,
+            "last_login_date":      last_login.strftime("%Y-%m-%d") if is_active else "",
+            "signup_date":          acc["signup_date"],
+            "logins_last_30_days":  random.randint(0, 30) if is_active else 0,
+        })
+    _write_csv(out_dir / "users.csv", users)
+
+    # Product events — 200 000
+    active_users = [u for u in users if u["is_active"]]
+    events = []
+    for i in range(200000):
+        usr = random.choice(active_users)
+        evt_date = base_date + timedelta(days=random.randint(0, 89))
+        feature = random.choice(features)
+        events.append({
+            "event_id":     f"EVT-{i+1:08d}",
+            "user_id":      usr["user_id"],
+            "account_id":   usr["account_id"],
+            "event_date":   evt_date.strftime("%Y-%m-%d"),
+            "feature":      feature,
+            "action":       random.choice(actions),
+            "session_id":   f"SES-{random.randint(1, 500000):08d}",
+            "duration_secs": random.randint(1, 600),
+        })
+    _write_csv(out_dir / "events.csv", events)
+
+    # Support tickets — 20 000
+    tickets = []
+    for i in range(1, 20001):
+        acc = random.choice(accounts)
+        created = base_date + timedelta(days=random.randint(0, 89), hours=random.randint(0, 23))
+        priority = random.choices(priorities, weights=[40, 35, 18, 7])[0]
+        sla_h = {"Low": 72, "Medium": 24, "High": 8, "Critical": 2}[priority]
+        resolution_h = random.uniform(0.5, sla_h * 2)
+        is_breached = 1 if resolution_h > sla_h else 0
+        resolved_at = created + timedelta(hours=resolution_h)
+        tickets.append({
+            "ticket_id":            f"TKT-{i:07d}",
+            "account_id":           acc["account_id"],
+            "created_at":           created.strftime("%Y-%m-%d %H:%M:%S"),
+            "resolved_at":          resolved_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "category":             random.choice(ticket_categories),
+            "priority":             priority,
+            "resolution_hrs":       round(resolution_h, 2),
+            "sla_target_hrs":       sla_h,
+            "is_sla_breached":      is_breached,
+            "csat_score":           random.choices([1, 2, 3, 4, 5], weights=[5, 8, 15, 37, 35])[0],
+        })
+    _write_csv(out_dir / "support_tickets.csv", tickets)
+    print(f"Technology data generated: {len(accounts)} accounts, {len(users)} users, {len(events)} events, {len(tickets)} support tickets")
+
+
+def generate_professional_services_data():
+    out_dir = DEMOS_DIR / "professional-services" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    random.seed(42)
+
+    grades = ["Analyst", "Consultant", "Senior Consultant", "Manager", "Principal", "Director", "Partner"]
+    grade_rate = {"Analyst": 400, "Consultant": 650, "Senior Consultant": 900,
+                  "Manager": 1200, "Principal": 1600, "Director": 2000, "Partner": 2800}
+    practices = ["Strategy", "Technology", "Operations", "Finance", "HR", "Data & Analytics", "Change Management"]
+    regions = ["London", "New York", "Singapore", "Dubai", "Sydney", "Frankfurt", "Paris"]
+    client_industries = ["Finance", "Healthcare", "Government", "Energy", "Retail", "Manufacturing", "Technology"]
+    client_tiers = ["Strategic", "Key", "Standard"]
+    task_types = ["Client Work", "Business Development", "Internal", "Training", "Admin"]
+    delivery_statuses = ["On Track", "At Risk", "Delayed", "Completed", "Cancelled"]
+
+    base_date = datetime(2025, 1, 1)
+
+    # Consultants — 200
+    consultants = []
+    for i in range(1, 201):
+        grade = random.choices(grades, weights=[20, 25, 20, 15, 10, 6, 4])[0]
+        consultants.append({
+            "consultant_id":    f"CON-{i:04d}",
+            "grade":            grade,
+            "practice":         random.choice(practices),
+            "region":           random.choice(regions),
+            "daily_rate_gbp":   grade_rate[grade] + random.randint(-50, 100),
+            "years_experience": random.randint(1, 25),
+            "is_billable":      random.choices([1, 0], weights=[85, 15])[0],
+            "hire_date":        (datetime(2010, 1, 1) + timedelta(days=random.randint(0, 5000))).strftime("%Y-%m-%d"),
+        })
+    _write_csv(out_dir / "consultants.csv", consultants)
+
+    # Clients — 100
+    clients = []
+    for i in range(1, 101):
+        tier = random.choices(client_tiers, weights=[15, 30, 55])[0]
+        contract_val = {"Strategic": random.uniform(500000, 5000000),
+                        "Key": random.uniform(100000, 800000),
+                        "Standard": random.uniform(10000, 200000)}[tier]
+        clients.append({
+            "client_id":        f"CLI-{i:04d}",
+            "client_name":      f"Client {i} {random.choice(client_industries)}",
+            "industry":         random.choice(client_industries),
+            "region":           random.choice(regions),
+            "tier":             tier,
+            "contract_value_gbp": round(contract_val, 2),
+            "relationship_years": random.randint(1, 20),
+            "nps_score":        random.randint(-100, 100),
+        })
+    _write_csv(out_dir / "clients.csv", clients)
+
+    # Engagements — 1 000
+    engagements = []
+    for i in range(1, 1001):
+        client = random.choice(clients)
+        lead = random.choice(consultants)
+        start = base_date + timedelta(days=random.randint(-180, 60))
+        duration = random.randint(30, 365)
+        end = start + timedelta(days=duration)
+        budget = round(random.uniform(20000, 500000), 2)
+        actual = round(budget * random.uniform(0.7, 1.35), 2)
+        margin_pct = round((budget - actual) / budget * 100, 2)
+        status = random.choice(delivery_statuses)
+        engagements.append({
+            "engagement_id":        f"ENG-{i:05d}",
+            "client_id":            client["client_id"],
+            "lead_consultant_id":   lead["consultant_id"],
+            "practice":             lead["practice"],
+            "start_date":           start.strftime("%Y-%m-%d"),
+            "planned_end_date":     end.strftime("%Y-%m-%d"),
+            "budget_gbp":           budget,
+            "actual_spend_gbp":     actual,
+            "margin_pct":           margin_pct,
+            "status":               status,
+            "headcount":            random.randint(1, 15),
+        })
+    _write_csv(out_dir / "engagements.csv", engagements)
+
+    # Timesheets — 50 000
+    timesheets = []
+    weeks = [(base_date + timedelta(weeks=w)).strftime("%Y-%m-%d") for w in range(-26, 14)]
+    for i in range(1, 50001):
+        con = random.choice(consultants)
+        eng = random.choice(engagements)
+        week = random.choice(weeks)
+        task = random.choices(task_types, weights=[60, 15, 10, 8, 7])[0]
+        hours = round(random.uniform(0.5, 10), 2)
+        is_billable = 1 if task == "Client Work" and con["is_billable"] else 0
+        timesheets.append({
+            "timesheet_id":     f"TS-{i:07d}",
+            "consultant_id":    con["consultant_id"],
+            "engagement_id":    eng["engagement_id"],
+            "week_starting":    week,
+            "task_type":        task,
+            "hours_logged":     hours,
+            "is_billable":      is_billable,
+            "daily_rate_gbp":   con["daily_rate_gbp"],
+            "billed_value_gbp": round(hours / 8 * con["daily_rate_gbp"], 2) if is_billable else 0,
+        })
+    _write_csv(out_dir / "timesheets.csv", timesheets)
+    print(f"Professional services data generated: {len(consultants)} consultants, {len(clients)} clients, {len(engagements)} engagements, {len(timesheets)} timesheets")
+
+
 if __name__ == "__main__":
     generate_manufacturing_data()
     generate_retail_data()
@@ -890,3 +1190,6 @@ if __name__ == "__main__":
     generate_media_data()
     generate_construction_data()
     generate_education_data()
+    generate_transportation_data()
+    generate_technology_data()
+    generate_professional_services_data()
