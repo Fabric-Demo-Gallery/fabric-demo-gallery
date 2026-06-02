@@ -4,9 +4,15 @@ import { industries } from "@/lib/industryCatalog";
 export function Breadcrumbs({
   industrySlug,
   deploymentType,
+  scenarioTitle,
+  demoId,
+  pageName,
 }: {
   industrySlug?: string;
   deploymentType?: "standard" | "custom";
+  scenarioTitle?: string;
+  demoId?: string;
+  pageName?: string;
 }) {
   const crumbs: Array<{ label: string; href?: string }> = [
     { label: "Industries", href: "/" },
@@ -19,13 +25,18 @@ export function Breadcrumbs({
         href: `/industries/${industry.slug}`,
       });
     if (deploymentType) {
-      crumbs.push({
-        label:
-          deploymentType === "standard"
-            ? "Standard Deployment"
-            : "Custom Deployment",
-      });
+      const label = deploymentType === "standard" ? "Standard Deployment" : "Custom Deployment";
+      // Link back to the demo page (with mode param) only when there is a further crumb
+      const href = scenarioTitle && demoId
+        ? `/demos/${demoId}?mode=${deploymentType}`
+        : undefined;
+      crumbs.push({ label, href });
     }
+    if (scenarioTitle) {
+      crumbs.push({ label: scenarioTitle });
+    }
+  } else if (pageName) {
+    crumbs.push({ label: pageName });
   }
 
   return (

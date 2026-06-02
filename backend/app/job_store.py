@@ -21,14 +21,16 @@ class JobState:
     demo_id: str
     workspace_name: str
     user_id: str
-    status: str = "pending"  # pending | running | completed | failed
+    status: str = "pending"  # pending | running | completed | failed | cancelled
     steps: list[dict] = field(default_factory=list)
     error: str | None = None
     workspace_id: str | None = None
+    scenario_id: str | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     _events: list[dict] = field(default_factory=list, repr=False)
     _subscribers: list[asyncio.Queue] = field(default_factory=list, repr=False)
+    _task: asyncio.Task | None = field(default=None, init=False, repr=False)
 
     def to_summary(self) -> dict:
         total = len(self.steps)
@@ -43,6 +45,7 @@ class JobState:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "workspace_id": self.workspace_id,
+            "scenario_id": self.scenario_id,
             "error": self.error,
             "step_summary": {
                 "total": total,
@@ -64,7 +67,7 @@ class JobStore:
         self._jobs: dict[str, JobState] = {}
 
     def create_job(
-        self, demo_id: str, workspace_name: str, user_id: str
+        self, demo_id: str, workspace_name: str, user_id: str, scenario_id: str | None = None
     ) -> JobState:
         job_id = str(uuid4())
         job = JobState(
@@ -72,6 +75,7 @@ class JobStore:
             demo_id=demo_id,
             workspace_name=workspace_name,
             user_id=user_id,
+            scenario_id=scenario_id,
         )
         self._jobs[job_id] = job
         self._evict_old_jobs(user_id)
@@ -132,6 +136,21 @@ class JobStore:
             except asyncio.QueueFull:
                 logger.warning("Dropping SSE event for slow subscriber on job %s", job_id)
 
+    def set_task(self, job_id: str, task: asyncio.Task) -> None:
+        job = self._jobs.get(job_id)
+        if job:
+            job._task = task
+
+    def cancel_job(self, job_id: str) -> bool:
+        """Cancel the running asyncio task for a job. Returns True if cancelled."""
+        job = self._jobs.get(job_id)
+        if not job:
+            return False
+        if job._task and not job._task.done():
+            job._task.cancel()
+            return True
+        return False
+
     def set_status(self, job_id: str, status: str) -> None:
         job = self._jobs.get(job_id)
         if job:
@@ -163,7 +182,7 @@ class JobStore:
             return
         # Sort by created_at, evict oldest completed/failed jobs
         terminal = sorted(
-            [j for j in user_jobs if j.status in ("completed", "failed")],
+            [j for j in user_jobs if j.status in ("completed", "failed", "cancelled")],
             key=lambda j: j.created_at,
         )
         while len(user_jobs) > MAX_JOBS_PER_USER and terminal:

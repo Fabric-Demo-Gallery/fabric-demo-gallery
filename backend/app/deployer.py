@@ -10,6 +10,7 @@ from typing import AsyncIterator
 
 from app.fabric_client import FabricClient, FabricError
 from app.report_builder import build_manufacturing_report_definition, build_retail_report_definition, build_energy_report_definition
+from app.azure_client import AzureClient, AzureError
 
 logger = logging.getLogger(__name__)
 
@@ -69,32 +70,97 @@ def list_demos() -> list[dict]:
     return demos
 
 
+# ── Scenario helpers ────────────────────────────────────────────────────────
+
+# Only these scenario IDs are currently enabled for deployment.
+ENABLED_SCENARIOS: set[str] = {"data-virtualization-batch"}
+
+
+def load_scenario(scenario_id: str) -> dict:
+    """Load a scenario template from _scenarios/{scenario_id}.json."""
+    path = DEMOS_DIR / "_scenarios" / f"{scenario_id}.json"
+    if not path.exists():
+        raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def list_scenarios_for_demo(demo_id: str) -> list[dict]:
+    """
+    Return all scenarios for a demo, merging manifest.custom.json overrides
+    with the global _scenarios/*.json definitions.
+    """
+    custom_path = DEMOS_DIR / demo_id / "manifest.custom.json"
+    if not custom_path.exists():
+        return []
+    try:
+        custom = json.loads(custom_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return []
+
+    result = []
+    for entry in custom.get("scenarios", []):
+        scenario_id = entry.get("id", "")
+        if not scenario_id:
+            continue
+        try:
+            scenario = load_scenario(scenario_id)
+        except FileNotFoundError:
+            scenario = {}
+
+        title = entry.get("titleOverride") or scenario.get("title", scenario_id)
+        result.append({
+            "id": scenario_id,
+            "title": title,
+            "description": scenario.get("description", ""),
+            "icon": scenario.get("icon", "📦"),
+            "estimatedTime": scenario.get("estimatedTime", ""),
+            "tags": scenario.get("tags", []),
+            "enabled": scenario_id in ENABLED_SCENARIOS,
+            "requiresAzure": bool(scenario.get("azureParams")),
+            "azureParams": scenario.get("azureParams", []),
+        })
+    return result
+
+
 async def deploy_demo(
     client: FabricClient,
     demo_id: str,
     workspace_name: str | None = None,
     workspace_id: str | None = None,
     capacity_id: str | None = None,
+    manifest_override: dict | None = None,
+    azure_client: AzureClient | None = None,
+    onelake_token: str | None = None,
+    subscription_id: str | None = None,
+    resource_group: str | None = None,
+    storage_account_name: str | None = None,
+    azure_location: str = "eastus",
+    create_resource_group: bool = False,
 ) -> AsyncIterator[dict]:
     """
     Deploy a demo end-to-end, yielding progress events as SSE-compatible dicts.
 
     Steps:
     1. Create or reuse workspace
-    2. Create lakehouse
-    3. Upload sample data
-    4. Create & deploy notebooks
-    5. Execute notebooks (Bronze → Silver → Gold)
-    6. Wait for SQL endpoint
-    7. Create semantic model
-    8. Create pipeline
+    2. (Optional) Provision ADLS Gen2 storage account + upload data + create Fabric connection + shortcut
+    3. Create lakehouse(s)
+    4. Upload sample data  OR  create ADLS shortcut (depending on manifest)
+    5. Create & deploy notebooks
+    6. Execute notebooks (Bronze → Silver → Gold)
+    7. Wait for SQL endpoint
+    8. Create semantic model
+    9. Create pipeline
     """
-    manifest = load_manifest(demo_id)
+    manifest = manifest_override if manifest_override is not None else load_manifest(demo_id)
     demo_dir = DEMOS_DIR / demo_id
     items = manifest["fabricItems"]
 
     steps: list[DeploymentStep] = []
     created_ids: dict[str, str] = {}  # logical name → Fabric item ID
+
+    # Detect shortcut items — forks the data ingestion path
+    shortcuts = [i for i in items if i["type"] == "Shortcut"]
+    has_shortcut = len(shortcuts) > 0
 
     # ── Plan steps ───────────────────────────────────────────────────────
     if not workspace_id:
@@ -113,7 +179,14 @@ async def deploy_demo(
         steps.append(DeploymentStep(f"lakehouse:{lh['name']}", f"Create lakehouse '{lh['name']}'"))
 
     data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
-    if data_files:
+    if has_shortcut:
+        # Replace single upload step with the full ADLS provisioning sequence
+        steps.append(DeploymentStep("adls-account", f"Provision ADLS Gen2 storage account"))
+        steps.append(DeploymentStep("adls-upload", f"Upload {len(data_files)} sample file(s) to blob storage"))
+        steps.append(DeploymentStep("fabric-connection", "Create Fabric connection to ADLS Gen2"))
+        for sc in shortcuts:
+            steps.append(DeploymentStep(f"shortcut:{sc['name']}", f"Create shortcut '{sc['name']}' → ADLS Gen2"))
+    elif data_files:
         steps.append(DeploymentStep("upload-data", f"Upload {len(data_files)} sample data file(s)"))
 
     notebooks = [i for i in items if i["type"] == "Notebook"]
@@ -222,8 +295,157 @@ async def deploy_demo(
             step.item_id = lh_id
             yield {"event": "step", "data": step.to_dict()}
 
-        # 3. Upload sample data
-        if data_files and lakehouse_id:
+        # 3. Upload data — fork on whether this is a shortcut deployment
+        shortcut_name = shortcuts[0]["name"] if shortcuts else "raw_data"
+        nb_variables = {}
+        if eventhouse_uri:
+            nb_variables["EVENTHOUSE_URI"] = eventhouse_uri
+        if kql_db_name:
+            nb_variables["KQL_DATABASE_NAME"] = kql_db_name
+
+        if has_shortcut:
+            # ── Shortcut path: provision ADLS Gen2 + upload + create connection + shortcut ──
+            if not azure_client or not subscription_id or not resource_group:
+                raise FabricError(400, "Shortcut deployment requires subscription_id, resource_group, and Azure credentials (x-management-token header).")
+
+            # 3a. Provision storage account
+            step = _find_step(steps, "adls-account")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            acct_name = storage_account_name
+            if not acct_name:
+                import random, string
+                prefix = demo_id.replace("-", "")[:8]
+                suffix = "".join(random.choices(string.digits, k=4))
+                acct_name = f"{prefix}{suffix}"[:24]
+            try:
+                if create_resource_group:
+                    await azure_client.create_resource_group(subscription_id, resource_group, azure_location)
+                await azure_client.create_storage_account(
+                    subscription_id, resource_group, acct_name, azure_location
+                )
+                # Grant Storage Blob Data Contributor so OAuth uploads work.
+                # Non-fatal — user may already have access via a group or higher role.
+                caller_oid = azure_client.get_caller_oid()
+                if caller_oid:
+                    try:
+                        await azure_client.assign_blob_data_contributor(
+                            subscription_id, resource_group, acct_name, caller_oid
+                        )
+                    except AzureError as rbac_err:
+                        logger.warning("Could not assign blob role (will retry on 403): %s", rbac_err.detail)
+            except AzureError as e:
+                raise FabricError(e.status, f"ADLS provisioning failed: {e.detail}")
+            step.status = "completed"
+            step.detail = f"{acct_name}.dfs.core.windows.net"
+            yield {"event": "step", "data": step.to_dict()}
+
+            # 3b. Upload sample files to blob storage
+            step = _find_step(steps, "adls-upload")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            container = demo_id.replace("-", "")
+            try:
+                await azure_client.create_blob_container(
+                    subscription_id, resource_group, acct_name, container
+                )
+                for f in data_files:
+                    blob_name = f.name
+                    await client.upload_blob_oauth(
+                        acct_name, container, blob_name, Path(f).read_bytes()
+                    )
+            except (AzureError, FabricError) as e:
+                status = e.status if hasattr(e, "status") else 500
+                detail = e.detail if hasattr(e, "detail") else str(e)
+                raise FabricError(status, f"ADLS upload failed: {detail}")
+            step.status = "completed"
+            step.detail = f"Uploaded {len(data_files)} file(s) to {acct_name}/{container}/"
+            yield {"event": "step", "data": step.to_dict()}
+
+            # 3c. Create Fabric connection to ADLS Gen2
+            step = _find_step(steps, "fabric-connection")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            adls_dfs_url = f"https://{acct_name}.dfs.core.windows.net"
+            connection_id = ""
+            try:
+                conn_result = await client.create_connection_oauth(
+                    display_name=f"{demo_id}-{acct_name}-conn",
+                    adls_account_url=adls_dfs_url,
+                    container=container,
+                )
+                connection_id = conn_result.get("id") or conn_result.get("connectionId") or ""
+                if not connection_id:
+                    logger.warning("[shortcut] connection_id empty after connection step; conn_result keys: %s",
+                                   list(conn_result.keys()))
+                    step.status = "failed"
+                    step.detail = f"Connection created but no ID in response. Keys: {list(conn_result.keys())}"
+                else:
+                    step.status = "completed"
+                    step.detail = f"Connection ID: {connection_id}"
+            except FabricError as conn_err:
+                logger.warning("Fabric connection failed (HTTP %s): %s",
+                               conn_err.status, conn_err.detail)
+                step.status = "skipped"
+                step.detail = f"HTTP {conn_err.status}: {conn_err.detail[:200]}"
+            yield {"event": "step", "data": step.to_dict()}
+
+            # 3d. Create shortcut(s) in the lakehouse
+            shortcut_created = False
+            if connection_id:
+                for sc in shortcuts:
+                    step = _find_step(steps, f"shortcut:{sc['name']}")
+                    step.status = "running"
+                    yield {"event": "step", "data": step.to_dict()}
+                    parent_lh_name = sc.get("parentLakehouse", "")
+                    lh_id_for_sc = created_ids.get(parent_lh_name, lakehouse_id)
+                    try:
+                        sc_result = await client.create_shortcut(
+                            workspace_id=ws_id,
+                            lakehouse_id=lh_id_for_sc,
+                            name=sc["name"],
+                            parent_path=sc.get("path", "Files"),
+                            adls_location=adls_dfs_url,
+                            adls_subpath=f"/{container}",
+                            connection_id=connection_id,
+                            onelake_token=onelake_token,
+                        )
+                        created_ids[sc["name"]] = sc_result.get("name", sc["name"])
+                        step.status = "completed"
+                        step.detail = f"Files/{sc['name']} → {adls_dfs_url}/{container}"
+                        shortcut_created = True
+                    except FabricError as sc_err:
+                        if sc_err.status == 409:
+                            # Shortcut already exists (e.g. re-deploying same workspace)
+                            logger.info("[shortcut] 409 — shortcut '%s' already exists, treating as success", sc["name"])
+                            step.status = "completed"
+                            step.detail = f"Files/{sc['name']} already exists (reused)"
+                            shortcut_created = True
+                        else:
+                            logger.warning("Shortcut creation failed (HTTP %s): %s", sc_err.status, sc_err.detail[:300])
+                            step.status = "skipped"
+                            step.detail = f"HTTP {sc_err.status}: {sc_err.detail[:200]}"
+                    yield {"event": "step", "data": step.to_dict()}
+            else:
+                for sc in shortcuts:
+                    step = _find_step(steps, f"shortcut:{sc['name']}")
+                    step.status = "skipped"
+                    step.detail = "Skipped — no Fabric connection available"
+                    yield {"event": "step", "data": step.to_dict()}
+
+            if shortcut_created:
+                # Notebooks read via shortcut
+                nb_variables["DATA_SOURCE_PATH"] = f"Files/{shortcut_name}"
+            else:
+                # Fallback: upload data files directly to the lakehouse via OneLake
+                for f in data_files:
+                    await client.upload_file_to_lakehouse(
+                        ws_id, lakehouse_id, f"raw_data/{f.name}", f
+                    )
+                nb_variables["DATA_SOURCE_PATH"] = "Files/raw_data"
+
+        elif data_files and lakehouse_id:
+            # ── Standard path: upload directly to OneLake ──────────────────────────────
             step = _find_step(steps, "upload-data")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
@@ -234,14 +456,10 @@ async def deploy_demo(
             step.status = "completed"
             step.detail = f"Uploaded {len(data_files)} files"
             yield {"event": "step", "data": step.to_dict()}
+            nb_variables["DATA_SOURCE_PATH"] = "Files/landing"
 
         # 4. Create notebooks
         notebook_ids: dict[str, str] = {}
-        nb_variables = {}
-        if eventhouse_uri:
-            nb_variables["EVENTHOUSE_URI"] = eventhouse_uri
-        if kql_db_name:
-            nb_variables["KQL_DATABASE_NAME"] = kql_db_name
         for nb in notebooks:
             step = _find_step(steps, f"notebook:{nb['name']}")
             step.status = "running"
@@ -261,9 +479,14 @@ async def deploy_demo(
         # 5. Execute notebooks sequentially (with delay to avoid capacity throttling)
         for i, nb in enumerate(notebooks_to_run):
             step = _find_step(steps, f"run:{nb['name']}")
+            nb_id = notebook_ids.get(nb["name"])
+            if not nb_id:
+                step.status = "failed"
+                step.detail = "Notebook was not created — skipping execution"
+                yield {"event": "step", "data": step.to_dict()}
+                continue
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
-            nb_id = notebook_ids[nb["name"]]
 
             # Wait between notebook runs to avoid Spark rate limits
             if i > 0:
@@ -298,13 +521,18 @@ async def deploy_demo(
             step.status = "completed"
             yield {"event": "step", "data": step.to_dict()}
 
-        # 6. Wait for SQL endpoint
+        # 6. Wait for SQL endpoint (only relevant for lakehouse-based demos)
+        conn_string = ""
         step = _find_step(steps, "sql-endpoint")
-        step.status = "running"
-        yield {"event": "step", "data": step.to_dict()}
-        conn_string = await client.wait_for_sql_endpoint(ws_id, lakehouse_id)
-        step.status = "completed"
-        step.detail = conn_string
+        if lakehouse_id:
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            conn_string = await client.wait_for_sql_endpoint(ws_id, lakehouse_id)
+            step.status = "completed"
+            step.detail = conn_string
+        else:
+            step.status = "completed"
+            step.detail = "Skipped — no lakehouse"
         yield {"event": "step", "data": step.to_dict()}
 
         # 7. Semantic models (with dynamic SQL endpoint injection)
@@ -459,6 +687,18 @@ async def deploy_demo(
         error_msg = str(e)
         if ws_id:
             error_msg += f"\n\nWorkspace '{workspace_name}' was partially created. You can delete it from the Fabric portal or use the cleanup button."
+        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id or ""}}
+
+    except AzureError as e:
+        for s in steps:
+            if s.status == "running":
+                s.status = "failed"
+                s.detail = e.detail[:300]
+                yield {"event": "step", "data": s.to_dict()}
+                break
+        error_msg = f"Azure provisioning error: {e.detail}"
+        if ws_id:
+            error_msg += f"\n\nFabric workspace was partially created (ID: {ws_id})."
         yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id or ""}}
 
     except Exception as e:

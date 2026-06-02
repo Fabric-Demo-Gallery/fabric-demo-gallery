@@ -1,0 +1,39 @@
+{
+  "id": "construction",
+  "industry": "Construction & Real Estate",
+  "title": "Project Cost & Portfolio Analytics",
+  "description": "Track project schedule variance, cost overruns, subcontractor performance, and property portfolio health across active developments.",
+  "lakehouse": "construction_lakehouse",
+  "status": "available",
+  "icon": "🏗️",
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": [
+      "Bronze (Raw Projects, Tasks, Subcontractors, Cost Ledger)",
+      "Silver (Cleaned & Enriched)",
+      "Gold (Schedule, Cost & Portfolio KPIs)"
+    ]
+  },
+  "sampleData": [
+    { "fileName": "projects.csv",      "description": "200 construction projects with type, region, budget, planned/actual dates", "format": "csv", "rows": 200 },
+    { "fileName": "tasks.csv",         "description": "10,000 project tasks with planned/actual dates and completion status", "format": "csv", "rows": 10000 },
+    { "fileName": "cost_ledger.csv",   "description": "50,000 cost entries with category, supplier, planned vs actual spend", "format": "csv", "rows": 50000 },
+    { "fileName": "subcontractors.csv","description": "100 subcontractors with trade, rating, and contract history", "format": "csv", "rows": 100 }
+  ],
+  "fabricItems": [
+    { "type": "Lakehouse",     "name": "construction_lakehouse",         "description": "Central lakehouse for all construction analytics data" },
+    { "type": "Notebook",     "name": "01_bronze_ingest",               "description": "Ingest raw CSV files into Bronze Delta tables",                                                       "order": 1 },
+    { "type": "Notebook",     "name": "02_silver_transform",            "description": "Clean data, derive schedule variance, cost variance, and completion rates",                         "order": 2 },
+    { "type": "Notebook",     "name": "03_gold_aggregate",              "description": "6 Gold tables: project summary, cost analysis, subcontractor performance, weekly trends, overrun alerts, portfolio scorecards", "order": 3 },
+    { "type": "Notebook",     "name": "04_reporting_views",             "description": "SQL views: executive summary, cost overruns, schedule risk, subcontractor scorecard",               "order": 4 },
+    { "type": "Notebook",     "name": "05_dashboard",                   "description": "Interactive HTML dashboard with KPI cards, overrun heat-map, and portfolio comparison",             "order": 5 },
+    { "type": "SemanticModel","name": "construction_analytics_model",   "description": "Direct Lake model with schedule, cost, and portfolio performance measures" },
+    { "type": "Report",       "name": "Project Cost Dashboard",         "description": "3-page dashboard: Project Overview, Cost Analysis, Subcontractor Performance" },
+    { "type": "DataPipeline", "name": "daily_construction_pipeline",    "description": "Orchestrates all notebooks sequentially with retry" }
+  ]
+}

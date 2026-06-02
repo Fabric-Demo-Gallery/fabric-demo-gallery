@@ -13,7 +13,7 @@ import {
   BrowserUtils,
   type AccountInfo,
 } from "@azure/msal-browser";
-import { msalInstance, fabricScopes, storageScopes } from "@/lib/msal";
+import { msalInstance, fabricScopes, storageScopes, managementScopes } from "@/lib/msal";
 
 interface AuthState {
   initialized: boolean;
@@ -23,6 +23,7 @@ interface AuthState {
   logout: () => void;
   getFabricToken: () => Promise<string>;
   getStorageToken: () => Promise<string>;
+  getManagementToken: () => Promise<string>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -33,6 +34,7 @@ const AuthContext = createContext<AuthState>({
   logout: () => {},
   getFabricToken: async () => "",
   getStorageToken: async () => "",
+  getManagementToken: async () => "",
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -73,8 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async () => {
     try {
       await msalInstance.loginRedirect({
-        scopes: ["openid", "profile"],
-        extraScopesToConsent: ["https://api.fabric.microsoft.com/.default"],
+        scopes: fabricScopes,
       });
     } catch (e) {
       console.error("Login failed:", e);
@@ -121,9 +122,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [getToken]
   );
 
+  const getManagementToken = useCallback(
+    () => getToken(managementScopes),
+    [getToken]
+  );
+
   return (
     <AuthContext.Provider
-      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken }}
+      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken }}
     >
       {children}
     </AuthContext.Provider>

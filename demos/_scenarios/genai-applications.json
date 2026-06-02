@@ -1,0 +1,23 @@
+{
+  "id": "genai-applications",
+  "title": "GenAI Applications",
+  "description": "AI Skills (Data Agent) + RAG pattern over lakehouse data — build a natural-language Q&A interface on top of your industry dataset.",
+  "icon": "✨",
+  "estimatedTime": "15-20 min",
+  "tags": ["genai", "data-agent", "rag", "lakehouse"],
+  "prerequisites": [
+    "Fabric capacity (F2+, Trial, or PPU)",
+    "Azure OpenAI or Fabric-native AI capacity enabled"
+  ],
+  "azureParams": [],
+  "fabricItemTemplate": [
+    { "type": "Lakehouse",     "name": "analytics_lakehouse" },
+    { "type": "Notebook",      "name": "01_bronze_ingest",     "definitionPath": "notebooks/batch/01_bronze_ingest.ipynb",    "order": 1 },
+    { "type": "Notebook",      "name": "02_silver_transform",  "definitionPath": "notebooks/batch/02_silver_transform.ipynb", "order": 2 },
+    { "type": "Notebook",      "name": "03_gold_aggregate",    "definitionPath": "notebooks/batch/03_gold_aggregate.ipynb",   "order": 3 },
+    { "type": "Notebook",      "name": "04_build_embeddings",  "definitionPath": "notebooks/genai/04_build_embeddings.ipynb", "order": 4 },
+    { "type": "DataAgent",     "name": "analytics_agent" },
+    { "type": "SemanticModel", "name": "analytics_model",      "definitionPath": "tmdl" },
+    { "type": "Report",        "name": "analytics_report" }
+  ]
+}

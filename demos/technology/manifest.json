@@ -1,0 +1,39 @@
+{
+  "id": "technology",
+  "industry": "Technology & Software",
+  "title": "SaaS Product & Customer Analytics",
+  "description": "Track subscription churn, feature adoption, product engagement, and support health across your SaaS customer base.",
+  "status": "available",
+  "icon": "💻",
+  "estimatedTime": "8-12 min",
+  "lakehouse": "technology_lakehouse",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": [
+      "Bronze (Raw Accounts, Users, Product Events, Support Tickets)",
+      "Silver (Cleaned & Enriched)",
+      "Gold (Churn, Engagement & Support KPIs)"
+    ]
+  },
+  "sampleData": [
+    { "fileName": "accounts.csv",        "description": "2,000 SaaS accounts with plan, MRR, industry, and churn flag", "format": "csv", "rows": 2000 },
+    { "fileName": "users.csv",           "description": "10,000 user records with role, last login, and activation status", "format": "csv", "rows": 10000 },
+    { "fileName": "events.csv",          "description": "200,000 product events with feature, action, and session details", "format": "csv", "rows": 200000 },
+    { "fileName": "support_tickets.csv", "description": "20,000 support tickets with priority, category, resolution time", "format": "csv", "rows": 20000 }
+  ],
+  "fabricItems": [
+    { "type": "Lakehouse",     "name": "technology_lakehouse",           "description": "Central lakehouse for all SaaS analytics data" },
+    { "type": "Notebook",      "name": "01_bronze_ingest",               "description": "Ingest raw CSV files into Bronze Delta tables", "order": 1 },
+    { "type": "Notebook",      "name": "02_silver_transform",            "description": "Derive churn risk flags, DAU/WAU/MAU, feature adoption bands, and ticket SLA flags", "order": 2 },
+    { "type": "Notebook",      "name": "03_gold_aggregate",              "description": "6 Gold tables: account health, feature adoption, churn analysis, support performance, weekly engagement trends, account scorecards", "order": 3 },
+    { "type": "Notebook",      "name": "04_reporting_views",             "description": "SQL views: executive summary, churn risk accounts, feature usage, support SLA breaches", "order": 4 },
+    { "type": "Notebook",      "name": "05_dashboard",                   "description": "Interactive HTML dashboard with KPI cards, churn risk table, and feature adoption summary", "order": 5 },
+    { "type": "SemanticModel", "name": "technology_analytics_model",     "description": "Direct Lake model with account health, engagement, and support measures" },
+    { "type": "Report",        "name": "SaaS Analytics Dashboard",       "description": "3-page dashboard: Account Health, Product Engagement, Support Performance" },
+    { "type": "DataPipeline",  "name": "daily_technology_pipeline",       "description": "Orchestrates all notebooks sequentially with retry" }
+  ]
+}

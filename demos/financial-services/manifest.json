@@ -1,0 +1,95 @@
+{
+  "id": "financial-services",
+  "industry": "Financial Services",
+  "title": "Risk & Transaction Analytics",
+  "description": "Detect fraud patterns, score credit risk, monitor portfolio performance, and track transaction volumes across accounts and customer segments.",
+  "longDescription": "This demo deploys a financial services analytics environment on the medallion architecture. It ingests synthetic transaction records, account master data, and customer profiles. The pipeline produces fraud-flag rates, credit risk distributions, daily transaction volumes, and segment-level portfolio KPIs. A Direct Lake semantic model powers dashboards with real-time fraud alerts, risk heat-maps, and revenue contribution by customer segment.",
+  "icon": "💰",
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": ["Bronze (Raw Transactions)", "Silver (Cleaned & Risk-Flagged)", "Gold (Risk, Fraud & Portfolio KPIs)"]
+  },
+  "sampleData": [
+    {
+      "fileName": "transactions.csv",
+      "description": "Financial transactions with account, amount, merchant category, timestamp, and fraud flag",
+      "format": "csv",
+      "rows": 100000
+    },
+    {
+      "fileName": "accounts.csv",
+      "description": "Account master data — account type, balance, credit limit, open date, status",
+      "format": "csv",
+      "rows": 5000
+    },
+    {
+      "fileName": "customers.csv",
+      "description": "Customer profiles — age group, region, segment (Retail/SME/Corporate), risk tier",
+      "format": "csv",
+      "rows": 2000
+    }
+  ],
+  "fabricItems": [
+    {
+      "type": "Lakehouse",
+      "name": "financial_lakehouse",
+      "description": "Central lakehouse for all financial analytics data"
+    },
+    {
+      "type": "Notebook",
+      "name": "01_bronze_ingest",
+      "definitionPath": "notebooks/01_bronze_ingest.ipynb",
+      "description": "Ingest raw CSV files into Bronze Delta tables with metadata columns",
+      "order": 1
+    },
+    {
+      "type": "Notebook",
+      "name": "02_silver_transform",
+      "definitionPath": "notebooks/02_silver_transform.ipynb",
+      "description": "Clean transactions, validate accounts, derive fraud risk scores and credit utilisation",
+      "order": 2
+    },
+    {
+      "type": "Notebook",
+      "name": "03_gold_aggregate",
+      "definitionPath": "notebooks/03_gold_aggregate.ipynb",
+      "description": "6 Gold tables: daily transaction summary, fraud analysis, credit risk distribution, segment portfolio, weekly trends, account scorecards",
+      "order": 3
+    },
+    {
+      "type": "Notebook",
+      "name": "04_reporting_views",
+      "definitionPath": "notebooks/04_reporting_views.ipynb",
+      "description": "SQL reporting views: executive dashboard, fraud hotspots, risk heat-map, segment performance",
+      "order": 4
+    },
+    {
+      "type": "Notebook",
+      "name": "05_dashboard",
+      "definitionPath": "notebooks/05_dashboard.ipynb",
+      "description": "Interactive HTML dashboard with KPI cards, fraud trends, risk distribution, portfolio by segment",
+      "order": 5
+    },
+    {
+      "type": "SemanticModel",
+      "name": "financial_analytics_model",
+      "definitionPath": "tmdl",
+      "description": "Direct Lake semantic model with transactions, risk, and portfolio measures"
+    },
+    {
+      "type": "Report",
+      "name": "Financial Services Dashboard",
+      "description": "3-page Power BI dashboard: Transaction Overview, Fraud & Risk, Portfolio & Segments"
+    },
+    {
+      "type": "DataPipeline",
+      "name": "daily_financial_pipeline",
+      "description": "Orchestrates Bronze → Silver → Gold notebook execution daily"
+    }
+  ]
+}

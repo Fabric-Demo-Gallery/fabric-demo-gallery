@@ -1,0 +1,39 @@
+{
+  "id": "media",
+  "industry": "Media, Telecommunications & Entertainment",
+  "title": "Subscriber & Content Analytics",
+  "description": "Track subscriber churn, content performance, ad revenue, and audience engagement across streaming plans and content genres.",
+  "lakehouse": "media_lakehouse",
+  "status": "available",
+  "icon": "📺",
+  "estimatedTime": "8-12 min",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": [
+      "Bronze (Raw Subscribers, Content, Viewing, Ads)",
+      "Silver (Cleaned & Enriched)",
+      "Gold (Churn, Content & Ad Revenue KPIs)"
+    ]
+  },
+  "sampleData": [
+    { "fileName": "subscribers.csv",      "description": "10,000 subscriber records with plan, region, churn flag, and monthly fee", "format": "csv", "rows": 10000 },
+    { "fileName": "content_catalog.csv",  "description": "2,000 content items with genre, type, duration, and release year", "format": "csv", "rows": 2000 },
+    { "fileName": "viewing_history.csv",  "description": "200,000 viewing records with watch duration, device type, and rating", "format": "csv", "rows": 200000 },
+    { "fileName": "ad_impressions.csv",   "description": "100,000 ad impression records with clicks, revenue, and ad type", "format": "csv", "rows": 100000 }
+  ],
+  "fabricItems": [
+    { "type": "Lakehouse",     "name": "media_lakehouse",            "description": "Central lakehouse for all media analytics data" },
+    { "type": "Notebook",     "name": "01_bronze_ingest",           "description": "Ingest raw CSV files into Bronze Delta tables",                                                   "order": 1 },
+    { "type": "Notebook",     "name": "02_silver_transform",        "description": "Clean, validate, derive tenure, churn flags, completion rates, and ad CTR",                     "order": 2 },
+    { "type": "Notebook",     "name": "03_gold_aggregate",          "description": "6 Gold tables: subscriber metrics, content performance, churn analysis, ad revenue, weekly trends, subscriber scorecards", "order": 3 },
+    { "type": "Notebook",     "name": "04_reporting_views",         "description": "SQL views: executive summary, churn risk, content performance, ad revenue breakdown",           "order": 4 },
+    { "type": "Notebook",     "name": "05_dashboard",               "description": "Interactive HTML dashboard with KPI cards, churn trends, content top-10, and ad revenue",     "order": 5 },
+    { "type": "SemanticModel","name": "media_analytics_model",     "description": "Direct Lake model with subscriber, content, and ad revenue measures" },
+    { "type": "Report",       "name": "Subscriber & Content Dashboard", "description": "3-page dashboard: Subscriber Health, Content Performance, Ad Revenue" },
+    { "type": "DataPipeline", "name": "daily_media_pipeline",       "description": "Orchestrates all notebooks sequentially with retry" }
+  ]
+}

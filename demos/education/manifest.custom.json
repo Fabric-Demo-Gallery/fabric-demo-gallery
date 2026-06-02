@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    { "id": "real-time-monitoring",      "titleOverride": "Campus Operations Monitoring" },
+    { "id": "anomaly-detection-alerts",  "titleOverride": "At-Risk Student Detection" },
+    { "id": "ai-ml",                     "titleOverride": "Dropout Risk Prediction" },
+    { "id": "data-virtualization-batch", "titleOverride": "LMS Data Virtualization & Batch Analytics" },
+    { "id": "data-warehouse",            "titleOverride": "Education Data Warehouse" },
+    { "id": "external-data-integration", "titleOverride": "SIS / LMS Integration" },
+    { "id": "genai-applications",        "titleOverride": "Academic Copilot" }
+  ]
+}

@@ -1,14 +1,11 @@
 import { Suspense } from "react";
 import DemoDetailClient from "./DemoDetailClient";
+import { DEMOS } from "@/lib/demoCatalog";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 
 export function generateStaticParams() {
-  return [
-    { id: "manufacturing-qc" },
-    { id: "retail-sales" },
-    { id: "energy-grid" },
-  ];
+  return Object.keys(DEMOS).map((id) => ({ id }));
 }
 
 export default async function DemoDetailPage({ params }: { params: Promise<{ id: string }> }) {

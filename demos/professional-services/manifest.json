@@ -1,0 +1,39 @@
+{
+  "id": "professional-services",
+  "industry": "Professional Services",
+  "title": "Project Profitability & Utilisation Analytics",
+  "description": "Analyse consultant utilisation, project margin, client revenue concentration, and delivery health across your services portfolio.",
+  "status": "available",
+  "icon": "💼",
+  "estimatedTime": "8-12 min",
+  "lakehouse": "proservices_lakehouse",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": [
+      "Bronze (Raw Consultants, Clients, Engagements, Timesheets)",
+      "Silver (Cleaned & Enriched)",
+      "Gold (Utilisation, Margin & Delivery KPIs)"
+    ]
+  },
+  "sampleData": [
+    { "fileName": "consultants.csv",  "description": "200 consultants with grade, practice, region, and daily rate", "format": "csv", "rows": 200 },
+    { "fileName": "clients.csv",      "description": "100 clients with industry, region, tier, and contract value", "format": "csv", "rows": 100 },
+    { "fileName": "engagements.csv", "description": "1,000 project engagements with budget, actual spend, status, and margin", "format": "csv", "rows": 1000 },
+    { "fileName": "timesheets.csv",   "description": "50,000 timesheet entries with billable hours, task type, and week", "format": "csv", "rows": 50000 }
+  ],
+  "fabricItems": [
+    { "type": "Lakehouse",     "name": "proservices_lakehouse",                   "description": "Central lakehouse for all professional services analytics" },
+    { "type": "Notebook",      "name": "01_bronze_ingest",                         "description": "Ingest raw CSV files into Bronze Delta tables", "order": 1 },
+    { "type": "Notebook",      "name": "02_silver_transform",                      "description": "Derive billable utilisation rate, margin %, delivery health band, and client concentration flags", "order": 2 },
+    { "type": "Notebook",      "name": "03_gold_aggregate",                        "description": "6 Gold tables: consultant utilisation, project profitability, client revenue, delivery health, weekly trends, portfolio scorecards", "order": 3 },
+    { "type": "Notebook",      "name": "04_reporting_views",                       "description": "SQL views: executive summary, low-margin projects, underutilised consultants, client revenue concentration", "order": 4 },
+    { "type": "Notebook",      "name": "05_dashboard",                             "description": "Interactive HTML dashboard with KPI cards, low-margin projects table, and consultant utilisation summary", "order": 5 },
+    { "type": "SemanticModel", "name": "proservices_analytics_model",              "description": "Direct Lake model with utilisation, margin, and client revenue measures" },
+    { "type": "Report",        "name": "Services Portfolio Dashboard",             "description": "3-page dashboard: Portfolio Overview, Consultant Utilisation, Client & Revenue" },
+    { "type": "DataPipeline",  "name": "daily_proservices_pipeline",               "description": "Orchestrates all notebooks sequentially with retry" }
+  ]
+}

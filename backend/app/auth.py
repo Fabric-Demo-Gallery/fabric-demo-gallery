@@ -25,6 +25,7 @@ def _get_az_cli_token(resource: str) -> str:
     _ALLOWED_RESOURCES = {
         "https://api.fabric.microsoft.com",
         "https://storage.azure.com",
+        "https://management.azure.com",
     }
     if resource not in _ALLOWED_RESOURCES:
         raise HTTPException(status_code=400, detail="Invalid resource")
@@ -57,6 +58,13 @@ async def get_storage_token(
         return request.headers["x-storage-token"]
     return _get_az_cli_token("https://storage.azure.com")
 
+
+async def get_management_token(request: Request) -> str:
+    """Get an Azure management token for ARM API access."""
+    tok = request.headers.get("x-management-token", "")
+    if tok:
+        return tok
+    return _get_az_cli_token("https://management.azure.com")
 
 def get_user_id(token: str) -> str:
     """Extract user ID (oid or sub claim) from a JWT token without verification.

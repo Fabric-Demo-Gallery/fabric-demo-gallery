@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import NextLink from "next/link";
 import { useAuth } from "@/lib/AuthProvider";
 import { getJobs, deleteJobWorkspace } from "@/lib/api";
 import type { JobSummary } from "@/lib/api";
+import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import {
   Button,
   Badge,
@@ -19,7 +19,6 @@ import {
   CheckmarkCircleFilled,
   DismissCircleFilled,
   OpenRegular,
-  ArrowLeftRegular,
   DeleteRegular,
   EyeRegular,
 } from "@fluentui/react-icons";
@@ -61,15 +60,6 @@ const useStyles = makeStyles({
     fontSize: "20px",
     fontWeight: 600,
     color: "#e6edf3",
-  },
-  backLink: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    color: "#8b949e",
-    textDecoration: "none",
-    fontSize: "13px",
-    ":hover": { color: "#e6edf3" },
   },
   table: {
     width: "100%",
@@ -238,14 +228,11 @@ export default function MonitoringClient() {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <NextLink href="/" className={styles.backLink}>
-            <ArrowLeftRegular fontSize={12} /> Gallery
-          </NextLink>
-          <span className={styles.title}>Deployment Monitoring</span>
-        </div>
+    <>
+      <Breadcrumbs pageName="Deployment Monitoring" />
+      <div className={styles.page}>
+        <div className={styles.header}>
+        <span className={styles.title}>Deployment Monitoring</span>
         <Button
           appearance="subtle"
           size="small"
@@ -341,7 +328,13 @@ export default function MonitoringClient() {
                           size="small"
                           icon={<EyeRegular />}
                           onClick={() =>
-                            router.push(`/demos/${job.demo_id}?job_id=${job.job_id}`)
+                            router.push(
+                              `/demos/${job.demo_id}?job_id=${job.job_id}${
+                                job.scenario_id
+                                  ? `&mode=custom&scenario=${job.scenario_id}`
+                                  : ""
+                              }`
+                            )
                           }
                         >
                           View
@@ -379,6 +372,7 @@ export default function MonitoringClient() {
           </tbody>
         </table>
       )}
-    </div>
+      </div>
+    </>
   );
 }

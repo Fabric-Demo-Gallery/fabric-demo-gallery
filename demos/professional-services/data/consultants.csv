@@ -1,0 +1,201 @@
+consultant_id,grade,practice,region,daily_rate_gbp,years_experience,is_billable,hire_date
+CON-0001,Senior Consultant,Strategy,Frankfurt,920,8,1,2012-04-19
+CON-0002,Manager,HR,London,1258,2,1,2014-11-27
+CON-0003,Consultant,HR,London,743,7,1,2022-03-23
+CON-0004,Consultant,Finance,Sydney,671,1,1,2013-07-31
+CON-0005,Manager,Operations,Singapore,1189,7,0,2017-07-20
+CON-0006,Analyst,Finance,London,441,12,1,2010-12-22
+CON-0007,Manager,HR,London,1246,3,1,2018-02-10
+CON-0008,Senior Consultant,Data & Analytics,London,861,22,1,2016-06-28
+CON-0009,Partner,Change Management,New York,2775,13,1,2018-03-08
+CON-0010,Analyst,Operations,New York,418,23,0,2011-08-08
+CON-0011,Senior Consultant,Technology,Sydney,912,6,1,2016-01-21
+CON-0012,Partner,Data & Analytics,Frankfurt,2892,8,1,2011-04-04
+CON-0013,Consultant,Strategy,Paris,680,13,1,2014-09-25
+CON-0014,Director,HR,Frankfurt,2030,7,1,2018-11-16
+CON-0015,Principal,Data & Analytics,Dubai,1586,9,1,2022-08-04
+CON-0016,Senior Consultant,Data & Analytics,Sydney,959,19,1,2014-12-02
+CON-0017,Partner,Technology,Sydney,2876,3,1,2012-06-17
+CON-0018,Analyst,Technology,Paris,458,20,1,2018-07-24
+CON-0019,Senior Consultant,Finance,Sydney,914,18,0,2010-04-05
+CON-0020,Manager,Strategy,Frankfurt,1287,25,1,2017-08-18
+CON-0021,Analyst,Finance,New York,466,1,0,2015-11-28
+CON-0022,Partner,Change Management,New York,2879,4,0,2016-09-10
+CON-0023,Principal,HR,Sydney,1600,5,1,2013-08-16
+CON-0024,Senior Consultant,Change Management,Sydney,850,20,1,2010-06-09
+CON-0025,Analyst,Operations,Paris,428,8,1,2022-09-22
+CON-0026,Director,Strategy,Frankfurt,2074,3,0,2021-12-12
+CON-0027,Manager,Technology,Frankfurt,1271,18,1,2021-11-01
+CON-0028,Principal,Finance,New York,1688,25,1,2014-07-06
+CON-0029,Manager,Finance,Frankfurt,1245,15,0,2020-02-16
+CON-0030,Analyst,Technology,London,436,1,1,2015-03-01
+CON-0031,Senior Consultant,Strategy,London,865,8,1,2010-09-15
+CON-0032,Principal,Strategy,Sydney,1610,9,1,2014-10-22
+CON-0033,Senior Consultant,Data & Analytics,Sydney,997,16,1,2020-08-10
+CON-0034,Principal,Technology,London,1574,22,1,2019-07-02
+CON-0035,Consultant,Change Management,Frankfurt,613,22,1,2012-03-17
+CON-0036,Analyst,Data & Analytics,Singapore,377,8,1,2022-01-11
+CON-0037,Consultant,Finance,New York,671,15,1,2011-09-10
+CON-0038,Consultant,Change Management,Paris,740,4,1,2022-02-15
+CON-0039,Principal,Strategy,Paris,1610,6,1,2020-10-18
+CON-0040,Consultant,Finance,London,642,13,1,2018-10-04
+CON-0041,Consultant,Change Management,Paris,716,10,1,2022-06-19
+CON-0042,Manager,Finance,New York,1198,10,1,2011-04-25
+CON-0043,Senior Consultant,HR,London,930,2,1,2020-09-10
+CON-0044,Senior Consultant,Change Management,Sydney,890,2,0,2011-10-19
+CON-0045,Principal,Strategy,Sydney,1567,22,0,2019-01-21
+CON-0046,Analyst,HR,New York,498,20,1,2011-11-03
+CON-0047,Consultant,HR,Sydney,733,11,0,2014-08-01
+CON-0048,Manager,Operations,New York,1217,13,1,2016-09-23
+CON-0049,Senior Consultant,Change Management,London,852,15,1,2022-08-18
+CON-0050,Partner,Strategy,Sydney,2804,17,1,2017-10-30
+CON-0051,Principal,Technology,Singapore,1622,6,1,2022-03-09
+CON-0052,Manager,HR,Paris,1285,1,1,2022-06-10
+CON-0053,Consultant,Data & Analytics,London,634,9,1,2012-05-26
+CON-0054,Manager,Technology,Singapore,1222,20,1,2017-09-09
+CON-0055,Consultant,Data & Analytics,Paris,667,17,1,2011-02-21
+CON-0056,Analyst,Finance,Paris,420,2,1,2012-12-07
+CON-0057,Senior Consultant,Operations,New York,963,18,1,2022-07-31
+CON-0058,Analyst,Strategy,Frankfurt,388,18,1,2018-04-13
+CON-0059,Senior Consultant,Technology,Dubai,882,2,1,2010-11-23
+CON-0060,Principal,Technology,Frankfurt,1613,22,1,2022-07-23
+CON-0061,Principal,Finance,Sydney,1589,8,0,2013-12-21
+CON-0062,Principal,Strategy,New York,1635,14,1,2015-07-26
+CON-0063,Consultant,Change Management,Frankfurt,627,13,0,2020-07-22
+CON-0064,Consultant,Change Management,Dubai,689,10,1,2015-02-08
+CON-0065,Consultant,Data & Analytics,New York,702,11,1,2011-07-23
+CON-0066,Partner,Operations,Singapore,2880,13,1,2022-01-10
+CON-0067,Consultant,Strategy,London,666,6,1,2015-12-15
+CON-0068,Analyst,HR,Dubai,438,24,1,2019-10-15
+CON-0069,Senior Consultant,HR,London,948,19,1,2010-12-30
+CON-0070,Manager,Strategy,Sydney,1287,22,1,2014-06-03
+CON-0071,Consultant,Strategy,Frankfurt,684,20,1,2012-10-17
+CON-0072,Manager,Operations,Sydney,1229,22,1,2019-01-10
+CON-0073,Manager,HR,New York,1199,14,1,2018-07-03
+CON-0074,Manager,Technology,Sydney,1295,10,1,2010-01-04
+CON-0075,Consultant,Technology,Dubai,748,20,1,2020-06-06
+CON-0076,Consultant,Data & Analytics,New York,730,16,1,2013-10-22
+CON-0077,Manager,Operations,Sydney,1235,3,1,2015-04-09
+CON-0078,Manager,Technology,Paris,1200,5,1,2015-06-29
+CON-0079,Partner,HR,Paris,2768,15,1,2022-11-29
+CON-0080,Analyst,Data & Analytics,Dubai,476,13,1,2010-02-15
+CON-0081,Principal,Change Management,Paris,1577,25,1,2013-12-11
+CON-0082,Principal,Data & Analytics,Sydney,1668,2,1,2012-09-21
+CON-0083,Senior Consultant,Change Management,Dubai,985,18,1,2019-12-05
+CON-0084,Senior Consultant,Data & Analytics,Sydney,959,18,1,2013-07-27
+CON-0085,Manager,Finance,Dubai,1216,25,1,2016-03-21
+CON-0086,Manager,HR,Dubai,1211,9,1,2016-05-29
+CON-0087,Consultant,Operations,Singapore,738,3,1,2015-03-10
+CON-0088,Consultant,Technology,Frankfurt,654,3,1,2017-06-03
+CON-0089,Senior Consultant,Finance,London,902,14,1,2023-02-06
+CON-0090,Director,Strategy,Paris,2097,13,1,2017-11-21
+CON-0091,Consultant,Finance,Paris,707,18,1,2022-04-01
+CON-0092,Manager,Technology,Dubai,1206,9,1,2010-08-26
+CON-0093,Consultant,Data & Analytics,Frankfurt,703,24,1,2020-06-25
+CON-0094,Director,HR,Sydney,1956,13,1,2010-08-11
+CON-0095,Analyst,Finance,New York,468,6,1,2018-07-03
+CON-0096,Consultant,Finance,Singapore,686,25,0,2016-03-29
+CON-0097,Manager,Change Management,Dubai,1214,3,1,2022-02-05
+CON-0098,Analyst,Operations,New York,367,25,0,2010-11-26
+CON-0099,Manager,Technology,New York,1155,20,1,2012-10-31
+CON-0100,Senior Consultant,Strategy,Sydney,905,15,1,2018-04-10
+CON-0101,Analyst,HR,Frankfurt,379,25,1,2016-12-23
+CON-0102,Analyst,Strategy,Singapore,497,22,0,2018-06-02
+CON-0103,Consultant,Data & Analytics,New York,619,19,1,2015-06-13
+CON-0104,Analyst,Change Management,Singapore,380,19,1,2017-10-15
+CON-0105,Senior Consultant,Data & Analytics,Singapore,867,17,1,2010-04-14
+CON-0106,Principal,Change Management,Dubai,1577,14,0,2020-04-24
+CON-0107,Manager,Finance,New York,1283,21,1,2022-01-26
+CON-0108,Manager,Finance,Dubai,1218,11,0,2011-12-11
+CON-0109,Consultant,Finance,New York,718,19,1,2018-07-02
+CON-0110,Consultant,Finance,Paris,683,6,1,2017-12-16
+CON-0111,Manager,Operations,Singapore,1220,18,1,2014-04-15
+CON-0112,Analyst,Data & Analytics,Dubai,475,18,1,2020-09-05
+CON-0113,Senior Consultant,Finance,Dubai,854,3,1,2019-01-26
+CON-0114,Manager,Operations,Frankfurt,1298,12,1,2021-11-28
+CON-0115,Consultant,Data & Analytics,Sydney,684,12,1,2016-01-29
+CON-0116,Consultant,Technology,London,649,11,1,2022-01-07
+CON-0117,Director,Data & Analytics,New York,1999,7,1,2016-03-15
+CON-0118,Manager,Change Management,Sydney,1222,4,1,2016-08-23
+CON-0119,Consultant,Technology,Singapore,603,23,1,2016-02-26
+CON-0120,Analyst,Strategy,Sydney,424,23,0,2021-01-04
+CON-0121,Analyst,Strategy,Sydney,422,16,1,2017-08-23
+CON-0122,Analyst,Strategy,Singapore,472,4,1,2018-12-27
+CON-0123,Senior Consultant,HR,Frankfurt,863,5,1,2022-08-16
+CON-0124,Director,Strategy,New York,1980,18,1,2023-08-07
+CON-0125,Senior Consultant,HR,New York,983,13,1,2019-12-06
+CON-0126,Consultant,HR,Dubai,678,19,1,2023-09-04
+CON-0127,Partner,Strategy,Paris,2803,21,1,2011-10-28
+CON-0128,Analyst,Technology,Sydney,369,6,1,2020-02-08
+CON-0129,Manager,Finance,Singapore,1158,8,1,2016-05-05
+CON-0130,Manager,Finance,London,1209,9,1,2023-03-25
+CON-0131,Manager,Technology,Dubai,1179,18,1,2013-05-05
+CON-0132,Director,Change Management,New York,1968,2,1,2016-11-24
+CON-0133,Senior Consultant,Change Management,Sydney,923,15,1,2016-10-27
+CON-0134,Manager,Operations,Sydney,1288,16,1,2023-06-01
+CON-0135,Analyst,Finance,Frankfurt,432,20,1,2012-01-19
+CON-0136,Consultant,Data & Analytics,Paris,747,19,0,2016-01-17
+CON-0137,Senior Consultant,Change Management,Paris,894,16,1,2019-12-02
+CON-0138,Director,Technology,Sydney,2061,21,1,2012-01-18
+CON-0139,Senior Consultant,Finance,Singapore,932,22,1,2013-08-10
+CON-0140,Consultant,Data & Analytics,Dubai,673,22,0,2022-05-04
+CON-0141,Analyst,Strategy,Singapore,414,11,1,2019-01-25
+CON-0142,Principal,Change Management,London,1688,15,1,2014-03-17
+CON-0143,Senior Consultant,HR,Paris,977,21,1,2011-02-27
+CON-0144,Consultant,HR,New York,673,15,0,2020-11-14
+CON-0145,Analyst,Data & Analytics,Sydney,411,23,1,2022-05-10
+CON-0146,Analyst,Finance,London,407,4,1,2012-08-20
+CON-0147,Senior Consultant,Technology,Dubai,924,17,1,2019-04-27
+CON-0148,Principal,Finance,New York,1666,18,1,2014-04-11
+CON-0149,Director,HR,Frankfurt,1984,3,1,2019-04-23
+CON-0150,Consultant,Change Management,Sydney,668,1,1,2016-09-11
+CON-0151,Principal,HR,Frankfurt,1675,5,1,2020-11-11
+CON-0152,Consultant,HR,Paris,739,13,1,2017-03-21
+CON-0153,Principal,Data & Analytics,New York,1696,13,1,2019-03-20
+CON-0154,Analyst,Data & Analytics,Dubai,447,13,0,2013-05-31
+CON-0155,Senior Consultant,Strategy,New York,978,19,1,2012-04-02
+CON-0156,Principal,Finance,London,1684,15,1,2013-03-26
+CON-0157,Consultant,Data & Analytics,New York,619,16,1,2015-12-12
+CON-0158,Consultant,Data & Analytics,Dubai,620,11,0,2021-12-20
+CON-0159,Consultant,Operations,Frankfurt,724,18,1,2011-07-15
+CON-0160,Consultant,Data & Analytics,Singapore,658,24,1,2012-03-17
+CON-0161,Manager,Data & Analytics,Paris,1175,15,1,2016-09-19
+CON-0162,Director,Strategy,Singapore,1964,10,1,2019-08-30
+CON-0163,Analyst,HR,Dubai,494,22,1,2013-10-24
+CON-0164,Analyst,HR,Paris,447,20,1,2021-02-28
+CON-0165,Director,Technology,New York,2068,21,1,2015-09-23
+CON-0166,Manager,Change Management,Dubai,1223,22,1,2011-08-29
+CON-0167,Consultant,Operations,Sydney,676,21,0,2015-08-11
+CON-0168,Senior Consultant,Operations,New York,948,16,1,2018-07-22
+CON-0169,Senior Consultant,HR,Singapore,925,1,0,2018-11-17
+CON-0170,Consultant,HR,Paris,612,20,1,2016-06-02
+CON-0171,Manager,Technology,Sydney,1240,8,1,2015-08-16
+CON-0172,Manager,Data & Analytics,Paris,1185,21,1,2010-11-19
+CON-0173,Consultant,Finance,London,748,12,1,2012-01-09
+CON-0174,Director,Operations,Frankfurt,2056,6,1,2022-02-05
+CON-0175,Principal,Operations,Sydney,1678,9,1,2015-10-07
+CON-0176,Director,Finance,Paris,2025,24,0,2012-08-01
+CON-0177,Senior Consultant,Strategy,New York,907,22,1,2018-11-30
+CON-0178,Partner,Change Management,Sydney,2843,3,1,2010-04-25
+CON-0179,Consultant,Strategy,Dubai,694,22,1,2015-11-18
+CON-0180,Senior Consultant,Change Management,Frankfurt,945,4,1,2020-07-29
+CON-0181,Analyst,HR,Singapore,406,21,1,2020-05-31
+CON-0182,Director,Operations,Frankfurt,2054,4,1,2010-11-01
+CON-0183,Consultant,Finance,London,624,8,0,2013-01-16
+CON-0184,Consultant,Operations,Frankfurt,738,14,1,2013-06-19
+CON-0185,Principal,Data & Analytics,London,1675,20,1,2016-04-10
+CON-0186,Analyst,Operations,New York,463,15,0,2018-02-19
+CON-0187,Analyst,Data & Analytics,Singapore,489,21,1,2018-12-06
+CON-0188,Consultant,Strategy,Paris,716,3,1,2023-05-24
+CON-0189,Partner,Strategy,Paris,2835,8,0,2022-08-31
+CON-0190,Consultant,Change Management,Paris,741,7,1,2015-03-24
+CON-0191,Consultant,Technology,Paris,600,9,0,2013-03-31
+CON-0192,Partner,HR,Singapore,2794,4,1,2010-07-31
+CON-0193,Analyst,Operations,Paris,410,19,1,2013-11-28
+CON-0194,Consultant,Technology,Frankfurt,707,17,1,2011-06-05
+CON-0195,Senior Consultant,Change Management,Singapore,981,19,1,2021-04-20
+CON-0196,Consultant,HR,London,733,10,1,2010-09-13
+CON-0197,Analyst,Finance,Paris,452,14,1,2020-12-30
+CON-0198,Manager,Finance,London,1170,11,1,2011-06-23
+CON-0199,Analyst,HR,Frankfurt,499,18,1,2018-07-18
+CON-0200,Partner,HR,Singapore,2866,17,1,2012-03-23

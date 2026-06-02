@@ -1,0 +1,39 @@
+{
+  "id": "transportation",
+  "industry": "Transportation & Logistics",
+  "title": "Fleet & Route Performance Analytics",
+  "description": "Monitor fleet utilisation, on-time delivery rates, fuel efficiency, and route profitability across your logistics network.",
+  "status": "available",
+  "icon": "🚛",
+  "estimatedTime": "8-12 min",
+  "lakehouse": "transportation_lakehouse",
+  "prerequisites": [
+    "Microsoft Fabric capacity (F2+ or Trial)",
+    "Azure AD account with Fabric workspace creation permissions"
+  ],
+  "architecture": {
+    "pattern": "medallion",
+    "layers": [
+      "Bronze (Raw Vehicles, Routes, Deliveries, Fuel Logs)",
+      "Silver (Cleaned & Enriched)",
+      "Gold (Fleet, Delivery & Route KPIs)"
+    ]
+  },
+  "sampleData": [
+    { "fileName": "vehicles.csv",   "description": "100 fleet vehicles with type, capacity, depot, and status", "format": "csv", "rows": 100 },
+    { "fileName": "routes.csv",     "description": "500 route definitions with origin, destination, distance, and SLA", "format": "csv", "rows": 500 },
+    { "fileName": "deliveries.csv", "description": "50,000 delivery records with planned/actual times, status, and distance", "format": "csv", "rows": 50000 },
+    { "fileName": "fuel_logs.csv",  "description": "20,000 fuel fill events with litres, cost, and odometer readings", "format": "csv", "rows": 20000 }
+  ],
+  "fabricItems": [
+    { "type": "Lakehouse",     "name": "transportation_lakehouse",         "description": "Central lakehouse for all fleet and logistics analytics" },
+    { "type": "Notebook",      "name": "01_bronze_ingest",                 "description": "Ingest raw CSV files into Bronze Delta tables", "order": 1 },
+    { "type": "Notebook",      "name": "02_silver_transform",              "description": "Clean data, derive delay flags, fuel efficiency, and utilisation bands", "order": 2 },
+    { "type": "Notebook",      "name": "03_gold_aggregate",                "description": "6 Gold tables: fleet summary, delivery performance, route analysis, driver scorecard, weekly trends, depot scorecards", "order": 3 },
+    { "type": "Notebook",      "name": "04_reporting_views",               "description": "SQL views: executive summary, late deliveries, fuel analysis, route efficiency", "order": 4 },
+    { "type": "Notebook",      "name": "05_dashboard",                     "description": "Interactive HTML dashboard with KPI cards, late delivery table, and fuel efficiency summary", "order": 5 },
+    { "type": "SemanticModel", "name": "transportation_analytics_model",   "description": "Direct Lake model with fleet, delivery, and route performance measures" },
+    { "type": "Report",        "name": "Fleet & Delivery Dashboard",       "description": "3-page dashboard: Fleet Overview, Delivery Performance, Route & Fuel" },
+    { "type": "DataPipeline",  "name": "daily_transport_pipeline",         "description": "Orchestrates all notebooks sequentially with retry" }
+  ]
+}
