@@ -1,56 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Badge,
-  ToggleButton,
-  makeStyles,
-} from "@fluentui/react-components";
-import {
-  ClockRegular,
-  AppsFilled,
-  ChevronRightRegular,
-} from "@fluentui/react-icons";
+import { ToggleButton, makeStyles } from "@fluentui/react-components";
 import NextLink from "next/link";
-
-const DEMOS = [
-  {
-    id: "manufacturing-qc",
-    industry: "Manufacturing",
-    title: "Quality Control Analytics",
-    desc: "End-to-end OEE tracking, defect analysis, equipment health monitoring, and shift performance analytics across production lines. Includes 6 Gold tables, 30+ DAX measures, and a 4-page Power BI dashboard.",
-    tags: ["Medallion Architecture", "IoT Sensors", "OEE", "PySpark", "Direct Lake"],
-    time: "8–12 min",
-    itemCount: 10,
-    color: "#117865",
-    itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
-    features: ["Power BI"],
-  },
-  {
-    id: "retail-sales",
-    industry: "Retail",
-    title: "Sales & Inventory Analytics",
-    desc: "Revenue trends, basket analysis, margin tracking, inventory turnover, and stockout risk analytics across stores and categories. Star-schema model with 6 tables, 40+ DAX measures, and a 3-page Power BI dashboard.",
-    tags: ["Medallion Architecture", "POS Data", "Star Schema", "PySpark", "Direct Lake"],
-    time: "8–12 min",
-    itemCount: 7,
-    color: "#117865",
-    itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
-    features: ["Power BI"],
-  },
-  {
-    id: "energy-grid",
-    industry: "Energy & Utilities",
-    title: "Smart Grid Monitoring",
-    desc: "Real-time grid health monitoring with voltage anomaly detection, outage tracking, and renewable energy analytics. Uses Eventhouse + KQL Database for high-performance time-series analysis.",
-    tags: ["Real-Time Intelligence", "Eventhouse", "KQL", "Time-Series", "Anomaly Detection"],
-    time: "10–15 min",
-    itemCount: 10,
-    color: "#2D7D3E",
-    itemTypes: ["Lakehouse", "Eventhouse", "KQLDatabase", "Notebook", "Report", "KQLDashboard", "DataPipeline"],
-    features: ["RTI", "Power BI"],
-  },
-];
+import { industries } from "@/lib/industryCatalog";
 
 const FEATURE_FILTERS = [
   "RTI",
@@ -102,25 +55,6 @@ const useStyles = makeStyles({
     maxWidth: "520px",
     color: "#8b949e",
   },
-  heroStats: {
-    display: "flex",
-    gap: "40px",
-    marginTop: "32px",
-  },
-  heroStat: {},
-  heroStatNum: {
-    fontSize: "32px",
-    fontWeight: 700,
-    color: "#3fb68b",
-    lineHeight: "36px",
-  },
-  heroStatLabel: {
-    fontSize: "12px",
-    color: "#484f58",
-    marginTop: "4px",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.5px",
-  },
 
   /* ---- Content ---- */
   content: {
@@ -132,22 +66,6 @@ const useStyles = makeStyles({
     paddingTop: "32px",
     paddingBottom: "48px",
   },
-  toolbar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "20px",
-  },
-  sectionLabel: {
-    fontSize: "16px",
-    fontWeight: 600,
-    color: "#e6edf3",
-  },
-  filterBar: {
-    display: "flex",
-    gap: "4px",
-  },
-
   /* ---- Cards ---- */
   cardGrid: {
     display: "grid",
@@ -203,162 +121,22 @@ const useStyles = makeStyles({
     lineHeight: "22px",
     marginBottom: "2px",
   },
-  cardIndustry: {
-    fontSize: "12px",
-    color: "#8b949e",
-    fontWeight: 500,
-  },
-  cardArrow: {
-    color: "#484f58",
-    flexShrink: 0,
-    marginTop: "4px",
-  },
   cardDesc: {
     fontSize: "14px",
     color: "#8b949e",
     lineHeight: "22px",
     marginBottom: "16px",
   },
-  cardFooter: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardMeta: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
-  metaItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-    fontSize: "12px",
-    color: "#484f58",
-  },
-  tagRow: {
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: "4px",
-  },
-
-  /* ---- Items strip ---- */
-  itemStrip: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    paddingTop: "12px",
-    marginTop: "12px",
-    borderTop: "1px solid #21262d",
-  },
-  itemStripLabel: {
-    fontSize: "11px",
-    color: "#484f58",
-    fontWeight: 500,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.5px",
-    marginRight: "4px",
-  },
-  itemStripIcon: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "26px",
-    height: "26px",
-    borderRadius: "6px",
-    backgroundColor: "#21262d",
-    border: "1px solid #30363d",
-  },
-
-  /* ---- How it works ---- */
-  howSection: {
-    marginBottom: "40px",
-  },
-  howTitle: {
-    fontSize: "16px",
-    fontWeight: 600,
-    color: "#e6edf3",
-    marginBottom: "16px",
-  },
-  stepsRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "12px",
-  },
-  stepCard: {
-    backgroundColor: "#161b22",
-    border: "1px solid #30363d",
-    borderRadius: "8px",
-    padding: "24px 16px",
-    textAlign: "center" as const,
-  },
-  stepNum: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    color: "#ffffff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "14px",
-    fontWeight: 700,
-    marginLeft: "auto",
-    marginRight: "auto",
-    marginBottom: "12px",
-  },
-  stepTitle: {
-    fontSize: "14px",
-    fontWeight: 600,
-    color: "#e6edf3",
-    marginBottom: "4px",
-  },
-  stepDesc: {
-    fontSize: "12px",
-    color: "#8b949e",
-    lineHeight: "16px",
-  },
 });
-
-const STEP_COLORS = ["#3fb68b", "#2da882", "#1a9b80", "#117865"];
-
-const STEPS = [
-  { n: 1, t: "Browse", d: "Choose an industry demo" },
-  { n: 2, t: "Authenticate", d: "Sign in with Microsoft Entra" },
-  { n: 3, t: "Configure", d: "Name workspace & pick capacity" },
-  { n: 4, t: "Deploy", d: "Watch real-time provisioning" },
-];
-
-/* Fabric workload icons — official SVGs from Microsoft */
-function FabricItemIcon({ type, size = 14 }: { type: string; size?: number }) {
-  const FILE_MAP: Record<string, string> = {
-    Lakehouse: "lakehouse_24_item.svg",
-    Notebook: "notebook_24_item.svg",
-    SemanticModel: "semantic_model_24_item.svg",
-    Report: "report_24_item.svg",
-    DataPipeline: "pipeline_24_item.svg",
-    Dashboard: "dashboard_24_item.svg",
-    Eventhouse: "eventhouse_24_item.svg",
-    KQLDatabase: "kql_database_24_item.svg",
-    KQLDashboard: "kql_dashboard_24_item.svg",
-  };
-  const file = FILE_MAP[type];
-  if (!file) return null;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
-}
-
-const ITEM_TYPES = ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline", "Eventhouse", "KQLDatabase", "KQLDashboard"];
 
 export default function Home() {
   const styles = useStyles();
-  const [filter, setFilter] = useState("All");
   const [featureFilter, setFeatureFilter] = useState("All");
-  const industries = ["All", ...new Set(DEMOS.map((d) => d.industry))];
 
-  const filtered = DEMOS.filter((d) => {
-    if (filter !== "All" && d.industry !== filter) return false;
-    if (featureFilter !== "All" && !d.features.includes(featureFilter)) return false;
-    return true;
+  const filtered = industries.filter((ind) => {
+    if (!ind.enabled) return false;
+    if (featureFilter === "All") return true;
+    return ind.features?.includes(featureFilter) ?? false;
   });
 
   return (
@@ -369,47 +147,15 @@ export default function Home() {
           <div className={styles.heroEyebrow}>Microsoft Fabric</div>
           <div className={styles.heroTitle}>Industry Demo Gallery</div>
           <div className={styles.heroDesc}>
-            Deploy complete analytics environments — lakehouse, notebooks,
-            semantic models, Power BI dashboards, and pipelines — into your
-            Fabric tenant with one click.
-          </div>
-          <div className={styles.heroStats}>
-            <div className={styles.heroStat}>
-              <div className={styles.heroStatNum}>{DEMOS.length}</div>
-              <div className={styles.heroStatLabel}>Demos</div>
-            </div>
-            <div className={styles.heroStat}>
-              <div className={styles.heroStatNum}>{DEMOS.reduce((s, d) => s + d.itemCount, 0)}</div>
-              <div className={styles.heroStatLabel}>Fabric items</div>
-            </div>
-            <div className={styles.heroStat}>
-              <div className={styles.heroStatNum}>1</div>
-              <div className={styles.heroStatLabel}>Click deploy</div>
-            </div>
+            Explore and deploy analytics solutions for your industry. Start by
+            choosing an industry below, then select a use case and deployment
+            type. Easily extendable for future industries and scenarios.
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className={styles.content}>
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <span className={styles.sectionLabel}>Available demos</span>
-          <div className={styles.filterBar}>
-            {industries.map((ind) => (
-              <ToggleButton
-                key={ind}
-                size="small"
-                appearance={filter === ind ? "primary" : "subtle"}
-                checked={filter === ind}
-                onClick={() => setFilter(ind)}
-              >
-                {ind}
-              </ToggleButton>
-            ))}
-          </div>
-        </div>
-
         {/* Feature filters */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 20 }}>
           {["All", ...FEATURE_FILTERS].map((feat) => (
@@ -425,15 +171,19 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Cards */}
+        {/* Industry Cards */}
         <div className={styles.cardGrid}>
           {filtered.length === 0 && (
             <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 0", color: "#484f58" }}>
-              No demos match the selected filters.
+              No industries match the selected feature.
             </div>
           )}
-          {filtered.map((demo) => (
-            <NextLink key={demo.id} href={`/demos/${demo.id}`} style={{ textDecoration: "none" }}>
+          {filtered.map((industry) => (
+            <NextLink
+              key={industry.slug}
+              href={`/industries/${industry.slug}`}
+              style={{ textDecoration: "none" }}
+            >
               <div className={styles.card}>
                 <div className={styles.cardAccent} />
                 <div className={styles.cardBody}>
@@ -441,60 +191,24 @@ export default function Home() {
                     <div className={styles.cardHeaderLeft}>
                       <div className={styles.cardIcon}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/fabric-logo.png" alt="" width={24} height={24} style={{ objectFit: "contain" }} />
+                        <img
+                          src={industry.icon.startsWith("/") ? industry.icon : `/icons/${industry.icon}`}
+                          alt=""
+                          width={32}
+                          height={32}
+                          style={{ objectFit: "contain" }}
+                        />
                       </div>
                       <div className={styles.cardTitleGroup}>
-                        <div className={styles.cardTitle}>{demo.title}</div>
-                        <div className={styles.cardIndustry}>{demo.industry}</div>
+                        <div className={styles.cardTitle}>{industry.title}</div>
                       </div>
                     </div>
-                    <ChevronRightRegular className={styles.cardArrow} fontSize={16} />
                   </div>
-                  <div className={styles.cardDesc}>{demo.desc}</div>
-                  <div className={styles.cardFooter}>
-                    <div className={styles.cardMeta}>
-                      <span className={styles.metaItem}>
-                        <ClockRegular fontSize={12} /> {demo.time}
-                      </span>
-                      <span className={styles.metaItem}>
-                        <AppsFilled fontSize={12} /> {demo.itemCount} items
-                      </span>
-                    </div>
-                    <div className={styles.tagRow}>
-                      {demo.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} appearance="tint" color="informative" size="small">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Item type strip */}
-                  <div className={styles.itemStrip}>
-                    <span className={styles.itemStripLabel}>Includes</span>
-                    {(demo.itemTypes || ITEM_TYPES).map((type) => (
-                      <span key={type} className={styles.itemStripIcon} title={type}>
-                        <FabricItemIcon type={type} size={16} />
-                      </span>
-                    ))}
-                  </div>
+                  <div className={styles.cardDesc}>{industry.description}</div>
                 </div>
               </div>
             </NextLink>
           ))}
-        </div>
-
-        {/* How it works */}
-        <div className={styles.howSection}>
-          <div className={styles.howTitle}>How it works</div>
-          <div className={styles.stepsRow}>
-            {STEPS.map(({ n, t, d }, i) => (
-              <div key={n} className={styles.stepCard}>
-                <div className={styles.stepNum} style={{ backgroundColor: STEP_COLORS[i] }}>{n}</div>
-                <div className={styles.stepTitle}>{t}</div>
-                <div className={styles.stepDesc}>{d}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </>
