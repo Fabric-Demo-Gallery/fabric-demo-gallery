@@ -28,6 +28,7 @@ interface DeploymentContextValue extends DeploymentState {
     demoId: string;
     workspaceName: string;
     capacityId?: string;
+    features?: string[];
     fabricToken: string;
     storageToken: string;
   }) => Promise<void>;
@@ -190,6 +191,7 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
       demoId: string;
       workspaceName: string;
       capacityId?: string;
+      features?: string[];
       fabricToken: string;
       storageToken: string;
     }) => {
@@ -210,6 +212,7 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
             demoId: params.demoId,
             workspaceName: params.workspaceName,
             capacityId: params.capacityId,
+            features: params.features,
           }
         );
 

@@ -19,6 +19,7 @@ async def run_job(
     workspace_name: str | None,
     workspace_id: str | None,
     capacity_id: str | None,
+    features: list[str] | None = None,
 ) -> None:
     """Run a deployment job in the background, updating the job store with events."""
     try:
@@ -28,6 +29,7 @@ async def run_job(
             workspace_name=workspace_name,
             workspace_id=workspace_id,
             capacity_id=capacity_id,
+            features=features,
         ):
             job_store.emit_event(job_id, event)
 
