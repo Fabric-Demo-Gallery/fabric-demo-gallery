@@ -178,7 +178,6 @@ export async function createJob(
     demoId: string;
     workspaceName?: string;
     capacityId?: string;
-    features?: string[];
   }
 ): Promise<{ job_id: string }> {
   const headers: Record<string, string> = {
@@ -195,7 +194,6 @@ export async function createJob(
       demo_id: params.demoId,
       workspace_name: params.workspaceName,
       capacity_id: params.capacityId || undefined,
-      features: params.features || undefined,
     }),
   });
   if (!res.ok) {

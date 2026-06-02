@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   Badge,
-  Checkbox,
   Input,
   Select,
   Spinner,
@@ -480,14 +479,6 @@ export default function DemoDetailPage() {
   const [selectedCapacity, setSelectedCapacity] = useState("");
   const [loadingCapacities, setLoadingCapacities] = useState(false);
   const [capacityError, setCapacityError] = useState<string | null>(null);
-  const [selectedFeatures, setSelectedFeatures] = useState<Record<string, boolean>>({
-    rti: true,
-    powerbi: true,
-    ml: false,
-    fabric_iq: false,
-    data_agents: false,
-    shortcuts: false,
-  });
 
   // Reconnect to an existing job if ?job_id= is in URL
   const reconnectAttempted = useRef(false);
@@ -535,14 +526,10 @@ export default function DemoDetailPage() {
         ]);
       }
       // Fire and forget — startDeploy manages its own state
-      const enabledFeatures = Object.entries(selectedFeatures)
-        .filter(([, v]) => v)
-        .map(([k]) => k);
       deployment.startDeploy({
         demoId: id,
         workspaceName: workspaceName || `${demo.title} Demo`,
         capacityId: selectedCapacity || undefined,
-        features: enabledFeatures.length > 0 ? enabledFeatures : undefined,
         fabricToken,
         storageToken,
       }).catch((e: unknown) => {
@@ -822,37 +809,6 @@ export default function DemoDetailPage() {
                         <MessageBarBody>{capacityError || "No capacities found."}</MessageBarBody>
                       </MessageBar>
                     )}
-                  </div>
-                  <div className={styles.formField}>
-                    <label className={styles.formLabel}>Features</label>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      {([
-                        { key: "rti", label: "Real-Time Intelligence" },
-                        { key: "powerbi", label: "Power BI" },
-                        { key: "ml", label: "Machine Learning", disabled: true },
-                        { key: "fabric_iq", label: "Fabric IQ", disabled: true },
-                        { key: "data_agents", label: "Fabric Data Agents", disabled: true },
-                        { key: "shortcuts", label: "Shortcuts & Mirroring", disabled: true },
-                      ] as const).map((feat) => (
-                        <Checkbox
-                          key={feat.key}
-                          label={
-                            <span style={{ fontSize: 12, color: ('disabled' in feat && feat.disabled) ? "#484f58" : "#e6edf3" }}>
-                              {feat.label}{('disabled' in feat && feat.disabled) ? " (coming soon)" : ""}
-                            </span>
-                          }
-                          checked={selectedFeatures[feat.key]}
-                          disabled={'disabled' in feat && feat.disabled}
-                          onChange={(_, data) =>
-                            setSelectedFeatures((prev) => ({
-                              ...prev,
-                              [feat.key]: !!data.checked,
-                            }))
-                          }
-                          size="medium"
-                        />
-                      ))}
-                    </div>
                   </div>
                   <div className={styles.buttonRow}>
                     <Button

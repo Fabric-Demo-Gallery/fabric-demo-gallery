@@ -69,7 +69,6 @@ async def create_job(
             workspace_name=workspace_name,
             workspace_id=body.workspace_id,
             capacity_id=cap_id,
-            features=body.features,
         )
     )
 

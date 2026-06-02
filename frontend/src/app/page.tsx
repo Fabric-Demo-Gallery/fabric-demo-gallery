@@ -24,6 +24,7 @@ const DEMOS = [
     itemCount: 10,
     color: "#117865",
     itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
+    features: ["Power BI"],
   },
   {
     id: "retail-sales",
@@ -35,6 +36,7 @@ const DEMOS = [
     itemCount: 7,
     color: "#117865",
     itemTypes: ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline"],
+    features: ["Power BI"],
   },
   {
     id: "energy-grid",
@@ -46,7 +48,17 @@ const DEMOS = [
     itemCount: 10,
     color: "#2D7D3E",
     itemTypes: ["Lakehouse", "Eventhouse", "KQLDatabase", "Notebook", "Report", "KQLDashboard", "DataPipeline"],
+    features: ["RTI", "Power BI"],
   },
+];
+
+const FEATURE_FILTERS = [
+  "RTI",
+  "Fabric IQ",
+  "Fabric Data Agents",
+  "Power BI",
+  "Machine Learning",
+  "Shortcuts & Mirroring",
 ];
 
 const useStyles = makeStyles({
@@ -340,8 +352,14 @@ const ITEM_TYPES = ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPip
 export default function Home() {
   const styles = useStyles();
   const [filter, setFilter] = useState("All");
+  const [featureFilter, setFeatureFilter] = useState("All");
   const industries = ["All", ...new Set(DEMOS.map((d) => d.industry))];
-  const filtered = filter === "All" ? DEMOS : DEMOS.filter((d) => d.industry === filter);
+
+  const filtered = DEMOS.filter((d) => {
+    if (filter !== "All" && d.industry !== filter) return false;
+    if (featureFilter !== "All" && !d.features.includes(featureFilter)) return false;
+    return true;
+  });
 
   return (
     <>
@@ -392,8 +410,28 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Feature filters */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 20 }}>
+          {["All", ...FEATURE_FILTERS].map((feat) => (
+            <ToggleButton
+              key={feat}
+              size="small"
+              appearance={featureFilter === feat ? "primary" : "subtle"}
+              checked={featureFilter === feat}
+              onClick={() => setFeatureFilter(feat)}
+            >
+              {feat}
+            </ToggleButton>
+          ))}
+        </div>
+
         {/* Cards */}
         <div className={styles.cardGrid}>
+          {filtered.length === 0 && (
+            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 0", color: "#484f58" }}>
+              No demos match the selected filters.
+            </div>
+          )}
           {filtered.map((demo) => (
             <NextLink key={demo.id} href={`/demos/${demo.id}`} style={{ textDecoration: "none" }}>
               <div className={styles.card}>

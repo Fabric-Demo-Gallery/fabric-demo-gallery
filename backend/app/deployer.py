@@ -75,14 +75,9 @@ async def deploy_demo(
     workspace_name: str | None = None,
     workspace_id: str | None = None,
     capacity_id: str | None = None,
-    features: list[str] | None = None,
 ) -> AsyncIterator[dict]:
     """
     Deploy a demo end-to-end, yielding progress events as SSE-compatible dicts.
-
-    Args:
-        features: List of enabled feature keys (e.g. ["rti", "powerbi"]).
-                  None means all features enabled.
 
     Steps:
     1. Create or reuse workspace
@@ -97,21 +92,6 @@ async def deploy_demo(
     manifest = load_manifest(demo_id)
     demo_dir = DEMOS_DIR / demo_id
     items = manifest["fabricItems"]
-
-    # Filter items based on selected features
-    if features is not None:
-        from app.models import FEATURE_ITEM_TYPES
-        # Collect item types to exclude (features NOT selected)
-        excluded_types: set[str] = set()
-        for feat_key, feat_types in FEATURE_ITEM_TYPES.items():
-            if feat_key not in features:
-                excluded_types.update(feat_types)
-        # Core types are never excluded
-        core_types = {"Lakehouse", "Notebook", "DataPipeline"}
-        excluded_types -= core_types
-        if excluded_types:
-            items = [i for i in items if i["type"] not in excluded_types]
-            logger.info("Features %s selected — excluded types: %s", features, excluded_types)
 
     steps: list[DeploymentStep] = []
     created_ids: dict[str, str] = {}  # logical name → Fabric item ID
