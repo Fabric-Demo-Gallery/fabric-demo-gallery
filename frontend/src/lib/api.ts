@@ -204,6 +204,7 @@ export interface ScenarioInfo {
   enabled: boolean;
   requiresAzure: boolean;
   azureParams: ScenarioAzureParam[];
+  feature?: string;
 }
 
 export async function fetchScenarios(demoId: string): Promise<ScenarioInfo[]> {

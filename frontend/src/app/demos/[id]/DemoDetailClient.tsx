@@ -32,6 +32,7 @@ import {
   MessageBarTitle,
   MessageBarActions,
   Checkbox,
+  ToggleButton,
   Link as FluentLink,
   makeStyles,
   tokens,
@@ -62,6 +63,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: true,
     requiresAzure: true,
     azureParams: [],
+    feature: "Shortcuts & Mirroring",
   },
   {
     id: "real-time-monitoring",
@@ -73,6 +75,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: false,
     requiresAzure: false,
     azureParams: [],
+    feature: "RTI",
   },
   {
     id: "anomaly-detection-alerts",
@@ -84,6 +87,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: false,
     requiresAzure: false,
     azureParams: [],
+    feature: "Machine Learning",
   },
   {
     id: "ai-ml",
@@ -95,6 +99,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: false,
     requiresAzure: false,
     azureParams: [],
+    feature: "Machine Learning",
   },
   {
     id: "data-warehouse",
@@ -106,6 +111,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: false,
     requiresAzure: false,
     azureParams: [],
+    feature: "Power BI",
   },
   {
     id: "external-data-integration",
@@ -117,6 +123,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: false,
     requiresAzure: false,
     azureParams: [],
+    feature: "Shortcuts & Mirroring",
   },
   {
     id: "genai-applications",
@@ -128,7 +135,17 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: false,
     requiresAzure: false,
     azureParams: [],
+    feature: "Fabric Data Agents",
   },
+];
+
+const SCENARIO_FEATURES = [
+  "RTI",
+  "Fabric IQ",
+  "Fabric Data Agents",
+  "Power BI",
+  "Machine Learning",
+  "Shortcuts & Mirroring",
 ];
 
 type DeployStep = {
@@ -535,6 +552,7 @@ export default function DemoDetailPage() {
 
   // ── Scenario state — derived from URL (?scenario=<id>) ──────────────────
   const selectedScenario = ALL_SCENARIOS.find(s => s.id === searchParams.get("scenario")) ?? null;
+  const [scenarioFilter, setScenarioFilter] = useState("All");
   // Azure params (used by the data-virtualization shortcut scenario)
   const [azureSubs, setAzureSubs] = useState<AzureSubscription[]>([]);
   const [azureRGs, setAzureRGs] = useState<AzureResourceGroup[]>([]);
@@ -1048,8 +1066,24 @@ export default function DemoDetailPage() {
                     Select how you want to deploy the {demo.title} demo. Only <strong style={{ color: "#e6edf3" }}>External Data Integration</strong> is available today.
                   </div>
                 </div>
+                {/* Feature filters */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 16 }}>
+                  {["All", ...SCENARIO_FEATURES].map((feat) => (
+                    <ToggleButton
+                      key={feat}
+                      size="small"
+                      appearance={scenarioFilter === feat ? "primary" : "subtle"}
+                      checked={scenarioFilter === feat}
+                      onClick={() => setScenarioFilter(feat)}
+                    >
+                      {feat}
+                    </ToggleButton>
+                  ))}
+                </div>
                 <div className={styles.scenarioGrid}>
-                  {ALL_SCENARIOS.map((sc) => (
+                  {ALL_SCENARIOS
+                    .filter((sc) => scenarioFilter === "All" || sc.feature === scenarioFilter)
+                    .map((sc) => (
                     <div
                       key={sc.id}
                       onClick={sc.enabled && account ? () => handleSelectScenario(sc) : undefined}
