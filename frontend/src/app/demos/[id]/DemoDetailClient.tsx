@@ -80,11 +80,11 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "anomaly-detection-alerts",
     title: "Anomaly Detection & Alerts",
-    description: "ML-based anomaly detection on historical data with alert pipeline and drill-through report.",
+    description: "SynapseML-based anomaly detection on sensor telemetry and defect rates, with unified alert table and Power BI report.",
     icon: "🔔",
     estimatedTime: "15–20 min",
     tags: ["ml", "anomaly", "alerts", "lakehouse"],
-    enabled: false,
+    enabled: true,
     requiresAzure: false,
     azureParams: [],
     feature: "Machine Learning",
