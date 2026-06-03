@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import AsyncIterator
 
 from app.fabric_client import FabricClient, FabricError
-from app.report_builder import build_manufacturing_report_definition, build_retail_report_definition, build_energy_report_definition
+from app.report_builder import build_manufacturing_report_definition, build_retail_report_definition, build_energy_report_definition, build_energy_ml_report_definition
 from app.azure_client import AzureClient, AzureError
 
 logger = logging.getLogger(__name__)
@@ -154,6 +154,7 @@ async def deploy_demo(
     manifest = manifest_override if manifest_override is not None else load_manifest(demo_id)
     demo_dir = DEMOS_DIR / demo_id
     items = manifest["fabricItems"]
+    scenario_id = manifest.get("id")
 
     steps: list[DeploymentStep] = []
     created_ids: dict[str, str] = {}  # logical name → Fabric item ID
@@ -602,7 +603,7 @@ async def deploy_demo(
                     break
             if sm_id:
                 try:
-                    report_def = _build_report_definition(demo_id, sm_id)
+                    report_def = _build_report_definition(demo_id, sm_id, scenario_id)
                     logger.info("Report definition built, %d parts, creating item...", len(report_def.get("parts", [])))
                     result = await client.create_item(ws_id, "Report", rp["name"], report_def)
                     rp_id = result.get("id", "")
@@ -737,8 +738,13 @@ def _find_step(steps: list[DeploymentStep], name: str) -> DeploymentStep:
     raise ValueError(f"Step '{name}' not found")
 
 
-def _build_report_definition(demo_id: str, semantic_model_id: str) -> dict:
-    """Build a Power BI report definition for the given demo."""
+def _build_report_definition(demo_id: str, semantic_model_id: str, scenario_id: str | None = None) -> dict:
+    """Build a Power BI report definition for the given demo and scenario."""
+    # AI & ML scenario uses dedicated reports over the gold_ml_* tables
+    if scenario_id == "ai-ml":
+        if demo_id == "energy-grid":
+            return build_energy_ml_report_definition(semantic_model_id)
+        # other sectors fall through to their default report until ML reports are added
     if demo_id == "manufacturing-qc":
         return build_manufacturing_report_definition(semantic_model_id)
     elif demo_id == "retail-sales":

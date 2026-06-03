@@ -444,3 +444,86 @@ def build_energy_report_definition(semantic_model_id: str) -> dict:
             {"path": "report.json", "payload": base64.b64encode(report.encode()).decode(), "payloadType": "InlineBase64"},
         ]
     }
+
+
+def build_energy_ml_report_definition(semantic_model_id: str) -> dict:
+    """Build a 3-page Power BI report for the energy AI & ML (outage prediction) demo.
+
+    References the gold_ml_* tables produced by the ML notebooks:
+    gold_ml_model_metrics, gold_ml_feature_importance, gold_ml_predictions, gold_ml_summary.
+    """
+
+    M = "gold_ml_model_metrics"
+    F = "gold_ml_feature_importance"
+    P = "gold_ml_predictions"
+    S = "gold_ml_summary"
+
+    # Page 1 — Model Performance
+    p1 = [
+        _textbox("mh1", 20, 5, 600, 35, "Outage Prediction — Model Performance", "20"),
+        _textbox("ms1", 620, 12, 400, 25, "RandomForest Classifier", "11", False),
+        _kpi_card("m_auc",   20,  45, M, "Model AUC",       "AUC-ROC",        "#0078D4"),
+        _kpi_card("m_acc",  230,  45, M, "Model Accuracy",  "Accuracy",       "#107C10"),
+        _kpi_card("m_f1",   440,  45, M, "F1 Score",        "F1 Score",       "#5C2D91"),
+        _kpi_card("m_feat", 650,  45, M, "Feature Count",   "Features Used",  "#004E8C"),
+        _kpi_card("m_train",860,  45, M, "Training Rows",   "Training Rows",  "#107C10"),
+        _card("m_test", 1060, 45, 200, 100, M, "Test Rows", "Test Rows",      "#D83B01"),
+        _bar("m_fi", 20, 155, 760, 545, F, "feature", "Importance", "Feature Importance (RandomForest)", True),
+        _table("m_fi_tbl", 795, 155, 465, 545, F, ["feature", "importance"], "Feature Importance Detail"),
+    ]
+
+    # Page 2 — Outage Predictions
+    p2 = [
+        _textbox("ph1", 20, 5, 600, 35, "Outage Predictions", "20"),
+        _textbox("ps1", 620, 12, 400, 25, "Per Substation-Day Scoring", "11", False),
+        _kpi_card("p_tot",   20,  45, P, "Total Predictions",      "Scored Records",     "#0078D4"),
+        _kpi_card("p_pred", 230,  45, P, "Predicted Outages",      "Predicted Outages",  "#D83B01"),
+        _kpi_card("p_act",  440,  45, P, "Actual Outages",         "Actual Outages",     "#A4262C"),
+        _kpi_card("p_prob", 650,  45, P, "Avg Outage Probability", "Avg Probability",    "#5C2D91"),
+        _card("p_rate", 1060, 45, 200, 100, P, "Predicted Outage Rate %", "Outage Rate %", "#004E8C"),
+        _donut("p_risk", 20, 155, 380, 260, P, "risk_level", "Total Predictions", "Predictions by Risk Level"),
+        _bar("p_region", 415, 155, 400, 260, P, "region", "Predicted Outages", "Predicted Outages by Region"),
+        _donut("p_act_reg", 830, 155, 430, 260, P, "region", "Actual Outages", "Actual Outages by Region"),
+        _line("p_trend", 20, 430, 795, 270, P, "sensor_date", "Avg Outage Probability", "Avg Outage Probability by Region", "region"),
+        _table("p_tbl", 830, 430, 430, 270, P, ["substation_id", "region", "risk_level", "outage_probability", "predicted_outage", "had_outage"], "Prediction Detail"),
+    ]
+
+    # Page 3 — Substation Risk
+    p3 = [
+        _textbox("sh1", 20, 5, 600, 35, "Substation Risk Summary", "20"),
+        _textbox("ss1", 620, 12, 400, 25, "Aggregated Risk by Substation", "11", False),
+        _kpi_card("s_sub",   20,  45, S, "Substations",          "Substations",       "#0078D4"),
+        _kpi_card("s_risk", 230,  45, S, "Avg Outage Risk",      "Avg Outage Risk",   "#5C2D91"),
+        _kpi_card("s_rate", 440,  45, S, "Avg Outage Rate",      "Avg Outage Rate %", "#D83B01"),
+        _kpi_card("s_days", 650,  45, S, "Predicted Outage Days","Predicted Days",    "#107C10"),
+        _card("s_high", 1060, 45, 200, 100, S, "High Risk Substations", "High Risk", "#A4262C"),
+        _bar("s_bar", 20, 155, 760, 545, S, "substation_id", "Avg Outage Risk", "Avg Outage Risk by Substation", True),
+        _donut("s_risk_dist", 795, 155, 465, 260, S, "overall_risk", "Substations", "Substations by Risk Tier"),
+        _table("s_tbl", 795, 430, 465, 270, S, ["substation_id", "region", "overall_risk", "avg_outage_risk", "outage_rate", "predicted_outage_days"], "Substation Risk Detail"),
+    ]
+
+    config = {"version": "5.54", "themeCollection": {"baseTheme": {"name": "CY25SU12", "version": "2.5.0", "type": 2}}, "activeSectionIndex": 0, "defaultDrillFilterOtherVisuals": True}
+
+    report = json.dumps({
+        "config": json.dumps(config),
+        "layoutOptimization": 0,
+        "resourcePackages": [{"resourcePackage": {"name": "SharedResources", "type": 2, "items": [{"type": 202, "name": "CY25SU12", "path": "BaseThemes/CY25SU12.json"}]}}],
+        "sections": [
+            {"name": "pg_model", "displayName": "Model Performance", "displayOption": 2, "width": 1280, "height": 720, "visualContainers": p1},
+            {"name": "pg_predictions", "displayName": "Outage Predictions", "displayOption": 2, "width": 1280, "height": 720, "visualContainers": p2},
+            {"name": "pg_risk", "displayName": "Substation Risk", "displayOption": 2, "width": 1280, "height": 720, "visualContainers": p3},
+        ],
+    })
+
+    pbir_ml = json.dumps({
+        "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json",
+        "version": "4.0",
+        "datasetReference": {"byConnection": {"connectionString": f"semanticmodelid={semantic_model_id}"}},
+    })
+
+    return {
+        "parts": [
+            {"path": "definition.pbir", "payload": base64.b64encode(pbir_ml.encode()).decode(), "payloadType": "InlineBase64"},
+            {"path": "report.json", "payload": base64.b64encode(report.encode()).decode(), "payloadType": "InlineBase64"},
+        ]
+    }

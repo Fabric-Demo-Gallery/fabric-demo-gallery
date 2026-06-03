@@ -17,7 +17,7 @@
     { "type": "Notebook",      "name": "04_model_training",       "definitionPath": "notebooks/ml/02_model_training.ipynb",        "order": 4 },
     { "type": "Notebook",      "name": "05_model_evaluation",     "definitionPath": "notebooks/ml/03_model_evaluation.ipynb",      "order": 5 },
     { "type": "Notebook",      "name": "06_batch_scoring",        "definitionPath": "notebooks/ml/04_batch_scoring.ipynb",         "order": 6 },
-    { "type": "SemanticModel", "name": "predictions_model",       "definitionPath": "tmdl" },
+    { "type": "SemanticModel", "name": "predictions_model",       "definitionPath": "tmdl-ml" },
     { "type": "Report",        "name": "predictions_report" }
   ]
 }

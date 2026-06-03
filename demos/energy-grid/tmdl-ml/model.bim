@@ -1,0 +1,150 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "gold_ml_model_metrics",
+        "columns": [
+          {"name": "demo_id", "dataType": "string", "sourceColumn": "demo_id"},
+          {"name": "use_case", "dataType": "string", "sourceColumn": "use_case"},
+          {"name": "model_type", "dataType": "string", "sourceColumn": "model_type"},
+          {"name": "feature_count", "dataType": "int64", "sourceColumn": "feature_count"},
+          {"name": "train_rows", "dataType": "int64", "sourceColumn": "train_rows"},
+          {"name": "test_rows", "dataType": "int64", "sourceColumn": "test_rows"},
+          {"name": "auc_roc", "dataType": "double", "sourceColumn": "auc_roc"},
+          {"name": "accuracy", "dataType": "double", "sourceColumn": "accuracy"},
+          {"name": "f1_score", "dataType": "double", "sourceColumn": "f1_score"},
+          {"name": "trained_at", "dataType": "dateTime", "sourceColumn": "trained_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_model_metrics",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Model AUC", "expression": "AVERAGE(gold_ml_model_metrics[auc_roc])", "formatString": "0.000"},
+          {"name": "Model Accuracy", "expression": "AVERAGE(gold_ml_model_metrics[accuracy])", "formatString": "0.0%"},
+          {"name": "F1 Score", "expression": "AVERAGE(gold_ml_model_metrics[f1_score])", "formatString": "0.000"},
+          {"name": "Feature Count", "expression": "MAX(gold_ml_model_metrics[feature_count])", "formatString": "0"},
+          {"name": "Training Rows", "expression": "MAX(gold_ml_model_metrics[train_rows])", "formatString": "#,##0"},
+          {"name": "Test Rows", "expression": "MAX(gold_ml_model_metrics[test_rows])", "formatString": "#,##0"}
+        ]
+      },
+      {
+        "name": "gold_ml_feature_importance",
+        "columns": [
+          {"name": "feature", "dataType": "string", "sourceColumn": "feature"},
+          {"name": "importance", "dataType": "double", "sourceColumn": "importance"},
+          {"name": "model_timestamp", "dataType": "dateTime", "sourceColumn": "model_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_feature_importance",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Importance", "expression": "SUM(gold_ml_feature_importance[importance])", "formatString": "0.0000"}
+        ]
+      },
+      {
+        "name": "gold_ml_predictions",
+        "columns": [
+          {"name": "substation_id", "dataType": "string", "sourceColumn": "substation_id"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "sensor_date", "dataType": "dateTime", "sourceColumn": "sensor_date"},
+          {"name": "avg_voltage", "dataType": "double", "sourceColumn": "avg_voltage"},
+          {"name": "avg_frequency", "dataType": "double", "sourceColumn": "avg_frequency"},
+          {"name": "avg_power_factor", "dataType": "double", "sourceColumn": "avg_power_factor"},
+          {"name": "avg_load", "dataType": "double", "sourceColumn": "avg_load"},
+          {"name": "avg_temp", "dataType": "double", "sourceColumn": "avg_temp"},
+          {"name": "voltage_deviation", "dataType": "double", "sourceColumn": "voltage_deviation"},
+          {"name": "freq_deviation", "dataType": "double", "sourceColumn": "freq_deviation"},
+          {"name": "had_outage", "dataType": "int64", "sourceColumn": "had_outage"},
+          {"name": "predicted_outage", "dataType": "int64", "sourceColumn": "predicted_outage"},
+          {"name": "outage_probability", "dataType": "double", "sourceColumn": "outage_probability"},
+          {"name": "risk_level", "dataType": "string", "sourceColumn": "risk_level"},
+          {"name": "scored_at", "dataType": "dateTime", "sourceColumn": "scored_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_predictions",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Predictions", "expression": "COUNTROWS(gold_ml_predictions)", "formatString": "#,##0"},
+          {"name": "Predicted Outages", "expression": "SUM(gold_ml_predictions[predicted_outage])", "formatString": "#,##0"},
+          {"name": "Actual Outages", "expression": "SUM(gold_ml_predictions[had_outage])", "formatString": "#,##0"},
+          {"name": "Avg Outage Probability", "expression": "AVERAGE(gold_ml_predictions[outage_probability])", "formatString": "0.0%"},
+          {"name": "Predicted Outage Rate %", "expression": "DIVIDE(SUM(gold_ml_predictions[predicted_outage]), COUNTROWS(gold_ml_predictions), 0) * 100", "formatString": "0.0"}
+        ]
+      },
+      {
+        "name": "gold_ml_summary",
+        "columns": [
+          {"name": "substation_id", "dataType": "string", "sourceColumn": "substation_id"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "avg_outage_risk", "dataType": "double", "sourceColumn": "avg_outage_risk"},
+          {"name": "predicted_outage_days", "dataType": "int64", "sourceColumn": "predicted_outage_days"},
+          {"name": "total_days", "dataType": "int64", "sourceColumn": "total_days"},
+          {"name": "avg_voltage_deviation", "dataType": "double", "sourceColumn": "avg_voltage_deviation"},
+          {"name": "avg_freq_deviation", "dataType": "double", "sourceColumn": "avg_freq_deviation"},
+          {"name": "avg_daily_load", "dataType": "double", "sourceColumn": "avg_daily_load"},
+          {"name": "outage_rate", "dataType": "double", "sourceColumn": "outage_rate"},
+          {"name": "overall_risk", "dataType": "string", "sourceColumn": "overall_risk"},
+          {"name": "summary_timestamp", "dataType": "dateTime", "sourceColumn": "summary_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Avg Outage Risk", "expression": "AVERAGE(gold_ml_summary[avg_outage_risk])", "formatString": "0.0%"},
+          {"name": "Avg Outage Rate", "expression": "AVERAGE(gold_ml_summary[outage_rate])", "formatString": "0.0"},
+          {"name": "Substations", "expression": "COUNTROWS(gold_ml_summary)", "formatString": "0"},
+          {"name": "Predicted Outage Days", "expression": "SUM(gold_ml_summary[predicted_outage_days])", "formatString": "#,##0"},
+          {"name": "High Risk Substations", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[overall_risk] = \"high\")", "formatString": "0"}
+        ]
+      }
+    ],
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "annotations": [
+      {"name": "PBI_QueryOrder", "value": "[\"gold_ml_model_metrics\",\"gold_ml_feature_importance\",\"gold_ml_predictions\",\"gold_ml_summary\"]"}
+    ]
+  }
+}
