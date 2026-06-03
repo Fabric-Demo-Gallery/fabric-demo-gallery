@@ -1543,7 +1543,7 @@ export default function DemoDetailPage() {
               )}
 
               {/* ── Phase 2: Configure (workspace + capacity + Azure params) ── */}
-              {showDeploy && (!isCustomMode || !!selectedScenario) && !deploying && !completed && !(!!jobIdParam && !!error) && (
+              {showDeploy && (!isCustomMode || !!selectedScenario) && !deploying && !completed && !error && !(!!jobIdParam && !!error) && (
                 <div>
                   {/* Selected scenario chip */}
                   {selectedScenario && (
@@ -1691,7 +1691,7 @@ export default function DemoDetailPage() {
                 </div>
               )}
 
-              {(deploying || completed || (!!jobIdParam && !!error)) && (
+              {(deploying || completed || !!error) && (
                 <div>
                   {steps.map((step, i) => (
                     <div key={i} className={styles.stepRow}>
