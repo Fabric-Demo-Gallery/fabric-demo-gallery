@@ -858,6 +858,7 @@ export default function DemoDetailPage() {
       let buffer = "";
       let currentEvent = "";
       let streamHadError = false;
+      let sawDone = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -881,6 +882,7 @@ export default function DemoDetailPage() {
                   prev.map((s) => (s.name === step.name ? { ...s, ...step } : s))
                 );
                 if (step.name === "done" && step.status === "completed") {
+                  sawDone = true;
                   setCompleted(true);
                   if (step.detail) {
                     try {
@@ -906,8 +908,12 @@ export default function DemoDetailPage() {
       }
 
       // Stream ended — only mark completed if we actually got a "done" event
-      // If stream ended without done or error, it's an unexpected disconnection
-      if (!completed && !streamHadError) {
+      // Use the local sawDone flag (not the `completed` state, which is stale
+      // inside this async closure) so a successful deployment doesn't falsely
+      // report a lost connection.
+      if (sawDone) {
+        setCompleted(true);
+      } else if (!streamHadError) {
         setError("Connection to deployment server was lost. Check the Monitoring page to see if the deployment is still running.");
       }
     } catch (e: unknown) {
