@@ -42,19 +42,25 @@ async def run_job(
             try:
                 sc = load_scenario(scenario_id)
                 demo_manifest = load_manifest(demo_id)
-                # Scenario template defines the structural additions (e.g. ADLS Shortcut).
-                # Notebooks and other items must come from the demo's own manifest so the
-                # actual .ipynb files on disk are found (scenario has generic placeholder names).
+                # Check if scenario has structural additions (e.g. Shortcuts for data-virtualization)
                 scenario_shortcut_items = [
                     i for i in sc.get("fabricItemTemplate", []) if i["type"] == "Shortcut"
                 ]
-                manifest_override = {
-                    "id": demo_id,
-                    "title": sc.get("title", scenario_id),
-                    # Shortcut additions first (so they're provisioned before notebooks run)
-                    # then the full demo item list (correct notebook names + demo-specific items)
-                    "fabricItems": scenario_shortcut_items + demo_manifest.get("fabricItems", []),
-                }
+                if scenario_shortcut_items:
+                    # Shortcut scenario: add shortcuts before demo's standard items
+                    manifest_override = {
+                        "id": demo_id,
+                        "title": sc.get("title", scenario_id),
+                        "fabricItems": scenario_shortcut_items + demo_manifest.get("fabricItems", []),
+                    }
+                else:
+                    # ML/other scenario: use scenario's own fabricItemTemplate
+                    # (has correct notebook paths like notebooks/ml/...)
+                    manifest_override = {
+                        "id": demo_id,
+                        "title": sc.get("title", scenario_id),
+                        "fabricItems": sc.get("fabricItemTemplate", []),
+                    }
             except FileNotFoundError:
                 job_store.emit_event(job_id, {
                     "event": "error",

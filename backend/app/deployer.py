@@ -73,7 +73,7 @@ def list_demos() -> list[dict]:
 # ── Scenario helpers ────────────────────────────────────────────────────────
 
 # Only these scenario IDs are currently enabled for deployment.
-ENABLED_SCENARIOS: set[str] = {"data-virtualization-batch"}
+ENABLED_SCENARIOS: set[str] = {"data-virtualization-batch", "ai-ml", "anomaly-detection-alerts"}
 
 
 def load_scenario(scenario_id: str) -> dict:
