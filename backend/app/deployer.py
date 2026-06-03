@@ -129,6 +129,7 @@ async def deploy_demo(
     workspace_id: str | None = None,
     capacity_id: str | None = None,
     manifest_override: dict | None = None,
+    scenario_id: str | None = None,
     azure_client: AzureClient | None = None,
     onelake_token: str | None = None,
     subscription_id: str | None = None,
@@ -154,7 +155,7 @@ async def deploy_demo(
     manifest = manifest_override if manifest_override is not None else load_manifest(demo_id)
     demo_dir = DEMOS_DIR / demo_id
     items = manifest["fabricItems"]
-    scenario_id = manifest.get("id")
+    scenario_id = scenario_id if scenario_id is not None else manifest.get("id")
 
     steps: list[DeploymentStep] = []
     created_ids: dict[str, str] = {}  # logical name → Fabric item ID

@@ -76,6 +76,7 @@ async def run_job(
             workspace_id=workspace_id,
             capacity_id=capacity_id,
             manifest_override=manifest_override,
+            scenario_id=scenario_id,
             azure_client=az_client,
             onelake_token=onelake_token,
             subscription_id=subscription_id,
