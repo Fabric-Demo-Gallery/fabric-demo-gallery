@@ -983,14 +983,13 @@ export default function DemoDetailPage() {
   };
 
   const resetState = () => {
-    setShowDeploy(false);
+    setShowDeploy(true);
     setDeploying(false);
     setCompleted(false);
     setSteps([]);
     setError(null);
     setDeployedWorkspaceId("");
     setCleaned(false);
-    router.replace(`/demos/${id}?mode=custom`);
     setSelectedSub("");
     setSelectedRG("");
     setStorAcctName("");
