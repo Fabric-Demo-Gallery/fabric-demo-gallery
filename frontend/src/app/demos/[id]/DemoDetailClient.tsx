@@ -1316,6 +1316,120 @@ export default function DemoDetailPage() {
                 </div>
               </>
             )}
+
+            {/* === CUSTOM MODE: Anomaly Detection & Alerts scenario selected === */}
+            {isCustomMode && selectedScenario?.id === "anomaly-detection-alerts" && (
+              <>
+                {/* Data Flow */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <ArrowRightRegular fontSize={16} /> Data Flow
+                  </div>
+                  <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 12 }}>
+                    Reuses existing Bronze &amp; Silver layers, then applies SynapseML anomaly detection
+                  </div>
+                  <div className={styles.flowRow}>
+                    {[
+                      { label: "Bronze", value: "Raw Sensor Data", color: "#3fb68b" },
+                      { label: "Silver", value: "Cleaned & Enriched", color: "#238636" },
+                      { label: "ML", value: "SynapseML Isolation Forest", color: "#8957e5" },
+                      { label: "Gold", value: "Anomaly Alerts", color: "#da3633" },
+                    ].map((step, i, arr) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                        <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+                          <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+                          <div className={styles.flowValue}>{step.value}</div>
+                        </div>
+                        {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* What Gets Created */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <DatabaseRegular fontSize={16} /> What Gets Created
+                  </div>
+                  <div className={styles.sectionBody}>
+                    {[
+                      { type: "Lakehouse", name: "analytics_lakehouse", desc: "Central lakehouse for all data layers" },
+                      { type: "Notebook", name: "01_bronze_ingest", desc: "Ingest raw sensor & batch CSVs to Bronze Delta tables" },
+                      { type: "Notebook", name: "02_silver_transform", desc: "Clean, validate, enrich with Z-scores & shift labels" },
+                      { type: "Notebook", name: "03_anomaly_detection", desc: "SynapseML Isolation Forest + IQR defect rate detection" },
+                      { type: "Notebook", name: "04_alert_pipeline", desc: "Unify anomalies into gold_alerts & gold_alert_summary" },
+                      { type: "SemanticModel", name: "anomaly_model", desc: "Anomaly-focused semantic model with alert measures" },
+                      { type: "Report", name: "anomaly_report", desc: "Power BI dashboard: Anomaly Overview, Sensor Drilldown, Defect Alerts" },
+                      { type: "DataPipeline", name: "anomaly_pipeline", desc: "Orchestrates all notebooks sequentially" },
+                    ].map((item, i, arr) => (
+                      <div
+                        key={i}
+                        className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}
+                      >
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.desc}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sample Data */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <TableRegular fontSize={16} /> Sample Data
+                  </div>
+                  <div className={styles.sectionBody}>
+                    {[
+                      { fileName: "sensor_readings.csv", description: "50,000 IoT sensor readings (temp, pressure, vibration, humidity)", format: "csv", rows: 50000 },
+                      { fileName: "production_batches.csv", description: "2,000 production batch records with defect counts", format: "csv", rows: 2000 },
+                      { fileName: "equipment_catalog.csv", description: "50 machines across 5 production lines", format: "csv", rows: 50 },
+                    ].map((d, i, arr) => (
+                      <div key={i} className={styles.dataRow} style={i === arr.length - 1 ? { borderBottom: "none" } : undefined}>
+                        <div className={styles.dataLeft}>
+                          <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
+                          <div>
+                            <Text weight="medium" size={200}>{d.fileName}</Text>
+                            <div><Caption1>{d.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>
+                          {d.rows.toLocaleString()} rows
+                        </Caption1>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Detection Methods */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    🔬 Detection Methods
+                  </div>
+                  <div className={styles.sectionBody}>
+                    <div style={{ padding: "8px 0" }}>
+                      <Text weight="medium" size={300}>Sensor Anomalies</Text>
+                      <div><Caption1>SynapseML Isolation Forest — multivariate detection on temperature, pressure, vibration, humidity. Per-machine Z-score attribution identifies which channel is anomalous.</Caption1></div>
+                    </div>
+                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                      <Text weight="medium" size={300}>Defect Rate Spikes</Text>
+                      <div><Caption1>IQR upper-fence + Z-score &gt; 2.5 per production line. Flags batches with unusual defect counts or downtime.</Caption1></div>
+                    </div>
+                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                      <Text weight="medium" size={300}>Severity Levels</Text>
+                      <div><Caption1>Critical (&gt;3σ), Warning (&gt;2σ), Info — unified in gold_alerts table for Power BI alerting.</Caption1></div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right sidebar — Deploy */}
