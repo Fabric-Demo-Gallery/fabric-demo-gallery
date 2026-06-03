@@ -1378,18 +1378,14 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* Sample Data */}
+                {/* Sample Data — uses demo's actual data */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <TableRegular fontSize={16} /> Sample Data
                   </div>
                   <div className={styles.sectionBody}>
-                    {[
-                      { fileName: "sensor_readings.csv", description: "50,000 IoT sensor readings (temp, pressure, vibration, humidity)", format: "csv", rows: 50000 },
-                      { fileName: "production_batches.csv", description: "2,000 production batch records with defect counts & downtime", format: "csv", rows: 2000 },
-                      { fileName: "equipment_catalog.csv", description: "50 machines across 5 production lines", format: "csv", rows: 50 },
-                    ].map((d, i, arr) => (
-                      <div key={i} className={styles.dataRow} style={i === arr.length - 1 ? { borderBottom: "none" } : undefined}>
+                    {demo.sampleData.map((d, i) => (
+                      <div key={i} className={styles.dataRow} style={i === demo.sampleData.length - 1 ? { borderBottom: "none" } : undefined}>
                         <div className={styles.dataLeft}>
                           <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
                           <div>
@@ -1411,18 +1407,38 @@ export default function DemoDetailPage() {
                     🤖 ML Pipeline
                   </div>
                   <div className={styles.sectionBody}>
-                    <div style={{ padding: "8px 0" }}>
-                      <Text weight="medium" size={300}>Target Variable</Text>
-                      <div><Caption1>needs_maintenance — binary flag (1 = daily downtime &gt; 60 min, indicating maintenance required)</Caption1></div>
-                    </div>
-                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                      <Text weight="medium" size={300}>Features (25 total)</Text>
-                      <div><Caption1>Sensor stats (temp, pressure, vibration, humidity — mean/std/max/range), anomaly ratios, production metrics (units, defects, yield), equipment age, production line, machine type</Caption1></div>
-                    </div>
-                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                      <Text weight="medium" size={300}>Model</Text>
-                      <div><Caption1>SynapseML LightGBM Classifier — 200 iterations, 0.05 learning rate, class imbalance handling. Outputs probability + risk level (critical/high/medium/low).</Caption1></div>
-                    </div>
+                    {id === "manufacturing-qc" && (
+                      <>
+                        <div style={{ padding: "8px 0" }}>
+                          <Text weight="medium" size={300}>Target Variable</Text>
+                          <div><Caption1>needs_maintenance — binary flag (1 = daily downtime &gt; 60 min, indicating maintenance required)</Caption1></div>
+                        </div>
+                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                          <Text weight="medium" size={300}>Features (25 total)</Text>
+                          <div><Caption1>Sensor stats (temp, pressure, vibration, humidity — mean/std/max/range), anomaly ratios, production metrics (units, defects, yield), equipment age, production line, machine type</Caption1></div>
+                        </div>
+                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                          <Text weight="medium" size={300}>Model</Text>
+                          <div><Caption1>SynapseML LightGBM Classifier — 200 iterations, 0.05 learning rate, class imbalance handling. Outputs probability + risk level (critical/high/medium/low).</Caption1></div>
+                        </div>
+                      </>
+                    )}
+                    {id === "retail-sales" && (
+                      <>
+                        <div style={{ padding: "8px 0" }}>
+                          <Text weight="medium" size={300}>Target Variable</Text>
+                          <div><Caption1>daily_quantity — continuous (units sold per store-product per day)</Caption1></div>
+                        </div>
+                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                          <Text weight="medium" size={300}>Features (18 total)</Text>
+                          <div><Caption1>Transaction count, avg price/discount, calendar (day of week, month, weekend), lag features (1-day, 7-day demand), product category/subcategory, store region/format, margin</Caption1></div>
+                        </div>
+                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                          <Text weight="medium" size={300}>Model</Text>
+                          <div><Caption1>SynapseML LightGBM Regressor — 200 iterations, 0.05 learning rate. Outputs predicted demand + demand signal (high/stable/low).</Caption1></div>
+                        </div>
+                      </>
+                    )}
                     <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                       <Text weight="medium" size={300}>Gold Tables</Text>
                       <div><Caption1>gold_ml_features, gold_ml_model_metrics, gold_ml_feature_importance, gold_ml_predictions, gold_ml_summary</Caption1></div>
