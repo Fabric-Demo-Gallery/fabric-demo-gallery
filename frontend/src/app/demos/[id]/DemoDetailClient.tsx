@@ -1355,12 +1355,14 @@ export default function DemoDetailPage() {
                   <div className={styles.sectionBody}>
                     {[
                       { type: "Lakehouse", name: "ml_lakehouse", desc: "Central lakehouse for features, models, and predictions" },
-                      { type: "Notebook", name: "01_feature_engineering", desc: "Aggregate sensor + batch data into daily ML feature vectors" },
-                      { type: "Notebook", name: "02_model_training", desc: "Train LightGBM classifier for predictive maintenance" },
-                      { type: "Notebook", name: "03_model_evaluation", desc: "Confusion matrix, feature importance, detailed metrics" },
-                      { type: "Notebook", name: "04_batch_scoring", desc: "Score all equipment with risk levels (critical/high/medium/low)" },
+                      { type: "Notebook", name: "01_bronze_ingest", desc: "Ingest raw data into Bronze Delta tables" },
+                      { type: "Notebook", name: "02_silver_transform", desc: "Clean, validate, enrich into Silver tables" },
+                      { type: "Notebook", name: "03_feature_engineering", desc: "Aggregate data into daily ML feature vectors" },
+                      { type: "Notebook", name: "04_model_training", desc: "Train SynapseML LightGBM model" },
+                      { type: "Notebook", name: "05_model_evaluation", desc: "Confusion matrix, feature importance, detailed metrics" },
+                      { type: "Notebook", name: "06_batch_scoring", desc: "Score all entities with risk levels (critical/high/medium/low)" },
                       { type: "SemanticModel", name: "predictions_model", desc: "Semantic model with prediction measures and risk KPIs" },
-                      { type: "Report", name: "predictions_report", desc: "Power BI dashboard: Risk Overview, Machine Drilldown, Feature Importance" },
+                      { type: "Report", name: "predictions_report", desc: "Power BI dashboard: Risk Overview, Drilldown, Feature Importance" },
                     ].map((item, i, arr) => (
                       <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
                         <div className={styles.itemLeft}>

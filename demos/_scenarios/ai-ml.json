@@ -1,20 +1,22 @@
 {
   "id": "ai-ml",
   "title": "AI & Machine Learning",
-  "description": "End-to-end ML lifecycle: feature engineering, model training with MLflow, evaluation, and serving predictions via a lakehouse.",
+  "description": "End-to-end ML lifecycle: data ingestion, feature engineering, model training with SynapseML LightGBM, evaluation, and batch scoring.",
   "icon": "🤖",
   "estimatedTime": "15-25 min",
-  "tags": ["ml", "mlflow", "experiment", "lakehouse"],
+  "tags": ["ml", "lightgbm", "experiment", "lakehouse"],
   "prerequisites": [
     "Fabric capacity (F2+, Trial, or PPU)"
   ],
   "azureParams": [],
   "fabricItemTemplate": [
     { "type": "Lakehouse",     "name": "ml_lakehouse" },
-    { "type": "Notebook",      "name": "01_feature_engineering",  "definitionPath": "notebooks/ml/01_feature_engineering.ipynb",   "order": 1 },
-    { "type": "Notebook",      "name": "02_model_training",       "definitionPath": "notebooks/ml/02_model_training.ipynb",        "order": 2 },
-    { "type": "Notebook",      "name": "03_model_evaluation",     "definitionPath": "notebooks/ml/03_model_evaluation.ipynb",      "order": 3 },
-    { "type": "Notebook",      "name": "04_batch_scoring",        "definitionPath": "notebooks/ml/04_batch_scoring.ipynb",         "order": 4 },
+    { "type": "Notebook",      "name": "01_bronze_ingest",        "definitionPath": "notebooks/batch/01_bronze_ingest.ipynb",      "order": 1 },
+    { "type": "Notebook",      "name": "02_silver_transform",     "definitionPath": "notebooks/batch/02_silver_transform.ipynb",   "order": 2 },
+    { "type": "Notebook",      "name": "03_feature_engineering",  "definitionPath": "notebooks/ml/01_feature_engineering.ipynb",   "order": 3 },
+    { "type": "Notebook",      "name": "04_model_training",       "definitionPath": "notebooks/ml/02_model_training.ipynb",        "order": 4 },
+    { "type": "Notebook",      "name": "05_model_evaluation",     "definitionPath": "notebooks/ml/03_model_evaluation.ipynb",      "order": 5 },
+    { "type": "Notebook",      "name": "06_batch_scoring",        "definitionPath": "notebooks/ml/04_batch_scoring.ipynb",         "order": 6 },
     { "type": "SemanticModel", "name": "predictions_model",       "definitionPath": "tmdl" },
     { "type": "Report",        "name": "predictions_report" }
   ]
