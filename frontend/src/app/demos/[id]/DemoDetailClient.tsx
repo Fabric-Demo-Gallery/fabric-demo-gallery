@@ -945,41 +945,57 @@ export default function DemoDetailPage() {
     }
   };
 
-  const handleCleanup = async () => {
-    if (!confirm("Delete the entire workspace and all items?")) return;
+  const deleteWorkspace = async (clearError: boolean) => {
+    if (!deployedWorkspaceId) {
+      alert("No workspace to delete \u2014 the workspace ID is missing.");
+      return;
+    }
     setCleaning(true);
     try {
       const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
       const headers: Record<string, string> = {};
-      if (account) {
-        try {
-          const t = await getFabricToken();
-          if (t) headers["Authorization"] = `Bearer ${t}`;
-        } catch { /* ignore */ }
+      try {
+        const t = await getFabricToken();
+        if (t) headers["Authorization"] = `Bearer ${t}`;
+      } catch { /* token fetch failed \u2014 backend will report 401 below */ }
+      if (!headers["Authorization"]) {
+        alert("Could not get a Fabric sign-in token. Please sign in again, then retry the delete.");
+        return;
       }
       const res = await fetch(`${API}/api/deploy/${deployedWorkspaceId}`, { method: "DELETE", headers });
-      if (res.ok) setCleaned(true);
-      else alert(`Failed: ${res.statusText}`);
+      if (res.ok) {
+        setCleaned(true);
+        if (clearError) setError(null);
+        return;
+      }
+      // Surface the backend's real error message (detail) instead of an empty statusText
+      let msg = res.statusText || `HTTP ${res.status}`;
+      try {
+        const body = await res.json();
+        if (body?.detail) msg = body.detail;
+      } catch { /* body wasn't JSON */ }
+      if (res.status === 404) {
+        // Already gone \u2014 treat as success
+        setCleaned(true);
+        if (clearError) setError(null);
+        return;
+      }
+      alert(`Failed to delete workspace: ${msg}`);
     } catch (e) {
-      alert(`Error: ${e}`);
+      alert(`Could not reach the backend to delete the workspace: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setCleaning(false);
     }
   };
 
+  const handleCleanup = async () => {
+    if (!confirm("Delete the entire workspace and all items?")) return;
+    await deleteWorkspace(false);
+  };
+
   const handlePartialCleanup = async () => {
     if (!confirm("Delete the partially created workspace?")) return;
-    setCleaning(true);
-    try {
-      const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const res = await fetch(`${API}/api/deploy/${deployedWorkspaceId}`, { method: "DELETE" });
-      if (res.ok) { setCleaned(true); setError(null); }
-      else alert(`Failed: ${res.statusText}`);
-    } catch (e) {
-      alert(`Error: ${e}`);
-    } finally {
-      setCleaning(false);
-    }
+    await deleteWorkspace(true);
   };
 
   const resetState = () => {
