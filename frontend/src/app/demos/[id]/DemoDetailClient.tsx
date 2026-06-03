@@ -92,11 +92,11 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "ai-ml",
     title: "AI & Machine Learning",
-    description: "End-to-end ML lifecycle: feature engineering, MLflow model training, evaluation, and batch scoring.",
+    description: "End-to-end ML lifecycle: feature engineering, SynapseML LightGBM model training, evaluation, and batch scoring with risk rankings.",
     icon: "🤖",
     estimatedTime: "15–25 min",
-    tags: ["ml", "mlflow", "experiment", "lakehouse"],
-    enabled: false,
+    tags: ["ml", "lightgbm", "experiment", "lakehouse"],
+    enabled: true,
     requiresAzure: false,
     azureParams: [],
     feature: "Machine Learning",
@@ -1312,6 +1312,121 @@ export default function DemoDetailPage() {
                         </Caption1>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* === CUSTOM MODE: AI & Machine Learning scenario selected === */}
+            {isCustomMode && selectedScenario?.id === "ai-ml" && (
+              <>
+                {/* Data Flow */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <ArrowRightRegular fontSize={16} /> Data Flow
+                  </div>
+                  <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 12 }}>
+                    End-to-end ML pipeline: Bronze/Silver data → Feature engineering → LightGBM training → Batch scoring
+                  </div>
+                  <div className={styles.flowRow}>
+                    {[
+                      { label: "Bronze", value: "Raw Ingest", color: "#3fb68b" },
+                      { label: "Silver", value: "Clean & Enrich", color: "#238636" },
+                      { label: "Features", value: "ML Feature Table", color: "#1f6feb" },
+                      { label: "Train", value: "SynapseML LightGBM", color: "#8957e5" },
+                      { label: "Score", value: "Predictions & Risk", color: "#da3633" },
+                    ].map((step, i, arr) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                        <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+                          <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+                          <div className={styles.flowValue}>{step.value}</div>
+                        </div>
+                        {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* What Gets Created */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <DatabaseRegular fontSize={16} /> What Gets Created
+                  </div>
+                  <div className={styles.sectionBody}>
+                    {[
+                      { type: "Lakehouse", name: "ml_lakehouse", desc: "Central lakehouse for features, models, and predictions" },
+                      { type: "Notebook", name: "01_feature_engineering", desc: "Aggregate sensor + batch data into daily ML feature vectors" },
+                      { type: "Notebook", name: "02_model_training", desc: "Train LightGBM classifier for predictive maintenance" },
+                      { type: "Notebook", name: "03_model_evaluation", desc: "Confusion matrix, feature importance, detailed metrics" },
+                      { type: "Notebook", name: "04_batch_scoring", desc: "Score all equipment with risk levels (critical/high/medium/low)" },
+                      { type: "SemanticModel", name: "predictions_model", desc: "Semantic model with prediction measures and risk KPIs" },
+                      { type: "Report", name: "predictions_report", desc: "Power BI dashboard: Risk Overview, Machine Drilldown, Feature Importance" },
+                    ].map((item, i, arr) => (
+                      <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.desc}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sample Data */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <TableRegular fontSize={16} /> Sample Data
+                  </div>
+                  <div className={styles.sectionBody}>
+                    {[
+                      { fileName: "sensor_readings.csv", description: "50,000 IoT sensor readings (temp, pressure, vibration, humidity)", format: "csv", rows: 50000 },
+                      { fileName: "production_batches.csv", description: "2,000 production batch records with defect counts & downtime", format: "csv", rows: 2000 },
+                      { fileName: "equipment_catalog.csv", description: "50 machines across 5 production lines", format: "csv", rows: 50 },
+                    ].map((d, i, arr) => (
+                      <div key={i} className={styles.dataRow} style={i === arr.length - 1 ? { borderBottom: "none" } : undefined}>
+                        <div className={styles.dataLeft}>
+                          <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
+                          <div>
+                            <Text weight="medium" size={200}>{d.fileName}</Text>
+                            <div><Caption1>{d.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>
+                          {d.rows.toLocaleString()} rows
+                        </Caption1>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ML Pipeline Details */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    🤖 ML Pipeline
+                  </div>
+                  <div className={styles.sectionBody}>
+                    <div style={{ padding: "8px 0" }}>
+                      <Text weight="medium" size={300}>Target Variable</Text>
+                      <div><Caption1>needs_maintenance — binary flag (1 = daily downtime &gt; 60 min, indicating maintenance required)</Caption1></div>
+                    </div>
+                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                      <Text weight="medium" size={300}>Features (25 total)</Text>
+                      <div><Caption1>Sensor stats (temp, pressure, vibration, humidity — mean/std/max/range), anomaly ratios, production metrics (units, defects, yield), equipment age, production line, machine type</Caption1></div>
+                    </div>
+                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                      <Text weight="medium" size={300}>Model</Text>
+                      <div><Caption1>SynapseML LightGBM Classifier — 200 iterations, 0.05 learning rate, class imbalance handling. Outputs probability + risk level (critical/high/medium/low).</Caption1></div>
+                    </div>
+                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                      <Text weight="medium" size={300}>Gold Tables</Text>
+                      <div><Caption1>gold_ml_features, gold_ml_model_metrics, gold_ml_feature_importance, gold_ml_predictions, gold_ml_summary</Caption1></div>
+                    </div>
                   </div>
                 </div>
               </>
