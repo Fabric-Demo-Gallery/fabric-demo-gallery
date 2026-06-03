@@ -1439,6 +1439,22 @@ export default function DemoDetailPage() {
                         </div>
                       </>
                     )}
+                    {id === "energy-grid" && (
+                      <>
+                        <div style={{ padding: "8px 0" }}>
+                          <Text weight="medium" size={300}>Target Variable</Text>
+                          <div><Caption1>had_outage — binary flag (1 = outage/surge/sag event at substation that day)</Caption1></div>
+                        </div>
+                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                          <Text weight="medium" size={300}>Features (19 total)</Text>
+                          <div><Caption1>Voltage stats (avg/std/min/max/range/deviation from 230V), frequency (avg/std/deviation from 50Hz), power factor, load, temperature, reading count, calendar (day of week, month), region</Caption1></div>
+                        </div>
+                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                          <Text weight="medium" size={300}>Model</Text>
+                          <div><Caption1>SynapseML LightGBM Classifier — 200 iterations, 0.05 learning rate, class imbalance handling. Outputs outage probability + risk level (critical/high/medium/low).</Caption1></div>
+                        </div>
+                      </>
+                    )}
                     <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                       <Text weight="medium" size={300}>Gold Tables</Text>
                       <div><Caption1>gold_ml_features, gold_ml_model_metrics, gold_ml_feature_importance, gold_ml_predictions, gold_ml_summary</Caption1></div>
