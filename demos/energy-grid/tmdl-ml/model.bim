@@ -58,7 +58,7 @@
           }
         ],
         "measures": [
-          {"name": "Importance", "expression": "SUM(gold_ml_feature_importance[importance])", "formatString": "0.0000"}
+          {"name": "Total Importance", "expression": "SUM(gold_ml_feature_importance[importance])", "formatString": "0.0000"}
         ]
       },
       {

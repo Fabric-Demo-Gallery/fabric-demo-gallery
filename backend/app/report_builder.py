@@ -468,7 +468,7 @@ def build_energy_ml_report_definition(semantic_model_id: str) -> dict:
         _kpi_card("m_feat", 650,  45, M, "Feature Count",   "Features Used",  "#004E8C"),
         _kpi_card("m_train",860,  45, M, "Training Rows",   "Training Rows",  "#107C10"),
         _card("m_test", 1060, 45, 200, 100, M, "Test Rows", "Test Rows",      "#D83B01"),
-        _bar("m_fi", 20, 155, 760, 545, F, "feature", "Importance", "Feature Importance (RandomForest)", True),
+        _bar("m_fi", 20, 155, 760, 545, F, "feature", "Total Importance", "Feature Importance (RandomForest)", True),
         _table("m_fi_tbl", 795, 155, 465, 545, F, ["feature", "importance"], "Feature Importance Detail"),
     ]
 
