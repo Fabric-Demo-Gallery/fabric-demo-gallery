@@ -818,8 +818,15 @@ export default function DemoDetailPage() {
       });
 
       if (!createResp.ok) {
-        const text = await createResp.text();
-        setError(`Backend error ${createResp.status}: ${text.slice(0, 200)}`);
+        let errorMsg = `Deployment failed (${createResp.status})`;
+        try {
+          const errData = await createResp.json();
+          errorMsg = errData.detail || errData.message || errorMsg;
+        } catch {
+          const text = await createResp.text();
+          errorMsg = text.slice(0, 300) || errorMsg;
+        }
+        setError(errorMsg);
         setDeploying(false);
         return;
       }
@@ -898,7 +905,11 @@ export default function DemoDetailPage() {
         }
       }
 
-      if (!completed && !streamHadError) setCompleted(true);
+      // Stream ended — only mark completed if we actually got a "done" event
+      // If stream ended without done or error, it's an unexpected disconnection
+      if (!completed && !streamHadError) {
+        setError("Connection to deployment server was lost. Check the Monitoring page to see if the deployment is still running.");
+      }
     } catch (e: unknown) {
       if (e instanceof DOMException && e.name === "AbortError") {
         setError("Deployment stopped by user. The workspace may be partially created.");

@@ -45,8 +45,14 @@ async def create_job(
                 if ws.get("capacityId"):
                     cap_id = ws["capacityId"]
                     break
-        except Exception:
-            pass
+        except Exception as e:
+            await client.close()
+            detail = str(e)[:200]
+            if "401" in detail or "Unauthorized" in detail:
+                raise HTTPException(status_code=401, detail="Authentication expired. Please sign out and sign in again.")
+            elif "403" in detail or "Forbidden" in detail:
+                raise HTTPException(status_code=403, detail="You don't have permission to list workspaces. Contact your Fabric admin.")
+            raise HTTPException(status_code=502, detail=f"Failed to connect to Fabric API: {detail}")
         if not cap_id:
             await client.close()
             raise HTTPException(

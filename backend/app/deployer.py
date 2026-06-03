@@ -230,11 +230,25 @@ async def deploy_demo(
             step = _find_step(steps, "workspace")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
-            ws = await client.create_workspace(workspace_name or manifest["title"], capacity_id)
-            ws_id = ws["id"]
-            step.status = "completed"
-            step.item_id = ws_id
-            yield {"event": "step", "data": step.to_dict()}
+            try:
+                ws = await client.create_workspace(workspace_name or manifest["title"], capacity_id)
+                ws_id = ws["id"]
+                step.status = "completed"
+                step.item_id = ws_id
+                yield {"event": "step", "data": step.to_dict()}
+            except FabricError as e:
+                step.status = "failed"
+                if e.status == 409:
+                    step.detail = f"A workspace named '{workspace_name}' already exists. Please choose a different name."
+                elif e.status == 403:
+                    step.detail = "You don't have permission to create workspaces. Contact your Fabric admin."
+                elif e.status == 401:
+                    step.detail = "Authentication expired. Please sign out and sign in again."
+                else:
+                    step.detail = f"Failed to create workspace: {e.detail[:200]}"
+                yield {"event": "step", "data": step.to_dict()}
+                yield {"event": "error", "data": {"message": step.detail, "workspaceId": ""}}
+                return
 
         # 2a. Eventhouses
         eventhouse_uri = ""
