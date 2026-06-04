@@ -407,7 +407,12 @@ class FabricClient:
         return await self.create_item(workspace_id, "SemanticModel", name, tmdl_definition)
 
     async def refresh_semantic_model(
-        self, workspace_id: str, model_id: str, timeout: int = 300
+        self,
+        workspace_id: str,
+        model_id: str,
+        timeout: int = 300,
+        max_attempts: int = 4,
+        retry_delay: int = 20,
     ) -> None:
         """Trigger a semantic model refresh and wait for completion.
 
@@ -416,29 +421,61 @@ class FabricClient:
         so it never actually framed the DirectLake tables — leaving the
         'DAX queries may fall back to DirectQuery' warning on every table.
         The Fabric-audience token is accepted by the Power BI API.
+
+        A fresh deploy can hit a transient failure: the SQL endpoint has been
+        provisioned but hasn't yet synced the freshly-written gold tables, so
+        the refresh fails with "source tables ... do not exist". We retry such
+        transient failures a few times to let the metadata sync catch up; only
+        then does an unframed model (and its DirectQuery-fallback warning)
+        slip through.
         """
         pbi_base = "https://api.powerbi.com/v1.0/myorg/groups"
         refresh_url = f"{pbi_base}/{workspace_id}/datasets/{model_id}/refreshes"
-        resp = await self._request("POST", refresh_url, json={"type": "full"})
-        # 202 Accepted — poll the refresh history for the result.
-        if resp.status_code not in (200, 202):
-            return
-        start = time.time()
-        while time.time() - start < timeout:
-            await asyncio.sleep(5)
-            hist = await self._request("GET", f"{refresh_url}?$top=1")
-            items = hist.json().get("value", [])
-            if not items:
-                continue
-            status = (items[0].get("status") or "").lower()
-            if status == "completed":
+        # Markers of a transient SQL-endpoint metadata-sync lag (retryable).
+        transient_markers = (
+            "do not exist",
+            "access was denied",
+            "modelrefresh_shortmessage_processingerror",
+        )
+
+        last_error = ""
+        for attempt in range(1, max_attempts + 1):
+            resp = await self._request("POST", refresh_url, json={"type": "full"})
+            # 202 Accepted — poll the refresh history for the result.
+            if resp.status_code not in (200, 202):
                 return
-            if status == "failed":
-                err = items[0].get("serviceExceptionJson", "Refresh failed")
-                raise FabricError(500, f"Semantic model refresh failed: {err[:400]}")
-            if status == "disabled":
-                raise FabricError(500, "Semantic model refresh disabled.")
-        raise FabricError(504, f"Semantic model refresh timed out after {timeout}s.")
+            start = time.time()
+            while time.time() - start < timeout:
+                await asyncio.sleep(5)
+                hist = await self._request("GET", f"{refresh_url}?$top=1")
+                items = hist.json().get("value", [])
+                if not items:
+                    continue
+                status = (items[0].get("status") or "").lower()
+                if status == "completed":
+                    return
+                if status == "failed":
+                    err = items[0].get("serviceExceptionJson", "Refresh failed")
+                    last_error = err
+                    is_transient = any(m in err.lower() for m in transient_markers)
+                    if attempt < max_attempts and is_transient:
+                        logger.warning(
+                            "Refresh attempt %d/%d failed transiently "
+                            "(SQL endpoint sync lag), retrying in %ds: %s",
+                            attempt, max_attempts, retry_delay, err[:200],
+                        )
+                        await asyncio.sleep(retry_delay)
+                        break  # re-POST a new refresh
+                    raise FabricError(500, f"Semantic model refresh failed: {err[:400]}")
+                if status == "disabled":
+                    raise FabricError(500, "Semantic model refresh disabled.")
+            else:
+                # Inner poll loop exhausted its timeout without a terminal status.
+                raise FabricError(504, f"Semantic model refresh timed out after {timeout}s.")
+        raise FabricError(
+            500,
+            f"Semantic model refresh failed after {max_attempts} attempts: {last_error[:400]}",
+        )
 
     # ── pipelines ────────────────────────────────────────────────────────
 
