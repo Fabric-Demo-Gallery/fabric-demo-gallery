@@ -561,7 +561,9 @@ async def deploy_demo(
             if model_bim.exists():
                 definition = _build_bim_definition(model_bim, variables={
                     "SQL_ENDPOINT": conn_string,
-                    "LAKEHOUSE_NAME": lakehouse_name,
+                    "LAKEHOUSE_NAME": lakehouse_name or "",
+                    "WORKSPACE_ID": ws_id,
+                    "LAKEHOUSE_ID": lakehouse_id or "",
                 })
                 result = await client.create_semantic_model(ws_id, sm["name"], definition)
                 created_ids[sm["name"]] = result.get("id", "")

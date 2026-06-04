@@ -136,11 +136,21 @@
         ]
       }
     ],
+    "relationships": [
+      {
+        "name": "rel_summary_predictions",
+        "fromTable": "gold_ml_predictions",
+        "fromColumn": "substation_id",
+        "toTable": "gold_ml_summary",
+        "toColumn": "substation_id",
+        "crossFilteringBehavior": "oneDirection"
+      }
+    ],
     "expressions": [
       {
         "name": "DatabaseQuery",
         "kind": "m",
-        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+        "expression": "let\n    Source = AzureStorage.DataLake(\"https://onelake.dfs.fabric.microsoft.com/{{WORKSPACE_ID}}/{{LAKEHOUSE_ID}}\", [HierarchicalNavigation=true])\nin\n    Source"
       }
     ],
     "annotations": [
