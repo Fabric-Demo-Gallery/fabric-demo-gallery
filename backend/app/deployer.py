@@ -587,8 +587,8 @@ async def deploy_demo(
                     step.detail = "Data loaded from Gold tables"
                 except FabricError as e:
                     logger.warning("Semantic model refresh failed: %s", e.detail)
-                    step.status = "completed"
-                    step.detail = f"⚠ Refresh failed: {e.detail[:150]}. Refresh manually in Fabric portal."
+                    step.status = "failed"
+                    step.detail = f"Refresh failed: {e.detail[:200]}"
             else:
                 step.status = "completed"
                 step.detail = "Skipped — no model created"

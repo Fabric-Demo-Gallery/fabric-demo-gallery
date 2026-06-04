@@ -409,16 +409,36 @@ class FabricClient:
     async def refresh_semantic_model(
         self, workspace_id: str, model_id: str, timeout: int = 300
     ) -> None:
-        """Trigger a semantic model refresh and wait for completion."""
-        resp = await self._request(
-            "POST",
-            f"{FABRIC_API}/workspaces/{workspace_id}/semanticModels/{model_id}/refresh",
-            json={"type": "full"},
-        )
-        if resp.status_code == 202:
-            location = resp.headers.get("Location")
-            if location:
-                await self._poll_lro(location, timeout=timeout)
+        """Trigger a semantic model refresh and wait for completion.
+
+        Uses the Power BI Enhanced Refresh API (api.powerbi.com). The Fabric
+        `/semanticModels/{id}/refresh` endpoint returns 404 for these models,
+        so it never actually framed the DirectLake tables — leaving the
+        'DAX queries may fall back to DirectQuery' warning on every table.
+        The Fabric-audience token is accepted by the Power BI API.
+        """
+        pbi_base = "https://api.powerbi.com/v1.0/myorg/groups"
+        refresh_url = f"{pbi_base}/{workspace_id}/datasets/{model_id}/refreshes"
+        resp = await self._request("POST", refresh_url, json={"type": "full"})
+        # 202 Accepted — poll the refresh history for the result.
+        if resp.status_code not in (200, 202):
+            return
+        start = time.time()
+        while time.time() - start < timeout:
+            await asyncio.sleep(5)
+            hist = await self._request("GET", f"{refresh_url}?$top=1")
+            items = hist.json().get("value", [])
+            if not items:
+                continue
+            status = (items[0].get("status") or "").lower()
+            if status == "completed":
+                return
+            if status == "failed":
+                err = items[0].get("serviceExceptionJson", "Refresh failed")
+                raise FabricError(500, f"Semantic model refresh failed: {err[:400]}")
+            if status == "disabled":
+                raise FabricError(500, "Semantic model refresh disabled.")
+        raise FabricError(504, f"Semantic model refresh timed out after {timeout}s.")
 
     # ── pipelines ────────────────────────────────────────────────────────
 

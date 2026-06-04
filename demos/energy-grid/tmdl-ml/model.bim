@@ -150,7 +150,7 @@
       {
         "name": "DatabaseQuery",
         "kind": "m",
-        "expression": "let\n    Source = AzureStorage.DataLake(\"https://onelake.dfs.fabric.microsoft.com/{{WORKSPACE_ID}}/{{LAKEHOUSE_ID}}\", [HierarchicalNavigation=true])\nin\n    Source"
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
       }
     ],
     "annotations": [
