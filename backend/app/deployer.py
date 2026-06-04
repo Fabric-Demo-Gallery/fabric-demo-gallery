@@ -523,6 +523,24 @@ async def deploy_demo(
                     yield {"event": "step", "data": step.to_dict()}
                     await asyncio.sleep(60)
                     await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
+                elif "Livy" in e.detail or "Failed to create Livy session" in e.detail:
+                    # Transient Spark cold-start — retry a few times on a longer backoff
+                    last_err = e
+                    succeeded = False
+                    for attempt in range(3):
+                        step.detail = f"Spark session cold-start — retrying ({attempt + 1}/3) in 60s..."
+                        yield {"event": "step", "data": step.to_dict()}
+                        await asyncio.sleep(60)
+                        try:
+                            await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
+                            succeeded = True
+                            break
+                        except FabricError as retry_err:
+                            last_err = retry_err
+                            if not ("Livy" in retry_err.detail or "Failed to create Livy session" in retry_err.detail):
+                                raise
+                    if not succeeded:
+                        raise FabricError(500, f"Notebook '{nb['name']}' failed: Spark session could not start after retries. {last_err.detail[:150]}")
                 elif "Session_Statements_Failed" in e.detail or "Cancelled" in e.detail:
                     step.detail = f"Notebook code error — retrying in 45s..."
                     yield {"event": "step", "data": step.to_dict()}

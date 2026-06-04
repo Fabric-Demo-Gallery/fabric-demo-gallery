@@ -75,8 +75,20 @@ class FabricClient:
     async def _poll_lro(self, location: str, timeout: int = 300) -> dict | None:
         """Poll a long-running operation until completion."""
         start = time.time()
+        transient_failures = 0
         while time.time() - start < timeout:
-            resp = await self._client.get(location)
+            try:
+                resp = await self._client.get(location)
+            except (httpx.ConnectError, httpx.ReadError, httpx.ConnectTimeout,
+                    httpx.ReadTimeout, httpx.RemoteProtocolError) as e:
+                # Transient network blip (DNS hiccup, dropped connection) — keep polling.
+                transient_failures += 1
+                if transient_failures > 12:
+                    raise FabricError(503, f"Lost network connection while tracking the operation: {e}. The item may still be provisioning — check the workspace in Fabric portal.")
+                logger.warning("Transient network error while polling LRO (%s/12): %s", transient_failures, e)
+                await asyncio.sleep(5)
+                continue
+            transient_failures = 0
             if resp.status_code == 200:
                 body = resp.json()
                 status = body.get("status", "").lower()
