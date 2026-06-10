@@ -1,0 +1,16 @@
+{
+  "name_first":   { "value": "FIRST_NAME",        "required": true },
+  "name_last":    { "value": "LAST_NAME",         "required": true },
+  "email":        { "value": "you@microsoft.com", "required": true },
+  "phone":        { "value": "+353.871234567",    "required": true },
+  "address1":     { "value": "STREET ADDRESS",    "required": true },
+  "address2":     { "value": "",                  "required": false },
+  "city":         { "value": "Dublin",            "required": true },
+  "state":        { "value": "Dublin",            "required": true },
+  "country":      { "value": "IE",                "required": true, "options": [] },
+  "postal_code":  { "value": "D02XY45",           "required": true },
+  "organization": { "value": "Microsoft",         "required": false },
+  "job_title":    { "value": "",                  "required": false },
+  "fax":          { "value": "",                  "required": false },
+  "name_middle":  { "value": "",                  "required": false }
+}
