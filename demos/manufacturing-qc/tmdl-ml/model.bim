@@ -1,0 +1,162 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "gold_ml_model_metrics",
+        "columns": [
+          {"name": "demo_id", "dataType": "string", "sourceColumn": "demo_id"},
+          {"name": "use_case", "dataType": "string", "sourceColumn": "use_case"},
+          {"name": "model_type", "dataType": "string", "sourceColumn": "model_type"},
+          {"name": "feature_count", "dataType": "int64", "sourceColumn": "feature_count"},
+          {"name": "train_rows", "dataType": "int64", "sourceColumn": "train_rows"},
+          {"name": "test_rows", "dataType": "int64", "sourceColumn": "test_rows"},
+          {"name": "auc_roc", "dataType": "double", "sourceColumn": "auc_roc"},
+          {"name": "accuracy", "dataType": "double", "sourceColumn": "accuracy"},
+          {"name": "f1_score", "dataType": "double", "sourceColumn": "f1_score"},
+          {"name": "trained_at", "dataType": "dateTime", "sourceColumn": "trained_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_model_metrics",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Model AUC", "expression": "AVERAGE(gold_ml_model_metrics[auc_roc])", "formatString": "0.000"},
+          {"name": "Model Accuracy", "expression": "AVERAGE(gold_ml_model_metrics[accuracy])", "formatString": "0.0%"},
+          {"name": "F1 Score", "expression": "AVERAGE(gold_ml_model_metrics[f1_score])", "formatString": "0.000"},
+          {"name": "Feature Count", "expression": "MAX(gold_ml_model_metrics[feature_count])", "formatString": "0"},
+          {"name": "Training Rows", "expression": "MAX(gold_ml_model_metrics[train_rows])", "formatString": "#,##0"},
+          {"name": "Test Rows", "expression": "MAX(gold_ml_model_metrics[test_rows])", "formatString": "#,##0"}
+        ]
+      },
+      {
+        "name": "gold_ml_feature_importance",
+        "columns": [
+          {"name": "feature", "dataType": "string", "sourceColumn": "feature"},
+          {"name": "importance", "dataType": "double", "sourceColumn": "importance"},
+          {"name": "model_timestamp", "dataType": "dateTime", "sourceColumn": "model_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_feature_importance",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Importance", "expression": "SUM(gold_ml_feature_importance[importance])", "formatString": "0.0000"}
+        ]
+      },
+      {
+        "name": "gold_ml_predictions",
+        "columns": [
+          {"name": "machine_id", "dataType": "string", "sourceColumn": "machine_id"},
+          {"name": "production_line", "dataType": "string", "sourceColumn": "production_line"},
+          {"name": "sensor_date", "dataType": "dateTime", "sourceColumn": "sensor_date"},
+          {"name": "avg_temp", "dataType": "double", "sourceColumn": "avg_temp"},
+          {"name": "avg_pressure", "dataType": "double", "sourceColumn": "avg_pressure"},
+          {"name": "avg_vibration", "dataType": "double", "sourceColumn": "avg_vibration"},
+          {"name": "avg_humidity", "dataType": "double", "sourceColumn": "avg_humidity"},
+          {"name": "temp_range", "dataType": "double", "sourceColumn": "temp_range"},
+          {"name": "pressure_range", "dataType": "double", "sourceColumn": "pressure_range"},
+          {"name": "vibration_range", "dataType": "double", "sourceColumn": "vibration_range"},
+          {"name": "anomaly_ratio", "dataType": "double", "sourceColumn": "anomaly_ratio"},
+          {"name": "equipment_age_days", "dataType": "int64", "sourceColumn": "equipment_age_days"},
+          {"name": "had_failure", "dataType": "int64", "sourceColumn": "had_failure"},
+          {"name": "predicted_failure", "dataType": "int64", "sourceColumn": "predicted_failure"},
+          {"name": "failure_probability", "dataType": "double", "sourceColumn": "failure_probability"},
+          {"name": "risk_level", "dataType": "string", "sourceColumn": "risk_level"},
+          {"name": "scored_at", "dataType": "dateTime", "sourceColumn": "scored_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_predictions",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Predictions", "expression": "COUNTROWS(gold_ml_predictions)", "formatString": "#,##0"},
+          {"name": "Predicted Failures", "expression": "SUM(gold_ml_predictions[predicted_failure])", "formatString": "#,##0"},
+          {"name": "Actual Failures", "expression": "SUM(gold_ml_predictions[had_failure])", "formatString": "#,##0"},
+          {"name": "Avg Failure Probability", "expression": "AVERAGE(gold_ml_predictions[failure_probability])", "formatString": "0.0%"},
+          {"name": "Predicted Failure Rate %", "expression": "DIVIDE(SUM(gold_ml_predictions[predicted_failure]), COUNTROWS(gold_ml_predictions), 0) * 100", "formatString": "0.0"}
+        ]
+      },
+      {
+        "name": "gold_ml_summary",
+        "columns": [
+          {"name": "machine_id", "dataType": "string", "sourceColumn": "machine_id"},
+          {"name": "production_line", "dataType": "string", "sourceColumn": "production_line"},
+          {"name": "avg_failure_risk", "dataType": "double", "sourceColumn": "avg_failure_risk"},
+          {"name": "predicted_failure_days", "dataType": "int64", "sourceColumn": "predicted_failure_days"},
+          {"name": "total_days", "dataType": "int64", "sourceColumn": "total_days"},
+          {"name": "avg_daily_temp", "dataType": "double", "sourceColumn": "avg_daily_temp"},
+          {"name": "avg_daily_pressure", "dataType": "double", "sourceColumn": "avg_daily_pressure"},
+          {"name": "avg_daily_vibration", "dataType": "double", "sourceColumn": "avg_daily_vibration"},
+          {"name": "failure_rate", "dataType": "double", "sourceColumn": "failure_rate"},
+          {"name": "overall_risk", "dataType": "string", "sourceColumn": "overall_risk"},
+          {"name": "summary_timestamp", "dataType": "dateTime", "sourceColumn": "summary_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Avg Failure Risk", "expression": "AVERAGE(gold_ml_summary[avg_failure_risk])", "formatString": "0.0%"},
+          {"name": "Avg Failure Rate", "expression": "AVERAGE(gold_ml_summary[failure_rate])", "formatString": "0.0"},
+          {"name": "Machines", "expression": "COUNTROWS(gold_ml_summary)", "formatString": "0"},
+          {"name": "Predicted Failure Days", "expression": "SUM(gold_ml_summary[predicted_failure_days])", "formatString": "#,##0"},
+          {"name": "High Risk Machines", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[overall_risk] = \"high\") + 0", "formatString": "0"}
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "rel_summary_predictions",
+        "fromTable": "gold_ml_predictions",
+        "fromColumn": "machine_id",
+        "toTable": "gold_ml_summary",
+        "toColumn": "machine_id",
+        "crossFilteringBehavior": "oneDirection"
+      }
+    ],
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "annotations": [
+      {"name": "PBI_QueryOrder", "value": "[\"gold_ml_model_metrics\",\"gold_ml_feature_importance\",\"gold_ml_predictions\",\"gold_ml_summary\"]"}
+    ]
+  }
+}
