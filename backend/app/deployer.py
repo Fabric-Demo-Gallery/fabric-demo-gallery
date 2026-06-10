@@ -9,7 +9,23 @@ from pathlib import Path
 from typing import AsyncIterator
 
 from app.fabric_client import FabricClient, FabricError
-from app.report_builder import build_manufacturing_report_definition, build_retail_report_definition, build_energy_report_definition, build_energy_ml_report_definition
+from app.report_builder import (
+    build_manufacturing_report_definition,
+    build_retail_report_definition,
+    build_energy_report_definition,
+    build_energy_ml_report_definition,
+    build_manufacturing_ml_report_definition,
+    build_retail_ml_report_definition,
+    build_financial_ml_report_definition,
+    build_healthcare_ml_report_definition,
+    build_technology_ml_report_definition,
+    build_transportation_ml_report_definition,
+    build_hospitality_ml_report_definition,
+    build_media_ml_report_definition,
+    build_professional_services_ml_report_definition,
+    build_construction_ml_report_definition,
+    build_education_ml_report_definition,
+)
 from app.azure_client import AzureClient, AzureError
 
 logger = logging.getLogger(__name__)
@@ -493,6 +509,7 @@ async def deploy_demo(
             yield {"event": "step", "data": step.to_dict()}
 
         # 5. Execute notebooks sequentially (with delay to avoid capacity throttling)
+        notebook_timeout = 1800
         for i, nb in enumerate(notebooks_to_run):
             step = _find_step(steps, f"run:{nb['name']}")
             nb_id = notebook_ids.get(nb["name"])
@@ -511,7 +528,13 @@ async def deploy_demo(
 
             # Retry once on throttling errors
             try:
-                result = await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
+                result = await client.run_notebook(
+                    ws_id,
+                    nb_id,
+                    lakehouse_id,
+                    lakehouse_name,
+                    timeout=notebook_timeout,
+                )
                 job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
                 if job_status == "failed":
                     failure = result.get("failureReason", {})
@@ -522,7 +545,13 @@ async def deploy_demo(
                     step.detail = "Rate limited — retrying in 60s..."
                     yield {"event": "step", "data": step.to_dict()}
                     await asyncio.sleep(60)
-                    await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
+                    await client.run_notebook(
+                        ws_id,
+                        nb_id,
+                        lakehouse_id,
+                        lakehouse_name,
+                        timeout=notebook_timeout,
+                    )
                 elif "Livy" in e.detail or "Failed to create Livy session" in e.detail:
                     # Transient Spark cold-start — retry a few times on a longer backoff
                     last_err = e
@@ -532,7 +561,13 @@ async def deploy_demo(
                         yield {"event": "step", "data": step.to_dict()}
                         await asyncio.sleep(60)
                         try:
-                            await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
+                            await client.run_notebook(
+                                ws_id,
+                                nb_id,
+                                lakehouse_id,
+                                lakehouse_name,
+                                timeout=notebook_timeout,
+                            )
                             succeeded = True
                             break
                         except FabricError as retry_err:
@@ -546,7 +581,13 @@ async def deploy_demo(
                     yield {"event": "step", "data": step.to_dict()}
                     await asyncio.sleep(45)
                     try:
-                        await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name)
+                        await client.run_notebook(
+                            ws_id,
+                            nb_id,
+                            lakehouse_id,
+                            lakehouse_name,
+                            timeout=notebook_timeout,
+                        )
                     except FabricError:
                         raise FabricError(500, f"Notebook '{nb['name']}' failed twice. Check the notebook code in Fabric portal for errors.")
                 else:
@@ -765,6 +806,28 @@ def _build_report_definition(demo_id: str, semantic_model_id: str, scenario_id: 
     if scenario_id == "ai-ml":
         if demo_id == "energy-grid":
             return build_energy_ml_report_definition(semantic_model_id)
+        if demo_id == "manufacturing-qc":
+            return build_manufacturing_ml_report_definition(semantic_model_id)
+        if demo_id == "retail-sales":
+            return build_retail_ml_report_definition(semantic_model_id)
+        if demo_id == "financial-services":
+            return build_financial_ml_report_definition(semantic_model_id)
+        if demo_id == "healthcare":
+            return build_healthcare_ml_report_definition(semantic_model_id)
+        if demo_id == "technology":
+            return build_technology_ml_report_definition(semantic_model_id)
+        if demo_id == "transportation":
+            return build_transportation_ml_report_definition(semantic_model_id)
+        if demo_id == "hospitality":
+            return build_hospitality_ml_report_definition(semantic_model_id)
+        if demo_id == "media":
+            return build_media_ml_report_definition(semantic_model_id)
+        if demo_id == "professional-services":
+            return build_professional_services_ml_report_definition(semantic_model_id)
+        if demo_id == "construction":
+            return build_construction_ml_report_definition(semantic_model_id)
+        if demo_id == "education":
+            return build_education_ml_report_definition(semantic_model_id)
         # other sectors fall through to their default report until ML reports are added
     if demo_id == "manufacturing-qc":
         return build_manufacturing_report_definition(semantic_model_id)
