@@ -33,3 +33,6 @@ Thumbs.db
 
 # Temp deploy/validation/audit helpers
 backend/_tmp_*.py
+
+# Domain registrant WHOIS contact (personal info — never commit)
+infra/domain/contact.json

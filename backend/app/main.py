@@ -54,8 +54,8 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
 
 settings = get_settings()
 
-# CORS: restrict to known frontend origins
-_allowed_origins = [settings.frontend_url]
+# CORS: restrict to known frontend origins (FRONTEND_URL may be comma-separated)
+_allowed_origins = [o.strip() for o in settings.frontend_url.split(",") if o.strip()]
 if not _is_production:
     _allowed_origins.append("http://localhost:3000")
 

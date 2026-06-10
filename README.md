@@ -2,7 +2,7 @@
 
 One-click deployable industry demos for Microsoft Fabric. Browse industry-specific scenarios, sign in with Microsoft Entra, and deploy a complete Fabric environment — workspace, lakehouse, eventhouse, notebooks, semantic models, Power BI reports, real-time dashboards, and pipelines — into your tenant in minutes.
 
-**Live site:** [https://witty-sand-077be5f03.7.azurestaticapps.net](https://witty-sand-077be5f03.7.azurestaticapps.net)
+**Live site:** [https://www.fabricdemogallery.com](https://www.fabricdemogallery.com)
 
 ## Demos
 
