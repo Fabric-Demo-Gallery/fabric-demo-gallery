@@ -1,201 +1,201 @@
 staff_id,role,department,shift,hire_date
-ST-0001,Doctor,Emergency,Afternoon,2016-01-10
-ST-0002,Consultant,Cardiology,Morning,2019-01-05
-ST-0003,Technician,Emergency,Night,2019-03-09
-ST-0004,Nurse,Orthopaedics,Night,2021-01-11
-ST-0005,Consultant,Cardiology,Morning,2018-05-07
-ST-0006,Technician,Cardiology,Morning,2022-09-19
-ST-0007,Physiotherapist,Emergency,Morning,2021-07-16
-ST-0008,Consultant,Emergency,Afternoon,2021-10-23
-ST-0009,Consultant,Paediatrics,Afternoon,2021-12-17
-ST-0010,Consultant,Paediatrics,Night,2019-06-11
-ST-0011,Technician,General Medicine,Afternoon,2019-12-14
-ST-0012,Doctor,Emergency,Afternoon,2021-01-21
-ST-0013,Nurse,Neurology,Afternoon,2019-04-27
-ST-0014,Physiotherapist,Cardiology,Morning,2015-06-19
-ST-0015,Doctor,Neurology,Afternoon,2020-07-22
-ST-0016,Consultant,Cardiology,Morning,2018-07-14
-ST-0017,Doctor,Neurology,Afternoon,2020-11-24
-ST-0018,Consultant,Cardiology,Afternoon,2020-10-19
-ST-0019,Physiotherapist,Cardiology,Afternoon,2016-05-03
-ST-0020,Doctor,General Medicine,Morning,2018-12-05
-ST-0021,Consultant,Orthopaedics,Night,2016-05-13
-ST-0022,Nurse,Neurology,Afternoon,2021-01-14
-ST-0023,Technician,Paediatrics,Night,2018-09-10
-ST-0024,Technician,Emergency,Morning,2016-11-12
-ST-0025,Doctor,Cardiology,Afternoon,2017-03-24
-ST-0026,Consultant,Orthopaedics,Morning,2015-09-17
-ST-0027,Physiotherapist,Cardiology,Afternoon,2018-04-05
-ST-0028,Nurse,Paediatrics,Night,2015-07-27
-ST-0029,Nurse,Orthopaedics,Afternoon,2017-03-31
-ST-0030,Nurse,Oncology,Morning,2021-10-18
-ST-0031,Doctor,Oncology,Night,2018-01-13
-ST-0032,Nurse,Emergency,Morning,2022-08-07
-ST-0033,Nurse,Neurology,Morning,2018-04-20
-ST-0034,Consultant,Paediatrics,Night,2016-01-13
-ST-0035,Nurse,Paediatrics,Afternoon,2019-06-19
-ST-0036,Technician,Neurology,Morning,2016-08-28
-ST-0037,Nurse,Paediatrics,Morning,2016-07-03
-ST-0038,Physiotherapist,General Medicine,Morning,2019-09-18
-ST-0039,Physiotherapist,Oncology,Afternoon,2023-02-19
-ST-0040,Technician,General Medicine,Morning,2018-02-11
-ST-0041,Consultant,Oncology,Night,2015-10-27
-ST-0042,Physiotherapist,Orthopaedics,Morning,2019-05-08
-ST-0043,Consultant,Neurology,Night,2022-12-05
-ST-0044,Physiotherapist,General Medicine,Afternoon,2017-04-23
-ST-0045,Technician,Emergency,Afternoon,2016-05-28
-ST-0046,Consultant,Emergency,Afternoon,2017-05-15
-ST-0047,Technician,Orthopaedics,Morning,2016-06-14
-ST-0048,Technician,Oncology,Afternoon,2015-01-02
-ST-0049,Nurse,Neurology,Morning,2016-10-27
-ST-0050,Physiotherapist,General Medicine,Morning,2022-04-15
-ST-0051,Physiotherapist,Paediatrics,Afternoon,2021-11-03
-ST-0052,Technician,Oncology,Night,2019-02-08
-ST-0053,Technician,Emergency,Night,2020-05-22
-ST-0054,Consultant,Paediatrics,Morning,2017-05-10
-ST-0055,Technician,Orthopaedics,Morning,2018-06-13
-ST-0056,Doctor,Emergency,Night,2021-04-20
-ST-0057,Nurse,Neurology,Morning,2018-04-11
-ST-0058,Consultant,Emergency,Night,2019-12-02
-ST-0059,Doctor,Neurology,Afternoon,2015-01-06
-ST-0060,Consultant,Cardiology,Afternoon,2016-10-08
-ST-0061,Doctor,Paediatrics,Afternoon,2021-09-25
-ST-0062,Technician,Neurology,Afternoon,2020-09-10
-ST-0063,Consultant,Orthopaedics,Night,2020-09-23
-ST-0064,Consultant,Orthopaedics,Morning,2021-08-06
-ST-0065,Technician,Orthopaedics,Night,2021-08-31
-ST-0066,Technician,Paediatrics,Night,2021-06-17
-ST-0067,Physiotherapist,Emergency,Afternoon,2015-11-12
-ST-0068,Technician,Cardiology,Afternoon,2016-08-13
-ST-0069,Doctor,Neurology,Morning,2017-12-03
-ST-0070,Doctor,Orthopaedics,Morning,2021-06-28
-ST-0071,Consultant,Orthopaedics,Afternoon,2016-05-20
-ST-0072,Doctor,Orthopaedics,Afternoon,2022-09-19
-ST-0073,Doctor,Oncology,Morning,2022-11-05
-ST-0074,Consultant,Orthopaedics,Afternoon,2021-02-06
-ST-0075,Physiotherapist,Paediatrics,Morning,2020-10-23
-ST-0076,Consultant,Oncology,Afternoon,2015-06-09
-ST-0077,Physiotherapist,Orthopaedics,Morning,2019-07-14
-ST-0078,Technician,Paediatrics,Morning,2021-06-11
-ST-0079,Physiotherapist,Cardiology,Afternoon,2021-10-29
-ST-0080,Physiotherapist,General Medicine,Night,2017-02-20
-ST-0081,Nurse,Orthopaedics,Morning,2021-02-04
-ST-0082,Physiotherapist,Neurology,Afternoon,2016-03-19
-ST-0083,Nurse,Paediatrics,Afternoon,2020-01-28
-ST-0084,Technician,Cardiology,Morning,2018-07-16
-ST-0085,Doctor,Paediatrics,Morning,2019-09-15
-ST-0086,Physiotherapist,Orthopaedics,Afternoon,2019-08-29
-ST-0087,Consultant,Orthopaedics,Afternoon,2022-02-22
-ST-0088,Nurse,Paediatrics,Morning,2019-07-27
-ST-0089,Doctor,Emergency,Night,2018-10-02
-ST-0090,Doctor,General Medicine,Afternoon,2015-12-08
-ST-0091,Doctor,Neurology,Morning,2016-06-22
-ST-0092,Doctor,Cardiology,Afternoon,2018-07-04
-ST-0093,Physiotherapist,Cardiology,Afternoon,2022-09-13
-ST-0094,Consultant,Paediatrics,Night,2017-01-03
-ST-0095,Nurse,Oncology,Night,2017-04-26
-ST-0096,Doctor,Neurology,Afternoon,2015-04-20
-ST-0097,Doctor,Cardiology,Afternoon,2019-06-27
-ST-0098,Doctor,Oncology,Afternoon,2015-01-27
-ST-0099,Doctor,Paediatrics,Night,2017-07-09
-ST-0100,Consultant,Cardiology,Morning,2021-10-27
-ST-0101,Doctor,Orthopaedics,Morning,2015-11-10
-ST-0102,Technician,Orthopaedics,Morning,2022-03-28
-ST-0103,Nurse,Oncology,Morning,2021-05-23
-ST-0104,Nurse,Neurology,Morning,2018-10-07
-ST-0105,Physiotherapist,Orthopaedics,Afternoon,2022-04-15
-ST-0106,Nurse,General Medicine,Night,2016-12-20
-ST-0107,Doctor,Orthopaedics,Afternoon,2016-06-27
-ST-0108,Nurse,Cardiology,Afternoon,2022-02-05
-ST-0109,Technician,Oncology,Night,2021-03-09
-ST-0110,Nurse,Cardiology,Morning,2017-01-01
-ST-0111,Consultant,Neurology,Night,2019-12-30
-ST-0112,Nurse,Paediatrics,Afternoon,2023-01-15
-ST-0113,Consultant,Orthopaedics,Afternoon,2020-10-02
-ST-0114,Doctor,Orthopaedics,Afternoon,2019-02-03
-ST-0115,Doctor,Neurology,Afternoon,2015-05-27
-ST-0116,Doctor,Paediatrics,Afternoon,2015-08-21
-ST-0117,Technician,Paediatrics,Night,2022-01-09
-ST-0118,Nurse,Paediatrics,Afternoon,2020-07-23
-ST-0119,Consultant,Oncology,Night,2019-08-28
-ST-0120,Consultant,Orthopaedics,Afternoon,2015-06-17
-ST-0121,Physiotherapist,Emergency,Afternoon,2022-03-26
-ST-0122,Doctor,Oncology,Morning,2019-11-16
-ST-0123,Doctor,Cardiology,Night,2021-04-19
-ST-0124,Physiotherapist,Paediatrics,Night,2021-08-15
-ST-0125,Consultant,Orthopaedics,Morning,2018-01-11
-ST-0126,Technician,Orthopaedics,Morning,2020-04-26
-ST-0127,Technician,Oncology,Afternoon,2017-02-11
-ST-0128,Doctor,General Medicine,Afternoon,2017-11-22
-ST-0129,Technician,Orthopaedics,Afternoon,2019-08-01
-ST-0130,Physiotherapist,Orthopaedics,Morning,2020-09-24
-ST-0131,Consultant,Emergency,Afternoon,2018-05-23
-ST-0132,Nurse,Emergency,Afternoon,2023-02-10
-ST-0133,Doctor,General Medicine,Afternoon,2019-06-13
-ST-0134,Doctor,Emergency,Afternoon,2015-03-24
-ST-0135,Nurse,Orthopaedics,Night,2015-12-17
-ST-0136,Consultant,Orthopaedics,Night,2016-11-16
-ST-0137,Physiotherapist,General Medicine,Afternoon,2016-03-31
-ST-0138,Technician,Emergency,Night,2021-03-25
-ST-0139,Physiotherapist,Cardiology,Night,2020-07-15
-ST-0140,Consultant,Emergency,Afternoon,2018-09-25
-ST-0141,Technician,Neurology,Morning,2020-01-21
-ST-0142,Nurse,Emergency,Afternoon,2017-05-13
-ST-0143,Technician,Oncology,Afternoon,2017-04-23
-ST-0144,Physiotherapist,Emergency,Morning,2020-02-23
-ST-0145,Doctor,Orthopaedics,Night,2022-06-12
-ST-0146,Consultant,Neurology,Morning,2017-02-04
-ST-0147,Technician,Emergency,Morning,2017-04-05
-ST-0148,Technician,Neurology,Afternoon,2016-12-15
-ST-0149,Doctor,Emergency,Night,2019-06-15
-ST-0150,Technician,Oncology,Afternoon,2016-04-16
-ST-0151,Technician,Oncology,Morning,2015-10-15
-ST-0152,Physiotherapist,General Medicine,Afternoon,2022-10-07
-ST-0153,Physiotherapist,Oncology,Afternoon,2022-10-12
-ST-0154,Physiotherapist,Paediatrics,Night,2020-05-01
-ST-0155,Doctor,General Medicine,Morning,2015-12-30
-ST-0156,Consultant,Cardiology,Afternoon,2015-11-29
-ST-0157,Nurse,Oncology,Afternoon,2021-02-16
-ST-0158,Physiotherapist,Orthopaedics,Night,2015-08-17
-ST-0159,Doctor,Cardiology,Night,2016-03-17
-ST-0160,Consultant,Cardiology,Morning,2021-01-22
-ST-0161,Technician,Neurology,Afternoon,2016-03-18
-ST-0162,Nurse,Paediatrics,Afternoon,2021-02-14
-ST-0163,Nurse,Emergency,Morning,2018-11-09
-ST-0164,Technician,Neurology,Morning,2018-04-25
-ST-0165,Consultant,Emergency,Morning,2021-10-12
-ST-0166,Physiotherapist,Orthopaedics,Afternoon,2022-07-05
-ST-0167,Technician,Orthopaedics,Night,2018-11-05
-ST-0168,Consultant,Paediatrics,Night,2022-06-30
-ST-0169,Nurse,Cardiology,Afternoon,2015-02-04
-ST-0170,Consultant,Cardiology,Afternoon,2022-12-25
-ST-0171,Physiotherapist,Orthopaedics,Afternoon,2015-02-06
-ST-0172,Physiotherapist,General Medicine,Afternoon,2015-04-09
-ST-0173,Doctor,Cardiology,Night,2020-05-24
-ST-0174,Consultant,Cardiology,Afternoon,2015-08-25
-ST-0175,Consultant,Neurology,Morning,2015-11-01
-ST-0176,Physiotherapist,Paediatrics,Morning,2023-01-19
-ST-0177,Doctor,Emergency,Afternoon,2020-11-03
-ST-0178,Consultant,Neurology,Morning,2017-04-13
-ST-0179,Nurse,Orthopaedics,Afternoon,2022-05-12
-ST-0180,Doctor,Oncology,Night,2018-06-06
-ST-0181,Doctor,Emergency,Morning,2022-06-11
-ST-0182,Consultant,General Medicine,Morning,2017-01-27
-ST-0183,Nurse,Emergency,Night,2020-01-01
-ST-0184,Doctor,General Medicine,Night,2015-08-02
-ST-0185,Doctor,Oncology,Night,2016-08-29
-ST-0186,Technician,Orthopaedics,Afternoon,2016-03-02
-ST-0187,Consultant,Orthopaedics,Morning,2021-03-29
-ST-0188,Nurse,Orthopaedics,Night,2016-04-14
-ST-0189,Consultant,Neurology,Afternoon,2022-01-03
-ST-0190,Consultant,General Medicine,Afternoon,2016-10-02
-ST-0191,Consultant,Emergency,Night,2019-12-09
-ST-0192,Doctor,Neurology,Night,2018-09-26
-ST-0193,Technician,Cardiology,Afternoon,2022-01-29
-ST-0194,Consultant,Paediatrics,Afternoon,2019-11-08
-ST-0195,Doctor,Paediatrics,Morning,2020-08-07
-ST-0196,Consultant,General Medicine,Night,2019-02-07
-ST-0197,Doctor,Orthopaedics,Night,2015-10-24
-ST-0198,Doctor,Cardiology,Morning,2019-09-28
-ST-0199,Technician,Oncology,Morning,2021-09-27
-ST-0200,Doctor,Neurology,Morning,2017-12-14
+ST-0001,Technician,Oncology,Afternoon,2009-06-24
+ST-0002,Technician,Emergency,Morning,2009-07-27
+ST-0003,Technician,Orthopaedics,Night,2020-07-04
+ST-0004,Nurse,Neurology,Afternoon,2022-03-26
+ST-0005,Technician,General Medicine,Night,2021-07-12
+ST-0006,Consultant,Cardiology,Afternoon,2015-11-02
+ST-0007,Registrar,Emergency,Afternoon,2022-02-21
+ST-0008,Consultant,Cardiology,Night,2019-06-25
+ST-0009,Technician,Orthopaedics,Morning,2019-05-13
+ST-0010,Doctor,Neurology,Morning,2016-09-19
+ST-0011,Technician,General Medicine,Night,2023-05-09
+ST-0012,Consultant,Cardiology,Afternoon,2023-10-06
+ST-0013,Doctor,Oncology,Afternoon,2015-04-07
+ST-0014,Technician,Paediatrics,Afternoon,2017-02-23
+ST-0015,Technician,Cardiology,Morning,2018-10-23
+ST-0016,Registrar,Orthopaedics,Afternoon,2015-11-08
+ST-0017,Technician,Oncology,Morning,2012-10-06
+ST-0018,Doctor,Orthopaedics,Night,2021-10-18
+ST-0019,Technician,Emergency,Night,2016-07-13
+ST-0020,Nurse,Cardiology,Morning,2016-03-04
+ST-0021,Technician,Oncology,Afternoon,2015-11-16
+ST-0022,Technician,Oncology,Afternoon,2009-07-15
+ST-0023,Nurse,Orthopaedics,Morning,2009-08-01
+ST-0024,Nurse,Paediatrics,Morning,2013-04-12
+ST-0025,Registrar,Cardiology,Morning,2024-10-02
+ST-0026,Consultant,Paediatrics,Morning,2022-06-18
+ST-0027,Nurse,Neurology,Night,2010-12-18
+ST-0028,Nurse,General Medicine,Night,2014-04-05
+ST-0029,Doctor,Cardiology,Morning,2013-10-20
+ST-0030,Nurse,Orthopaedics,Morning,2019-11-14
+ST-0031,Doctor,Neurology,Night,2023-06-13
+ST-0032,Consultant,Emergency,Morning,2010-09-18
+ST-0033,Consultant,Paediatrics,Morning,2018-05-04
+ST-0034,Registrar,General Medicine,Night,2013-06-19
+ST-0035,Consultant,Orthopaedics,Night,2015-04-22
+ST-0036,Technician,Orthopaedics,Afternoon,2012-09-08
+ST-0037,Doctor,Neurology,Night,2009-02-13
+ST-0038,Consultant,Orthopaedics,Morning,2019-10-16
+ST-0039,Doctor,Neurology,Night,2017-01-21
+ST-0040,Technician,Oncology,Afternoon,2016-04-17
+ST-0041,Nurse,Cardiology,Afternoon,2010-08-03
+ST-0042,Nurse,Orthopaedics,Morning,2020-03-14
+ST-0043,Consultant,Oncology,Morning,2011-09-03
+ST-0044,Nurse,Orthopaedics,Morning,2010-04-25
+ST-0045,Nurse,Neurology,Afternoon,2024-08-16
+ST-0046,Doctor,Emergency,Night,2013-06-14
+ST-0047,Technician,Cardiology,Morning,2015-04-14
+ST-0048,Nurse,Neurology,Night,2019-02-16
+ST-0049,Nurse,Orthopaedics,Morning,2017-12-09
+ST-0050,Nurse,Orthopaedics,Afternoon,2017-04-01
+ST-0051,Registrar,Cardiology,Night,2014-07-04
+ST-0052,Nurse,General Medicine,Morning,2013-08-19
+ST-0053,Consultant,Emergency,Afternoon,2010-09-20
+ST-0054,Technician,General Medicine,Morning,2023-08-25
+ST-0055,Consultant,Emergency,Morning,2024-02-15
+ST-0056,Consultant,General Medicine,Night,2017-06-22
+ST-0057,Consultant,Emergency,Night,2024-08-08
+ST-0058,Nurse,Paediatrics,Morning,2018-12-26
+ST-0059,Doctor,Neurology,Morning,2011-04-12
+ST-0060,Registrar,Emergency,Night,2024-02-21
+ST-0061,Registrar,Emergency,Night,2022-02-15
+ST-0062,Consultant,Cardiology,Night,2015-05-18
+ST-0063,Consultant,Paediatrics,Morning,2014-09-21
+ST-0064,Consultant,Cardiology,Night,2014-12-07
+ST-0065,Doctor,Cardiology,Night,2008-11-05
+ST-0066,Doctor,General Medicine,Afternoon,2020-09-24
+ST-0067,Doctor,Emergency,Morning,2008-12-21
+ST-0068,Registrar,Neurology,Afternoon,2013-06-04
+ST-0069,Doctor,Emergency,Morning,2023-04-04
+ST-0070,Technician,Paediatrics,Morning,2008-04-14
+ST-0071,Technician,Orthopaedics,Afternoon,2023-06-06
+ST-0072,Registrar,Cardiology,Night,2022-02-20
+ST-0073,Doctor,Neurology,Morning,2022-07-26
+ST-0074,Consultant,Paediatrics,Morning,2009-02-14
+ST-0075,Technician,General Medicine,Night,2016-07-08
+ST-0076,Registrar,Neurology,Morning,2024-08-15
+ST-0077,Technician,Orthopaedics,Morning,2010-09-04
+ST-0078,Nurse,Cardiology,Night,2020-02-17
+ST-0079,Registrar,Orthopaedics,Night,2011-06-13
+ST-0080,Technician,Orthopaedics,Morning,2018-08-03
+ST-0081,Registrar,Emergency,Night,2012-06-07
+ST-0082,Nurse,Orthopaedics,Afternoon,2013-12-24
+ST-0083,Technician,General Medicine,Afternoon,2020-02-11
+ST-0084,Nurse,Cardiology,Afternoon,2023-12-24
+ST-0085,Nurse,Neurology,Morning,2012-04-07
+ST-0086,Technician,Orthopaedics,Night,2024-12-03
+ST-0087,Doctor,Neurology,Afternoon,2022-05-04
+ST-0088,Registrar,General Medicine,Morning,2011-12-04
+ST-0089,Registrar,Oncology,Morning,2023-02-08
+ST-0090,Doctor,Neurology,Morning,2017-07-01
+ST-0091,Doctor,Emergency,Morning,2020-10-02
+ST-0092,Nurse,Neurology,Night,2015-10-11
+ST-0093,Consultant,Paediatrics,Afternoon,2022-09-24
+ST-0094,Registrar,Neurology,Morning,2021-06-05
+ST-0095,Consultant,Emergency,Morning,2023-08-16
+ST-0096,Nurse,Emergency,Morning,2024-01-11
+ST-0097,Nurse,Paediatrics,Morning,2023-02-23
+ST-0098,Doctor,General Medicine,Night,2009-09-03
+ST-0099,Registrar,Orthopaedics,Night,2022-03-27
+ST-0100,Registrar,Oncology,Night,2013-08-18
+ST-0101,Technician,Orthopaedics,Morning,2018-10-15
+ST-0102,Nurse,Paediatrics,Night,2013-11-13
+ST-0103,Consultant,Oncology,Afternoon,2021-03-08
+ST-0104,Doctor,Neurology,Afternoon,2009-02-12
+ST-0105,Consultant,General Medicine,Afternoon,2018-07-10
+ST-0106,Consultant,Neurology,Afternoon,2020-03-19
+ST-0107,Consultant,Orthopaedics,Night,2012-09-25
+ST-0108,Nurse,Orthopaedics,Morning,2022-06-15
+ST-0109,Registrar,Neurology,Afternoon,2024-03-22
+ST-0110,Nurse,Orthopaedics,Afternoon,2017-01-08
+ST-0111,Technician,Cardiology,Morning,2011-08-19
+ST-0112,Registrar,Paediatrics,Morning,2016-12-17
+ST-0113,Doctor,Oncology,Night,2018-07-03
+ST-0114,Registrar,Orthopaedics,Morning,2016-12-26
+ST-0115,Registrar,General Medicine,Afternoon,2010-06-22
+ST-0116,Technician,Paediatrics,Night,2024-02-07
+ST-0117,Nurse,Cardiology,Morning,2020-07-17
+ST-0118,Doctor,Cardiology,Afternoon,2010-01-16
+ST-0119,Nurse,Oncology,Afternoon,2016-09-21
+ST-0120,Technician,Neurology,Afternoon,2023-03-17
+ST-0121,Registrar,Orthopaedics,Morning,2010-10-04
+ST-0122,Doctor,Neurology,Afternoon,2020-09-12
+ST-0123,Technician,Emergency,Night,2023-09-10
+ST-0124,Registrar,Orthopaedics,Night,2020-08-08
+ST-0125,Consultant,Neurology,Morning,2021-04-05
+ST-0126,Doctor,Cardiology,Night,2024-07-12
+ST-0127,Consultant,Cardiology,Night,2020-03-15
+ST-0128,Registrar,General Medicine,Night,2024-08-13
+ST-0129,Consultant,Oncology,Night,2010-01-20
+ST-0130,Registrar,General Medicine,Morning,2022-04-23
+ST-0131,Technician,Cardiology,Morning,2022-06-16
+ST-0132,Technician,Neurology,Morning,2008-02-13
+ST-0133,Registrar,Neurology,Morning,2020-12-13
+ST-0134,Nurse,Cardiology,Morning,2013-07-25
+ST-0135,Technician,Neurology,Morning,2020-05-27
+ST-0136,Registrar,Oncology,Morning,2008-10-23
+ST-0137,Doctor,Oncology,Night,2008-01-18
+ST-0138,Technician,Oncology,Morning,2010-09-25
+ST-0139,Doctor,Emergency,Morning,2022-06-04
+ST-0140,Technician,Orthopaedics,Morning,2022-01-25
+ST-0141,Technician,Paediatrics,Morning,2012-01-01
+ST-0142,Doctor,Orthopaedics,Afternoon,2010-12-22
+ST-0143,Consultant,General Medicine,Night,2024-03-02
+ST-0144,Registrar,Paediatrics,Night,2019-02-21
+ST-0145,Technician,Orthopaedics,Night,2022-06-02
+ST-0146,Consultant,Cardiology,Morning,2015-09-14
+ST-0147,Technician,Neurology,Afternoon,2017-02-23
+ST-0148,Doctor,Orthopaedics,Night,2015-01-06
+ST-0149,Consultant,Cardiology,Night,2008-07-27
+ST-0150,Technician,Neurology,Morning,2020-01-17
+ST-0151,Doctor,Emergency,Night,2008-06-20
+ST-0152,Doctor,General Medicine,Morning,2014-10-05
+ST-0153,Registrar,Oncology,Afternoon,2014-07-22
+ST-0154,Technician,Paediatrics,Afternoon,2012-06-04
+ST-0155,Registrar,Neurology,Morning,2012-06-16
+ST-0156,Technician,Emergency,Afternoon,2017-06-26
+ST-0157,Doctor,Neurology,Afternoon,2010-09-11
+ST-0158,Nurse,Cardiology,Morning,2023-12-04
+ST-0159,Consultant,Cardiology,Morning,2024-08-12
+ST-0160,Technician,General Medicine,Afternoon,2021-12-12
+ST-0161,Nurse,Orthopaedics,Morning,2010-12-16
+ST-0162,Consultant,Paediatrics,Morning,2018-04-12
+ST-0163,Nurse,Emergency,Morning,2016-02-16
+ST-0164,Nurse,Oncology,Night,2013-07-18
+ST-0165,Technician,Oncology,Morning,2017-03-22
+ST-0166,Nurse,Emergency,Afternoon,2013-07-17
+ST-0167,Consultant,Paediatrics,Afternoon,2016-10-20
+ST-0168,Registrar,Cardiology,Night,2017-11-14
+ST-0169,Nurse,Emergency,Night,2020-03-09
+ST-0170,Registrar,General Medicine,Afternoon,2016-01-04
+ST-0171,Doctor,Paediatrics,Night,2008-10-02
+ST-0172,Consultant,Neurology,Afternoon,2009-06-05
+ST-0173,Consultant,Cardiology,Night,2020-11-01
+ST-0174,Registrar,Oncology,Night,2015-05-11
+ST-0175,Doctor,Emergency,Afternoon,2020-09-04
+ST-0176,Consultant,Neurology,Night,2016-01-27
+ST-0177,Technician,General Medicine,Morning,2015-10-19
+ST-0178,Technician,Orthopaedics,Afternoon,2010-12-18
+ST-0179,Doctor,Oncology,Morning,2013-10-15
+ST-0180,Doctor,Oncology,Morning,2015-06-23
+ST-0181,Registrar,Paediatrics,Afternoon,2023-03-23
+ST-0182,Registrar,Oncology,Morning,2021-07-13
+ST-0183,Consultant,General Medicine,Morning,2022-11-21
+ST-0184,Nurse,Neurology,Afternoon,2008-12-05
+ST-0185,Doctor,Emergency,Night,2013-12-02
+ST-0186,Consultant,Emergency,Morning,2018-03-14
+ST-0187,Nurse,Orthopaedics,Afternoon,2024-01-03
+ST-0188,Consultant,Orthopaedics,Night,2012-11-18
+ST-0189,Technician,General Medicine,Night,2017-10-21
+ST-0190,Doctor,Orthopaedics,Afternoon,2018-09-15
+ST-0191,Consultant,Paediatrics,Night,2022-04-14
+ST-0192,Technician,Oncology,Night,2017-05-14
+ST-0193,Registrar,General Medicine,Afternoon,2015-02-23
+ST-0194,Consultant,Oncology,Afternoon,2014-11-15
+ST-0195,Doctor,Cardiology,Afternoon,2016-12-25
+ST-0196,Technician,General Medicine,Morning,2018-01-10
+ST-0197,Doctor,Emergency,Morning,2013-08-26
+ST-0198,Nurse,General Medicine,Morning,2019-02-17
+ST-0199,Doctor,General Medicine,Morning,2017-03-19
+ST-0200,Technician,Oncology,Night,2016-10-17
