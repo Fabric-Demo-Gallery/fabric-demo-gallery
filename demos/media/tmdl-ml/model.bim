@@ -1,0 +1,157 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "gold_ml_model_metrics",
+        "columns": [
+          {"name": "demo_id", "dataType": "string", "sourceColumn": "demo_id"},
+          {"name": "use_case", "dataType": "string", "sourceColumn": "use_case"},
+          {"name": "model_type", "dataType": "string", "sourceColumn": "model_type"},
+          {"name": "feature_count", "dataType": "int64", "sourceColumn": "feature_count"},
+          {"name": "train_rows", "dataType": "int64", "sourceColumn": "train_rows"},
+          {"name": "test_rows", "dataType": "int64", "sourceColumn": "test_rows"},
+          {"name": "auc_roc", "dataType": "double", "sourceColumn": "auc_roc"},
+          {"name": "accuracy", "dataType": "double", "sourceColumn": "accuracy"},
+          {"name": "f1_score", "dataType": "double", "sourceColumn": "f1_score"},
+          {"name": "trained_at", "dataType": "dateTime", "sourceColumn": "trained_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_model_metrics",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Model AUC", "expression": "AVERAGE(gold_ml_model_metrics[auc_roc])", "formatString": "0.000"},
+          {"name": "Model Accuracy", "expression": "AVERAGE(gold_ml_model_metrics[accuracy])", "formatString": "0.0%"},
+          {"name": "F1 Score", "expression": "AVERAGE(gold_ml_model_metrics[f1_score])", "formatString": "0.000"},
+          {"name": "Feature Count", "expression": "MAX(gold_ml_model_metrics[feature_count])", "formatString": "0"},
+          {"name": "Training Rows", "expression": "MAX(gold_ml_model_metrics[train_rows])", "formatString": "#,##0"},
+          {"name": "Test Rows", "expression": "MAX(gold_ml_model_metrics[test_rows])", "formatString": "#,##0"}
+        ]
+      },
+      {
+        "name": "gold_ml_feature_importance",
+        "columns": [
+          {"name": "feature", "dataType": "string", "sourceColumn": "feature"},
+          {"name": "importance", "dataType": "double", "sourceColumn": "importance"},
+          {"name": "model_timestamp", "dataType": "dateTime", "sourceColumn": "model_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_feature_importance",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Importance", "expression": "SUM(gold_ml_feature_importance[importance])", "formatString": "0.0000"}
+        ]
+      },
+      {
+        "name": "gold_ml_predictions",
+        "columns": [
+          {"name": "view_id", "dataType": "string", "sourceColumn": "view_id"},
+          {"name": "subscriber_id", "dataType": "string", "sourceColumn": "subscriber_id"},
+          {"name": "content_id", "dataType": "string", "sourceColumn": "content_id"},
+          {"name": "genre", "dataType": "string", "sourceColumn": "genre"},
+          {"name": "content_type", "dataType": "string", "sourceColumn": "content_type"},
+          {"name": "device_type", "dataType": "string", "sourceColumn": "device_type"},
+          {"name": "plan_type", "dataType": "string", "sourceColumn": "plan_type"},
+          {"name": "duration_mins", "dataType": "int64", "sourceColumn": "duration_mins"},
+          {"name": "had_complete", "dataType": "int64", "sourceColumn": "had_complete"},
+          {"name": "predicted_complete", "dataType": "int64", "sourceColumn": "predicted_complete"},
+          {"name": "complete_probability", "dataType": "double", "sourceColumn": "complete_probability"},
+          {"name": "engagement_level", "dataType": "string", "sourceColumn": "engagement_level"},
+          {"name": "scored_at", "dataType": "dateTime", "sourceColumn": "scored_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_predictions",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Predictions", "expression": "COUNTROWS(gold_ml_predictions)", "formatString": "#,##0"},
+          {"name": "Predicted Completions", "expression": "SUM(gold_ml_predictions[predicted_complete])", "formatString": "#,##0"},
+          {"name": "Actual Completions", "expression": "SUM(gold_ml_predictions[had_complete])", "formatString": "#,##0"},
+          {"name": "Avg Completion Probability", "expression": "AVERAGE(gold_ml_predictions[complete_probability])", "formatString": "0.0%"},
+          {"name": "Predicted Completion Rate %", "expression": "DIVIDE(SUM(gold_ml_predictions[predicted_complete]), COUNTROWS(gold_ml_predictions), 0) * 100", "formatString": "0.0"},
+          {"name": "Avg Duration (mins)", "expression": "AVERAGE(gold_ml_predictions[duration_mins])", "formatString": "0.0"}
+        ]
+      },
+      {
+        "name": "gold_ml_summary",
+        "columns": [
+          {"name": "genre", "dataType": "string", "sourceColumn": "genre"},
+          {"name": "total_views", "dataType": "int64", "sourceColumn": "total_views"},
+          {"name": "predicted_complete_count", "dataType": "int64", "sourceColumn": "predicted_complete_count"},
+          {"name": "actual_complete_count", "dataType": "int64", "sourceColumn": "actual_complete_count"},
+          {"name": "avg_complete_probability", "dataType": "double", "sourceColumn": "avg_complete_probability"},
+          {"name": "avg_duration_mins", "dataType": "double", "sourceColumn": "avg_duration_mins"},
+          {"name": "completion_rate", "dataType": "double", "sourceColumn": "completion_rate"},
+          {"name": "overall_engagement", "dataType": "string", "sourceColumn": "overall_engagement"},
+          {"name": "summary_timestamp", "dataType": "dateTime", "sourceColumn": "summary_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Genres", "expression": "COUNTROWS(gold_ml_summary)", "formatString": "0"},
+          {"name": "Avg Engagement Score", "expression": "AVERAGE(gold_ml_summary[avg_complete_probability])", "formatString": "0.0%"},
+          {"name": "Avg Completion Rate", "expression": "AVERAGE(gold_ml_summary[completion_rate])", "formatString": "0.0"},
+          {"name": "Total Predicted Completions", "expression": "SUM(gold_ml_summary[predicted_complete_count])", "formatString": "#,##0"},
+          {"name": "High Engagement Genres", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[overall_engagement] = \"high\") + 0", "formatString": "0"}
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "rel_predictions_summary",
+        "fromTable": "gold_ml_predictions",
+        "fromColumn": "genre",
+        "toTable": "gold_ml_summary",
+        "toColumn": "genre",
+        "crossFilteringBehavior": "oneDirection"
+      }
+    ],
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "annotations": [
+      {"name": "PBI_QueryOrder", "value": "[\"gold_ml_model_metrics\",\"gold_ml_feature_importance\",\"gold_ml_predictions\",\"gold_ml_summary\"]"}
+    ]
+  }
+}
