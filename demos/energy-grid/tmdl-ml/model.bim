@@ -132,7 +132,7 @@
           {"name": "Avg Outage Rate", "expression": "AVERAGE(gold_ml_summary[outage_rate])", "formatString": "0.0"},
           {"name": "Substations", "expression": "COUNTROWS(gold_ml_summary)", "formatString": "0"},
           {"name": "Predicted Outage Days", "expression": "SUM(gold_ml_summary[predicted_outage_days])", "formatString": "#,##0"},
-          {"name": "High Risk Substations", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[overall_risk] = \"high\")", "formatString": "0"}
+          {"name": "High Risk Substations", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[overall_risk] = \"high\") + 0", "formatString": "0"}
         ]
       }
     ],
