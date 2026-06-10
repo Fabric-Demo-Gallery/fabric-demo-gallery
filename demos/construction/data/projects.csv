@@ -1,201 +1,201 @@
-project_id,project_name,project_type,region,status,budget,planned_start_date,planned_end_date,actual_start_date,forecast_end_date,schedule_variance_days,cost_variance_pct,lead_subcontractor_id
-PRJ-0001,Project 1 - Commercial,Industrial,South West,Cancelled,41769395.88,2024-12-12,2025-09-06,2025-01-01,2025-11-12,67,5.64,SUB-0075
-PRJ-0002,Project 2 - Commercial,Residential,North West,On Hold,33943548.04,2024-11-06,2025-12-30,2024-11-29,2026-04-18,109,12.89,SUB-0066
-PRJ-0003,Project 3 - Commercial,Commercial,London,In Progress,33803385.69,2024-12-05,2026-11-29,2024-12-05,2027-02-12,75,2.86,SUB-0006
-PRJ-0004,Project 4 - Industrial,Industrial,Midlands,On Hold,44363777.0,2024-05-05,2025-12-02,2024-05-29,2025-12-10,8,15.15,SUB-0032
-PRJ-0005,Project 5 - Renovation,Industrial,London,In Progress,9206390.74,2024-03-16,2024-06-19,2024-04-07,2024-07-06,17,28.53,SUB-0072
-PRJ-0006,Project 6 - Renovation,Infrastructure,South West,On Hold,33545097.76,2024-05-07,2024-12-07,2024-05-10,2025-03-23,106,29.58,SUB-0057
-PRJ-0007,Project 7 - Industrial,Industrial,North West,On Hold,44911801.11,2024-11-09,2026-07-08,2024-12-09,2026-10-15,99,21.03,SUB-0097
-PRJ-0008,Project 8 - Commercial,Infrastructure,North West,Completed,22273693.37,2024-05-06,2025-05-14,2024-05-16,2025-09-05,114,19.97,SUB-0041
-PRJ-0009,Project 9 - Commercial,Residential,Midlands,In Progress,19460246.98,2024-10-03,2025-03-24,2024-10-07,2025-04-18,25,0.35,SUB-0053
-PRJ-0010,Project 10 - Renovation,Residential,South West,Planning,10738302.28,2024-06-18,2026-03-25,2024-07-09,2026-07-12,109,9.71,SUB-0098
-PRJ-0011,Project 11 - Industrial,Renovation,Wales,Completed,15281326.29,2024-10-21,2026-02-12,2024-10-16,2026-06-04,112,8.65,SUB-0095
-PRJ-0012,Project 12 - Industrial,Infrastructure,Wales,In Progress,14010297.93,2024-10-06,2026-09-13,2024-11-01,2026-10-29,46,12.0,SUB-0087
-PRJ-0013,Project 13 - Renovation,Renovation,Wales,Cancelled,26939119.66,2024-07-26,2025-04-11,2024-07-29,2025-07-29,109,26.74,SUB-0004
-PRJ-0014,Project 14 - Commercial,Industrial,North West,In Progress,2989089.36,2024-02-12,2025-07-24,2024-03-07,2025-08-17,24,8.27,SUB-0044
-PRJ-0015,Project 15 - Residential,Infrastructure,South East,Planning,23780188.39,2024-07-13,2025-07-22,2024-07-24,2025-10-27,97,21.22,SUB-0084
-PRJ-0016,Project 16 - Commercial,Commercial,Midlands,In Progress,42041827.89,2024-02-05,2024-06-15,2024-02-15,2024-06-12,-3,16.75,SUB-0086
-PRJ-0017,Project 17 - Renovation,Residential,South West,Completed,38461455.87,2024-02-28,2025-12-26,2024-03-23,2026-02-09,45,0.87,SUB-0021
-PRJ-0018,Project 18 - Industrial,Commercial,London,Cancelled,34028690.7,2024-06-08,2024-12-25,2024-06-22,2024-12-21,-4,28.54,SUB-0076
-PRJ-0019,Project 19 - Renovation,Residential,North West,Cancelled,40373634.2,2024-12-19,2025-11-22,2025-01-02,2025-12-08,16,22.87,SUB-0069
-PRJ-0020,Project 20 - Industrial,Residential,Midlands,Completed,1126281.43,2024-08-07,2025-11-19,2024-09-03,2025-11-26,7,9.7,SUB-0047
-PRJ-0021,Project 21 - Infrastructure,Renovation,South West,In Progress,36822867.55,2024-11-21,2026-06-04,2024-12-13,2026-07-03,29,28.79,SUB-0069
-PRJ-0022,Project 22 - Residential,Infrastructure,Midlands,Completed,42659801.42,2024-09-04,2026-03-24,2024-09-16,2026-07-03,101,24.08,SUB-0032
-PRJ-0023,Project 23 - Industrial,Commercial,North West,Planning,24968171.93,2024-08-25,2026-06-29,2024-09-10,2026-09-24,87,6.38,SUB-0034
-PRJ-0024,Project 24 - Commercial,Industrial,Midlands,Planning,26073048.96,2024-06-23,2025-07-04,2024-07-23,2025-09-02,60,1.69,SUB-0072
-PRJ-0025,Project 25 - Commercial,Infrastructure,Wales,Planning,5106140.85,2024-05-03,2025-12-01,2024-05-26,2026-03-26,115,2.76,SUB-0075
-PRJ-0026,Project 26 - Infrastructure,Infrastructure,North West,Cancelled,16874169.21,2024-07-07,2026-02-01,2024-07-29,2026-04-20,78,19.6,SUB-0030
-PRJ-0027,Project 27 - Commercial,Commercial,Wales,Cancelled,47568439.24,2024-03-02,2024-12-14,2024-03-04,2025-02-22,70,19.16,SUB-0062
-PRJ-0028,Project 28 - Infrastructure,Residential,Wales,In Progress,15164199.93,2024-05-21,2026-04-14,2024-05-22,2026-06-15,62,7.63,SUB-0069
-PRJ-0029,Project 29 - Industrial,Residential,South West,Cancelled,14960763.91,2024-03-05,2025-03-10,2024-03-03,2025-03-11,1,28.04,SUB-0002
-PRJ-0030,Project 30 - Infrastructure,Industrial,London,On Hold,17364943.66,2024-10-20,2025-11-05,2024-11-14,2026-02-23,110,28.79,SUB-0009
-PRJ-0031,Project 31 - Infrastructure,Residential,South East,In Progress,7885280.43,2024-07-24,2026-03-09,2024-07-22,2026-03-17,8,14.7,SUB-0016
-PRJ-0032,Project 32 - Renovation,Industrial,North West,On Hold,22800466.01,2024-10-12,2026-03-12,2024-11-09,2026-04-28,47,10.5,SUB-0073
-PRJ-0033,Project 33 - Commercial,Commercial,Scotland,In Progress,13599983.2,2024-11-13,2025-04-13,2024-11-21,2025-04-28,15,-2.16,SUB-0010
-PRJ-0034,Project 34 - Infrastructure,Infrastructure,Wales,Cancelled,23760667.71,2024-03-21,2024-06-21,2024-04-13,2024-09-23,94,-3.86,SUB-0059
-PRJ-0035,Project 35 - Commercial,Infrastructure,South West,On Hold,6181426.97,2024-02-06,2024-12-31,2024-02-13,2025-02-26,57,2.87,SUB-0019
-PRJ-0036,Project 36 - Infrastructure,Industrial,London,Cancelled,37573407.24,2024-02-06,2024-07-06,2024-02-20,2024-08-07,32,14.92,SUB-0060
-PRJ-0037,Project 37 - Renovation,Residential,Midlands,Cancelled,27229087.35,2024-12-18,2026-01-23,2024-12-30,2026-04-26,93,10.32,SUB-0095
-PRJ-0038,Project 38 - Renovation,Renovation,London,Planning,11831758.58,2024-06-14,2026-05-23,2024-06-10,2026-07-16,54,18.6,SUB-0098
-PRJ-0039,Project 39 - Infrastructure,Commercial,Scotland,On Hold,26188710.13,2024-12-10,2025-12-10,2024-12-16,2025-12-10,0,10.48,SUB-0056
-PRJ-0040,Project 40 - Residential,Commercial,North West,Completed,20713230.62,2024-11-21,2026-07-07,2024-12-16,2026-07-20,13,6.24,SUB-0053
-PRJ-0041,Project 41 - Infrastructure,Infrastructure,London,Cancelled,2316507.95,2024-12-21,2026-08-10,2025-01-10,2026-10-12,63,-1.92,SUB-0099
-PRJ-0042,Project 42 - Infrastructure,Renovation,South West,On Hold,20955754.75,2024-07-25,2026-04-02,2024-08-23,2026-03-23,-10,1.57,SUB-0064
-PRJ-0043,Project 43 - Industrial,Industrial,London,Completed,27686372.13,2024-11-16,2026-05-12,2024-11-24,2026-05-15,3,27.47,SUB-0004
-PRJ-0044,Project 44 - Residential,Commercial,South West,Completed,27766530.85,2024-11-18,2026-11-01,2024-11-23,2026-12-22,51,14.33,SUB-0015
-PRJ-0045,Project 45 - Industrial,Industrial,South East,Completed,25689164.75,2024-08-24,2025-03-22,2024-09-19,2025-04-20,29,4.57,SUB-0059
-PRJ-0046,Project 46 - Residential,Infrastructure,South West,Cancelled,25657924.13,2024-10-09,2025-06-04,2024-10-16,2025-08-31,88,25.78,SUB-0054
-PRJ-0047,Project 47 - Renovation,Industrial,South West,Completed,36439523.64,2024-06-23,2026-02-22,2024-06-18,2026-04-21,58,24.31,SUB-0020
-PRJ-0048,Project 48 - Industrial,Infrastructure,South West,Completed,27819912.15,2024-08-16,2026-05-19,2024-09-02,2026-09-09,113,14.02,SUB-0025
-PRJ-0049,Project 49 - Industrial,Industrial,Wales,On Hold,2660541.31,2024-12-23,2025-11-22,2025-01-01,2026-02-18,88,21.06,SUB-0084
-PRJ-0050,Project 50 - Residential,Industrial,London,Cancelled,48285002.71,2024-03-18,2025-11-05,2024-03-21,2025-11-04,-1,6.62,SUB-0068
-PRJ-0051,Project 51 - Infrastructure,Infrastructure,Scotland,In Progress,4203998.29,2024-08-21,2024-12-04,2024-09-11,2024-12-30,26,22.35,SUB-0089
-PRJ-0052,Project 52 - Industrial,Renovation,London,On Hold,47729909.83,2024-07-22,2025-01-10,2024-08-20,2025-03-25,74,16.94,SUB-0080
-PRJ-0053,Project 53 - Residential,Industrial,South East,Planning,21981587.86,2024-02-05,2024-12-31,2024-02-14,2025-03-04,63,-1.55,SUB-0089
-PRJ-0054,Project 54 - Commercial,Commercial,Scotland,Planning,15021704.91,2024-06-02,2024-09-29,2024-06-17,2024-09-30,1,8.12,SUB-0053
-PRJ-0055,Project 55 - Commercial,Industrial,Scotland,Planning,30669843.45,2024-10-16,2025-07-17,2024-10-22,2025-08-19,33,8.39,SUB-0019
-PRJ-0056,Project 56 - Industrial,Infrastructure,Wales,Completed,33508615.5,2024-04-28,2025-11-11,2024-05-22,2026-01-05,55,26.46,SUB-0070
-PRJ-0057,Project 57 - Infrastructure,Industrial,South West,Cancelled,15308135.33,2024-03-21,2024-09-02,2024-04-07,2024-12-14,103,28.67,SUB-0039
-PRJ-0058,Project 58 - Infrastructure,Infrastructure,London,In Progress,19377532.73,2024-04-11,2025-08-07,2024-04-12,2025-11-28,113,7.56,SUB-0085
-PRJ-0059,Project 59 - Infrastructure,Commercial,Scotland,Cancelled,37386021.63,2024-07-21,2025-07-27,2024-07-19,2025-07-19,-8,24.15,SUB-0046
-PRJ-0060,Project 60 - Infrastructure,Industrial,London,Planning,45218483.35,2024-04-22,2025-01-31,2024-04-25,2025-03-26,54,17.62,SUB-0075
-PRJ-0061,Project 61 - Commercial,Renovation,North West,Completed,37500302.81,2024-07-05,2025-02-14,2024-07-18,2025-02-27,13,1.15,SUB-0068
-PRJ-0062,Project 62 - Infrastructure,Residential,Midlands,On Hold,48385511.77,2024-09-13,2025-09-17,2024-09-24,2025-10-19,32,5.33,SUB-0010
-PRJ-0063,Project 63 - Infrastructure,Renovation,London,Completed,4969992.34,2024-03-13,2025-01-28,2024-04-12,2025-04-29,91,8.81,SUB-0059
-PRJ-0064,Project 64 - Renovation,Renovation,North West,Planning,33904409.49,2024-07-07,2025-06-30,2024-07-25,2025-09-25,87,11.5,SUB-0079
-PRJ-0065,Project 65 - Residential,Infrastructure,Midlands,On Hold,6275458.87,2024-04-23,2024-09-24,2024-05-07,2025-01-10,108,-3.41,SUB-0015
-PRJ-0066,Project 66 - Renovation,Industrial,Scotland,On Hold,18865070.02,2024-02-19,2025-01-14,2024-03-09,2025-02-07,24,28.23,SUB-0096
-PRJ-0067,Project 67 - Residential,Infrastructure,South East,Cancelled,20701736.34,2024-03-20,2025-08-16,2024-04-15,2025-08-31,15,28.3,SUB-0057
-PRJ-0068,Project 68 - Infrastructure,Residential,Midlands,Completed,27451060.14,2024-08-15,2025-07-12,2024-08-16,2025-10-02,82,29.22,SUB-0036
-PRJ-0069,Project 69 - Residential,Residential,South West,In Progress,32264371.13,2024-04-07,2024-11-08,2024-04-07,2025-02-22,106,15.9,SUB-0043
-PRJ-0070,Project 70 - Commercial,Infrastructure,South West,Cancelled,10754289.83,2024-05-04,2024-12-08,2024-05-03,2025-01-19,42,2.56,SUB-0019
-PRJ-0071,Project 71 - Residential,Residential,South East,In Progress,27240665.11,2024-11-01,2025-02-01,2024-11-05,2025-04-02,60,22.95,SUB-0002
-PRJ-0072,Project 72 - Industrial,Renovation,London,In Progress,13635691.66,2024-07-02,2025-05-31,2024-06-28,2025-08-11,72,-0.56,SUB-0096
-PRJ-0073,Project 73 - Commercial,Renovation,London,Cancelled,29886467.88,2024-02-02,2025-09-01,2024-02-20,2025-12-14,104,10.82,SUB-0094
-PRJ-0074,Project 74 - Industrial,Industrial,Wales,Planning,3510857.67,2024-12-03,2026-08-18,2024-12-27,2026-10-24,67,11.76,SUB-0014
-PRJ-0075,Project 75 - Infrastructure,Renovation,Wales,Completed,30610722.47,2024-09-08,2026-03-06,2024-09-08,2026-03-14,8,-2.7,SUB-0075
-PRJ-0076,Project 76 - Residential,Residential,South West,Completed,22958913.17,2024-10-07,2025-12-03,2024-11-04,2026-02-28,87,16.19,SUB-0084
-PRJ-0077,Project 77 - Industrial,Industrial,Midlands,On Hold,44460505.59,2024-11-29,2026-09-14,2024-12-21,2026-10-29,45,9.48,SUB-0094
-PRJ-0078,Project 78 - Industrial,Residential,London,Completed,19027900.66,2024-02-18,2025-04-03,2024-03-04,2025-07-11,99,0.34,SUB-0011
-PRJ-0079,Project 79 - Renovation,Renovation,North West,In Progress,28040351.41,2024-02-17,2025-08-02,2024-03-06,2025-08-16,14,15.53,SUB-0086
-PRJ-0080,Project 80 - Infrastructure,Residential,Scotland,Planning,48435731.95,2024-03-03,2025-07-26,2024-03-25,2025-10-14,80,16.01,SUB-0065
-PRJ-0081,Project 81 - Residential,Infrastructure,Scotland,Planning,17830642.71,2024-04-18,2024-12-22,2024-04-27,2025-04-14,113,14.47,SUB-0029
-PRJ-0082,Project 82 - Infrastructure,Infrastructure,North West,Planning,9430595.56,2024-08-07,2026-06-02,2024-08-19,2026-05-29,-4,19.59,SUB-0001
-PRJ-0083,Project 83 - Residential,Renovation,South East,In Progress,37177968.43,2024-04-02,2024-11-24,2024-04-01,2025-02-24,92,29.01,SUB-0049
-PRJ-0084,Project 84 - Renovation,Renovation,London,Completed,15926049.8,2024-08-02,2026-02-07,2024-08-07,2026-04-25,77,6.35,SUB-0007
-PRJ-0085,Project 85 - Renovation,Industrial,Midlands,Completed,22434092.23,2024-03-20,2024-11-26,2024-03-20,2024-11-28,2,9.84,SUB-0035
-PRJ-0086,Project 86 - Renovation,Industrial,Scotland,On Hold,5989043.72,2024-04-20,2025-12-25,2024-05-07,2026-01-13,19,18.74,SUB-0086
-PRJ-0087,Project 87 - Commercial,Commercial,South West,Cancelled,3211706.95,2024-06-06,2024-10-20,2024-06-26,2024-12-05,46,2.15,SUB-0033
-PRJ-0088,Project 88 - Industrial,Renovation,Wales,On Hold,37477199.11,2024-05-28,2025-07-27,2024-05-23,2025-08-16,20,1.15,SUB-0030
-PRJ-0089,Project 89 - Residential,Industrial,London,On Hold,43157335.92,2024-09-13,2026-07-07,2024-09-12,2026-09-25,80,-3.52,SUB-0041
-PRJ-0090,Project 90 - Infrastructure,Commercial,South West,Completed,6201081.95,2024-10-21,2026-04-03,2024-11-11,2026-07-05,93,-4.27,SUB-0080
-PRJ-0091,Project 91 - Renovation,Residential,Midlands,Planning,12544165.5,2024-08-23,2025-11-26,2024-09-14,2025-12-08,12,15.61,SUB-0040
-PRJ-0092,Project 92 - Renovation,Commercial,South West,Planning,25768922.58,2024-06-22,2025-05-04,2024-06-27,2025-07-18,75,-1.01,SUB-0045
-PRJ-0093,Project 93 - Commercial,Residential,South East,In Progress,13170426.99,2024-06-28,2025-02-24,2024-06-29,2025-04-15,50,1.07,SUB-0099
-PRJ-0094,Project 94 - Infrastructure,Infrastructure,South East,Cancelled,32328095.62,2024-11-17,2026-07-05,2024-12-10,2026-10-21,108,29.53,SUB-0057
-PRJ-0095,Project 95 - Residential,Infrastructure,Midlands,Completed,29775277.96,2024-02-04,2025-08-27,2024-02-18,2025-12-08,103,7.32,SUB-0058
-PRJ-0096,Project 96 - Residential,Renovation,Scotland,Planning,32410990.24,2024-01-20,2024-06-16,2024-02-02,2024-09-08,84,29.21,SUB-0065
-PRJ-0097,Project 97 - Industrial,Renovation,South East,Cancelled,32765954.01,2024-07-15,2026-01-29,2024-08-07,2026-01-29,0,6.25,SUB-0008
-PRJ-0098,Project 98 - Industrial,Industrial,Scotland,Cancelled,32483291.01,2024-08-18,2025-03-01,2024-08-18,2025-05-17,77,-3.63,SUB-0067
-PRJ-0099,Project 99 - Renovation,Residential,South West,Completed,19677119.7,2024-11-08,2025-07-18,2024-11-26,2025-10-09,83,22.11,SUB-0081
-PRJ-0100,Project 100 - Infrastructure,Renovation,South West,Planning,28119179.01,2024-11-27,2026-02-02,2024-12-13,2026-02-08,6,8.53,SUB-0020
-PRJ-0101,Project 101 - Industrial,Commercial,Scotland,Completed,48400977.13,2024-06-19,2024-12-09,2024-07-06,2025-01-04,26,19.45,SUB-0091
-PRJ-0102,Project 102 - Renovation,Residential,Wales,In Progress,33670761.8,2024-02-13,2025-03-26,2024-02-29,2025-06-20,86,24.01,SUB-0086
-PRJ-0103,Project 103 - Infrastructure,Industrial,South East,Completed,15788870.47,2024-08-04,2026-04-06,2024-07-31,2026-06-27,82,28.29,SUB-0029
-PRJ-0104,Project 104 - Renovation,Residential,Wales,Planning,25630640.78,2024-03-11,2024-11-14,2024-03-24,2024-11-23,9,13.89,SUB-0044
-PRJ-0105,Project 105 - Renovation,Commercial,Wales,In Progress,9451875.37,2024-11-12,2025-06-24,2024-11-16,2025-09-18,86,19.25,SUB-0057
-PRJ-0106,Project 106 - Industrial,Commercial,Scotland,On Hold,30724473.4,2024-01-23,2025-06-16,2024-02-02,2025-09-07,83,21.33,SUB-0031
-PRJ-0107,Project 107 - Infrastructure,Industrial,Scotland,Cancelled,49229769.78,2024-06-07,2025-12-29,2024-06-25,2026-02-06,39,11.16,SUB-0068
-PRJ-0108,Project 108 - Infrastructure,Renovation,London,Completed,3082900.26,2024-08-02,2025-04-14,2024-08-05,2025-05-25,41,11.82,SUB-0092
-PRJ-0109,Project 109 - Commercial,Industrial,London,In Progress,14003169.33,2024-09-21,2025-04-26,2024-09-21,2025-06-27,62,26.69,SUB-0029
-PRJ-0110,Project 110 - Industrial,Residential,North West,Planning,20124471.29,2024-08-18,2025-11-08,2024-09-08,2025-11-04,-4,8.09,SUB-0029
-PRJ-0111,Project 111 - Industrial,Commercial,South West,In Progress,7311179.59,2024-01-15,2025-03-06,2024-01-31,2025-03-21,15,5.04,SUB-0091
-PRJ-0112,Project 112 - Renovation,Renovation,Scotland,Planning,13168234.46,2024-08-28,2026-02-28,2024-08-28,2026-02-19,-9,24.22,SUB-0055
-PRJ-0113,Project 113 - Renovation,Industrial,London,Planning,2863597.61,2024-02-26,2025-03-17,2024-03-11,2025-05-06,50,9.69,SUB-0015
-PRJ-0114,Project 114 - Industrial,Residential,Scotland,Cancelled,12475937.65,2024-09-12,2026-08-14,2024-10-09,2026-08-08,-6,0.03,SUB-0046
-PRJ-0115,Project 115 - Renovation,Renovation,Scotland,Planning,26412485.61,2024-05-03,2026-03-08,2024-05-09,2026-06-12,96,7.62,SUB-0065
-PRJ-0116,Project 116 - Infrastructure,Residential,North West,Planning,31965704.18,2024-10-10,2025-01-28,2024-11-04,2025-04-27,89,29.34,SUB-0009
-PRJ-0117,Project 117 - Commercial,Industrial,Wales,In Progress,2694616.57,2024-06-25,2025-05-27,2024-07-11,2025-06-12,16,14.11,SUB-0062
-PRJ-0118,Project 118 - Commercial,Residential,North West,On Hold,2330697.61,2024-11-19,2025-08-22,2024-11-18,2025-09-15,24,2.06,SUB-0040
-PRJ-0119,Project 119 - Infrastructure,Residential,South West,Planning,37787900.48,2024-09-20,2026-01-30,2024-10-01,2026-05-21,111,1.69,SUB-0084
-PRJ-0120,Project 120 - Industrial,Infrastructure,South East,On Hold,44529582.59,2024-06-18,2025-06-22,2024-07-06,2025-07-13,21,21.02,SUB-0064
-PRJ-0121,Project 121 - Residential,Industrial,Scotland,Completed,40156830.33,2024-12-20,2026-08-11,2025-01-17,2026-11-03,84,20.45,SUB-0024
-PRJ-0122,Project 122 - Industrial,Renovation,Wales,Planning,16732035.31,2024-10-06,2025-10-31,2024-10-07,2026-01-11,72,5.35,SUB-0055
-PRJ-0123,Project 123 - Renovation,Industrial,North West,Planning,36477312.59,2024-03-26,2025-09-21,2024-04-18,2025-12-09,79,26.91,SUB-0082
-PRJ-0124,Project 124 - Residential,Commercial,South West,Cancelled,40154250.79,2024-01-30,2024-07-14,2024-02-17,2024-10-15,93,18.78,SUB-0078
-PRJ-0125,Project 125 - Infrastructure,Industrial,Scotland,Planning,12181771.33,2024-12-13,2026-06-04,2024-12-16,2026-06-02,-2,17.58,SUB-0005
-PRJ-0126,Project 126 - Commercial,Renovation,North West,Completed,22474994.81,2024-11-05,2025-07-10,2024-11-23,2025-10-23,105,-2.31,SUB-0051
-PRJ-0127,Project 127 - Industrial,Renovation,London,Planning,36915905.54,2024-06-09,2025-06-19,2024-06-11,2025-08-11,53,12.47,SUB-0034
-PRJ-0128,Project 128 - Residential,Industrial,South East,On Hold,10408827.88,2024-05-13,2025-11-10,2024-05-26,2025-12-24,44,-0.25,SUB-0092
-PRJ-0129,Project 129 - Infrastructure,Commercial,Wales,Planning,27724858.8,2024-08-15,2025-02-10,2024-09-01,2025-04-22,71,5.16,SUB-0091
-PRJ-0130,Project 130 - Commercial,Commercial,South West,In Progress,6507441.53,2024-12-24,2025-09-18,2025-01-20,2025-12-09,82,2.03,SUB-0064
-PRJ-0131,Project 131 - Residential,Infrastructure,Midlands,Cancelled,6923675.87,2024-01-14,2025-04-17,2024-02-07,2025-07-10,84,25.95,SUB-0092
-PRJ-0132,Project 132 - Residential,Industrial,Midlands,Cancelled,4150660.29,2024-09-02,2026-05-23,2024-09-23,2026-08-26,95,29.03,SUB-0088
-PRJ-0133,Project 133 - Industrial,Renovation,South West,Cancelled,9507175.26,2024-09-21,2025-12-07,2024-10-21,2025-12-29,22,28.82,SUB-0008
-PRJ-0134,Project 134 - Commercial,Infrastructure,Scotland,In Progress,8517364.5,2024-03-04,2025-11-14,2024-03-18,2025-12-13,29,27.72,SUB-0037
-PRJ-0135,Project 135 - Renovation,Residential,Scotland,Completed,6695929.61,2024-02-10,2025-01-21,2024-03-11,2025-03-02,40,5.6,SUB-0083
-PRJ-0136,Project 136 - Renovation,Residential,South West,Cancelled,36171322.04,2024-03-27,2026-02-21,2024-04-01,2026-03-22,29,16.18,SUB-0004
-PRJ-0137,Project 137 - Industrial,Renovation,North West,Cancelled,21121045.79,2024-02-11,2024-06-26,2024-02-19,2024-08-22,57,17.36,SUB-0083
-PRJ-0138,Project 138 - Commercial,Industrial,Midlands,Completed,22950434.58,2024-06-03,2026-01-08,2024-06-23,2026-03-01,52,19.1,SUB-0062
-PRJ-0139,Project 139 - Infrastructure,Industrial,South East,Completed,43143511.3,2024-08-25,2025-06-19,2024-08-29,2025-09-04,77,6.18,SUB-0098
-PRJ-0140,Project 140 - Commercial,Commercial,London,In Progress,23590392.07,2024-07-08,2026-03-17,2024-07-23,2026-04-03,17,4.36,SUB-0007
-PRJ-0141,Project 141 - Infrastructure,Commercial,South West,In Progress,40767153.4,2024-05-28,2025-09-23,2024-06-07,2025-12-29,97,27.68,SUB-0021
-PRJ-0142,Project 142 - Industrial,Renovation,Midlands,Completed,25119828.52,2024-09-12,2026-05-22,2024-10-08,2026-09-08,109,-1.85,SUB-0031
-PRJ-0143,Project 143 - Industrial,Infrastructure,Scotland,Planning,14427138.75,2024-04-20,2026-03-08,2024-04-18,2026-05-27,80,15.91,SUB-0002
-PRJ-0144,Project 144 - Industrial,Residential,Scotland,Completed,38310909.83,2024-02-25,2025-08-09,2024-03-07,2025-09-02,24,7.81,SUB-0072
-PRJ-0145,Project 145 - Infrastructure,Renovation,Wales,On Hold,25460648.69,2024-04-09,2025-07-14,2024-04-08,2025-09-15,63,21.75,SUB-0079
-PRJ-0146,Project 146 - Infrastructure,Commercial,South East,Completed,39847412.8,2024-03-01,2024-10-08,2024-03-21,2024-10-22,14,6.87,SUB-0078
-PRJ-0147,Project 147 - Industrial,Renovation,Midlands,Planning,2426241.33,2024-09-17,2026-01-31,2024-09-14,2026-05-29,118,19.98,SUB-0020
-PRJ-0148,Project 148 - Renovation,Infrastructure,Scotland,Cancelled,16267236.57,2024-11-06,2026-07-16,2024-11-21,2026-08-10,25,8.75,SUB-0044
-PRJ-0149,Project 149 - Residential,Industrial,Scotland,On Hold,40879567.25,2024-09-16,2026-05-20,2024-09-30,2026-09-12,115,7.89,SUB-0040
-PRJ-0150,Project 150 - Renovation,Industrial,South East,Cancelled,29092902.6,2024-12-18,2025-04-14,2024-12-29,2025-08-03,111,20.25,SUB-0068
-PRJ-0151,Project 151 - Residential,Commercial,London,In Progress,2062740.41,2024-11-18,2026-11-12,2024-11-22,2027-02-07,87,28.19,SUB-0057
-PRJ-0152,Project 152 - Industrial,Residential,Wales,In Progress,20813681.76,2024-06-09,2025-11-09,2024-06-30,2025-12-07,28,22.12,SUB-0018
-PRJ-0153,Project 153 - Industrial,Renovation,North West,Cancelled,19152826.42,2024-09-22,2025-07-21,2024-10-17,2025-10-02,73,28.48,SUB-0070
-PRJ-0154,Project 154 - Infrastructure,Infrastructure,Wales,In Progress,14310816.6,2024-06-30,2025-06-25,2024-07-07,2025-10-16,113,5.45,SUB-0027
-PRJ-0155,Project 155 - Infrastructure,Infrastructure,London,Completed,28244135.72,2024-12-19,2026-08-01,2025-01-13,2026-10-11,71,27.71,SUB-0074
-PRJ-0156,Project 156 - Infrastructure,Residential,North West,Completed,47753138.74,2024-12-12,2026-09-19,2025-01-01,2026-12-15,87,23.16,SUB-0092
-PRJ-0157,Project 157 - Infrastructure,Renovation,Wales,On Hold,11092347.0,2024-02-10,2025-04-29,2024-02-21,2025-08-10,103,23.98,SUB-0035
-PRJ-0158,Project 158 - Commercial,Residential,London,Planning,33656781.26,2024-03-11,2024-09-28,2024-03-21,2024-11-18,51,13.59,SUB-0053
-PRJ-0159,Project 159 - Commercial,Industrial,Wales,Planning,48243678.98,2024-06-18,2026-01-12,2024-06-21,2026-01-27,15,29.23,SUB-0061
-PRJ-0160,Project 160 - Residential,Renovation,South East,Completed,32471946.94,2024-09-01,2025-06-22,2024-09-16,2025-08-24,63,26.78,SUB-0069
-PRJ-0161,Project 161 - Industrial,Commercial,Wales,Planning,49860004.25,2024-01-20,2024-10-15,2024-01-26,2025-01-19,96,8.89,SUB-0038
-PRJ-0162,Project 162 - Renovation,Renovation,Midlands,Completed,14585801.79,2024-01-20,2024-04-28,2024-01-21,2024-07-03,66,29.62,SUB-0018
-PRJ-0163,Project 163 - Infrastructure,Commercial,London,Planning,16868862.79,2024-09-15,2026-04-07,2024-09-22,2026-06-05,59,20.59,SUB-0095
-PRJ-0164,Project 164 - Industrial,Renovation,North West,Cancelled,42879251.96,2024-06-21,2025-07-18,2024-06-27,2025-08-26,39,26.4,SUB-0012
-PRJ-0165,Project 165 - Infrastructure,Industrial,South East,On Hold,16518282.67,2024-07-24,2025-01-27,2024-07-27,2025-03-05,37,3.68,SUB-0058
-PRJ-0166,Project 166 - Residential,Residential,Midlands,Completed,32857326.67,2024-05-16,2025-07-17,2024-05-11,2025-09-22,67,19.25,SUB-0040
-PRJ-0167,Project 167 - Infrastructure,Renovation,South East,Planning,32116210.6,2024-03-22,2025-08-09,2024-04-05,2025-12-05,118,27.92,SUB-0029
-PRJ-0168,Project 168 - Industrial,Renovation,South West,Cancelled,18994429.68,2024-03-09,2025-10-09,2024-04-02,2025-11-07,29,19.57,SUB-0086
-PRJ-0169,Project 169 - Renovation,Residential,London,On Hold,26644569.64,2024-04-21,2025-03-30,2024-05-19,2025-04-09,10,7.66,SUB-0071
-PRJ-0170,Project 170 - Commercial,Renovation,Midlands,Completed,42797057.37,2024-09-15,2025-07-09,2024-09-20,2025-08-06,28,10.46,SUB-0012
-PRJ-0171,Project 171 - Residential,Renovation,Midlands,In Progress,25905768.24,2024-09-18,2026-03-18,2024-10-12,2026-03-22,4,10.99,SUB-0087
-PRJ-0172,Project 172 - Residential,Industrial,North West,Planning,37417321.9,2024-06-06,2024-09-26,2024-06-17,2024-12-26,91,15.24,SUB-0090
-PRJ-0173,Project 173 - Commercial,Industrial,North West,On Hold,2070876.12,2024-02-02,2025-11-07,2024-02-01,2025-11-12,5,9.31,SUB-0049
-PRJ-0174,Project 174 - Residential,Commercial,Scotland,Cancelled,7082995.41,2024-08-17,2025-12-06,2024-08-17,2026-03-02,86,25.11,SUB-0051
-PRJ-0175,Project 175 - Renovation,Industrial,Scotland,Planning,48935288.79,2024-09-27,2025-05-05,2024-09-22,2025-06-21,47,11.21,SUB-0049
-PRJ-0176,Project 176 - Residential,Residential,South West,In Progress,14144661.53,2024-04-27,2025-04-05,2024-05-14,2025-07-21,107,27.81,SUB-0085
-PRJ-0177,Project 177 - Industrial,Renovation,Wales,In Progress,3830899.69,2024-08-02,2026-07-22,2024-08-12,2026-07-16,-6,15.79,SUB-0091
-PRJ-0178,Project 178 - Residential,Commercial,Scotland,On Hold,12099794.29,2024-01-25,2024-12-30,2024-02-14,2024-12-31,1,2.6,SUB-0038
-PRJ-0179,Project 179 - Renovation,Commercial,Midlands,In Progress,15437339.54,2024-04-29,2026-03-09,2024-05-14,2026-05-19,71,0.01,SUB-0039
-PRJ-0180,Project 180 - Industrial,Renovation,North West,Cancelled,25033228.98,2024-05-20,2024-10-19,2024-06-11,2024-11-22,34,29.03,SUB-0090
-PRJ-0181,Project 181 - Commercial,Commercial,North West,On Hold,9602009.45,2024-08-01,2025-12-22,2024-08-15,2026-01-19,28,13.83,SUB-0091
-PRJ-0182,Project 182 - Commercial,Industrial,South East,On Hold,48405416.33,2024-03-14,2025-09-29,2024-04-13,2025-10-03,4,14.51,SUB-0033
-PRJ-0183,Project 183 - Commercial,Residential,North West,Completed,5076967.83,2024-04-14,2025-06-16,2024-05-07,2025-06-26,10,20.36,SUB-0049
-PRJ-0184,Project 184 - Renovation,Commercial,Midlands,In Progress,40330205.58,2024-12-10,2026-11-19,2024-12-09,2026-11-19,0,15.57,SUB-0027
-PRJ-0185,Project 185 - Industrial,Commercial,Wales,In Progress,48122839.03,2024-06-19,2025-07-24,2024-06-27,2025-07-17,-7,-0.89,SUB-0078
-PRJ-0186,Project 186 - Industrial,Renovation,Wales,Cancelled,16419942.94,2024-12-26,2025-10-21,2025-01-05,2026-01-20,91,4.91,SUB-0046
-PRJ-0187,Project 187 - Industrial,Infrastructure,South East,On Hold,23567201.31,2024-06-06,2025-05-29,2024-07-03,2025-08-19,82,23.1,SUB-0048
-PRJ-0188,Project 188 - Renovation,Renovation,Wales,In Progress,1302885.1,2024-06-09,2025-11-04,2024-06-18,2025-11-05,1,14.37,SUB-0054
-PRJ-0189,Project 189 - Industrial,Renovation,Wales,In Progress,19302068.85,2024-05-31,2025-02-01,2024-06-16,2025-03-13,40,24.17,SUB-0088
-PRJ-0190,Project 190 - Commercial,Commercial,Wales,On Hold,8827565.47,2024-06-21,2025-06-09,2024-07-17,2025-10-02,115,22.82,SUB-0070
-PRJ-0191,Project 191 - Residential,Residential,Midlands,Planning,42033890.43,2024-09-07,2025-06-12,2024-10-05,2025-06-17,5,-2.4,SUB-0018
-PRJ-0192,Project 192 - Residential,Renovation,Wales,Planning,11326623.79,2024-11-18,2025-10-10,2024-11-22,2025-10-17,7,10.96,SUB-0086
-PRJ-0193,Project 193 - Residential,Renovation,Wales,Planning,26844518.01,2024-11-11,2026-06-18,2024-11-07,2026-10-10,114,9.4,SUB-0036
-PRJ-0194,Project 194 - Residential,Residential,Scotland,On Hold,40405301.1,2024-10-01,2025-10-19,2024-10-28,2025-10-13,-6,26.84,SUB-0020
-PRJ-0195,Project 195 - Industrial,Industrial,Scotland,Completed,39849348.44,2024-05-03,2025-02-13,2024-05-20,2025-04-08,54,-2.23,SUB-0032
-PRJ-0196,Project 196 - Renovation,Industrial,London,Planning,5128275.02,2024-12-22,2025-11-08,2024-12-22,2026-01-13,66,8.27,SUB-0082
-PRJ-0197,Project 197 - Residential,Renovation,London,On Hold,32422908.48,2024-01-05,2024-09-26,2024-01-31,2024-10-07,11,6.59,SUB-0030
-PRJ-0198,Project 198 - Infrastructure,Renovation,Scotland,Planning,46245883.7,2024-04-18,2026-02-17,2024-04-30,2026-06-08,111,18.96,SUB-0085
-PRJ-0199,Project 199 - Industrial,Residential,North West,In Progress,29558287.15,2024-01-17,2024-10-16,2024-01-13,2024-12-25,70,21.33,SUB-0021
-PRJ-0200,Project 200 - Residential,Renovation,Wales,Completed,19500387.6,2024-10-15,2025-09-16,2024-11-13,2025-12-14,89,20.89,SUB-0045
+project_id,project_name,project_type,region,status,budget,planned_start_date,planned_end_date,lead_subcontractor_id
+PRJ-0001,Project 1 - Commercial,Commercial,Scotland,In Progress,38314207.81,2024-01-04,2025-04-11,SUB-0057
+PRJ-0002,Project 2 - Infrastructure,Infrastructure,Scotland,Completed,46596193.67,2024-11-15,2026-01-19,SUB-0093
+PRJ-0003,Project 3 - Residential,Residential,South West,Completed,21221110.89,2024-11-10,2025-05-19,SUB-0012
+PRJ-0004,Project 4 - Commercial,Commercial,South East,In Progress,44969144.09,2024-11-05,2025-07-07,SUB-0093
+PRJ-0005,Project 5 - Residential,Residential,South West,In Progress,8301776.61,2024-09-10,2025-06-19,SUB-0077
+PRJ-0006,Project 6 - Industrial,Industrial,Wales,In Progress,19474331.23,2024-02-29,2024-08-18,SUB-0097
+PRJ-0007,Project 7 - Commercial,Commercial,Wales,Completed,24228793.42,2024-03-11,2025-06-05,SUB-0073
+PRJ-0008,Project 8 - Residential,Residential,Wales,Completed,47584135.67,2024-05-30,2025-10-23,SUB-0014
+PRJ-0009,Project 9 - Infrastructure,Infrastructure,Wales,In Progress,29618771.0,2024-04-18,2026-01-08,SUB-0012
+PRJ-0010,Project 10 - Renovation,Renovation,London,In Progress,41357275.8,2024-10-01,2025-12-21,SUB-0004
+PRJ-0011,Project 11 - Infrastructure,Infrastructure,North West,In Progress,45962873.83,2025-01-22,2026-02-21,SUB-0030
+PRJ-0012,Project 12 - Infrastructure,Infrastructure,London,Cancelled,44020401.2,2024-11-08,2026-01-28,SUB-0074
+PRJ-0013,Project 13 - Renovation,Renovation,London,Cancelled,33451394.44,2024-11-07,2026-07-22,SUB-0029
+PRJ-0014,Project 14 - Commercial,Commercial,London,On Hold,1935475.41,2024-09-17,2026-01-23,SUB-0014
+PRJ-0015,Project 15 - Industrial,Industrial,South West,In Progress,45576592.24,2024-06-30,2025-01-21,SUB-0025
+PRJ-0016,Project 16 - Renovation,Renovation,London,Planning,3057066.89,2024-09-19,2026-07-16,SUB-0029
+PRJ-0017,Project 17 - Residential,Residential,Wales,On Hold,3332981.04,2025-01-27,2026-09-19,SUB-0061
+PRJ-0018,Project 18 - Industrial,Industrial,Wales,Completed,35056978.81,2024-11-16,2026-10-17,SUB-0067
+PRJ-0019,Project 19 - Residential,Residential,Scotland,In Progress,25474284.01,2024-06-27,2024-11-18,SUB-0084
+PRJ-0020,Project 20 - Industrial,Industrial,South East,On Hold,8183043.13,2024-10-25,2026-01-16,SUB-0054
+PRJ-0021,Project 21 - Residential,Residential,London,Completed,49020136.85,2024-01-22,2024-09-13,SUB-0074
+PRJ-0022,Project 22 - Industrial,Industrial,London,Completed,2596352.3,2024-09-01,2025-10-31,SUB-0075
+PRJ-0023,Project 23 - Industrial,Industrial,North West,Planning,9584894.83,2024-07-02,2025-12-29,SUB-0089
+PRJ-0024,Project 24 - Commercial,Commercial,Scotland,Completed,32002212.93,2025-01-27,2026-05-17,SUB-0038
+PRJ-0025,Project 25 - Residential,Residential,Midlands,In Progress,29111852.18,2024-06-27,2025-01-20,SUB-0058
+PRJ-0026,Project 26 - Residential,Residential,South East,Cancelled,7847730.0,2024-10-06,2025-07-07,SUB-0054
+PRJ-0027,Project 27 - Infrastructure,Infrastructure,Wales,Planning,7137683.19,2024-10-03,2025-09-30,SUB-0051
+PRJ-0028,Project 28 - Infrastructure,Infrastructure,North West,In Progress,30743883.58,2024-04-21,2024-10-14,SUB-0095
+PRJ-0029,Project 29 - Infrastructure,Infrastructure,Midlands,In Progress,29621159.3,2025-01-23,2026-01-25,SUB-0064
+PRJ-0030,Project 30 - Infrastructure,Infrastructure,London,In Progress,23969567.42,2024-05-06,2026-03-09,SUB-0061
+PRJ-0031,Project 31 - Commercial,Commercial,North West,Completed,32573449.87,2024-02-08,2025-05-16,SUB-0023
+PRJ-0032,Project 32 - Infrastructure,Infrastructure,North West,Completed,27682646.99,2024-09-17,2026-01-19,SUB-0059
+PRJ-0033,Project 33 - Commercial,Commercial,Scotland,In Progress,36966931.58,2024-07-30,2025-12-07,SUB-0044
+PRJ-0034,Project 34 - Industrial,Industrial,Wales,In Progress,26253618.18,2024-12-20,2025-07-04,SUB-0056
+PRJ-0035,Project 35 - Industrial,Industrial,Scotland,In Progress,6234907.85,2024-04-08,2025-02-10,SUB-0080
+PRJ-0036,Project 36 - Residential,Residential,South West,Planning,14390266.09,2024-01-29,2025-10-31,SUB-0006
+PRJ-0037,Project 37 - Infrastructure,Infrastructure,South West,Completed,1226800.76,2024-07-14,2025-02-22,SUB-0034
+PRJ-0038,Project 38 - Industrial,Industrial,South West,In Progress,8103838.5,2024-11-26,2026-05-23,SUB-0044
+PRJ-0039,Project 39 - Industrial,Industrial,Scotland,Cancelled,49775491.39,2024-09-24,2025-04-03,SUB-0061
+PRJ-0040,Project 40 - Industrial,Industrial,North West,Completed,35417615.09,2024-11-04,2025-11-13,SUB-0045
+PRJ-0041,Project 41 - Renovation,Renovation,North West,In Progress,26491871.0,2025-01-05,2026-05-24,SUB-0039
+PRJ-0042,Project 42 - Commercial,Commercial,Midlands,Completed,49462083.63,2024-03-06,2025-09-03,SUB-0047
+PRJ-0043,Project 43 - Residential,Residential,South West,In Progress,22688157.86,2024-03-21,2025-12-04,SUB-0056
+PRJ-0044,Project 44 - Residential,Residential,London,Completed,21972061.85,2024-06-06,2025-04-19,SUB-0085
+PRJ-0045,Project 45 - Infrastructure,Infrastructure,North West,On Hold,2710129.9,2025-01-02,2025-07-31,SUB-0047
+PRJ-0046,Project 46 - Commercial,Commercial,North West,In Progress,29529036.06,2024-04-03,2024-11-24,SUB-0064
+PRJ-0047,Project 47 - Renovation,Renovation,Midlands,On Hold,32060640.67,2024-01-06,2024-06-24,SUB-0050
+PRJ-0048,Project 48 - Industrial,Industrial,South East,Completed,3376369.85,2024-09-16,2025-09-15,SUB-0056
+PRJ-0049,Project 49 - Renovation,Renovation,Wales,On Hold,24387339.18,2024-10-24,2026-01-10,SUB-0037
+PRJ-0050,Project 50 - Industrial,Industrial,South West,In Progress,45522836.07,2024-11-03,2026-04-20,SUB-0054
+PRJ-0051,Project 51 - Industrial,Industrial,North West,In Progress,26804846.53,2024-02-18,2025-11-09,SUB-0059
+PRJ-0052,Project 52 - Industrial,Industrial,North West,On Hold,31726195.9,2024-02-11,2024-06-23,SUB-0052
+PRJ-0053,Project 53 - Industrial,Industrial,North West,Planning,46409292.7,2024-01-04,2024-11-22,SUB-0018
+PRJ-0054,Project 54 - Commercial,Commercial,North West,Completed,862065.59,2024-06-28,2025-07-05,SUB-0070
+PRJ-0055,Project 55 - Infrastructure,Infrastructure,Scotland,Cancelled,31207706.63,2024-03-09,2025-09-01,SUB-0028
+PRJ-0056,Project 56 - Renovation,Renovation,South West,On Hold,36174449.36,2024-07-10,2026-06-20,SUB-0088
+PRJ-0057,Project 57 - Industrial,Industrial,Scotland,Planning,36754468.4,2024-09-06,2026-04-18,SUB-0097
+PRJ-0058,Project 58 - Residential,Residential,Scotland,Completed,48505848.28,2024-06-25,2025-11-16,SUB-0081
+PRJ-0059,Project 59 - Commercial,Commercial,South West,Completed,17651396.63,2024-03-02,2024-12-19,SUB-0099
+PRJ-0060,Project 60 - Renovation,Renovation,London,Completed,24740137.22,2024-02-19,2024-12-13,SUB-0001
+PRJ-0061,Project 61 - Residential,Residential,North West,In Progress,39787266.45,2024-12-09,2026-01-11,SUB-0099
+PRJ-0062,Project 62 - Residential,Residential,Scotland,Completed,46272732.53,2024-02-03,2024-10-13,SUB-0065
+PRJ-0063,Project 63 - Infrastructure,Infrastructure,London,Planning,5909473.41,2024-04-05,2024-08-25,SUB-0083
+PRJ-0064,Project 64 - Industrial,Industrial,South East,Completed,43340099.13,2024-09-27,2026-04-27,SUB-0094
+PRJ-0065,Project 65 - Renovation,Renovation,North West,In Progress,31283939.78,2024-06-06,2026-01-27,SUB-0074
+PRJ-0066,Project 66 - Commercial,Commercial,London,In Progress,34025726.27,2024-12-09,2025-12-30,SUB-0024
+PRJ-0067,Project 67 - Infrastructure,Infrastructure,South East,Completed,12264088.99,2024-10-30,2025-10-25,SUB-0003
+PRJ-0068,Project 68 - Residential,Residential,North West,On Hold,15297710.73,2024-12-07,2026-02-14,SUB-0042
+PRJ-0069,Project 69 - Renovation,Renovation,London,On Hold,9785887.26,2024-06-28,2025-06-21,SUB-0060
+PRJ-0070,Project 70 - Industrial,Industrial,North West,Completed,40467864.5,2024-02-03,2025-07-12,SUB-0068
+PRJ-0071,Project 71 - Infrastructure,Infrastructure,South West,In Progress,28956160.52,2024-09-12,2025-07-06,SUB-0100
+PRJ-0072,Project 72 - Infrastructure,Infrastructure,South East,Completed,19922270.1,2025-02-03,2026-10-29,SUB-0019
+PRJ-0073,Project 73 - Infrastructure,Infrastructure,North West,In Progress,3824750.11,2024-03-28,2025-05-20,SUB-0092
+PRJ-0074,Project 74 - Commercial,Commercial,London,In Progress,31909743.12,2024-03-21,2025-06-16,SUB-0036
+PRJ-0075,Project 75 - Residential,Residential,Wales,Completed,27272403.53,2024-06-28,2025-07-05,SUB-0035
+PRJ-0076,Project 76 - Residential,Residential,Wales,In Progress,16604465.16,2024-04-23,2025-03-17,SUB-0099
+PRJ-0077,Project 77 - Residential,Residential,Wales,Completed,32845240.85,2024-05-02,2025-07-13,SUB-0091
+PRJ-0078,Project 78 - Renovation,Renovation,Midlands,In Progress,8194357.42,2024-04-29,2026-01-21,SUB-0003
+PRJ-0079,Project 79 - Industrial,Industrial,London,Completed,39299293.41,2024-01-01,2024-10-16,SUB-0088
+PRJ-0080,Project 80 - Infrastructure,Infrastructure,Scotland,Cancelled,33892575.11,2024-06-24,2026-03-22,SUB-0064
+PRJ-0081,Project 81 - Industrial,Industrial,Midlands,In Progress,28327451.32,2024-09-25,2026-07-18,SUB-0082
+PRJ-0082,Project 82 - Renovation,Renovation,South East,Cancelled,25880237.18,2024-02-10,2025-02-20,SUB-0032
+PRJ-0083,Project 83 - Residential,Residential,Wales,Planning,2533415.12,2024-02-25,2024-07-15,SUB-0044
+PRJ-0084,Project 84 - Residential,Residential,London,In Progress,26046346.16,2024-04-08,2025-07-15,SUB-0006
+PRJ-0085,Project 85 - Renovation,Renovation,South West,In Progress,3496158.32,2024-01-20,2024-06-18,SUB-0032
+PRJ-0086,Project 86 - Commercial,Commercial,Midlands,In Progress,20009225.97,2024-10-06,2025-10-30,SUB-0090
+PRJ-0087,Project 87 - Industrial,Industrial,North West,On Hold,561036.59,2024-03-01,2024-06-29,SUB-0042
+PRJ-0088,Project 88 - Commercial,Commercial,Scotland,In Progress,21850687.5,2024-07-22,2025-05-02,SUB-0012
+PRJ-0089,Project 89 - Infrastructure,Infrastructure,Scotland,In Progress,12502901.22,2024-07-05,2026-03-21,SUB-0079
+PRJ-0090,Project 90 - Industrial,Industrial,South East,In Progress,16871419.23,2024-07-10,2026-04-08,SUB-0092
+PRJ-0091,Project 91 - Industrial,Industrial,Scotland,Completed,7947473.57,2024-07-12,2024-12-08,SUB-0094
+PRJ-0092,Project 92 - Infrastructure,Infrastructure,London,On Hold,958359.2,2024-01-19,2024-11-25,SUB-0061
+PRJ-0093,Project 93 - Residential,Residential,Midlands,Completed,12461125.98,2024-11-22,2025-04-09,SUB-0019
+PRJ-0094,Project 94 - Commercial,Commercial,South East,On Hold,734698.95,2024-08-15,2025-04-30,SUB-0009
+PRJ-0095,Project 95 - Industrial,Industrial,Scotland,Completed,42846831.32,2024-08-01,2025-12-05,SUB-0086
+PRJ-0096,Project 96 - Commercial,Commercial,Wales,In Progress,30369510.49,2024-04-11,2025-01-05,SUB-0030
+PRJ-0097,Project 97 - Residential,Residential,South West,In Progress,40061069.35,2024-02-01,2025-01-02,SUB-0099
+PRJ-0098,Project 98 - Residential,Residential,Midlands,In Progress,16222963.9,2024-08-28,2025-06-21,SUB-0012
+PRJ-0099,Project 99 - Residential,Residential,South West,Planning,8691644.0,2024-12-10,2025-04-26,SUB-0008
+PRJ-0100,Project 100 - Industrial,Industrial,South East,Completed,16199081.97,2024-10-17,2026-07-06,SUB-0066
+PRJ-0101,Project 101 - Commercial,Commercial,Midlands,In Progress,34808223.63,2024-02-29,2025-06-19,SUB-0090
+PRJ-0102,Project 102 - Commercial,Commercial,Scotland,Cancelled,698376.43,2024-03-10,2025-10-27,SUB-0007
+PRJ-0103,Project 103 - Residential,Residential,South East,In Progress,44916458.89,2024-08-09,2026-07-25,SUB-0002
+PRJ-0104,Project 104 - Infrastructure,Infrastructure,Scotland,Completed,14022765.98,2024-12-18,2025-12-22,SUB-0010
+PRJ-0105,Project 105 - Renovation,Renovation,London,Completed,41894136.25,2024-06-27,2025-10-16,SUB-0006
+PRJ-0106,Project 106 - Industrial,Industrial,South East,In Progress,43757480.65,2024-01-08,2024-06-07,SUB-0019
+PRJ-0107,Project 107 - Residential,Residential,Midlands,In Progress,34042227.8,2024-09-04,2026-01-03,SUB-0026
+PRJ-0108,Project 108 - Infrastructure,Infrastructure,Scotland,Completed,49179145.26,2024-10-17,2026-05-17,SUB-0054
+PRJ-0109,Project 109 - Commercial,Commercial,Wales,Completed,26251388.32,2025-01-04,2026-03-08,SUB-0042
+PRJ-0110,Project 110 - Commercial,Commercial,London,On Hold,20052858.38,2024-06-12,2026-04-26,SUB-0043
+PRJ-0111,Project 111 - Commercial,Commercial,North West,In Progress,10377328.65,2024-07-06,2025-01-31,SUB-0069
+PRJ-0112,Project 112 - Residential,Residential,Wales,In Progress,23755143.96,2024-12-09,2026-11-19,SUB-0092
+PRJ-0113,Project 113 - Residential,Residential,South East,In Progress,37214962.32,2024-09-14,2026-06-23,SUB-0074
+PRJ-0114,Project 114 - Industrial,Industrial,South West,Completed,5678447.29,2024-10-19,2026-01-02,SUB-0066
+PRJ-0115,Project 115 - Renovation,Renovation,Wales,Planning,10617669.67,2024-10-06,2026-07-07,SUB-0091
+PRJ-0116,Project 116 - Renovation,Renovation,London,Cancelled,19168661.68,2024-10-24,2025-11-21,SUB-0044
+PRJ-0117,Project 117 - Residential,Residential,South East,In Progress,30632685.88,2025-01-07,2026-10-21,SUB-0072
+PRJ-0118,Project 118 - Industrial,Industrial,North West,Completed,46801377.79,2024-08-20,2025-08-05,SUB-0058
+PRJ-0119,Project 119 - Infrastructure,Infrastructure,North West,In Progress,6989880.3,2024-01-28,2024-09-22,SUB-0047
+PRJ-0120,Project 120 - Industrial,Industrial,South East,In Progress,47767470.4,2024-03-06,2025-01-04,SUB-0034
+PRJ-0121,Project 121 - Renovation,Renovation,Scotland,On Hold,14266611.17,2024-03-20,2024-09-15,SUB-0025
+PRJ-0122,Project 122 - Renovation,Renovation,Midlands,In Progress,23686623.74,2024-03-21,2026-02-24,SUB-0048
+PRJ-0123,Project 123 - Infrastructure,Infrastructure,London,Cancelled,32799700.44,2024-02-21,2024-07-17,SUB-0026
+PRJ-0124,Project 124 - Infrastructure,Infrastructure,London,In Progress,15091310.5,2024-07-17,2026-04-28,SUB-0068
+PRJ-0125,Project 125 - Industrial,Industrial,South West,Cancelled,49127150.81,2024-04-30,2026-02-05,SUB-0077
+PRJ-0126,Project 126 - Residential,Residential,London,In Progress,15571093.06,2025-01-16,2026-05-04,SUB-0036
+PRJ-0127,Project 127 - Industrial,Industrial,South West,Completed,27347037.91,2024-06-19,2024-12-14,SUB-0056
+PRJ-0128,Project 128 - Residential,Residential,Midlands,In Progress,42670691.31,2024-03-07,2024-08-23,SUB-0053
+PRJ-0129,Project 129 - Industrial,Industrial,South West,In Progress,20540320.74,2024-07-28,2026-02-09,SUB-0059
+PRJ-0130,Project 130 - Industrial,Industrial,South West,In Progress,47106173.41,2024-10-31,2025-03-18,SUB-0012
+PRJ-0131,Project 131 - Infrastructure,Infrastructure,South West,In Progress,42400687.54,2024-04-03,2026-01-20,SUB-0013
+PRJ-0132,Project 132 - Commercial,Commercial,North West,In Progress,12640319.16,2024-03-12,2025-08-04,SUB-0062
+PRJ-0133,Project 133 - Residential,Residential,South East,In Progress,26777094.52,2024-02-23,2025-11-14,SUB-0072
+PRJ-0134,Project 134 - Residential,Residential,Midlands,In Progress,47030941.03,2024-04-09,2025-02-22,SUB-0072
+PRJ-0135,Project 135 - Commercial,Commercial,North West,In Progress,26722410.48,2024-01-02,2025-08-10,SUB-0089
+PRJ-0136,Project 136 - Infrastructure,Infrastructure,Scotland,In Progress,6720360.72,2024-08-02,2026-04-09,SUB-0040
+PRJ-0137,Project 137 - Commercial,Commercial,South West,In Progress,27943619.33,2024-02-05,2025-03-20,SUB-0096
+PRJ-0138,Project 138 - Residential,Residential,Midlands,Planning,6388188.88,2024-03-24,2024-10-28,SUB-0096
+PRJ-0139,Project 139 - Commercial,Commercial,Wales,In Progress,20322336.64,2024-01-01,2024-11-08,SUB-0092
+PRJ-0140,Project 140 - Renovation,Renovation,Midlands,Cancelled,41006239.5,2024-07-31,2025-12-29,SUB-0053
+PRJ-0141,Project 141 - Residential,Residential,South West,On Hold,17398659.84,2024-05-28,2025-07-03,SUB-0075
+PRJ-0142,Project 142 - Commercial,Commercial,North West,Completed,31324082.88,2024-01-21,2025-11-30,SUB-0056
+PRJ-0143,Project 143 - Commercial,Commercial,South West,On Hold,22180485.34,2024-09-11,2026-04-30,SUB-0076
+PRJ-0144,Project 144 - Industrial,Industrial,London,Cancelled,14404371.11,2024-09-12,2026-04-07,SUB-0029
+PRJ-0145,Project 145 - Residential,Residential,South West,In Progress,31797999.24,2024-06-08,2025-07-07,SUB-0007
+PRJ-0146,Project 146 - Commercial,Commercial,Wales,In Progress,36445916.36,2024-06-06,2025-01-03,SUB-0050
+PRJ-0147,Project 147 - Renovation,Renovation,South East,In Progress,47528024.18,2024-05-01,2025-09-28,SUB-0047
+PRJ-0148,Project 148 - Infrastructure,Infrastructure,Midlands,Completed,42377374.28,2024-05-17,2025-08-13,SUB-0053
+PRJ-0149,Project 149 - Infrastructure,Infrastructure,North West,Completed,49594481.97,2025-01-30,2026-02-23,SUB-0005
+PRJ-0150,Project 150 - Residential,Residential,South East,In Progress,47403012.18,2024-07-31,2026-02-21,SUB-0046
+PRJ-0151,Project 151 - Renovation,Renovation,North West,Completed,36129235.48,2024-10-20,2026-05-06,SUB-0037
+PRJ-0152,Project 152 - Infrastructure,Infrastructure,Wales,In Progress,32530054.01,2024-07-22,2026-01-28,SUB-0059
+PRJ-0153,Project 153 - Infrastructure,Infrastructure,Scotland,In Progress,5040322.11,2024-10-05,2025-10-04,SUB-0035
+PRJ-0154,Project 154 - Infrastructure,Infrastructure,South East,Completed,1478439.04,2024-09-23,2025-04-09,SUB-0033
+PRJ-0155,Project 155 - Residential,Residential,Midlands,On Hold,12710678.67,2024-11-18,2025-07-14,SUB-0033
+PRJ-0156,Project 156 - Renovation,Renovation,London,In Progress,7363397.56,2024-09-24,2025-05-05,SUB-0092
+PRJ-0157,Project 157 - Industrial,Industrial,Wales,In Progress,27332912.23,2024-04-22,2025-09-28,SUB-0029
+PRJ-0158,Project 158 - Residential,Residential,Wales,Completed,13127793.09,2024-10-07,2026-05-11,SUB-0055
+PRJ-0159,Project 159 - Industrial,Industrial,South West,In Progress,34428672.18,2024-01-26,2024-12-03,SUB-0063
+PRJ-0160,Project 160 - Residential,Residential,North West,On Hold,30706258.5,2024-01-10,2025-03-28,SUB-0055
+PRJ-0161,Project 161 - Industrial,Industrial,South West,In Progress,27455145.9,2024-03-11,2026-01-21,SUB-0045
+PRJ-0162,Project 162 - Residential,Residential,South East,In Progress,12588147.54,2024-07-14,2025-08-03,SUB-0071
+PRJ-0163,Project 163 - Infrastructure,Infrastructure,North West,Cancelled,37377080.53,2025-01-16,2026-11-21,SUB-0092
+PRJ-0164,Project 164 - Residential,Residential,South West,In Progress,23094383.63,2024-11-01,2025-07-18,SUB-0100
+PRJ-0165,Project 165 - Renovation,Renovation,South East,In Progress,29505088.02,2024-08-30,2026-01-18,SUB-0025
+PRJ-0166,Project 166 - Industrial,Industrial,Midlands,Completed,43098211.01,2024-06-12,2025-03-30,SUB-0037
+PRJ-0167,Project 167 - Infrastructure,Infrastructure,London,Completed,42039106.38,2024-05-26,2024-09-27,SUB-0017
+PRJ-0168,Project 168 - Industrial,Industrial,South West,Planning,19808098.21,2024-02-25,2025-08-17,SUB-0024
+PRJ-0169,Project 169 - Infrastructure,Infrastructure,Wales,In Progress,31173592.04,2024-04-24,2024-12-15,SUB-0100
+PRJ-0170,Project 170 - Commercial,Commercial,Wales,Planning,7330877.11,2025-01-08,2025-10-28,SUB-0088
+PRJ-0171,Project 171 - Infrastructure,Infrastructure,Scotland,Completed,6036317.72,2024-04-09,2025-01-16,SUB-0080
+PRJ-0172,Project 172 - Residential,Residential,Midlands,In Progress,27833153.96,2024-11-29,2026-03-09,SUB-0072
+PRJ-0173,Project 173 - Industrial,Industrial,South West,Cancelled,49971384.51,2024-04-28,2025-10-11,SUB-0051
+PRJ-0174,Project 174 - Renovation,Renovation,London,Completed,48844871.87,2024-07-25,2025-01-24,SUB-0004
+PRJ-0175,Project 175 - Industrial,Industrial,Midlands,Planning,33777089.35,2024-04-28,2025-05-29,SUB-0032
+PRJ-0176,Project 176 - Infrastructure,Infrastructure,South West,Completed,41150923.94,2024-05-21,2025-03-31,SUB-0077
+PRJ-0177,Project 177 - Residential,Residential,Midlands,Completed,24817243.6,2024-06-06,2025-04-14,SUB-0042
+PRJ-0178,Project 178 - Renovation,Renovation,Midlands,On Hold,5256714.03,2024-12-23,2025-09-29,SUB-0023
+PRJ-0179,Project 179 - Industrial,Industrial,Midlands,Planning,525677.84,2024-05-03,2025-07-17,SUB-0016
+PRJ-0180,Project 180 - Commercial,Commercial,South West,Planning,32786751.52,2024-06-23,2026-03-15,SUB-0009
+PRJ-0181,Project 181 - Renovation,Renovation,London,On Hold,41244668.19,2024-05-16,2024-12-22,SUB-0083
+PRJ-0182,Project 182 - Commercial,Commercial,South West,Planning,20026835.14,2024-08-03,2025-08-30,SUB-0056
+PRJ-0183,Project 183 - Infrastructure,Infrastructure,North West,In Progress,37638166.4,2024-08-23,2025-05-24,SUB-0074
+PRJ-0184,Project 184 - Renovation,Renovation,North West,In Progress,10814777.4,2024-07-04,2025-05-05,SUB-0072
+PRJ-0185,Project 185 - Renovation,Renovation,South West,In Progress,9179652.32,2025-01-19,2025-07-29,SUB-0076
+PRJ-0186,Project 186 - Commercial,Commercial,North West,Cancelled,7291957.26,2024-11-25,2025-04-30,SUB-0005
+PRJ-0187,Project 187 - Residential,Residential,Wales,On Hold,48791984.47,2024-03-12,2025-04-05,SUB-0066
+PRJ-0188,Project 188 - Industrial,Industrial,Midlands,In Progress,32975657.02,2024-12-15,2026-01-11,SUB-0096
+PRJ-0189,Project 189 - Residential,Residential,London,Completed,41513072.78,2024-04-10,2025-10-22,SUB-0029
+PRJ-0190,Project 190 - Infrastructure,Infrastructure,London,Planning,30277143.4,2024-10-11,2025-11-13,SUB-0038
+PRJ-0191,Project 191 - Industrial,Industrial,North West,Completed,41417268.49,2024-09-04,2025-06-07,SUB-0049
+PRJ-0192,Project 192 - Infrastructure,Infrastructure,North West,In Progress,26334964.3,2024-08-12,2025-03-14,SUB-0035
+PRJ-0193,Project 193 - Commercial,Commercial,South East,Planning,552839.52,2024-06-29,2025-09-30,SUB-0032
+PRJ-0194,Project 194 - Renovation,Renovation,Wales,Completed,9012037.42,2024-03-25,2025-07-16,SUB-0001
+PRJ-0195,Project 195 - Residential,Residential,South West,On Hold,3444591.26,2024-02-08,2025-03-15,SUB-0090
+PRJ-0196,Project 196 - Infrastructure,Infrastructure,South East,In Progress,34136586.96,2024-03-27,2025-05-05,SUB-0035
+PRJ-0197,Project 197 - Commercial,Commercial,North West,In Progress,9218845.81,2024-12-22,2025-06-19,SUB-0022
+PRJ-0198,Project 198 - Industrial,Industrial,Wales,In Progress,18357554.98,2024-02-23,2025-07-17,SUB-0008
+PRJ-0199,Project 199 - Industrial,Industrial,North West,Completed,10666819.73,2024-07-29,2025-06-28,SUB-0006
+PRJ-0200,Project 200 - Industrial,Industrial,Wales,Planning,5816446.34,2024-12-21,2025-05-09,SUB-0081
