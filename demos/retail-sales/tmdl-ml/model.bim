@@ -1,0 +1,150 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "gold_ml_model_metrics",
+        "columns": [
+          {"name": "demo_id", "dataType": "string", "sourceColumn": "demo_id"},
+          {"name": "use_case", "dataType": "string", "sourceColumn": "use_case"},
+          {"name": "model_type", "dataType": "string", "sourceColumn": "model_type"},
+          {"name": "feature_count", "dataType": "int64", "sourceColumn": "feature_count"},
+          {"name": "train_rows", "dataType": "int64", "sourceColumn": "train_rows"},
+          {"name": "test_rows", "dataType": "int64", "sourceColumn": "test_rows"},
+          {"name": "rmse", "dataType": "double", "sourceColumn": "rmse"},
+          {"name": "mae", "dataType": "double", "sourceColumn": "mae"},
+          {"name": "r2", "dataType": "double", "sourceColumn": "r2"},
+          {"name": "trained_at", "dataType": "dateTime", "sourceColumn": "trained_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_model_metrics",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Model R2", "expression": "AVERAGE(gold_ml_model_metrics[r2])", "formatString": "0.000"},
+          {"name": "Model RMSE", "expression": "AVERAGE(gold_ml_model_metrics[rmse])", "formatString": "0.00"},
+          {"name": "Model MAE", "expression": "AVERAGE(gold_ml_model_metrics[mae])", "formatString": "0.00"},
+          {"name": "Feature Count", "expression": "MAX(gold_ml_model_metrics[feature_count])", "formatString": "0"},
+          {"name": "Training Rows", "expression": "MAX(gold_ml_model_metrics[train_rows])", "formatString": "#,##0"},
+          {"name": "Test Rows", "expression": "MAX(gold_ml_model_metrics[test_rows])", "formatString": "#,##0"}
+        ]
+      },
+      {
+        "name": "gold_ml_feature_importance",
+        "columns": [
+          {"name": "feature", "dataType": "string", "sourceColumn": "feature"},
+          {"name": "importance", "dataType": "double", "sourceColumn": "importance"},
+          {"name": "model_timestamp", "dataType": "dateTime", "sourceColumn": "model_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_feature_importance",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Importance", "expression": "SUM(gold_ml_feature_importance[importance])", "formatString": "0.0000"}
+        ]
+      },
+      {
+        "name": "gold_ml_predictions",
+        "columns": [
+          {"name": "store_id", "dataType": "string", "sourceColumn": "store_id"},
+          {"name": "product_id", "dataType": "string", "sourceColumn": "product_id"},
+          {"name": "txn_date", "dataType": "dateTime", "sourceColumn": "txn_date"},
+          {"name": "category", "dataType": "string", "sourceColumn": "category"},
+          {"name": "subcategory", "dataType": "string", "sourceColumn": "subcategory"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "store_format", "dataType": "string", "sourceColumn": "store_format"},
+          {"name": "daily_quantity", "dataType": "int64", "sourceColumn": "daily_quantity"},
+          {"name": "predicted_demand", "dataType": "double", "sourceColumn": "predicted_demand"},
+          {"name": "demand_vs_actual", "dataType": "double", "sourceColumn": "demand_vs_actual"},
+          {"name": "daily_revenue", "dataType": "double", "sourceColumn": "daily_revenue"},
+          {"name": "avg_price", "dataType": "double", "sourceColumn": "avg_price"},
+          {"name": "avg_discount", "dataType": "double", "sourceColumn": "avg_discount"},
+          {"name": "demand_signal", "dataType": "string", "sourceColumn": "demand_signal"},
+          {"name": "scored_at", "dataType": "dateTime", "sourceColumn": "scored_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_predictions",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Predictions", "expression": "COUNTROWS(gold_ml_predictions)", "formatString": "#,##0"},
+          {"name": "Avg Predicted Demand", "expression": "AVERAGE(gold_ml_predictions[predicted_demand])", "formatString": "0.0"},
+          {"name": "Avg Actual Demand", "expression": "AVERAGE(gold_ml_predictions[daily_quantity])", "formatString": "0.0"},
+          {"name": "Total Revenue", "expression": "SUM(gold_ml_predictions[daily_revenue])", "formatString": "\\$#,##0"},
+          {"name": "Avg Demand Gap", "expression": "AVERAGE(gold_ml_predictions[demand_vs_actual])", "formatString": "0.0"}
+        ]
+      },
+      {
+        "name": "gold_ml_summary",
+        "columns": [
+          {"name": "category", "dataType": "string", "sourceColumn": "category"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "avg_predicted_demand", "dataType": "double", "sourceColumn": "avg_predicted_demand"},
+          {"name": "avg_actual_demand", "dataType": "double", "sourceColumn": "avg_actual_demand"},
+          {"name": "avg_demand_gap", "dataType": "double", "sourceColumn": "avg_demand_gap"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "observations", "dataType": "int64", "sourceColumn": "observations"},
+          {"name": "high_demand_days", "dataType": "int64", "sourceColumn": "high_demand_days"},
+          {"name": "low_demand_days", "dataType": "int64", "sourceColumn": "low_demand_days"},
+          {"name": "demand_trend", "dataType": "string", "sourceColumn": "demand_trend"},
+          {"name": "summary_timestamp", "dataType": "dateTime", "sourceColumn": "summary_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Category-Region Combos", "expression": "COUNTROWS(gold_ml_summary)", "formatString": "0"},
+          {"name": "Avg Predicted Demand (Summary)", "expression": "AVERAGE(gold_ml_summary[avg_predicted_demand])", "formatString": "0.0"},
+          {"name": "Total Revenue (Summary)", "expression": "SUM(gold_ml_summary[total_revenue])", "formatString": "\\$#,##0"},
+          {"name": "Growing Segments", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[demand_trend] = \"growing\") + 0", "formatString": "0"},
+          {"name": "Declining Segments", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[demand_trend] = \"declining\") + 0", "formatString": "0"}
+        ]
+      }
+    ],
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "annotations": [
+      {"name": "PBI_QueryOrder", "value": "[\"gold_ml_model_metrics\",\"gold_ml_feature_importance\",\"gold_ml_predictions\",\"gold_ml_summary\"]"}
+    ]
+  }
+}
