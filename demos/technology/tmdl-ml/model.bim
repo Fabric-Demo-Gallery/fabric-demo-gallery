@@ -1,0 +1,158 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "gold_ml_model_metrics",
+        "columns": [
+          {"name": "demo_id", "dataType": "string", "sourceColumn": "demo_id"},
+          {"name": "use_case", "dataType": "string", "sourceColumn": "use_case"},
+          {"name": "model_type", "dataType": "string", "sourceColumn": "model_type"},
+          {"name": "feature_count", "dataType": "int64", "sourceColumn": "feature_count"},
+          {"name": "train_rows", "dataType": "int64", "sourceColumn": "train_rows"},
+          {"name": "test_rows", "dataType": "int64", "sourceColumn": "test_rows"},
+          {"name": "auc_roc", "dataType": "double", "sourceColumn": "auc_roc"},
+          {"name": "accuracy", "dataType": "double", "sourceColumn": "accuracy"},
+          {"name": "f1_score", "dataType": "double", "sourceColumn": "f1_score"},
+          {"name": "trained_at", "dataType": "dateTime", "sourceColumn": "trained_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_model_metrics",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Model AUC", "expression": "AVERAGE(gold_ml_model_metrics[auc_roc])", "formatString": "0.000"},
+          {"name": "Model Accuracy", "expression": "AVERAGE(gold_ml_model_metrics[accuracy])", "formatString": "0.0%"},
+          {"name": "F1 Score", "expression": "AVERAGE(gold_ml_model_metrics[f1_score])", "formatString": "0.000"},
+          {"name": "Feature Count", "expression": "MAX(gold_ml_model_metrics[feature_count])", "formatString": "0"},
+          {"name": "Training Rows", "expression": "MAX(gold_ml_model_metrics[train_rows])", "formatString": "#,##0"},
+          {"name": "Test Rows", "expression": "MAX(gold_ml_model_metrics[test_rows])", "formatString": "#,##0"}
+        ]
+      },
+      {
+        "name": "gold_ml_feature_importance",
+        "columns": [
+          {"name": "feature", "dataType": "string", "sourceColumn": "feature"},
+          {"name": "importance", "dataType": "double", "sourceColumn": "importance"},
+          {"name": "model_timestamp", "dataType": "dateTime", "sourceColumn": "model_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_feature_importance",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Importance", "expression": "SUM(gold_ml_feature_importance[importance])", "formatString": "0.0000"}
+        ]
+      },
+      {
+        "name": "gold_ml_predictions",
+        "columns": [
+          {"name": "account_id", "dataType": "string", "sourceColumn": "account_id"},
+          {"name": "plan", "dataType": "string", "sourceColumn": "plan"},
+          {"name": "industry", "dataType": "string", "sourceColumn": "industry"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "mrr_usd", "dataType": "double", "sourceColumn": "mrr_usd"},
+          {"name": "health_score", "dataType": "double", "sourceColumn": "health_score"},
+          {"name": "avg_logins_30d", "dataType": "double", "sourceColumn": "avg_logins_30d"},
+          {"name": "avg_csat", "dataType": "double", "sourceColumn": "avg_csat"},
+          {"name": "had_churn", "dataType": "int64", "sourceColumn": "had_churn"},
+          {"name": "predicted_churn", "dataType": "int64", "sourceColumn": "predicted_churn"},
+          {"name": "churn_probability", "dataType": "double", "sourceColumn": "churn_probability"},
+          {"name": "risk_level", "dataType": "string", "sourceColumn": "risk_level"},
+          {"name": "scored_at", "dataType": "dateTime", "sourceColumn": "scored_at"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_predictions",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Total Predictions", "expression": "COUNTROWS(gold_ml_predictions)", "formatString": "#,##0"},
+          {"name": "Predicted Churn", "expression": "SUM(gold_ml_predictions[predicted_churn])", "formatString": "#,##0"},
+          {"name": "Actual Churn", "expression": "SUM(gold_ml_predictions[had_churn])", "formatString": "#,##0"},
+          {"name": "Avg Churn Probability", "expression": "AVERAGE(gold_ml_predictions[churn_probability])", "formatString": "0.0%"},
+          {"name": "Predicted Churn Rate %", "expression": "DIVIDE(SUM(gold_ml_predictions[predicted_churn]), COUNTROWS(gold_ml_predictions), 0) * 100", "formatString": "0.0"},
+          {"name": "Total MRR", "expression": "SUM(gold_ml_predictions[mrr_usd])", "formatString": "\\$#,##0"}
+        ]
+      },
+      {
+        "name": "gold_ml_summary",
+        "columns": [
+          {"name": "industry", "dataType": "string", "sourceColumn": "industry"},
+          {"name": "total_accounts", "dataType": "int64", "sourceColumn": "total_accounts"},
+          {"name": "predicted_churn_count", "dataType": "int64", "sourceColumn": "predicted_churn_count"},
+          {"name": "actual_churn_count", "dataType": "int64", "sourceColumn": "actual_churn_count"},
+          {"name": "avg_churn_probability", "dataType": "double", "sourceColumn": "avg_churn_probability"},
+          {"name": "total_mrr", "dataType": "double", "sourceColumn": "total_mrr"},
+          {"name": "avg_health_score", "dataType": "double", "sourceColumn": "avg_health_score"},
+          {"name": "churn_rate", "dataType": "double", "sourceColumn": "churn_rate"},
+          {"name": "overall_risk", "dataType": "string", "sourceColumn": "overall_risk"},
+          {"name": "summary_timestamp", "dataType": "dateTime", "sourceColumn": "summary_timestamp"}
+        ],
+        "partitions": [
+          {
+            "name": "part0",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_ml_summary",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ],
+        "measures": [
+          {"name": "Industries", "expression": "COUNTROWS(gold_ml_summary)", "formatString": "0"},
+          {"name": "Avg Churn Risk", "expression": "AVERAGE(gold_ml_summary[avg_churn_probability])", "formatString": "0.0%"},
+          {"name": "Avg Churn Rate", "expression": "AVERAGE(gold_ml_summary[churn_rate])", "formatString": "0.0"},
+          {"name": "Total Predicted Churn", "expression": "SUM(gold_ml_summary[predicted_churn_count])", "formatString": "#,##0"},
+          {"name": "High Risk Industries", "expression": "CALCULATE(COUNTROWS(gold_ml_summary), gold_ml_summary[overall_risk] = \"high\") + 0", "formatString": "0"}
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "rel_predictions_summary",
+        "fromTable": "gold_ml_predictions",
+        "fromColumn": "industry",
+        "toTable": "gold_ml_summary",
+        "toColumn": "industry",
+        "crossFilteringBehavior": "oneDirection"
+      }
+    ],
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "annotations": [
+      {"name": "PBI_QueryOrder", "value": "[\"gold_ml_model_metrics\",\"gold_ml_feature_importance\",\"gold_ml_predictions\",\"gold_ml_summary\"]"}
+    ]
+  }
+}
