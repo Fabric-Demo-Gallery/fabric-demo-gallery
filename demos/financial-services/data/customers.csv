@@ -1,2001 +1,2001 @@
 customer_id,age_group,segment,region,risk_tier,since_year
-C-00001,18-24,Private Banking,North West,Very High,2018
-C-00002,45-54,Corporate,Midlands,High,2010
-C-00003,65+,Retail,Wales,High,2001
-C-00004,35-44,Private Banking,Wales,Low,2019
-C-00005,35-44,SME,Wales,Medium,2024
-C-00006,18-24,Private Banking,Scotland,Low,2018
-C-00007,18-24,Private Banking,Midlands,Very High,2013
-C-00008,25-34,SME,North West,Very High,2012
-C-00009,45-54,Private Banking,Midlands,Very High,2003
-C-00010,25-34,SME,Wales,High,2011
-C-00011,55-64,SME,South East,Low,2013
-C-00012,35-44,Private Banking,Midlands,High,2005
-C-00013,45-54,SME,South East,Very High,2023
-C-00014,45-54,SME,Scotland,High,2000
-C-00015,18-24,Retail,Wales,High,2007
-C-00016,25-34,SME,Wales,Medium,2018
-C-00017,45-54,SME,Midlands,High,2020
-C-00018,45-54,Corporate,Scotland,Very High,2023
-C-00019,35-44,SME,London,Medium,2004
-C-00020,55-64,Retail,North West,Low,2012
-C-00021,35-44,Corporate,Wales,High,2009
-C-00022,55-64,SME,South East,Medium,2005
-C-00023,45-54,SME,North West,Medium,2018
-C-00024,45-54,SME,Wales,Medium,2023
-C-00025,45-54,SME,Wales,Very High,2009
-C-00026,65+,Private Banking,North West,Medium,2011
-C-00027,55-64,Private Banking,South East,Low,2000
-C-00028,25-34,Corporate,North West,Medium,2013
-C-00029,65+,Private Banking,Wales,High,2011
-C-00030,65+,SME,London,Medium,2005
-C-00031,25-34,SME,Wales,Very High,2013
-C-00032,45-54,Corporate,London,Medium,2020
-C-00033,35-44,Corporate,Scotland,Very High,2023
-C-00034,35-44,SME,Midlands,Medium,2017
-C-00035,45-54,Retail,South East,Very High,2019
-C-00036,35-44,Retail,Wales,Medium,2002
-C-00037,25-34,Corporate,South East,High,2006
-C-00038,45-54,SME,North West,Low,2013
-C-00039,35-44,SME,London,High,2000
-C-00040,45-54,Retail,Midlands,Very High,2012
-C-00041,25-34,Retail,South East,High,2023
-C-00042,25-34,Corporate,South East,Medium,2016
-C-00043,25-34,Corporate,Wales,Medium,2002
-C-00044,45-54,Corporate,South East,Low,2006
-C-00045,18-24,SME,Midlands,Medium,2013
-C-00046,18-24,Corporate,Scotland,Low,2017
-C-00047,65+,Private Banking,Wales,Medium,2004
-C-00048,18-24,SME,North West,High,2012
-C-00049,65+,Retail,Midlands,Medium,2011
-C-00050,45-54,Private Banking,London,Very High,2006
-C-00051,55-64,Private Banking,London,Very High,2001
-C-00052,55-64,SME,Wales,High,2023
-C-00053,65+,Corporate,Midlands,High,2013
-C-00054,35-44,Corporate,Midlands,High,2002
-C-00055,35-44,Retail,Midlands,High,2014
-C-00056,35-44,Corporate,South East,Very High,2015
-C-00057,45-54,Private Banking,Scotland,High,2012
-C-00058,18-24,Corporate,Wales,High,2011
-C-00059,65+,Retail,North West,Very High,2004
-C-00060,25-34,SME,Scotland,High,2003
-C-00061,18-24,Corporate,Wales,Medium,2024
-C-00062,65+,Private Banking,Midlands,Low,2021
-C-00063,35-44,Corporate,London,Very High,2003
-C-00064,25-34,Retail,South East,Medium,2022
-C-00065,45-54,SME,Wales,Very High,2010
-C-00066,55-64,Private Banking,North West,Medium,2014
-C-00067,55-64,Private Banking,Wales,High,2009
-C-00068,18-24,Retail,North West,Very High,2011
-C-00069,45-54,Private Banking,North West,Very High,2024
-C-00070,65+,Private Banking,North West,Very High,2002
-C-00071,65+,SME,Scotland,High,2000
-C-00072,65+,SME,Wales,Medium,2013
-C-00073,65+,Corporate,Scotland,Very High,2002
-C-00074,18-24,SME,Scotland,Low,2013
-C-00075,25-34,Retail,North West,High,2001
-C-00076,35-44,Retail,Scotland,Very High,2012
-C-00077,55-64,Private Banking,Scotland,Low,2007
-C-00078,45-54,SME,Scotland,Low,2018
-C-00079,45-54,Corporate,Midlands,Low,2002
-C-00080,18-24,SME,North West,Very High,2005
-C-00081,55-64,SME,Wales,Medium,2002
-C-00082,65+,Private Banking,Scotland,Medium,2024
-C-00083,18-24,Retail,Scotland,High,2020
-C-00084,45-54,Corporate,Scotland,High,2010
-C-00085,35-44,Retail,South East,Very High,2016
-C-00086,65+,Private Banking,Wales,Very High,2007
-C-00087,25-34,Corporate,North West,Medium,2005
-C-00088,45-54,Corporate,Midlands,High,2019
-C-00089,35-44,Corporate,Wales,High,2012
-C-00090,45-54,Private Banking,South East,Low,2004
-C-00091,18-24,Corporate,North West,High,2009
-C-00092,35-44,Retail,London,Low,2004
-C-00093,65+,Corporate,Scotland,Very High,2018
-C-00094,25-34,Private Banking,South East,Medium,2002
-C-00095,45-54,SME,Wales,Low,2010
-C-00096,65+,Private Banking,Scotland,Very High,2023
-C-00097,25-34,Retail,Wales,Very High,2017
-C-00098,65+,SME,South East,Very High,2007
-C-00099,35-44,Corporate,South East,Very High,2015
-C-00100,45-54,Private Banking,North West,Very High,2011
-C-00101,35-44,SME,North West,Low,2020
-C-00102,18-24,SME,South East,Medium,2001
-C-00103,55-64,Private Banking,London,Very High,2006
-C-00104,35-44,Retail,South East,Medium,2008
-C-00105,35-44,Retail,South East,Medium,2006
-C-00106,55-64,Corporate,Midlands,Very High,2014
-C-00107,18-24,Retail,South East,Medium,2002
-C-00108,35-44,SME,Scotland,Medium,2008
-C-00109,35-44,Retail,Midlands,High,2012
-C-00110,18-24,Retail,Wales,Very High,2006
-C-00111,55-64,Retail,South East,High,2022
-C-00112,45-54,SME,Wales,Low,2021
-C-00113,18-24,SME,South East,Very High,2019
-C-00114,25-34,Retail,North West,Very High,2005
-C-00115,65+,Corporate,North West,Low,2022
-C-00116,18-24,Corporate,South East,High,2015
-C-00117,18-24,Private Banking,North West,Medium,2007
-C-00118,65+,Retail,Wales,Medium,2007
-C-00119,65+,Corporate,North West,High,2015
-C-00120,35-44,Retail,Midlands,Very High,2011
-C-00121,55-64,SME,South East,High,2011
-C-00122,35-44,Corporate,North West,Very High,2019
-C-00123,45-54,SME,Scotland,High,2003
-C-00124,65+,Retail,North West,Medium,2011
-C-00125,65+,Private Banking,Midlands,Medium,2000
-C-00126,45-54,Retail,Scotland,High,2004
-C-00127,18-24,Retail,Midlands,High,2018
-C-00128,18-24,Corporate,North West,Low,2018
-C-00129,55-64,SME,Midlands,Medium,2005
-C-00130,35-44,Retail,North West,Medium,2023
-C-00131,65+,Corporate,Midlands,High,2007
-C-00132,65+,Corporate,South East,Medium,2005
-C-00133,18-24,Private Banking,Midlands,Very High,2001
-C-00134,25-34,Retail,Scotland,Medium,2011
-C-00135,55-64,Corporate,London,Low,2021
-C-00136,65+,Retail,Wales,Medium,2018
-C-00137,25-34,Retail,Midlands,Low,2021
-C-00138,25-34,Corporate,Wales,Very High,2008
-C-00139,25-34,SME,Midlands,Medium,2008
-C-00140,18-24,SME,London,Very High,2022
-C-00141,55-64,Private Banking,Midlands,Very High,2020
-C-00142,35-44,Corporate,London,Very High,2015
-C-00143,35-44,Retail,Wales,Medium,2017
-C-00144,25-34,SME,Wales,Medium,2023
-C-00145,45-54,SME,Wales,Medium,2020
-C-00146,25-34,Retail,Scotland,Medium,2008
-C-00147,65+,Private Banking,Scotland,Very High,2012
-C-00148,65+,Corporate,Midlands,Low,2004
-C-00149,45-54,SME,London,Low,2014
-C-00150,65+,Private Banking,Midlands,Low,2023
-C-00151,65+,SME,Scotland,Very High,2016
-C-00152,65+,SME,South East,High,2021
-C-00153,65+,Retail,Midlands,Very High,2018
-C-00154,65+,Corporate,Wales,Low,2007
-C-00155,65+,SME,London,High,2010
-C-00156,45-54,Corporate,Scotland,High,2009
-C-00157,35-44,Corporate,South East,Medium,2005
-C-00158,65+,Corporate,Scotland,Very High,2020
-C-00159,45-54,Retail,Wales,High,2000
-C-00160,35-44,Retail,Wales,High,2019
-C-00161,18-24,Corporate,London,Low,2015
-C-00162,18-24,Corporate,North West,High,2008
-C-00163,25-34,Retail,Wales,Low,2024
-C-00164,35-44,Corporate,North West,Very High,2017
-C-00165,18-24,Corporate,Midlands,Low,2006
-C-00166,45-54,Private Banking,North West,Very High,2007
-C-00167,65+,Private Banking,South East,Medium,2006
-C-00168,55-64,Private Banking,North West,Low,2022
-C-00169,65+,Private Banking,Scotland,Medium,2022
-C-00170,55-64,Retail,South East,Medium,2007
-C-00171,55-64,Retail,North West,Low,2021
-C-00172,25-34,Retail,London,Low,2014
-C-00173,55-64,Retail,North West,Very High,2020
-C-00174,55-64,Private Banking,Scotland,Low,2021
-C-00175,25-34,Private Banking,Scotland,Low,2007
-C-00176,45-54,Corporate,North West,Low,2000
-C-00177,45-54,Retail,Midlands,Very High,2013
-C-00178,25-34,SME,South East,Very High,2002
-C-00179,18-24,Corporate,Scotland,Low,2017
-C-00180,25-34,Retail,London,High,2024
-C-00181,35-44,SME,Midlands,High,2003
-C-00182,35-44,Corporate,London,Low,2006
-C-00183,18-24,Corporate,Midlands,Low,2004
-C-00184,18-24,Corporate,London,Low,2020
-C-00185,35-44,SME,North West,Low,2017
-C-00186,25-34,Retail,North West,Very High,2008
-C-00187,65+,SME,South East,High,2019
-C-00188,25-34,Corporate,South East,High,2010
-C-00189,45-54,SME,North West,High,2000
-C-00190,65+,Corporate,Wales,High,2015
-C-00191,18-24,Private Banking,Midlands,Low,2020
-C-00192,25-34,Retail,Wales,Very High,2021
-C-00193,65+,Private Banking,Wales,Low,2002
-C-00194,65+,Retail,Midlands,Medium,2023
-C-00195,65+,Private Banking,North West,Low,2006
-C-00196,35-44,Corporate,London,High,2016
-C-00197,35-44,Corporate,Midlands,Low,2004
-C-00198,55-64,SME,London,Very High,2005
-C-00199,35-44,Retail,London,High,2002
-C-00200,55-64,Corporate,Midlands,Medium,2019
-C-00201,45-54,Retail,Wales,Low,2014
-C-00202,35-44,Private Banking,Scotland,Medium,2003
-C-00203,65+,Private Banking,North West,Medium,2014
-C-00204,45-54,Corporate,South East,High,2017
-C-00205,65+,Corporate,North West,High,2009
-C-00206,35-44,SME,Scotland,Low,2022
-C-00207,55-64,Retail,North West,Low,2018
-C-00208,55-64,Corporate,Wales,Very High,2021
-C-00209,45-54,SME,Wales,Low,2024
-C-00210,65+,Retail,North West,Medium,2005
-C-00211,25-34,Private Banking,North West,Very High,2004
-C-00212,65+,SME,Scotland,Medium,2007
-C-00213,65+,Retail,South East,Low,2002
-C-00214,35-44,SME,London,High,2020
-C-00215,25-34,Corporate,Wales,Low,2009
-C-00216,35-44,Retail,South East,Low,2010
-C-00217,25-34,Corporate,South East,High,2018
-C-00218,35-44,Private Banking,South East,Very High,2011
-C-00219,55-64,Retail,North West,Very High,2007
-C-00220,65+,Private Banking,Wales,Low,2023
-C-00221,45-54,Retail,South East,High,2001
-C-00222,45-54,SME,Midlands,Low,2000
-C-00223,35-44,Corporate,Midlands,Medium,2001
-C-00224,55-64,Corporate,South East,High,2006
-C-00225,18-24,Retail,Midlands,High,2021
-C-00226,55-64,Private Banking,Scotland,Medium,2023
-C-00227,65+,SME,Midlands,Very High,2009
-C-00228,35-44,SME,Midlands,Very High,2015
-C-00229,35-44,Corporate,London,High,2010
-C-00230,25-34,Retail,London,High,2016
-C-00231,65+,SME,Wales,Medium,2008
-C-00232,45-54,Corporate,South East,Low,2010
-C-00233,65+,Private Banking,Scotland,Very High,2016
-C-00234,55-64,Corporate,London,Very High,2021
-C-00235,55-64,Retail,Wales,Very High,2020
-C-00236,25-34,Private Banking,Scotland,Low,2006
-C-00237,65+,Corporate,South East,Very High,2002
-C-00238,55-64,SME,London,High,2023
-C-00239,65+,Retail,Scotland,High,2023
-C-00240,35-44,Private Banking,Scotland,Medium,2004
-C-00241,35-44,SME,Midlands,Very High,2024
-C-00242,18-24,Retail,Scotland,High,2006
-C-00243,35-44,Private Banking,North West,Very High,2007
-C-00244,45-54,Retail,South East,Very High,2002
-C-00245,55-64,Private Banking,Wales,High,2018
-C-00246,45-54,SME,Midlands,Very High,2020
-C-00247,65+,SME,South East,Low,2011
-C-00248,45-54,Retail,North West,High,2011
-C-00249,45-54,Corporate,London,Very High,2013
-C-00250,25-34,SME,South East,Very High,2022
-C-00251,25-34,Corporate,Wales,Medium,2015
-C-00252,45-54,Corporate,South East,Medium,2008
-C-00253,35-44,Private Banking,Scotland,Low,2002
-C-00254,65+,Retail,London,Low,2019
-C-00255,45-54,Retail,London,Medium,2011
-C-00256,45-54,Retail,Scotland,Very High,2023
-C-00257,25-34,Retail,Midlands,High,2011
-C-00258,65+,Retail,South East,Very High,2014
-C-00259,55-64,Retail,London,Medium,2020
-C-00260,18-24,Corporate,Midlands,Medium,2017
-C-00261,55-64,Private Banking,North West,Low,2018
-C-00262,25-34,Corporate,South East,Very High,2015
-C-00263,35-44,Corporate,Scotland,Very High,2011
-C-00264,45-54,Retail,Midlands,Low,2010
-C-00265,45-54,Corporate,London,Medium,2010
-C-00266,18-24,Corporate,Wales,High,2010
-C-00267,25-34,Private Banking,North West,High,2003
-C-00268,55-64,Private Banking,North West,High,2014
-C-00269,65+,Private Banking,Midlands,Very High,2017
-C-00270,45-54,Retail,North West,High,2024
-C-00271,25-34,Retail,London,Low,2010
-C-00272,65+,Private Banking,Midlands,Very High,2024
-C-00273,45-54,SME,South East,Medium,2004
-C-00274,18-24,Retail,Scotland,High,2007
-C-00275,25-34,Retail,South East,High,2021
-C-00276,55-64,Private Banking,Wales,Very High,2000
-C-00277,45-54,Private Banking,Midlands,Medium,2018
-C-00278,35-44,Corporate,Wales,Medium,2010
-C-00279,18-24,Retail,Midlands,Very High,2011
-C-00280,55-64,SME,London,Very High,2007
-C-00281,45-54,Private Banking,Midlands,Medium,2008
-C-00282,65+,Corporate,Midlands,Low,2003
-C-00283,25-34,Retail,London,High,2014
-C-00284,45-54,Retail,Scotland,Low,2010
-C-00285,45-54,Retail,South East,Medium,2002
-C-00286,65+,Corporate,Wales,Low,2019
-C-00287,25-34,Corporate,London,High,2001
-C-00288,45-54,Retail,Scotland,Very High,2004
-C-00289,18-24,Private Banking,South East,Low,2021
-C-00290,45-54,SME,South East,Medium,2008
-C-00291,65+,SME,London,Low,2021
-C-00292,25-34,Private Banking,North West,High,2022
-C-00293,45-54,Corporate,Scotland,Low,2004
-C-00294,35-44,Private Banking,Midlands,Very High,2017
-C-00295,45-54,SME,Wales,Medium,2024
-C-00296,55-64,Corporate,Midlands,Medium,2021
-C-00297,18-24,Corporate,London,Medium,2022
-C-00298,55-64,SME,North West,Medium,2015
-C-00299,65+,Retail,Scotland,Low,2020
-C-00300,45-54,Retail,Scotland,Low,2000
-C-00301,18-24,Retail,North West,Low,2014
-C-00302,25-34,Retail,Wales,Medium,2019
-C-00303,25-34,Retail,Wales,Very High,2024
-C-00304,35-44,Corporate,Wales,Very High,2000
-C-00305,18-24,Retail,Scotland,Low,2007
-C-00306,55-64,Corporate,Scotland,Very High,2018
-C-00307,25-34,SME,London,Low,2006
-C-00308,25-34,Corporate,Midlands,Low,2014
-C-00309,25-34,Corporate,Midlands,Low,2012
-C-00310,55-64,SME,Midlands,Low,2023
-C-00311,18-24,Corporate,Scotland,High,2010
-C-00312,18-24,Corporate,Wales,High,2012
-C-00313,35-44,Private Banking,Midlands,Medium,2022
-C-00314,18-24,Retail,South East,Medium,2014
-C-00315,35-44,Corporate,Scotland,Very High,2012
-C-00316,65+,Corporate,South East,High,2023
-C-00317,45-54,Retail,Scotland,Medium,2023
-C-00318,45-54,Retail,London,Very High,2020
-C-00319,45-54,Corporate,London,Very High,2006
-C-00320,35-44,Private Banking,London,High,2012
-C-00321,35-44,Corporate,Scotland,High,2019
-C-00322,25-34,Private Banking,South East,High,2024
-C-00323,65+,Corporate,London,High,2020
-C-00324,65+,Retail,London,Very High,2006
-C-00325,45-54,Retail,South East,Very High,2014
-C-00326,45-54,Private Banking,Midlands,Low,2017
-C-00327,18-24,Corporate,South East,Low,2000
-C-00328,65+,Retail,North West,Low,2019
-C-00329,35-44,SME,North West,Low,2009
-C-00330,25-34,SME,South East,Medium,2013
-C-00331,35-44,Retail,Midlands,Very High,2007
-C-00332,35-44,Corporate,North West,Low,2015
-C-00333,18-24,Corporate,Scotland,Very High,2023
-C-00334,18-24,Corporate,Midlands,Low,2020
-C-00335,35-44,SME,Midlands,High,2022
-C-00336,35-44,SME,Scotland,Very High,2002
-C-00337,65+,Corporate,London,Low,2011
-C-00338,45-54,Private Banking,North West,High,2020
-C-00339,25-34,Retail,Midlands,High,2005
-C-00340,55-64,Private Banking,Scotland,Very High,2024
-C-00341,65+,SME,Midlands,High,2009
-C-00342,55-64,Private Banking,Scotland,Very High,2005
-C-00343,65+,Private Banking,Wales,Low,2011
-C-00344,25-34,Retail,Scotland,Very High,2006
-C-00345,35-44,Private Banking,North West,Very High,2010
-C-00346,45-54,SME,South East,Very High,2020
-C-00347,18-24,Private Banking,South East,High,2023
-C-00348,45-54,Retail,Scotland,Medium,2010
-C-00349,18-24,Corporate,London,Low,2014
-C-00350,65+,Private Banking,Midlands,High,2012
-C-00351,55-64,Corporate,Scotland,Very High,2000
-C-00352,35-44,Retail,London,Very High,2011
-C-00353,25-34,Corporate,Midlands,High,2010
-C-00354,65+,Retail,Wales,Low,2020
-C-00355,55-64,Retail,South East,Very High,2019
-C-00356,55-64,Corporate,North West,Low,2015
-C-00357,55-64,Corporate,North West,High,2024
-C-00358,65+,Private Banking,North West,High,2011
-C-00359,65+,Corporate,South East,High,2020
-C-00360,65+,Retail,South East,High,2015
-C-00361,18-24,Private Banking,London,Very High,2010
-C-00362,25-34,Private Banking,Wales,High,2008
-C-00363,65+,Retail,North West,Medium,2000
-C-00364,25-34,SME,North West,Low,2013
-C-00365,45-54,Retail,Wales,Very High,2006
-C-00366,65+,Private Banking,Midlands,Low,2024
-C-00367,65+,SME,South East,High,2006
-C-00368,65+,SME,South East,Very High,2017
-C-00369,55-64,Retail,Wales,Medium,2021
-C-00370,35-44,Corporate,London,Very High,2022
-C-00371,45-54,Private Banking,Wales,Low,2019
-C-00372,55-64,Corporate,North West,Medium,2006
-C-00373,25-34,SME,Wales,High,2002
-C-00374,18-24,Private Banking,North West,Low,2011
-C-00375,35-44,Corporate,North West,High,2002
-C-00376,25-34,Corporate,Scotland,High,2014
-C-00377,55-64,Corporate,North West,High,2006
-C-00378,35-44,SME,South East,High,2001
-C-00379,45-54,SME,Midlands,Medium,2005
-C-00380,35-44,SME,South East,Low,2023
-C-00381,65+,Private Banking,Wales,High,2008
-C-00382,65+,Private Banking,Wales,Very High,2022
-C-00383,55-64,Private Banking,South East,Medium,2021
-C-00384,65+,SME,Wales,Medium,2023
-C-00385,55-64,Corporate,South East,Very High,2017
-C-00386,55-64,SME,South East,Low,2018
-C-00387,35-44,Retail,North West,High,2003
-C-00388,25-34,SME,Scotland,High,2011
-C-00389,18-24,Corporate,Midlands,High,2012
-C-00390,25-34,Corporate,London,Low,2011
-C-00391,35-44,Private Banking,London,Medium,2018
-C-00392,65+,SME,London,High,2008
-C-00393,18-24,Private Banking,North West,Medium,2008
-C-00394,25-34,Corporate,London,High,2005
-C-00395,25-34,SME,London,Low,2000
-C-00396,45-54,SME,Wales,Low,2002
-C-00397,65+,SME,Midlands,Medium,2006
-C-00398,25-34,SME,North West,Low,2021
-C-00399,45-54,Retail,North West,High,2002
-C-00400,45-54,Retail,Wales,Low,2007
-C-00401,25-34,SME,Wales,Very High,2000
-C-00402,18-24,Corporate,North West,Very High,2010
-C-00403,65+,SME,North West,Medium,2017
-C-00404,25-34,Corporate,South East,Medium,2001
-C-00405,65+,SME,Midlands,Medium,2020
-C-00406,65+,Private Banking,London,High,2001
-C-00407,35-44,Private Banking,North West,Medium,2000
-C-00408,25-34,SME,Scotland,High,2009
-C-00409,25-34,Retail,Wales,Low,2015
-C-00410,45-54,Private Banking,London,Very High,2023
-C-00411,45-54,Retail,South East,Very High,2013
-C-00412,35-44,Private Banking,South East,High,2017
-C-00413,55-64,Corporate,South East,High,2015
-C-00414,35-44,Retail,London,Low,2003
-C-00415,25-34,SME,Scotland,Very High,2011
-C-00416,35-44,SME,London,Medium,2015
-C-00417,65+,Retail,Midlands,Low,2024
-C-00418,45-54,SME,Scotland,Low,2011
-C-00419,55-64,Private Banking,London,Medium,2024
-C-00420,18-24,Private Banking,London,Low,2016
-C-00421,65+,Retail,Scotland,Low,2021
-C-00422,65+,Retail,North West,Very High,2002
-C-00423,45-54,Private Banking,South East,Very High,2012
-C-00424,35-44,SME,Midlands,High,2010
-C-00425,18-24,Retail,North West,Medium,2012
-C-00426,55-64,Private Banking,North West,Low,2022
-C-00427,18-24,Private Banking,Midlands,Very High,2006
-C-00428,18-24,Retail,Midlands,Low,2017
-C-00429,35-44,SME,London,Medium,2000
-C-00430,55-64,Retail,London,Very High,2021
-C-00431,45-54,Private Banking,Wales,Medium,2012
-C-00432,45-54,SME,South East,Low,2024
-C-00433,55-64,Corporate,North West,Very High,2016
-C-00434,65+,Retail,North West,Medium,2011
-C-00435,35-44,Private Banking,London,Low,2024
-C-00436,65+,Private Banking,Wales,High,2018
-C-00437,65+,SME,Midlands,Medium,2022
-C-00438,55-64,SME,North West,Very High,2015
-C-00439,25-34,SME,Midlands,Very High,2002
-C-00440,25-34,Corporate,North West,Medium,2001
-C-00441,35-44,Retail,North West,Medium,2002
-C-00442,45-54,Private Banking,London,High,2018
-C-00443,65+,Corporate,London,Medium,2014
-C-00444,18-24,Private Banking,North West,Medium,2007
-C-00445,18-24,Retail,South East,Low,2015
-C-00446,25-34,Corporate,Wales,Very High,2006
-C-00447,18-24,Corporate,London,High,2018
-C-00448,25-34,SME,North West,Medium,2003
-C-00449,45-54,SME,London,Medium,2024
-C-00450,18-24,SME,North West,Very High,2019
-C-00451,18-24,SME,Scotland,Very High,2022
-C-00452,18-24,Retail,Midlands,Very High,2012
-C-00453,55-64,SME,Scotland,Very High,2011
-C-00454,55-64,Retail,Scotland,Low,2002
-C-00455,35-44,Retail,London,Medium,2021
-C-00456,65+,Corporate,South East,Medium,2000
-C-00457,55-64,Corporate,South East,Low,2021
-C-00458,18-24,Private Banking,Wales,Low,2001
-C-00459,65+,Retail,London,Very High,2006
-C-00460,25-34,Retail,Wales,Low,2009
-C-00461,65+,Retail,North West,Medium,2024
-C-00462,45-54,Private Banking,South East,Medium,2022
-C-00463,45-54,Corporate,South East,Very High,2014
-C-00464,45-54,SME,Wales,Low,2000
-C-00465,18-24,Corporate,Wales,Very High,2018
-C-00466,45-54,Corporate,Midlands,Very High,2007
-C-00467,55-64,Private Banking,Scotland,Medium,2009
-C-00468,45-54,SME,North West,Medium,2003
-C-00469,25-34,SME,North West,Very High,2005
-C-00470,55-64,Corporate,Scotland,Very High,2017
-C-00471,45-54,Retail,Wales,Low,2008
-C-00472,18-24,Corporate,North West,High,2019
-C-00473,25-34,Corporate,Scotland,Medium,2006
-C-00474,18-24,Corporate,South East,High,2011
-C-00475,45-54,Corporate,South East,Low,2004
-C-00476,45-54,Corporate,South East,Low,2009
-C-00477,65+,Private Banking,North West,Low,2022
-C-00478,55-64,Corporate,London,Low,2021
-C-00479,18-24,Retail,North West,High,2010
-C-00480,18-24,SME,South East,High,2017
-C-00481,65+,Corporate,Scotland,Low,2017
-C-00482,18-24,SME,North West,Low,2023
-C-00483,18-24,Retail,Scotland,Very High,2018
-C-00484,18-24,Retail,Wales,Low,2007
-C-00485,25-34,Private Banking,London,Very High,2000
-C-00486,55-64,SME,Midlands,Very High,2010
-C-00487,55-64,Private Banking,Scotland,Very High,2009
-C-00488,65+,Private Banking,Wales,Low,2018
-C-00489,35-44,Retail,South East,Very High,2006
-C-00490,65+,SME,Scotland,Very High,2004
-C-00491,35-44,Corporate,North West,High,2006
-C-00492,55-64,Corporate,North West,Medium,2023
-C-00493,65+,Retail,Scotland,Medium,2000
-C-00494,45-54,SME,Wales,Low,2008
-C-00495,55-64,Retail,North West,Very High,2007
-C-00496,45-54,SME,North West,Very High,2005
-C-00497,25-34,Private Banking,Midlands,Medium,2007
-C-00498,45-54,Retail,Scotland,High,2014
-C-00499,55-64,Corporate,Scotland,Very High,2019
-C-00500,65+,Private Banking,Scotland,Medium,2008
-C-00501,35-44,Retail,Scotland,Medium,2006
-C-00502,55-64,Private Banking,South East,Very High,2018
-C-00503,18-24,SME,South East,Very High,2024
-C-00504,45-54,Corporate,Wales,Medium,2023
-C-00505,18-24,Corporate,South East,Very High,2007
-C-00506,55-64,Corporate,Wales,Very High,2016
-C-00507,55-64,SME,Midlands,Low,2005
-C-00508,45-54,Retail,London,Medium,2011
-C-00509,45-54,SME,Wales,High,2016
-C-00510,25-34,Private Banking,South East,Very High,2009
-C-00511,35-44,Corporate,London,Medium,2001
-C-00512,18-24,Retail,North West,Low,2007
-C-00513,25-34,Corporate,Midlands,High,2010
-C-00514,55-64,Retail,Midlands,Very High,2000
-C-00515,65+,Retail,Wales,Medium,2001
-C-00516,45-54,SME,Wales,Medium,2022
-C-00517,65+,Corporate,London,Medium,2010
-C-00518,25-34,Private Banking,North West,Low,2009
-C-00519,65+,SME,North West,Very High,2021
-C-00520,55-64,Private Banking,Midlands,Low,2021
-C-00521,45-54,Private Banking,South East,Low,2019
-C-00522,18-24,SME,South East,Very High,2022
-C-00523,18-24,SME,South East,Low,2007
-C-00524,18-24,Retail,Wales,High,2014
-C-00525,18-24,Corporate,North West,Very High,2016
-C-00526,55-64,Private Banking,Scotland,High,2011
-C-00527,45-54,Corporate,Wales,Medium,2014
-C-00528,45-54,Private Banking,Wales,Very High,2007
-C-00529,18-24,Retail,Scotland,High,2001
-C-00530,55-64,Retail,London,High,2020
-C-00531,65+,Private Banking,North West,Very High,2006
-C-00532,45-54,Private Banking,London,Very High,2016
-C-00533,55-64,SME,Wales,Medium,2009
-C-00534,65+,Private Banking,South East,Low,2023
-C-00535,25-34,Corporate,South East,High,2014
-C-00536,35-44,Corporate,South East,Medium,2000
-C-00537,25-34,Private Banking,Midlands,Very High,2022
-C-00538,45-54,Retail,London,High,2015
-C-00539,45-54,Corporate,Midlands,Very High,2008
-C-00540,25-34,Corporate,North West,Medium,2018
-C-00541,65+,Corporate,South East,Low,2012
-C-00542,35-44,Retail,Wales,High,2012
-C-00543,18-24,SME,London,Very High,2016
-C-00544,18-24,SME,Wales,High,2017
-C-00545,35-44,Corporate,Scotland,Very High,2018
-C-00546,65+,Corporate,South East,Very High,2013
-C-00547,25-34,Private Banking,Scotland,Medium,2023
-C-00548,35-44,Corporate,North West,Low,2003
-C-00549,45-54,Retail,Wales,Low,2005
-C-00550,18-24,Private Banking,Wales,Low,2019
-C-00551,65+,Retail,Scotland,Very High,2004
-C-00552,55-64,SME,South East,Very High,2019
-C-00553,45-54,Retail,South East,Low,2001
-C-00554,35-44,Private Banking,Wales,Low,2000
-C-00555,35-44,Corporate,London,Very High,2019
-C-00556,45-54,Retail,Wales,Medium,2022
-C-00557,55-64,Private Banking,North West,Low,2009
-C-00558,45-54,Retail,Wales,Low,2014
-C-00559,35-44,SME,Wales,High,2003
-C-00560,65+,SME,North West,Medium,2007
-C-00561,35-44,SME,Midlands,High,2019
-C-00562,18-24,Private Banking,Midlands,Very High,2013
-C-00563,55-64,SME,London,High,2011
-C-00564,18-24,Corporate,Midlands,Medium,2016
-C-00565,45-54,Corporate,North West,Very High,2007
-C-00566,35-44,Private Banking,London,High,2000
-C-00567,25-34,Corporate,North West,Low,2002
-C-00568,55-64,SME,Scotland,Medium,2012
-C-00569,65+,SME,London,Medium,2008
-C-00570,45-54,Private Banking,South East,Low,2005
-C-00571,18-24,SME,South East,Very High,2009
-C-00572,25-34,Private Banking,London,Very High,2018
-C-00573,35-44,SME,South East,Very High,2021
-C-00574,65+,Retail,Scotland,Medium,2021
-C-00575,25-34,Corporate,London,High,2004
-C-00576,25-34,Retail,Midlands,Medium,2002
-C-00577,25-34,Corporate,North West,Very High,2024
-C-00578,18-24,Retail,Wales,High,2009
-C-00579,65+,SME,Midlands,High,2015
-C-00580,45-54,SME,Midlands,Medium,2022
-C-00581,25-34,Retail,South East,Low,2011
-C-00582,35-44,SME,London,Medium,2017
-C-00583,35-44,SME,Midlands,Medium,2020
-C-00584,55-64,Retail,South East,Medium,2021
-C-00585,65+,Retail,Scotland,Low,2013
-C-00586,25-34,Retail,Scotland,Low,2024
-C-00587,55-64,Retail,North West,Low,2021
-C-00588,55-64,SME,London,High,2003
-C-00589,55-64,Retail,Midlands,Low,2001
-C-00590,65+,Retail,North West,Low,2000
-C-00591,45-54,Retail,Scotland,Medium,2016
-C-00592,35-44,Corporate,London,Very High,2010
-C-00593,65+,Corporate,Scotland,Low,2014
-C-00594,25-34,SME,North West,Very High,2021
-C-00595,65+,Private Banking,Scotland,Very High,2003
-C-00596,25-34,SME,London,Medium,2002
-C-00597,65+,SME,Scotland,High,2018
-C-00598,45-54,SME,Midlands,Medium,2019
-C-00599,55-64,Corporate,Midlands,Medium,2000
-C-00600,25-34,Private Banking,South East,Very High,2018
-C-00601,65+,Corporate,North West,Medium,2009
-C-00602,65+,Corporate,Wales,Low,2001
-C-00603,18-24,Private Banking,South East,High,2010
-C-00604,45-54,Private Banking,South East,Low,2018
-C-00605,35-44,Retail,South East,Low,2024
-C-00606,55-64,Retail,Scotland,Very High,2003
-C-00607,25-34,Retail,North West,Medium,2007
-C-00608,25-34,Corporate,Midlands,Very High,2019
-C-00609,55-64,Retail,Scotland,Very High,2015
-C-00610,25-34,Corporate,North West,Low,2002
-C-00611,18-24,SME,London,Medium,2020
-C-00612,45-54,Corporate,South East,High,2019
-C-00613,65+,Retail,South East,Medium,2005
-C-00614,25-34,Corporate,North West,High,2019
-C-00615,65+,SME,North West,High,2018
-C-00616,45-54,SME,Scotland,Low,2019
-C-00617,45-54,Retail,Wales,Low,2022
-C-00618,55-64,SME,Scotland,Low,2005
-C-00619,45-54,Private Banking,North West,Very High,2003
-C-00620,18-24,Retail,North West,High,2018
-C-00621,65+,SME,North West,High,2021
-C-00622,65+,Private Banking,Midlands,High,2019
-C-00623,18-24,Retail,Scotland,High,2023
-C-00624,45-54,Retail,London,Low,2023
-C-00625,18-24,Corporate,South East,Low,2023
-C-00626,65+,Corporate,North West,High,2011
-C-00627,35-44,SME,Scotland,Low,2013
-C-00628,65+,Retail,London,Medium,2009
-C-00629,25-34,SME,Scotland,Very High,2021
-C-00630,35-44,SME,Wales,Medium,2019
-C-00631,18-24,Private Banking,Midlands,Medium,2012
-C-00632,55-64,Retail,Scotland,Low,2001
-C-00633,25-34,SME,Wales,Very High,2014
-C-00634,35-44,SME,Wales,Very High,2011
-C-00635,45-54,Retail,Wales,High,2018
-C-00636,18-24,Corporate,Midlands,Medium,2015
-C-00637,35-44,SME,Scotland,Low,2020
-C-00638,55-64,Private Banking,Midlands,Medium,2003
-C-00639,65+,Retail,Midlands,Low,2012
-C-00640,55-64,Private Banking,North West,High,2019
-C-00641,25-34,SME,South East,Low,2014
-C-00642,35-44,SME,South East,High,2010
-C-00643,55-64,Private Banking,North West,Low,2009
-C-00644,65+,SME,North West,Very High,2011
-C-00645,55-64,SME,North West,High,2011
-C-00646,35-44,Corporate,South East,Medium,2003
-C-00647,18-24,Retail,North West,Medium,2011
-C-00648,35-44,Private Banking,North West,Medium,2022
-C-00649,18-24,SME,Wales,Very High,2003
-C-00650,45-54,Retail,Scotland,Low,2008
-C-00651,35-44,Private Banking,Midlands,Low,2024
-C-00652,65+,Private Banking,Wales,Low,2005
-C-00653,55-64,Corporate,London,Low,2011
-C-00654,25-34,Private Banking,North West,Medium,2015
-C-00655,18-24,Retail,Wales,High,2015
-C-00656,65+,SME,Midlands,Medium,2010
-C-00657,35-44,Private Banking,London,High,2008
-C-00658,65+,SME,Wales,High,2022
-C-00659,45-54,Private Banking,Midlands,High,2018
-C-00660,18-24,Corporate,Midlands,Low,2011
-C-00661,45-54,Retail,South East,Medium,2014
-C-00662,55-64,SME,South East,Very High,2014
-C-00663,55-64,SME,Scotland,High,2011
-C-00664,25-34,Private Banking,London,High,2010
-C-00665,18-24,Retail,North West,Low,2010
-C-00666,18-24,Private Banking,Wales,Medium,2003
-C-00667,25-34,Private Banking,South East,Low,2014
-C-00668,25-34,Corporate,Midlands,Medium,2004
-C-00669,25-34,Corporate,North West,High,2009
-C-00670,65+,SME,Wales,Medium,2020
-C-00671,25-34,SME,London,Medium,2009
-C-00672,45-54,Private Banking,North West,Very High,2007
-C-00673,55-64,SME,Wales,Very High,2022
-C-00674,18-24,Private Banking,Wales,High,2007
-C-00675,65+,SME,Scotland,Very High,2024
-C-00676,55-64,Private Banking,Wales,Medium,2008
-C-00677,55-64,Retail,Midlands,Medium,2001
-C-00678,25-34,Corporate,South East,Very High,2011
-C-00679,55-64,Private Banking,Midlands,Medium,2022
-C-00680,35-44,Retail,London,Low,2005
-C-00681,35-44,Private Banking,South East,Medium,2016
-C-00682,55-64,SME,Scotland,High,2010
-C-00683,45-54,Retail,Midlands,Low,2009
-C-00684,55-64,Corporate,South East,Medium,2005
-C-00685,18-24,SME,London,Low,2003
-C-00686,65+,Retail,Wales,Very High,2010
-C-00687,18-24,SME,North West,High,2012
-C-00688,55-64,SME,London,Very High,2015
-C-00689,35-44,Private Banking,South East,Very High,2015
-C-00690,18-24,Private Banking,Scotland,Medium,2016
-C-00691,65+,SME,London,Medium,2001
-C-00692,55-64,Private Banking,North West,High,2015
-C-00693,18-24,SME,South East,High,2021
-C-00694,18-24,SME,North West,Medium,2013
-C-00695,45-54,Retail,Scotland,Very High,2022
-C-00696,65+,SME,North West,High,2017
-C-00697,18-24,Private Banking,Midlands,High,2004
-C-00698,45-54,SME,London,Low,2012
-C-00699,25-34,Private Banking,London,Medium,2008
-C-00700,18-24,SME,Scotland,High,2017
-C-00701,45-54,Private Banking,Midlands,High,2004
-C-00702,65+,Private Banking,Wales,Low,2018
-C-00703,35-44,Private Banking,London,Very High,2018
-C-00704,35-44,Corporate,Wales,Medium,2001
-C-00705,18-24,Corporate,North West,Very High,2009
-C-00706,25-34,Retail,Midlands,Medium,2010
-C-00707,45-54,Corporate,North West,High,2020
-C-00708,35-44,Corporate,South East,High,2014
-C-00709,45-54,Private Banking,London,Low,2006
-C-00710,65+,SME,London,Very High,2012
-C-00711,25-34,SME,Midlands,Low,2007
-C-00712,35-44,Corporate,South East,High,2002
-C-00713,35-44,Corporate,London,High,2016
-C-00714,45-54,Corporate,London,Low,2008
-C-00715,65+,Retail,Wales,Medium,2013
-C-00716,35-44,Private Banking,South East,High,2004
-C-00717,25-34,Retail,London,High,2024
-C-00718,55-64,Corporate,South East,High,2010
-C-00719,25-34,SME,North West,Medium,2018
-C-00720,18-24,Private Banking,Scotland,Very High,2008
-C-00721,18-24,SME,Scotland,Very High,2006
-C-00722,65+,Retail,South East,Medium,2022
-C-00723,25-34,Corporate,North West,Very High,2017
-C-00724,35-44,SME,Scotland,Low,2013
-C-00725,35-44,Retail,Wales,Very High,2022
-C-00726,35-44,SME,South East,Low,2012
-C-00727,55-64,Retail,Scotland,High,2023
-C-00728,25-34,Private Banking,Scotland,Medium,2024
-C-00729,65+,Retail,Midlands,Very High,2007
-C-00730,45-54,Private Banking,Scotland,Medium,2001
-C-00731,55-64,Corporate,Scotland,High,2007
-C-00732,65+,Private Banking,North West,Low,2024
-C-00733,55-64,Retail,Wales,Very High,2005
-C-00734,65+,Corporate,London,Medium,2018
-C-00735,18-24,Corporate,Midlands,High,2006
-C-00736,18-24,Private Banking,Wales,High,2001
-C-00737,25-34,Corporate,London,Low,2005
-C-00738,35-44,Corporate,South East,Medium,2014
-C-00739,55-64,Retail,Scotland,Low,2005
-C-00740,25-34,Corporate,Midlands,High,2004
-C-00741,65+,Corporate,North West,Low,2015
-C-00742,35-44,Retail,South East,Medium,2017
-C-00743,25-34,Corporate,Scotland,Very High,2014
-C-00744,25-34,Retail,Midlands,Very High,2013
-C-00745,45-54,Private Banking,North West,Medium,2018
-C-00746,65+,Retail,London,Low,2021
-C-00747,25-34,SME,North West,Very High,2002
-C-00748,18-24,SME,North West,Very High,2012
-C-00749,55-64,SME,Scotland,High,2024
-C-00750,45-54,Retail,Scotland,Low,2001
-C-00751,35-44,Corporate,South East,Medium,2015
-C-00752,45-54,Retail,North West,Very High,2012
-C-00753,25-34,Private Banking,London,Very High,2019
-C-00754,45-54,Private Banking,London,Very High,2011
-C-00755,18-24,SME,Wales,Medium,2005
-C-00756,35-44,SME,North West,High,2023
-C-00757,45-54,Retail,Wales,High,2005
-C-00758,25-34,Retail,Scotland,High,2006
-C-00759,55-64,Retail,North West,Low,2012
-C-00760,18-24,Retail,Scotland,Low,2021
-C-00761,55-64,Corporate,London,Medium,2023
-C-00762,65+,SME,Wales,Medium,2007
-C-00763,45-54,Private Banking,South East,Very High,2024
-C-00764,18-24,Corporate,Midlands,Low,2016
-C-00765,35-44,SME,London,Low,2003
-C-00766,55-64,Retail,Wales,Medium,2009
-C-00767,65+,SME,Scotland,Very High,2013
-C-00768,45-54,Corporate,Scotland,Very High,2011
-C-00769,25-34,SME,North West,Low,2023
-C-00770,18-24,Corporate,Scotland,High,2020
-C-00771,35-44,Private Banking,London,High,2016
-C-00772,25-34,Retail,Scotland,High,2022
-C-00773,65+,Retail,North West,Low,2011
-C-00774,35-44,Corporate,Wales,High,2010
-C-00775,35-44,SME,London,Medium,2014
-C-00776,35-44,Private Banking,Wales,Medium,2001
-C-00777,45-54,Retail,Wales,Low,2023
-C-00778,65+,Corporate,South East,Low,2004
-C-00779,45-54,SME,London,Very High,2019
-C-00780,35-44,SME,North West,Low,2021
-C-00781,45-54,Private Banking,Midlands,High,2002
-C-00782,45-54,Private Banking,Wales,High,2015
-C-00783,65+,Private Banking,North West,Very High,2017
-C-00784,45-54,Corporate,North West,Low,2019
-C-00785,18-24,SME,South East,Medium,2011
-C-00786,45-54,Private Banking,Scotland,High,2020
-C-00787,18-24,Retail,London,Low,2009
-C-00788,35-44,Private Banking,Wales,Very High,2008
-C-00789,45-54,Retail,London,Very High,2010
-C-00790,35-44,Retail,North West,Medium,2011
-C-00791,65+,SME,Midlands,High,2013
-C-00792,25-34,Retail,South East,Very High,2008
-C-00793,35-44,SME,Midlands,Very High,2013
-C-00794,25-34,Retail,Wales,Low,2010
-C-00795,25-34,SME,Scotland,Medium,2022
-C-00796,55-64,Private Banking,London,Low,2013
-C-00797,55-64,SME,Scotland,Medium,2009
-C-00798,25-34,SME,North West,High,2010
-C-00799,35-44,Retail,South East,Very High,2004
-C-00800,65+,SME,Wales,Very High,2023
-C-00801,45-54,Retail,North West,Medium,2018
-C-00802,55-64,SME,South East,Low,2003
-C-00803,45-54,SME,South East,Medium,2011
-C-00804,18-24,Retail,Scotland,Very High,2000
-C-00805,55-64,Private Banking,London,Low,2012
-C-00806,45-54,Private Banking,Midlands,Medium,2002
-C-00807,18-24,SME,Scotland,Low,2023
-C-00808,55-64,SME,London,Very High,2006
-C-00809,25-34,Retail,Scotland,High,2009
-C-00810,18-24,Private Banking,London,Medium,2021
-C-00811,45-54,Corporate,Midlands,Medium,2015
-C-00812,55-64,SME,North West,Low,2024
-C-00813,35-44,Private Banking,London,Low,2012
-C-00814,55-64,SME,London,Low,2017
-C-00815,45-54,Private Banking,Wales,Low,2011
-C-00816,35-44,Private Banking,London,High,2008
-C-00817,55-64,Retail,London,Medium,2005
-C-00818,65+,Private Banking,South East,Very High,2023
-C-00819,18-24,Private Banking,Midlands,Medium,2006
-C-00820,45-54,SME,North West,Low,2008
-C-00821,25-34,Corporate,Midlands,High,2017
-C-00822,55-64,Retail,South East,Very High,2011
-C-00823,18-24,Corporate,Wales,Low,2013
-C-00824,18-24,Private Banking,North West,Medium,2013
-C-00825,35-44,SME,South East,Medium,2020
-C-00826,65+,SME,Wales,High,2009
-C-00827,55-64,Corporate,South East,Very High,2004
-C-00828,25-34,Private Banking,South East,Low,2008
-C-00829,25-34,SME,North West,Very High,2024
-C-00830,35-44,SME,Scotland,Medium,2007
-C-00831,25-34,Private Banking,North West,Low,2010
-C-00832,25-34,Corporate,London,Medium,2005
-C-00833,25-34,Corporate,London,Very High,2012
-C-00834,18-24,Corporate,Midlands,High,2011
-C-00835,18-24,Retail,Scotland,High,2024
-C-00836,65+,Private Banking,South East,Low,2012
-C-00837,35-44,Corporate,Wales,Very High,2007
-C-00838,55-64,Corporate,Wales,High,2011
-C-00839,65+,Corporate,North West,Low,2018
-C-00840,25-34,Corporate,Wales,Low,2019
-C-00841,25-34,SME,North West,High,2014
-C-00842,25-34,SME,Wales,Low,2002
-C-00843,35-44,SME,Wales,Low,2022
-C-00844,18-24,Retail,North West,Low,2017
-C-00845,25-34,Corporate,South East,Medium,2021
-C-00846,35-44,Corporate,Midlands,Medium,2018
-C-00847,18-24,Retail,London,Low,2020
-C-00848,18-24,Private Banking,Wales,Very High,2013
-C-00849,25-34,Retail,North West,Medium,2013
-C-00850,35-44,Retail,Wales,Low,2017
-C-00851,18-24,SME,Scotland,High,2004
-C-00852,55-64,Retail,Midlands,High,2007
-C-00853,45-54,SME,London,High,2001
-C-00854,45-54,Retail,Wales,Low,2024
-C-00855,65+,Private Banking,London,High,2002
-C-00856,35-44,SME,London,High,2010
-C-00857,18-24,Corporate,North West,Very High,2004
-C-00858,45-54,Retail,South East,Medium,2022
-C-00859,25-34,SME,North West,Medium,2012
-C-00860,45-54,Corporate,Midlands,Low,2014
-C-00861,65+,SME,Wales,High,2024
-C-00862,35-44,SME,South East,Low,2014
-C-00863,55-64,SME,Scotland,High,2019
-C-00864,65+,Private Banking,Wales,High,2003
-C-00865,45-54,Private Banking,Midlands,High,2002
-C-00866,55-64,Corporate,Midlands,High,2013
-C-00867,65+,Corporate,London,Very High,2006
-C-00868,45-54,SME,Scotland,Very High,2023
-C-00869,55-64,Retail,Wales,Low,2023
-C-00870,35-44,SME,London,Medium,2021
-C-00871,65+,Corporate,Midlands,Medium,2020
-C-00872,45-54,Private Banking,London,Low,2015
-C-00873,25-34,Private Banking,Scotland,Low,2018
-C-00874,55-64,Private Banking,Midlands,Medium,2011
-C-00875,18-24,Retail,Midlands,Low,2009
-C-00876,45-54,Retail,Scotland,Very High,2014
-C-00877,55-64,SME,London,Medium,2019
-C-00878,25-34,SME,South East,Very High,2014
-C-00879,45-54,Corporate,Midlands,Low,2018
-C-00880,35-44,Retail,Wales,High,2006
-C-00881,45-54,Corporate,Midlands,High,2020
-C-00882,18-24,Private Banking,London,Very High,2000
-C-00883,55-64,Private Banking,Midlands,High,2008
-C-00884,25-34,Private Banking,South East,Medium,2017
-C-00885,45-54,Corporate,Wales,High,2015
-C-00886,55-64,Corporate,Wales,High,2012
-C-00887,25-34,Retail,London,Low,2016
-C-00888,55-64,SME,Scotland,Medium,2020
-C-00889,18-24,Private Banking,Midlands,High,2009
-C-00890,45-54,Corporate,North West,Very High,2002
-C-00891,35-44,Retail,Midlands,Low,2001
-C-00892,35-44,Retail,North West,Medium,2021
-C-00893,65+,SME,South East,Medium,2015
-C-00894,35-44,Retail,Wales,High,2013
-C-00895,45-54,SME,South East,Very High,2022
-C-00896,35-44,Retail,London,Very High,2005
-C-00897,65+,Retail,Midlands,Very High,2000
-C-00898,55-64,Corporate,London,Very High,2013
-C-00899,55-64,Retail,North West,Low,2022
-C-00900,25-34,Retail,Midlands,Low,2006
-C-00901,35-44,SME,Midlands,Very High,2015
-C-00902,35-44,Corporate,Scotland,Low,2007
-C-00903,55-64,Retail,North West,High,2008
-C-00904,18-24,Retail,South East,High,2015
-C-00905,18-24,Private Banking,Midlands,Low,2014
-C-00906,18-24,SME,Wales,High,2002
-C-00907,55-64,SME,South East,Medium,2009
-C-00908,25-34,Retail,Wales,Very High,2011
-C-00909,65+,SME,Wales,Low,2016
-C-00910,25-34,SME,Midlands,Medium,2021
-C-00911,35-44,Retail,South East,Low,2011
-C-00912,25-34,SME,South East,Low,2000
-C-00913,18-24,Corporate,Scotland,High,2005
-C-00914,35-44,Private Banking,Scotland,Medium,2005
-C-00915,35-44,SME,London,Very High,2018
-C-00916,18-24,Corporate,Wales,Low,2001
-C-00917,25-34,Corporate,South East,Very High,2006
-C-00918,55-64,Private Banking,South East,Low,2005
-C-00919,45-54,Private Banking,Scotland,Medium,2005
-C-00920,35-44,Retail,Wales,Medium,2012
-C-00921,65+,SME,London,Very High,2012
-C-00922,45-54,Corporate,South East,Medium,2024
-C-00923,65+,Retail,Scotland,High,2011
-C-00924,35-44,Corporate,Wales,High,2007
-C-00925,18-24,Private Banking,Scotland,Medium,2024
-C-00926,35-44,Retail,South East,Very High,2018
-C-00927,25-34,Retail,Wales,Medium,2009
-C-00928,45-54,Retail,North West,Medium,2012
-C-00929,65+,Retail,South East,Low,2009
-C-00930,45-54,SME,Scotland,Very High,2009
-C-00931,45-54,SME,North West,High,2002
-C-00932,18-24,Retail,South East,Low,2011
-C-00933,45-54,SME,South East,High,2014
-C-00934,55-64,Retail,Scotland,High,2011
-C-00935,18-24,SME,Midlands,High,2001
-C-00936,45-54,SME,Scotland,Very High,2014
-C-00937,18-24,Corporate,Wales,Low,2017
-C-00938,25-34,Private Banking,Scotland,Medium,2004
-C-00939,18-24,Retail,North West,Medium,2010
-C-00940,55-64,Corporate,North West,High,2015
-C-00941,65+,Private Banking,Midlands,Very High,2009
-C-00942,45-54,Corporate,North West,Medium,2016
-C-00943,25-34,SME,Midlands,High,2011
-C-00944,65+,SME,Wales,Very High,2010
-C-00945,45-54,SME,Wales,High,2023
-C-00946,45-54,Corporate,Wales,Low,2023
-C-00947,45-54,Private Banking,Midlands,Very High,2023
-C-00948,18-24,SME,Midlands,High,2019
-C-00949,18-24,Corporate,Scotland,Very High,2004
-C-00950,35-44,SME,North West,High,2007
-C-00951,18-24,Corporate,Scotland,High,2017
-C-00952,45-54,SME,London,High,2003
-C-00953,65+,Retail,Scotland,High,2011
-C-00954,55-64,Retail,Midlands,Very High,2021
-C-00955,45-54,SME,South East,Low,2001
-C-00956,35-44,SME,South East,High,2022
-C-00957,35-44,Retail,Midlands,Low,2004
-C-00958,18-24,Retail,London,Low,2001
-C-00959,18-24,Private Banking,London,Medium,2000
-C-00960,18-24,Corporate,Scotland,High,2007
-C-00961,65+,Retail,London,High,2014
-C-00962,35-44,Retail,London,Very High,2007
-C-00963,18-24,Retail,Scotland,High,2005
-C-00964,45-54,Private Banking,London,Medium,2013
-C-00965,65+,Retail,South East,Very High,2010
-C-00966,55-64,Retail,London,High,2005
-C-00967,18-24,Retail,North West,High,2007
-C-00968,25-34,Private Banking,South East,Low,2000
-C-00969,55-64,Private Banking,Scotland,Very High,2012
-C-00970,25-34,Retail,North West,Medium,2015
-C-00971,25-34,SME,London,Medium,2012
-C-00972,55-64,Retail,London,Medium,2004
-C-00973,65+,Private Banking,South East,Very High,2020
-C-00974,55-64,Private Banking,Wales,Very High,2002
-C-00975,65+,SME,Wales,High,2018
-C-00976,35-44,Private Banking,London,Low,2003
-C-00977,65+,Retail,North West,High,2007
-C-00978,35-44,Retail,London,Medium,2013
-C-00979,65+,SME,Wales,Very High,2003
-C-00980,65+,Retail,South East,Low,2018
-C-00981,55-64,Private Banking,South East,Low,2010
-C-00982,25-34,Private Banking,London,Medium,2019
-C-00983,55-64,Retail,South East,High,2012
-C-00984,55-64,SME,Scotland,Medium,2013
-C-00985,18-24,SME,North West,Medium,2016
-C-00986,35-44,Corporate,North West,Very High,2001
-C-00987,35-44,Retail,Wales,Medium,2005
-C-00988,18-24,Retail,North West,High,2003
-C-00989,25-34,Corporate,South East,Low,2017
-C-00990,55-64,Retail,South East,Low,2010
-C-00991,65+,Retail,Scotland,Low,2010
-C-00992,55-64,Retail,South East,High,2017
-C-00993,35-44,Corporate,North West,Very High,2015
-C-00994,25-34,Corporate,North West,Very High,2013
-C-00995,18-24,SME,Midlands,Medium,2010
-C-00996,18-24,Private Banking,Midlands,Very High,2006
-C-00997,18-24,SME,Scotland,Low,2019
-C-00998,25-34,SME,London,High,2007
-C-00999,18-24,Corporate,North West,Medium,2007
-C-01000,65+,SME,North West,Medium,2024
-C-01001,45-54,Corporate,London,Low,2009
-C-01002,45-54,SME,London,Very High,2011
-C-01003,65+,Retail,Wales,Very High,2003
-C-01004,18-24,Corporate,London,Very High,2021
-C-01005,65+,SME,Wales,Medium,2020
-C-01006,35-44,Retail,North West,High,2014
-C-01007,35-44,Private Banking,Scotland,Very High,2021
-C-01008,25-34,Corporate,North West,High,2008
-C-01009,45-54,SME,Scotland,Very High,2023
-C-01010,45-54,Corporate,London,High,2001
-C-01011,25-34,Corporate,Midlands,Very High,2024
-C-01012,35-44,Private Banking,Midlands,Medium,2005
-C-01013,35-44,Private Banking,Wales,Medium,2018
-C-01014,18-24,SME,North West,Very High,2005
-C-01015,25-34,Private Banking,London,High,2006
-C-01016,65+,Retail,Scotland,Low,2003
-C-01017,18-24,SME,Wales,Low,2009
-C-01018,55-64,Retail,Midlands,Very High,2011
-C-01019,35-44,Retail,London,High,2005
-C-01020,55-64,SME,South East,Very High,2019
-C-01021,65+,SME,Scotland,High,2021
-C-01022,65+,Corporate,Scotland,Low,2003
-C-01023,45-54,Corporate,Midlands,Low,2016
-C-01024,18-24,Retail,Scotland,Low,2004
-C-01025,55-64,SME,Scotland,Low,2000
-C-01026,25-34,Retail,South East,Very High,2004
-C-01027,65+,Private Banking,Midlands,Very High,2001
-C-01028,55-64,Private Banking,Midlands,Low,2007
-C-01029,35-44,Corporate,London,High,2004
-C-01030,18-24,Retail,Midlands,Medium,2016
-C-01031,25-34,Corporate,South East,Very High,2019
-C-01032,25-34,SME,Wales,High,2009
-C-01033,65+,SME,Wales,Medium,2008
-C-01034,18-24,SME,North West,Medium,2014
-C-01035,25-34,Retail,Scotland,High,2004
-C-01036,35-44,Private Banking,Wales,Low,2007
-C-01037,18-24,Corporate,Scotland,Low,2006
-C-01038,25-34,Retail,Midlands,Low,2022
-C-01039,25-34,Corporate,South East,Medium,2013
-C-01040,65+,Retail,North West,Low,2013
-C-01041,55-64,SME,Midlands,Medium,2018
-C-01042,45-54,Retail,Wales,Medium,2002
-C-01043,18-24,SME,London,Low,2024
-C-01044,45-54,Retail,Scotland,Medium,2001
-C-01045,65+,Retail,Scotland,Low,2008
-C-01046,25-34,Private Banking,Midlands,Medium,2008
-C-01047,55-64,Retail,London,Very High,2021
-C-01048,45-54,SME,South East,Medium,2017
-C-01049,45-54,Private Banking,North West,Very High,2019
-C-01050,35-44,SME,London,Very High,2017
-C-01051,45-54,Retail,Wales,Low,2015
-C-01052,25-34,Private Banking,London,Very High,2002
-C-01053,65+,Private Banking,Midlands,Very High,2019
-C-01054,35-44,Private Banking,North West,High,2010
-C-01055,35-44,Retail,Wales,Medium,2006
-C-01056,35-44,Private Banking,London,Very High,2015
-C-01057,45-54,SME,Wales,High,2006
-C-01058,65+,SME,Wales,High,2023
-C-01059,55-64,Corporate,London,Medium,2016
-C-01060,25-34,Corporate,Scotland,Medium,2004
-C-01061,45-54,Retail,Wales,Low,2018
-C-01062,25-34,SME,Scotland,Low,2022
-C-01063,45-54,Private Banking,North West,Low,2019
-C-01064,18-24,Corporate,London,Medium,2022
-C-01065,25-34,Retail,Midlands,High,2010
-C-01066,18-24,Corporate,Wales,High,2023
-C-01067,65+,Corporate,Wales,Medium,2006
-C-01068,25-34,Private Banking,London,Very High,2012
-C-01069,55-64,Retail,Scotland,Medium,2006
-C-01070,65+,Private Banking,London,Medium,2012
-C-01071,25-34,Retail,Scotland,High,2017
-C-01072,18-24,Corporate,South East,Low,2011
-C-01073,18-24,Retail,London,Medium,2006
-C-01074,25-34,SME,Wales,Medium,2017
-C-01075,55-64,Retail,South East,Low,2022
-C-01076,65+,Corporate,Midlands,Low,2011
-C-01077,25-34,Retail,South East,High,2006
-C-01078,25-34,Corporate,South East,Low,2012
-C-01079,25-34,Corporate,Scotland,High,2021
-C-01080,25-34,Private Banking,South East,Medium,2020
-C-01081,45-54,SME,Wales,Low,2007
-C-01082,25-34,Private Banking,Wales,Medium,2001
-C-01083,18-24,Corporate,North West,Very High,2014
-C-01084,55-64,Corporate,South East,Low,2014
-C-01085,45-54,Private Banking,Wales,Medium,2000
-C-01086,18-24,Corporate,North West,Medium,2012
-C-01087,25-34,Private Banking,North West,Medium,2014
-C-01088,55-64,Private Banking,Wales,Very High,2021
-C-01089,25-34,Retail,Scotland,Very High,2015
-C-01090,35-44,Corporate,South East,Low,2005
-C-01091,35-44,Retail,North West,High,2005
-C-01092,18-24,Corporate,Scotland,High,2003
-C-01093,18-24,Private Banking,North West,Low,2002
-C-01094,65+,Private Banking,London,Low,2021
-C-01095,65+,Private Banking,Midlands,High,2017
-C-01096,25-34,Retail,Wales,Low,2009
-C-01097,45-54,Corporate,Scotland,Low,2007
-C-01098,25-34,Retail,London,High,2014
-C-01099,18-24,Retail,North West,Low,2012
-C-01100,25-34,Private Banking,South East,Medium,2010
-C-01101,65+,Retail,Midlands,Very High,2008
-C-01102,65+,Corporate,South East,Very High,2001
-C-01103,55-64,Corporate,Scotland,Very High,2007
-C-01104,45-54,SME,South East,Low,2005
-C-01105,18-24,Corporate,Scotland,Very High,2019
-C-01106,65+,Private Banking,Midlands,Low,2024
-C-01107,55-64,SME,North West,High,2023
-C-01108,65+,Private Banking,Midlands,High,2011
-C-01109,35-44,Retail,Midlands,High,2014
-C-01110,18-24,Private Banking,South East,Very High,2004
-C-01111,25-34,Retail,North West,High,2013
-C-01112,25-34,Retail,Scotland,High,2005
-C-01113,45-54,SME,London,Medium,2014
-C-01114,65+,SME,London,Very High,2004
-C-01115,18-24,Retail,London,Medium,2006
-C-01116,35-44,Retail,Midlands,Low,2019
-C-01117,45-54,Retail,Wales,High,2001
-C-01118,65+,Corporate,Scotland,Very High,2001
-C-01119,45-54,Corporate,Midlands,Low,2007
-C-01120,65+,Retail,South East,Low,2003
-C-01121,55-64,SME,Midlands,Medium,2006
-C-01122,35-44,Corporate,North West,Medium,2008
-C-01123,65+,Retail,Wales,Medium,2023
-C-01124,65+,Corporate,South East,Low,2020
-C-01125,65+,Retail,Scotland,Very High,2009
-C-01126,55-64,Retail,Midlands,Low,2002
-C-01127,18-24,SME,Wales,Medium,2019
-C-01128,35-44,Corporate,Midlands,Low,2012
-C-01129,65+,SME,Scotland,High,2002
-C-01130,25-34,Corporate,Wales,High,2000
-C-01131,25-34,Corporate,London,Very High,2011
-C-01132,25-34,Retail,Wales,High,2002
-C-01133,18-24,Private Banking,South East,Medium,2017
-C-01134,55-64,SME,Wales,Low,2020
-C-01135,55-64,SME,Wales,Very High,2014
-C-01136,25-34,SME,South East,Very High,2013
-C-01137,65+,Retail,South East,High,2011
-C-01138,18-24,Corporate,London,Medium,2024
-C-01139,25-34,SME,London,Very High,2015
-C-01140,18-24,Corporate,Scotland,Very High,2008
-C-01141,55-64,Retail,London,High,2002
-C-01142,55-64,Private Banking,London,Low,2013
-C-01143,18-24,Retail,Midlands,Low,2023
-C-01144,35-44,Corporate,Scotland,Low,2022
-C-01145,55-64,Private Banking,London,Low,2000
-C-01146,65+,Corporate,South East,Very High,2024
-C-01147,18-24,SME,Scotland,Medium,2018
-C-01148,35-44,Private Banking,Scotland,Medium,2012
-C-01149,65+,SME,South East,Very High,2012
-C-01150,18-24,Retail,North West,Medium,2023
-C-01151,35-44,SME,Midlands,Very High,2004
-C-01152,25-34,SME,Midlands,Very High,2016
-C-01153,18-24,SME,South East,Medium,2005
-C-01154,25-34,Corporate,Scotland,High,2023
-C-01155,65+,Retail,Wales,Very High,2024
-C-01156,55-64,Retail,Wales,Medium,2002
-C-01157,45-54,Private Banking,Scotland,Medium,2010
-C-01158,55-64,Private Banking,Scotland,Very High,2020
-C-01159,65+,Retail,Midlands,Very High,2009
-C-01160,45-54,Private Banking,Scotland,Medium,2016
-C-01161,35-44,SME,Scotland,Low,2012
-C-01162,35-44,Private Banking,North West,High,2018
-C-01163,18-24,Private Banking,Scotland,Low,2008
-C-01164,65+,SME,Wales,High,2012
-C-01165,65+,SME,North West,Low,2018
-C-01166,55-64,Corporate,Wales,High,2001
-C-01167,55-64,Private Banking,Midlands,High,2020
-C-01168,45-54,Retail,Wales,Very High,2007
-C-01169,55-64,Private Banking,South East,Very High,2002
-C-01170,55-64,Corporate,Scotland,High,2003
-C-01171,65+,Private Banking,South East,Low,2008
-C-01172,65+,Private Banking,Wales,High,2021
-C-01173,25-34,Corporate,Wales,Very High,2010
-C-01174,65+,Retail,North West,Very High,2012
-C-01175,35-44,Private Banking,Scotland,Medium,2006
-C-01176,45-54,Private Banking,Wales,Very High,2019
-C-01177,65+,Corporate,Wales,Very High,2009
-C-01178,18-24,SME,Scotland,Medium,2011
-C-01179,18-24,Corporate,London,Low,2001
-C-01180,18-24,Corporate,South East,High,2022
-C-01181,45-54,Corporate,Wales,Low,2013
-C-01182,65+,Retail,London,High,2001
-C-01183,45-54,Corporate,Scotland,Medium,2005
-C-01184,45-54,Retail,Scotland,Very High,2013
-C-01185,35-44,SME,Wales,High,2015
-C-01186,55-64,Corporate,South East,Low,2010
-C-01187,55-64,Corporate,Wales,Very High,2004
-C-01188,35-44,Retail,Wales,Very High,2007
-C-01189,25-34,Corporate,Wales,Medium,2005
-C-01190,18-24,Retail,Midlands,Medium,2009
-C-01191,45-54,SME,Midlands,Low,2020
-C-01192,65+,Retail,South East,Very High,2009
-C-01193,25-34,Retail,London,Medium,2000
-C-01194,35-44,Retail,London,Very High,2004
-C-01195,25-34,Corporate,South East,Low,2005
-C-01196,35-44,Corporate,Midlands,Low,2002
-C-01197,35-44,Retail,Wales,Medium,2013
-C-01198,55-64,SME,Wales,High,2022
-C-01199,65+,SME,London,Very High,2012
-C-01200,35-44,Retail,North West,Low,2012
-C-01201,65+,SME,Scotland,High,2010
-C-01202,65+,SME,Scotland,Very High,2024
-C-01203,35-44,Private Banking,Scotland,Very High,2016
-C-01204,35-44,Retail,North West,Low,2010
-C-01205,65+,Private Banking,London,Medium,2016
-C-01206,55-64,Private Banking,South East,Very High,2013
-C-01207,65+,SME,Midlands,Low,2008
-C-01208,25-34,Private Banking,London,Low,2022
-C-01209,25-34,Corporate,North West,Low,2023
-C-01210,18-24,Retail,Scotland,Very High,2019
-C-01211,45-54,Retail,North West,Medium,2016
-C-01212,35-44,SME,Scotland,Very High,2013
-C-01213,18-24,Retail,London,Very High,2023
-C-01214,65+,SME,Wales,Medium,2022
-C-01215,35-44,Corporate,Wales,High,2011
-C-01216,45-54,Retail,London,High,2021
-C-01217,25-34,Corporate,London,Low,2010
-C-01218,25-34,Corporate,Wales,Very High,2001
-C-01219,25-34,Retail,North West,Very High,2008
-C-01220,45-54,SME,North West,Medium,2010
-C-01221,35-44,Retail,North West,Low,2012
-C-01222,35-44,SME,London,Medium,2015
-C-01223,45-54,Retail,Scotland,Low,2016
-C-01224,45-54,Retail,Wales,High,2006
-C-01225,55-64,SME,South East,Low,2012
-C-01226,25-34,SME,Wales,Very High,2007
-C-01227,45-54,Private Banking,Scotland,Low,2016
-C-01228,18-24,Retail,Wales,Low,2000
-C-01229,45-54,Corporate,North West,Medium,2018
-C-01230,18-24,SME,South East,Medium,2010
-C-01231,35-44,Retail,North West,Medium,2023
-C-01232,55-64,Corporate,Scotland,Low,2020
-C-01233,65+,Retail,Midlands,Medium,2011
-C-01234,35-44,Corporate,London,Low,2008
-C-01235,35-44,SME,Scotland,High,2015
-C-01236,25-34,Private Banking,London,Very High,2015
-C-01237,55-64,Corporate,Wales,Medium,2012
-C-01238,18-24,Retail,North West,Low,2009
-C-01239,65+,Corporate,North West,Very High,2007
-C-01240,65+,SME,Scotland,Medium,2008
-C-01241,25-34,Private Banking,Wales,Very High,2002
-C-01242,55-64,SME,Wales,Medium,2023
-C-01243,25-34,Corporate,Wales,High,2005
-C-01244,18-24,Corporate,South East,Medium,2007
-C-01245,18-24,Private Banking,Wales,Low,2007
-C-01246,55-64,Private Banking,Wales,Low,2000
-C-01247,45-54,Corporate,South East,Very High,2020
-C-01248,55-64,Private Banking,Wales,Very High,2024
-C-01249,55-64,Private Banking,Wales,Low,2012
-C-01250,45-54,Private Banking,Midlands,High,2005
-C-01251,35-44,Retail,London,Low,2012
-C-01252,35-44,Private Banking,London,High,2018
-C-01253,45-54,Retail,Scotland,High,2002
-C-01254,45-54,Corporate,Midlands,Medium,2010
-C-01255,18-24,Private Banking,Wales,Medium,2013
-C-01256,45-54,Retail,Wales,Low,2022
-C-01257,55-64,SME,Midlands,Medium,2023
-C-01258,35-44,Private Banking,Wales,Very High,2019
-C-01259,35-44,Retail,Midlands,Medium,2020
-C-01260,25-34,SME,London,Low,2006
-C-01261,65+,Retail,Wales,Medium,2018
-C-01262,35-44,Corporate,North West,Very High,2016
-C-01263,18-24,Corporate,Scotland,Very High,2001
-C-01264,25-34,Corporate,South East,Very High,2012
-C-01265,55-64,Corporate,London,Low,2023
-C-01266,35-44,SME,London,High,2007
-C-01267,35-44,Retail,Wales,Low,2006
-C-01268,35-44,Corporate,South East,Very High,2021
-C-01269,35-44,Retail,Wales,Medium,2006
-C-01270,18-24,Corporate,Scotland,Medium,2012
-C-01271,45-54,Corporate,London,Very High,2024
-C-01272,65+,Private Banking,South East,Very High,2008
-C-01273,18-24,Private Banking,Wales,Very High,2007
-C-01274,55-64,Retail,Midlands,Low,2018
-C-01275,45-54,Private Banking,North West,Low,2003
-C-01276,35-44,Private Banking,Midlands,Medium,2007
-C-01277,35-44,Private Banking,North West,Very High,2022
-C-01278,25-34,Corporate,North West,Medium,2000
-C-01279,25-34,Corporate,Midlands,High,2016
-C-01280,35-44,Retail,Midlands,Very High,2016
-C-01281,18-24,Private Banking,Scotland,Low,2022
-C-01282,25-34,Private Banking,Midlands,Very High,2002
-C-01283,18-24,Retail,Wales,Medium,2020
-C-01284,25-34,Private Banking,Scotland,Low,2020
-C-01285,35-44,Retail,London,Low,2000
-C-01286,25-34,Corporate,London,Medium,2014
-C-01287,18-24,SME,South East,Medium,2008
-C-01288,45-54,SME,Midlands,Low,2008
-C-01289,45-54,Private Banking,Wales,Low,2008
-C-01290,35-44,Corporate,Scotland,Medium,2019
-C-01291,55-64,Retail,South East,Medium,2017
-C-01292,25-34,Corporate,North West,Medium,2000
-C-01293,25-34,Corporate,Scotland,Low,2023
-C-01294,18-24,Retail,North West,Very High,2001
-C-01295,35-44,Corporate,Wales,Medium,2009
-C-01296,35-44,Retail,North West,High,2002
-C-01297,45-54,Corporate,South East,Very High,2024
-C-01298,35-44,Private Banking,Midlands,Medium,2007
-C-01299,25-34,Private Banking,Wales,High,2005
-C-01300,25-34,Corporate,North West,High,2012
-C-01301,65+,SME,South East,Low,2022
-C-01302,18-24,Retail,Wales,Low,2017
-C-01303,18-24,Private Banking,South East,Low,2022
-C-01304,18-24,Corporate,Midlands,Low,2019
-C-01305,65+,Private Banking,Midlands,Very High,2002
-C-01306,35-44,Private Banking,Wales,Low,2021
-C-01307,65+,Retail,London,Medium,2023
-C-01308,55-64,Corporate,Wales,High,2018
-C-01309,18-24,Corporate,London,Very High,2010
-C-01310,25-34,Retail,Scotland,Low,2018
-C-01311,25-34,Corporate,North West,Very High,2015
-C-01312,18-24,Private Banking,North West,High,2015
-C-01313,55-64,SME,Scotland,High,2023
-C-01314,45-54,Private Banking,Midlands,Very High,2020
-C-01315,25-34,Corporate,Scotland,Very High,2003
-C-01316,65+,Private Banking,South East,Low,2007
-C-01317,65+,Corporate,London,Very High,2018
-C-01318,45-54,Retail,North West,Low,2014
-C-01319,25-34,SME,London,High,2017
-C-01320,55-64,SME,South East,High,2008
-C-01321,55-64,Corporate,London,High,2023
-C-01322,25-34,Retail,North West,Low,2017
-C-01323,35-44,SME,Scotland,Very High,2001
-C-01324,65+,Retail,Midlands,Low,2001
-C-01325,35-44,Corporate,Midlands,Low,2015
-C-01326,65+,Private Banking,North West,Low,2020
-C-01327,55-64,Private Banking,South East,High,2020
-C-01328,35-44,Private Banking,Wales,Very High,2017
-C-01329,45-54,SME,Wales,Medium,2005
-C-01330,55-64,Retail,London,Very High,2018
-C-01331,55-64,Private Banking,South East,High,2018
-C-01332,35-44,Corporate,Wales,Low,2006
-C-01333,45-54,Retail,South East,High,2008
-C-01334,25-34,SME,Wales,Low,2021
-C-01335,65+,SME,Scotland,Medium,2023
-C-01336,65+,SME,Wales,Low,2006
-C-01337,55-64,Private Banking,Midlands,Medium,2008
-C-01338,65+,SME,London,Very High,2004
-C-01339,55-64,Corporate,South East,Very High,2014
-C-01340,45-54,Corporate,Wales,High,2017
-C-01341,18-24,SME,Wales,High,2016
-C-01342,18-24,Private Banking,Scotland,Medium,2020
-C-01343,55-64,SME,North West,Medium,2024
-C-01344,65+,Corporate,Wales,High,2022
-C-01345,18-24,Private Banking,London,High,2013
-C-01346,18-24,Corporate,South East,Medium,2017
-C-01347,65+,Private Banking,Wales,Very High,2020
-C-01348,55-64,Private Banking,Wales,Low,2015
-C-01349,45-54,SME,South East,High,2021
-C-01350,45-54,SME,London,Very High,2022
-C-01351,55-64,Corporate,London,High,2002
-C-01352,25-34,Corporate,South East,Medium,2000
-C-01353,65+,Retail,Midlands,Very High,2007
-C-01354,55-64,Corporate,Scotland,Very High,2017
-C-01355,55-64,Private Banking,London,Very High,2014
-C-01356,25-34,SME,Wales,Very High,2000
-C-01357,35-44,SME,Midlands,Medium,2003
-C-01358,65+,Retail,Wales,High,2017
-C-01359,65+,Retail,Wales,Low,2012
-C-01360,25-34,SME,Scotland,Low,2020
-C-01361,18-24,SME,Wales,Very High,2001
-C-01362,18-24,Corporate,London,High,2015
-C-01363,55-64,Corporate,South East,Very High,2005
-C-01364,65+,Private Banking,Wales,High,2009
-C-01365,65+,Corporate,South East,Very High,2019
-C-01366,35-44,Private Banking,South East,Low,2020
-C-01367,25-34,Retail,South East,Low,2023
-C-01368,25-34,Retail,North West,Very High,2015
-C-01369,45-54,Private Banking,South East,Medium,2010
-C-01370,35-44,Corporate,Midlands,High,2018
-C-01371,45-54,Retail,London,Medium,2003
-C-01372,55-64,Retail,Wales,Low,2005
-C-01373,45-54,Retail,Midlands,Very High,2010
-C-01374,35-44,Retail,Scotland,High,2015
-C-01375,65+,Retail,London,Very High,2013
-C-01376,25-34,Retail,London,Low,2007
-C-01377,45-54,SME,Midlands,Medium,2012
-C-01378,65+,Private Banking,Scotland,Medium,2021
-C-01379,25-34,Retail,Midlands,Low,2003
-C-01380,18-24,SME,Scotland,Medium,2011
-C-01381,25-34,Retail,South East,Very High,2020
-C-01382,25-34,Retail,London,Low,2002
-C-01383,18-24,Private Banking,London,Very High,2012
-C-01384,65+,Retail,Scotland,Low,2022
-C-01385,55-64,Private Banking,London,High,2016
-C-01386,25-34,Corporate,Midlands,Medium,2013
-C-01387,18-24,SME,Scotland,High,2022
-C-01388,55-64,Retail,London,Medium,2013
-C-01389,18-24,Private Banking,North West,Medium,2006
-C-01390,45-54,Retail,London,High,2011
-C-01391,55-64,Corporate,Scotland,Medium,2016
-C-01392,35-44,Retail,Scotland,Very High,2024
-C-01393,55-64,Private Banking,North West,High,2002
-C-01394,55-64,Private Banking,Scotland,Very High,2015
-C-01395,35-44,Retail,Wales,Medium,2008
-C-01396,45-54,Private Banking,Wales,Low,2004
-C-01397,45-54,Retail,Wales,High,2015
-C-01398,55-64,Private Banking,South East,Medium,2006
-C-01399,55-64,SME,Wales,Medium,2002
-C-01400,35-44,Corporate,Midlands,Medium,2020
-C-01401,55-64,Corporate,South East,High,2008
-C-01402,45-54,Corporate,South East,High,2021
-C-01403,65+,Corporate,London,High,2020
-C-01404,18-24,Private Banking,London,Very High,2021
-C-01405,45-54,SME,London,Very High,2018
-C-01406,55-64,Corporate,North West,High,2005
-C-01407,45-54,Retail,Scotland,Medium,2002
-C-01408,65+,SME,Wales,Very High,2003
-C-01409,18-24,Retail,North West,Medium,2022
-C-01410,45-54,SME,Wales,High,2016
-C-01411,35-44,SME,Midlands,Medium,2007
-C-01412,18-24,Retail,Midlands,Very High,2021
-C-01413,65+,Corporate,Scotland,Medium,2022
-C-01414,25-34,Retail,Midlands,Very High,2008
-C-01415,35-44,SME,London,Low,2014
-C-01416,45-54,SME,Wales,Low,2020
-C-01417,55-64,Private Banking,Scotland,Low,2012
-C-01418,35-44,SME,Midlands,High,2021
-C-01419,45-54,SME,North West,High,2021
-C-01420,18-24,Private Banking,Scotland,Medium,2011
-C-01421,25-34,Retail,Midlands,Very High,2007
-C-01422,35-44,Retail,Wales,Medium,2014
-C-01423,25-34,SME,London,High,2020
-C-01424,35-44,Private Banking,Midlands,High,2004
-C-01425,55-64,SME,Scotland,Very High,2003
-C-01426,55-64,Retail,Scotland,High,2007
-C-01427,25-34,Corporate,Wales,Low,2019
-C-01428,35-44,Corporate,North West,High,2018
-C-01429,55-64,Corporate,Scotland,High,2024
-C-01430,35-44,SME,London,Medium,2011
-C-01431,18-24,Corporate,Midlands,Low,2015
-C-01432,55-64,Retail,London,High,2009
-C-01433,18-24,Corporate,Scotland,High,2015
-C-01434,65+,Retail,Scotland,Low,2011
-C-01435,18-24,Private Banking,North West,Low,2007
-C-01436,25-34,Retail,South East,Very High,2024
-C-01437,45-54,Retail,North West,Medium,2024
-C-01438,18-24,SME,Scotland,Low,2015
-C-01439,65+,SME,Wales,Low,2010
-C-01440,45-54,SME,Wales,Low,2021
-C-01441,65+,Corporate,Midlands,Low,2011
-C-01442,55-64,Private Banking,North West,Low,2017
-C-01443,55-64,Retail,Midlands,High,2008
-C-01444,55-64,Private Banking,Midlands,High,2009
-C-01445,35-44,Corporate,London,High,2007
-C-01446,25-34,Corporate,Midlands,Low,2007
-C-01447,18-24,Retail,Midlands,Medium,2017
-C-01448,18-24,Private Banking,South East,Medium,2002
-C-01449,35-44,Retail,Scotland,High,2009
-C-01450,35-44,Corporate,North West,Very High,2010
-C-01451,55-64,Corporate,South East,Medium,2007
-C-01452,45-54,SME,Wales,High,2022
-C-01453,45-54,SME,North West,Low,2020
-C-01454,35-44,Private Banking,South East,High,2010
-C-01455,18-24,SME,Wales,Medium,2018
-C-01456,45-54,Retail,Scotland,High,2009
-C-01457,55-64,Retail,Wales,Medium,2003
-C-01458,35-44,Private Banking,London,Medium,2015
-C-01459,25-34,Retail,North West,Medium,2008
-C-01460,18-24,Retail,Midlands,Low,2018
-C-01461,55-64,Private Banking,North West,High,2009
-C-01462,65+,SME,South East,Medium,2012
-C-01463,35-44,Corporate,London,Medium,2020
-C-01464,65+,Private Banking,Wales,High,2007
-C-01465,65+,SME,South East,High,2006
-C-01466,45-54,Corporate,Midlands,Very High,2013
-C-01467,55-64,Corporate,North West,Low,2015
-C-01468,18-24,SME,Scotland,High,2024
-C-01469,65+,Corporate,North West,Low,2014
-C-01470,25-34,Corporate,Scotland,Medium,2015
-C-01471,45-54,Private Banking,Wales,Low,2003
-C-01472,65+,Corporate,South East,High,2004
-C-01473,45-54,Private Banking,South East,Very High,2021
-C-01474,55-64,Retail,Midlands,Very High,2017
-C-01475,35-44,Private Banking,Wales,Medium,2012
-C-01476,45-54,SME,Midlands,Very High,2009
-C-01477,25-34,Corporate,Wales,Very High,2016
-C-01478,18-24,Retail,Scotland,High,2005
-C-01479,45-54,SME,Midlands,Low,2005
-C-01480,18-24,Private Banking,North West,High,2014
-C-01481,55-64,SME,Scotland,High,2009
-C-01482,25-34,Retail,Scotland,High,2017
-C-01483,65+,Corporate,London,Medium,2023
-C-01484,35-44,Corporate,South East,Low,2022
-C-01485,45-54,Retail,Midlands,Medium,2020
-C-01486,18-24,Corporate,Scotland,Very High,2003
-C-01487,18-24,SME,South East,High,2023
-C-01488,25-34,SME,Midlands,High,2013
-C-01489,65+,Corporate,Scotland,Medium,2016
-C-01490,45-54,Retail,South East,Very High,2008
-C-01491,25-34,SME,North West,High,2022
-C-01492,65+,SME,London,High,2019
-C-01493,18-24,Retail,Midlands,Very High,2021
-C-01494,65+,Private Banking,North West,Low,2023
-C-01495,35-44,Private Banking,Wales,Very High,2021
-C-01496,55-64,Private Banking,London,Low,2006
-C-01497,35-44,Retail,London,Low,2013
-C-01498,45-54,Retail,Wales,High,2002
-C-01499,25-34,Corporate,Wales,Medium,2004
-C-01500,25-34,Private Banking,Scotland,High,2006
-C-01501,65+,Corporate,Midlands,Low,2020
-C-01502,45-54,Corporate,North West,Low,2016
-C-01503,35-44,SME,North West,Very High,2005
-C-01504,65+,Retail,North West,Low,2013
-C-01505,65+,Private Banking,Midlands,Medium,2022
-C-01506,18-24,Corporate,South East,Low,2018
-C-01507,18-24,Corporate,Midlands,Low,2019
-C-01508,18-24,SME,Midlands,Low,2005
-C-01509,55-64,Retail,South East,Low,2018
-C-01510,35-44,SME,Midlands,High,2008
-C-01511,65+,Private Banking,North West,Very High,2001
-C-01512,45-54,Retail,North West,Medium,2004
-C-01513,35-44,Retail,North West,Very High,2021
-C-01514,25-34,SME,Midlands,Very High,2007
-C-01515,65+,SME,London,Medium,2020
-C-01516,45-54,Retail,London,Very High,2013
-C-01517,45-54,Retail,Scotland,Very High,2003
-C-01518,25-34,SME,London,Medium,2015
-C-01519,55-64,Corporate,Midlands,Low,2011
-C-01520,35-44,Retail,Scotland,Medium,2023
-C-01521,65+,Private Banking,South East,Medium,2001
-C-01522,55-64,SME,South East,Low,2013
-C-01523,45-54,Corporate,London,High,2012
-C-01524,18-24,SME,London,High,2015
-C-01525,55-64,Retail,South East,Very High,2010
-C-01526,65+,Corporate,Midlands,Very High,2012
-C-01527,18-24,Private Banking,South East,Medium,2015
-C-01528,65+,Private Banking,South East,Medium,2013
-C-01529,65+,SME,Midlands,Low,2009
-C-01530,18-24,SME,North West,High,2021
-C-01531,35-44,Private Banking,Wales,High,2004
-C-01532,45-54,Corporate,South East,Medium,2005
-C-01533,65+,SME,North West,High,2019
-C-01534,65+,SME,Wales,Very High,2023
-C-01535,18-24,Retail,Midlands,Low,2006
-C-01536,25-34,Private Banking,Midlands,Very High,2008
-C-01537,65+,Corporate,London,High,2014
-C-01538,18-24,Retail,South East,Medium,2009
-C-01539,55-64,SME,Midlands,Very High,2015
-C-01540,18-24,SME,North West,Low,2022
-C-01541,65+,SME,Midlands,Very High,2002
-C-01542,25-34,SME,North West,Low,2007
-C-01543,45-54,Retail,North West,Low,2016
-C-01544,55-64,Corporate,Midlands,High,2015
-C-01545,25-34,SME,Wales,Medium,2001
-C-01546,25-34,Corporate,London,Low,2009
-C-01547,65+,Retail,South East,Medium,2014
-C-01548,18-24,Corporate,South East,Very High,2023
-C-01549,55-64,Retail,London,Low,2000
-C-01550,18-24,Retail,South East,Very High,2004
-C-01551,55-64,SME,Midlands,Low,2019
-C-01552,45-54,Private Banking,South East,Medium,2001
-C-01553,25-34,Corporate,South East,Medium,2007
-C-01554,35-44,SME,Midlands,Very High,2024
-C-01555,65+,Corporate,Midlands,Very High,2005
-C-01556,55-64,Private Banking,Midlands,High,2007
-C-01557,18-24,SME,London,High,2002
-C-01558,25-34,Corporate,Midlands,Medium,2009
-C-01559,25-34,Retail,Wales,Low,2010
-C-01560,25-34,Corporate,Wales,Low,2004
-C-01561,65+,Private Banking,Wales,High,2007
-C-01562,55-64,Retail,North West,Medium,2015
-C-01563,35-44,Retail,Wales,Very High,2003
-C-01564,18-24,Corporate,North West,Medium,2013
-C-01565,25-34,SME,Midlands,High,2006
-C-01566,18-24,SME,London,Low,2007
-C-01567,35-44,Retail,North West,High,2015
-C-01568,65+,Retail,South East,Very High,2001
-C-01569,55-64,Private Banking,Scotland,High,2013
-C-01570,55-64,Private Banking,Scotland,Medium,2010
-C-01571,35-44,Private Banking,South East,High,2017
-C-01572,65+,Corporate,Wales,Very High,2004
-C-01573,35-44,SME,Scotland,High,2012
-C-01574,35-44,Corporate,North West,High,2017
-C-01575,65+,Retail,South East,High,2014
-C-01576,25-34,SME,Scotland,Low,2022
-C-01577,45-54,Private Banking,London,High,2009
-C-01578,18-24,Private Banking,Scotland,Low,2000
-C-01579,25-34,Corporate,South East,Low,2011
-C-01580,18-24,Private Banking,Midlands,High,2016
-C-01581,25-34,Corporate,South East,High,2017
-C-01582,25-34,SME,North West,Medium,2006
-C-01583,55-64,Retail,Scotland,High,2005
-C-01584,35-44,SME,London,Very High,2000
-C-01585,18-24,SME,London,High,2007
-C-01586,45-54,Retail,London,Medium,2010
-C-01587,65+,SME,South East,Medium,2007
-C-01588,45-54,Corporate,South East,Medium,2004
-C-01589,35-44,Corporate,South East,High,2021
-C-01590,35-44,Corporate,Wales,Very High,2001
-C-01591,35-44,Private Banking,Midlands,Low,2001
-C-01592,65+,Corporate,South East,High,2016
-C-01593,65+,Corporate,Midlands,Very High,2024
-C-01594,35-44,Private Banking,London,High,2006
-C-01595,45-54,Private Banking,London,High,2015
-C-01596,18-24,SME,North West,High,2023
-C-01597,65+,Corporate,Midlands,Very High,2009
-C-01598,45-54,Retail,Scotland,High,2019
-C-01599,35-44,Private Banking,Scotland,High,2008
-C-01600,18-24,Retail,South East,Medium,2022
-C-01601,45-54,SME,South East,High,2020
-C-01602,25-34,SME,South East,Very High,2018
-C-01603,35-44,Corporate,North West,High,2010
-C-01604,55-64,Private Banking,North West,High,2014
-C-01605,45-54,Retail,Midlands,Very High,2005
-C-01606,65+,Corporate,North West,Medium,2017
-C-01607,25-34,Retail,Wales,High,2008
-C-01608,18-24,Private Banking,Midlands,High,2024
-C-01609,45-54,SME,Midlands,Very High,2007
-C-01610,25-34,SME,Scotland,Very High,2022
-C-01611,35-44,Private Banking,London,Very High,2019
-C-01612,25-34,Retail,Midlands,Low,2012
-C-01613,18-24,Corporate,South East,Low,2024
-C-01614,18-24,Private Banking,Midlands,Very High,2015
-C-01615,55-64,Private Banking,London,High,2021
-C-01616,65+,Private Banking,North West,Medium,2005
-C-01617,55-64,Retail,Scotland,Low,2008
-C-01618,55-64,Corporate,North West,Low,2023
-C-01619,25-34,SME,Midlands,High,2005
-C-01620,65+,Retail,Wales,Low,2006
-C-01621,25-34,SME,Wales,Medium,2010
-C-01622,55-64,Private Banking,Wales,Low,2018
-C-01623,45-54,Private Banking,South East,Low,2013
-C-01624,18-24,Private Banking,Midlands,Medium,2004
-C-01625,45-54,SME,Midlands,Very High,2012
-C-01626,18-24,Retail,Wales,Very High,2018
-C-01627,18-24,Private Banking,North West,Medium,2022
-C-01628,25-34,SME,Midlands,Low,2019
-C-01629,35-44,Corporate,London,High,2001
-C-01630,55-64,Corporate,North West,Medium,2023
-C-01631,18-24,Private Banking,Scotland,Low,2005
-C-01632,35-44,Corporate,North West,High,2011
-C-01633,55-64,SME,North West,High,2007
-C-01634,25-34,Retail,Wales,Very High,2020
-C-01635,55-64,SME,Midlands,High,2000
-C-01636,65+,Retail,Wales,Medium,2018
-C-01637,18-24,Private Banking,London,High,2010
-C-01638,45-54,Corporate,Scotland,Low,2020
-C-01639,35-44,SME,Midlands,Very High,2001
-C-01640,45-54,SME,Midlands,Very High,2020
-C-01641,25-34,Corporate,Scotland,High,2024
-C-01642,35-44,Retail,Midlands,Medium,2003
-C-01643,65+,Private Banking,Scotland,Very High,2019
-C-01644,35-44,Corporate,Wales,Medium,2014
-C-01645,65+,Private Banking,London,High,2002
-C-01646,25-34,Retail,Scotland,Medium,2018
-C-01647,55-64,Retail,Midlands,Low,2011
-C-01648,65+,Retail,London,Low,2020
-C-01649,25-34,Retail,South East,Very High,2001
-C-01650,65+,Corporate,Scotland,Low,2014
-C-01651,55-64,Retail,Scotland,High,2003
-C-01652,45-54,Corporate,Midlands,Low,2000
-C-01653,65+,Corporate,South East,Low,2022
-C-01654,35-44,Private Banking,Midlands,High,2009
-C-01655,35-44,Retail,South East,Very High,2024
-C-01656,45-54,Private Banking,North West,Low,2023
-C-01657,55-64,Retail,Midlands,Very High,2011
-C-01658,65+,Retail,Scotland,Medium,2002
-C-01659,18-24,Retail,Scotland,Low,2022
-C-01660,18-24,Retail,Midlands,Medium,2016
-C-01661,18-24,SME,Wales,Very High,2017
-C-01662,25-34,Retail,Wales,High,2013
-C-01663,45-54,Retail,Wales,Low,2005
-C-01664,18-24,Private Banking,Wales,High,2003
-C-01665,18-24,Retail,Wales,Very High,2010
-C-01666,25-34,Corporate,London,Medium,2003
-C-01667,25-34,Corporate,South East,Medium,2024
-C-01668,25-34,Private Banking,North West,High,2017
-C-01669,25-34,Retail,Scotland,Medium,2022
-C-01670,18-24,SME,Scotland,Very High,2008
-C-01671,45-54,Private Banking,South East,High,2001
-C-01672,45-54,Retail,Wales,Medium,2022
-C-01673,45-54,Private Banking,Scotland,Low,2019
-C-01674,65+,Corporate,North West,Very High,2002
-C-01675,45-54,Corporate,Midlands,Medium,2011
-C-01676,25-34,Corporate,Wales,Low,2003
-C-01677,45-54,SME,Midlands,Very High,2001
-C-01678,55-64,Corporate,South East,Low,2013
-C-01679,25-34,Corporate,South East,Low,2012
-C-01680,35-44,Private Banking,South East,Low,2011
-C-01681,18-24,Private Banking,South East,Medium,2000
-C-01682,35-44,Corporate,Wales,Very High,2008
-C-01683,45-54,SME,North West,Low,2010
-C-01684,55-64,Corporate,Midlands,Medium,2009
-C-01685,45-54,Private Banking,South East,Medium,2018
-C-01686,18-24,Retail,Scotland,Low,2015
-C-01687,35-44,Retail,Scotland,Medium,2003
-C-01688,55-64,Retail,Midlands,Low,2002
-C-01689,45-54,Retail,North West,Low,2020
-C-01690,45-54,Retail,South East,Medium,2022
-C-01691,65+,Retail,Scotland,High,2010
-C-01692,55-64,Retail,Wales,Very High,2000
-C-01693,35-44,Retail,North West,Low,2017
-C-01694,35-44,SME,North West,High,2015
-C-01695,35-44,Private Banking,London,Low,2003
-C-01696,55-64,SME,South East,High,2014
-C-01697,35-44,SME,London,Medium,2002
-C-01698,18-24,SME,Wales,Medium,2017
-C-01699,45-54,Private Banking,Scotland,Medium,2022
-C-01700,65+,Private Banking,North West,Low,2011
-C-01701,45-54,Private Banking,Wales,Medium,2008
-C-01702,35-44,Corporate,London,High,2006
-C-01703,25-34,Retail,Scotland,Very High,2024
-C-01704,18-24,SME,London,Low,2020
-C-01705,45-54,Retail,London,Medium,2017
-C-01706,25-34,Corporate,London,Very High,2017
-C-01707,18-24,Retail,Wales,Medium,2016
-C-01708,18-24,SME,London,Low,2015
-C-01709,65+,Retail,Wales,Very High,2015
-C-01710,55-64,Private Banking,Wales,Very High,2011
-C-01711,65+,Retail,North West,High,2020
-C-01712,55-64,Retail,North West,Low,2017
-C-01713,65+,Corporate,North West,Medium,2006
-C-01714,18-24,Private Banking,London,Very High,2022
-C-01715,18-24,SME,South East,Very High,2007
-C-01716,55-64,Private Banking,North West,Medium,2011
-C-01717,45-54,SME,Wales,Medium,2000
-C-01718,35-44,Private Banking,Wales,Low,2012
-C-01719,35-44,Private Banking,London,High,2002
-C-01720,65+,SME,Wales,Medium,2014
-C-01721,25-34,Retail,London,Very High,2014
-C-01722,25-34,SME,London,Low,2013
-C-01723,35-44,Retail,Midlands,High,2012
-C-01724,25-34,SME,Scotland,Very High,2001
-C-01725,25-34,SME,Midlands,Low,2010
-C-01726,35-44,Private Banking,Wales,High,2006
-C-01727,55-64,Corporate,Scotland,Very High,2012
-C-01728,35-44,Corporate,North West,High,2017
-C-01729,35-44,Private Banking,South East,Low,2008
-C-01730,45-54,Retail,London,Medium,2004
-C-01731,18-24,Retail,South East,Very High,2017
-C-01732,55-64,Retail,South East,Low,2009
-C-01733,65+,Retail,Midlands,High,2012
-C-01734,55-64,SME,Scotland,Medium,2018
-C-01735,18-24,Private Banking,North West,Medium,2001
-C-01736,25-34,Retail,North West,High,2006
-C-01737,35-44,SME,Midlands,High,2008
-C-01738,18-24,Corporate,Wales,High,2002
-C-01739,25-34,SME,Midlands,Very High,2019
-C-01740,25-34,Retail,South East,Low,2001
-C-01741,45-54,Corporate,Wales,High,2014
-C-01742,18-24,Retail,Wales,Low,2021
-C-01743,65+,Corporate,South East,Medium,2001
-C-01744,55-64,Corporate,North West,Medium,2006
-C-01745,55-64,Retail,Scotland,Medium,2014
-C-01746,65+,Retail,London,Medium,2008
-C-01747,25-34,Private Banking,North West,High,2020
-C-01748,25-34,Private Banking,Wales,Low,2013
-C-01749,65+,Retail,North West,Medium,2015
-C-01750,35-44,Retail,South East,Very High,2006
-C-01751,45-54,Corporate,Wales,Medium,2004
-C-01752,35-44,Retail,London,Medium,2024
-C-01753,35-44,Private Banking,London,Low,2021
-C-01754,45-54,Corporate,North West,Medium,2002
-C-01755,35-44,Private Banking,North West,Very High,2011
-C-01756,65+,SME,London,High,2022
-C-01757,18-24,Retail,Scotland,Very High,2012
-C-01758,45-54,Corporate,South East,Low,2019
-C-01759,25-34,SME,North West,High,2023
-C-01760,55-64,Retail,South East,High,2021
-C-01761,55-64,Retail,Midlands,Low,2022
-C-01762,18-24,Retail,Midlands,Very High,2001
-C-01763,55-64,SME,North West,High,2005
-C-01764,35-44,Private Banking,London,Low,2006
-C-01765,35-44,Corporate,London,Very High,2023
-C-01766,25-34,Retail,Wales,High,2010
-C-01767,45-54,Retail,London,Very High,2020
-C-01768,65+,Corporate,Midlands,Very High,2006
-C-01769,18-24,SME,South East,Low,2013
-C-01770,35-44,Corporate,North West,High,2005
-C-01771,35-44,Retail,London,Low,2004
-C-01772,25-34,Private Banking,Wales,High,2021
-C-01773,18-24,Private Banking,Wales,Very High,2017
-C-01774,35-44,Private Banking,London,Low,2009
-C-01775,55-64,SME,South East,High,2007
-C-01776,25-34,Private Banking,Scotland,Very High,2014
-C-01777,25-34,Private Banking,London,High,2018
-C-01778,35-44,SME,Scotland,Medium,2021
-C-01779,55-64,Retail,London,Low,2004
-C-01780,18-24,Private Banking,South East,Medium,2020
-C-01781,35-44,Retail,Midlands,Low,2011
-C-01782,25-34,Corporate,Wales,Medium,2009
-C-01783,35-44,Private Banking,Midlands,High,2021
-C-01784,35-44,Private Banking,Wales,Low,2011
-C-01785,65+,Private Banking,South East,High,2013
-C-01786,55-64,SME,London,Low,2018
-C-01787,45-54,Private Banking,London,Low,2020
-C-01788,45-54,SME,London,High,2001
-C-01789,55-64,Corporate,North West,High,2008
-C-01790,25-34,Corporate,Wales,Very High,2017
-C-01791,35-44,Corporate,Scotland,Medium,2007
-C-01792,35-44,SME,Scotland,Low,2020
-C-01793,55-64,Private Banking,South East,Medium,2016
-C-01794,45-54,Retail,Midlands,High,2015
-C-01795,65+,Private Banking,Wales,Low,2016
-C-01796,65+,Private Banking,Wales,Very High,2018
-C-01797,45-54,Retail,Wales,Very High,2019
-C-01798,35-44,Corporate,North West,High,2004
-C-01799,35-44,Retail,South East,Low,2019
-C-01800,25-34,Retail,London,Medium,2000
-C-01801,18-24,Corporate,South East,Very High,2012
-C-01802,35-44,Private Banking,Wales,Low,2008
-C-01803,45-54,Retail,London,Medium,2020
-C-01804,45-54,Private Banking,North West,Medium,2004
-C-01805,35-44,Private Banking,South East,Medium,2001
-C-01806,55-64,Private Banking,Scotland,Medium,2021
-C-01807,55-64,Retail,Scotland,Very High,2015
-C-01808,45-54,Private Banking,London,Low,2019
-C-01809,18-24,Corporate,South East,Medium,2003
-C-01810,65+,Corporate,North West,High,2021
-C-01811,65+,Corporate,Midlands,Low,2017
-C-01812,45-54,Corporate,Scotland,Medium,2020
-C-01813,65+,Retail,South East,Low,2014
-C-01814,65+,Corporate,Midlands,Medium,2009
-C-01815,65+,Retail,Midlands,Very High,2003
-C-01816,25-34,SME,Scotland,High,2004
-C-01817,35-44,SME,London,High,2003
-C-01818,65+,SME,Midlands,Low,2021
-C-01819,65+,SME,London,High,2020
-C-01820,25-34,Private Banking,South East,Medium,2007
-C-01821,25-34,Private Banking,Midlands,Medium,2005
-C-01822,18-24,Private Banking,Scotland,Medium,2009
-C-01823,55-64,SME,North West,Medium,2021
-C-01824,55-64,Corporate,Midlands,Very High,2023
-C-01825,25-34,SME,Wales,Medium,2009
-C-01826,45-54,Retail,London,High,2011
-C-01827,25-34,SME,North West,Very High,2010
-C-01828,35-44,Corporate,Wales,Very High,2008
-C-01829,65+,Private Banking,Scotland,Low,2014
-C-01830,55-64,Retail,London,Low,2004
-C-01831,45-54,Private Banking,Midlands,High,2013
-C-01832,35-44,Corporate,Scotland,Medium,2022
-C-01833,45-54,Corporate,South East,Medium,2013
-C-01834,55-64,Retail,Midlands,Low,2002
-C-01835,45-54,SME,Wales,Very High,2001
-C-01836,18-24,Corporate,Scotland,Very High,2024
-C-01837,45-54,Retail,Wales,Very High,2016
-C-01838,18-24,Corporate,North West,Very High,2016
-C-01839,65+,SME,Midlands,Low,2017
-C-01840,55-64,Private Banking,Midlands,Low,2005
-C-01841,18-24,Corporate,Scotland,Very High,2011
-C-01842,25-34,SME,London,Medium,2024
-C-01843,65+,Private Banking,London,High,2021
-C-01844,18-24,Corporate,North West,Medium,2017
-C-01845,35-44,Retail,South East,Low,2003
-C-01846,55-64,Retail,London,High,2015
-C-01847,35-44,Corporate,Midlands,High,2007
-C-01848,18-24,Corporate,Wales,High,2016
-C-01849,35-44,Corporate,Midlands,High,2010
-C-01850,18-24,Private Banking,North West,Medium,2012
-C-01851,25-34,Retail,South East,Medium,2007
-C-01852,65+,Private Banking,South East,High,2011
-C-01853,25-34,Private Banking,Wales,Low,2017
-C-01854,55-64,SME,North West,Medium,2001
-C-01855,25-34,Corporate,Midlands,High,2009
-C-01856,55-64,Corporate,Midlands,Low,2022
-C-01857,25-34,Private Banking,North West,Very High,2014
-C-01858,45-54,Retail,Wales,Medium,2014
-C-01859,45-54,Private Banking,North West,High,2008
-C-01860,55-64,Retail,Wales,High,2009
-C-01861,18-24,Retail,London,Very High,2004
-C-01862,45-54,SME,London,Very High,2022
-C-01863,45-54,Corporate,North West,Medium,2004
-C-01864,45-54,Retail,Wales,Low,2002
-C-01865,65+,Retail,North West,Medium,2000
-C-01866,45-54,Private Banking,Scotland,Low,2022
-C-01867,45-54,Corporate,Midlands,Very High,2016
-C-01868,35-44,SME,Wales,High,2002
-C-01869,55-64,SME,Wales,Medium,2017
-C-01870,65+,Corporate,South East,High,2020
-C-01871,65+,Corporate,London,Low,2019
-C-01872,25-34,SME,South East,Low,2005
-C-01873,35-44,SME,Midlands,Low,2005
-C-01874,55-64,Corporate,Scotland,High,2015
-C-01875,55-64,Retail,North West,Low,2005
-C-01876,55-64,Private Banking,Scotland,Very High,2018
-C-01877,45-54,Private Banking,London,Medium,2014
-C-01878,18-24,SME,Scotland,High,2013
-C-01879,18-24,Retail,London,Very High,2002
-C-01880,65+,Private Banking,Scotland,Low,2002
-C-01881,25-34,SME,South East,Very High,2000
-C-01882,55-64,Private Banking,Scotland,Low,2000
-C-01883,45-54,SME,South East,Low,2011
-C-01884,25-34,Corporate,London,Medium,2006
-C-01885,45-54,Private Banking,Midlands,Low,2006
-C-01886,25-34,Retail,Scotland,High,2008
-C-01887,55-64,Corporate,South East,Medium,2022
-C-01888,65+,Corporate,Midlands,High,2017
-C-01889,45-54,Private Banking,Midlands,High,2011
-C-01890,55-64,Corporate,South East,Very High,2020
-C-01891,18-24,Private Banking,Midlands,High,2021
-C-01892,25-34,Corporate,North West,Medium,2022
-C-01893,18-24,Corporate,South East,Very High,2003
-C-01894,65+,Retail,Scotland,Medium,2013
-C-01895,35-44,Private Banking,London,Low,2017
-C-01896,45-54,SME,Wales,Very High,2009
-C-01897,25-34,Retail,South East,Low,2008
-C-01898,25-34,Retail,South East,Medium,2018
-C-01899,35-44,SME,Wales,High,2014
-C-01900,25-34,Corporate,South East,High,2015
-C-01901,45-54,Private Banking,Wales,High,2012
-C-01902,25-34,Retail,North West,High,2004
-C-01903,65+,Corporate,Midlands,Low,2020
-C-01904,45-54,Retail,Scotland,Low,2001
-C-01905,35-44,SME,South East,Medium,2020
-C-01906,25-34,Private Banking,London,Low,2007
-C-01907,18-24,Private Banking,Scotland,Very High,2012
-C-01908,55-64,Retail,North West,Low,2007
-C-01909,25-34,Corporate,Wales,High,2004
-C-01910,45-54,SME,Wales,Low,2009
-C-01911,65+,Retail,Midlands,Very High,2023
-C-01912,25-34,Private Banking,London,High,2023
-C-01913,65+,Corporate,Wales,Low,2016
-C-01914,45-54,Private Banking,Midlands,Medium,2006
-C-01915,55-64,Private Banking,Wales,Low,2016
-C-01916,18-24,SME,London,Low,2012
-C-01917,35-44,Retail,Midlands,High,2006
-C-01918,65+,SME,Wales,High,2014
-C-01919,18-24,Retail,South East,Very High,2012
-C-01920,25-34,Corporate,Wales,Low,2012
-C-01921,45-54,Corporate,London,High,2019
-C-01922,45-54,Private Banking,North West,Very High,2015
-C-01923,25-34,Retail,South East,High,2016
-C-01924,35-44,Private Banking,Midlands,Low,2018
-C-01925,55-64,SME,Wales,Medium,2014
-C-01926,18-24,Private Banking,Scotland,Very High,2015
-C-01927,65+,SME,North West,Very High,2011
-C-01928,45-54,Corporate,London,Very High,2021
-C-01929,25-34,Retail,South East,Medium,2023
-C-01930,25-34,Retail,North West,Very High,2001
-C-01931,45-54,Retail,Midlands,High,2011
-C-01932,55-64,Private Banking,Midlands,High,2015
-C-01933,65+,SME,South East,High,2009
-C-01934,18-24,Retail,North West,High,2007
-C-01935,35-44,Private Banking,North West,High,2020
-C-01936,35-44,Corporate,Wales,High,2001
-C-01937,25-34,SME,Wales,High,2013
-C-01938,55-64,Retail,Midlands,Low,2008
-C-01939,65+,Corporate,North West,Low,2000
-C-01940,45-54,Private Banking,Wales,Very High,2008
-C-01941,35-44,SME,London,Very High,2017
-C-01942,18-24,SME,South East,Low,2013
-C-01943,45-54,SME,South East,Low,2022
-C-01944,25-34,SME,Wales,High,2016
-C-01945,65+,Retail,North West,Low,2024
-C-01946,65+,SME,South East,Medium,2004
-C-01947,55-64,Retail,Midlands,Very High,2005
-C-01948,18-24,Retail,Wales,Medium,2007
-C-01949,65+,Corporate,Wales,Low,2015
-C-01950,25-34,SME,South East,Very High,2009
-C-01951,35-44,Private Banking,London,Medium,2010
-C-01952,35-44,Private Banking,Midlands,Medium,2013
-C-01953,25-34,Corporate,Wales,Low,2022
-C-01954,55-64,SME,South East,Low,2023
-C-01955,35-44,Corporate,South East,Low,2006
-C-01956,25-34,Retail,Wales,Low,2014
-C-01957,65+,Retail,Scotland,Very High,2017
-C-01958,45-54,Corporate,North West,Low,2021
-C-01959,35-44,Private Banking,Wales,Very High,2021
-C-01960,25-34,SME,Scotland,Very High,2004
-C-01961,35-44,SME,Midlands,Medium,2022
-C-01962,65+,Retail,North West,Medium,2024
-C-01963,45-54,Retail,Scotland,Very High,2019
-C-01964,35-44,Private Banking,North West,Very High,2020
-C-01965,55-64,Retail,Scotland,Very High,2010
-C-01966,55-64,Corporate,Midlands,High,2015
-C-01967,55-64,Private Banking,Wales,Low,2020
-C-01968,18-24,Corporate,Midlands,Medium,2023
-C-01969,18-24,Retail,Scotland,Medium,2024
-C-01970,18-24,Retail,Scotland,Medium,2009
-C-01971,25-34,Corporate,South East,Very High,2010
-C-01972,45-54,Private Banking,Scotland,Medium,2008
-C-01973,35-44,Private Banking,North West,Very High,2004
-C-01974,35-44,Private Banking,Wales,Low,2009
-C-01975,35-44,Retail,Midlands,Very High,2013
-C-01976,35-44,Retail,Scotland,Medium,2022
-C-01977,25-34,SME,Midlands,Very High,2010
-C-01978,35-44,SME,London,Medium,2005
-C-01979,18-24,Retail,London,High,2007
-C-01980,35-44,Private Banking,Midlands,High,2008
-C-01981,55-64,Private Banking,Midlands,Very High,2010
-C-01982,25-34,SME,Scotland,Low,2022
-C-01983,35-44,Corporate,North West,Low,2024
-C-01984,55-64,SME,Wales,Medium,2003
-C-01985,65+,Corporate,Scotland,Medium,2001
-C-01986,35-44,SME,South East,High,2002
-C-01987,65+,SME,Wales,High,2021
-C-01988,45-54,Private Banking,London,High,2001
-C-01989,45-54,SME,Midlands,Low,2024
-C-01990,65+,Private Banking,South East,Low,2012
-C-01991,25-34,Private Banking,Scotland,Very High,2024
-C-01992,55-64,SME,Midlands,Very High,2016
-C-01993,55-64,Retail,Scotland,Very High,2006
-C-01994,45-54,Retail,Wales,Very High,2020
-C-01995,45-54,Private Banking,Midlands,Very High,2012
-C-01996,35-44,Retail,Midlands,Medium,2008
-C-01997,45-54,Corporate,South East,Low,2006
-C-01998,65+,Corporate,South East,Medium,2009
-C-01999,45-54,Corporate,Midlands,Low,2007
-C-02000,35-44,Corporate,Scotland,Medium,2012
+CUST-00001,45-54,Corporate,Midlands,High,2006
+CUST-00002,55-64,Private Banking,Wales,Low,2020
+CUST-00003,45-54,Retail,South East,High,2015
+CUST-00004,35-44,SME,Midlands,High,2021
+CUST-00005,35-44,SME,South East,Low,2022
+CUST-00006,18-24,SME,South East,High,2020
+CUST-00007,18-24,Corporate,South West,Low,2018
+CUST-00008,55-64,Retail,Midlands,Low,2005
+CUST-00009,55-64,SME,Wales,Low,2012
+CUST-00010,65+,Retail,London,Low,2014
+CUST-00011,35-44,Retail,South East,Low,2011
+CUST-00012,25-34,Retail,South East,Medium,2021
+CUST-00013,18-24,Corporate,North West,Medium,2013
+CUST-00014,55-64,Retail,South East,Low,2018
+CUST-00015,55-64,Retail,South East,Low,2020
+CUST-00016,55-64,SME,North West,Medium,2020
+CUST-00017,45-54,Retail,Scotland,Medium,2009
+CUST-00018,18-24,Retail,North East,Medium,2016
+CUST-00019,45-54,SME,Wales,High,2006
+CUST-00020,45-54,Retail,North West,Low,2013
+CUST-00021,25-34,Corporate,Midlands,Low,2005
+CUST-00022,25-34,Retail,South West,Low,2010
+CUST-00023,18-24,SME,Scotland,Medium,2024
+CUST-00024,45-54,Corporate,North West,Low,2008
+CUST-00025,18-24,SME,London,Low,2018
+CUST-00026,35-44,Retail,South West,Low,2008
+CUST-00027,35-44,Retail,Midlands,Medium,2009
+CUST-00028,25-34,Retail,South West,Medium,2006
+CUST-00029,35-44,Corporate,South West,Low,2014
+CUST-00030,55-64,Private Banking,North West,Low,2020
+CUST-00031,55-64,Retail,Midlands,Medium,2006
+CUST-00032,18-24,Retail,Wales,High,2009
+CUST-00033,55-64,Retail,Scotland,Low,2014
+CUST-00034,65+,SME,Wales,High,2013
+CUST-00035,18-24,SME,Scotland,Medium,2017
+CUST-00036,18-24,Retail,South East,Low,2014
+CUST-00037,45-54,Retail,South East,Low,2008
+CUST-00038,45-54,Private Banking,South West,Low,2016
+CUST-00039,45-54,Retail,Scotland,Low,2008
+CUST-00040,65+,SME,London,Medium,2006
+CUST-00041,55-64,Private Banking,Midlands,Medium,2008
+CUST-00042,45-54,Retail,South West,Medium,2011
+CUST-00043,65+,Retail,Midlands,Medium,2012
+CUST-00044,55-64,Retail,North West,High,2016
+CUST-00045,45-54,Retail,Wales,Low,2009
+CUST-00046,45-54,SME,North West,Medium,2007
+CUST-00047,65+,Retail,South East,High,2007
+CUST-00048,45-54,Corporate,Midlands,Low,2021
+CUST-00049,25-34,Retail,South West,Low,2017
+CUST-00050,45-54,Private Banking,South East,Low,2008
+CUST-00051,25-34,Private Banking,Midlands,Low,2008
+CUST-00052,65+,Corporate,South East,Medium,2022
+CUST-00053,35-44,SME,North West,Medium,2011
+CUST-00054,45-54,Retail,Wales,Low,2019
+CUST-00055,18-24,Retail,South West,Low,2005
+CUST-00056,18-24,Retail,Wales,High,2008
+CUST-00057,55-64,Retail,North East,Medium,2010
+CUST-00058,25-34,Private Banking,Midlands,High,2015
+CUST-00059,65+,Retail,London,Low,2010
+CUST-00060,18-24,Retail,North West,Medium,2015
+CUST-00061,55-64,Retail,Scotland,Medium,2022
+CUST-00062,55-64,SME,North East,Medium,2007
+CUST-00063,45-54,Retail,South West,Low,2024
+CUST-00064,25-34,SME,North West,Medium,2024
+CUST-00065,65+,Retail,South West,Low,2016
+CUST-00066,45-54,Retail,Wales,Medium,2007
+CUST-00067,18-24,SME,South West,Low,2008
+CUST-00068,65+,Retail,Wales,High,2020
+CUST-00069,45-54,Corporate,London,Low,2010
+CUST-00070,55-64,Retail,North East,Low,2017
+CUST-00071,55-64,Retail,Scotland,High,2007
+CUST-00072,35-44,SME,South West,Low,2022
+CUST-00073,45-54,Retail,South East,Medium,2024
+CUST-00074,55-64,Retail,South West,High,2006
+CUST-00075,35-44,Corporate,South East,Medium,2011
+CUST-00076,25-34,Private Banking,Scotland,Low,2008
+CUST-00077,45-54,Retail,South East,Low,2015
+CUST-00078,18-24,Retail,North East,Low,2006
+CUST-00079,45-54,Retail,Wales,Medium,2021
+CUST-00080,25-34,Corporate,North East,Medium,2022
+CUST-00081,35-44,Retail,South East,Low,2009
+CUST-00082,25-34,Retail,North West,Medium,2005
+CUST-00083,65+,Retail,Scotland,Low,2006
+CUST-00084,65+,Private Banking,Wales,Low,2006
+CUST-00085,55-64,Private Banking,South West,High,2011
+CUST-00086,55-64,SME,Scotland,High,2020
+CUST-00087,55-64,Retail,Scotland,Low,2024
+CUST-00088,65+,Retail,Wales,Medium,2017
+CUST-00089,18-24,Retail,South East,Low,2008
+CUST-00090,35-44,Retail,Scotland,Low,2012
+CUST-00091,35-44,SME,Midlands,Low,2009
+CUST-00092,25-34,Corporate,North East,Very High,2014
+CUST-00093,35-44,Corporate,Scotland,Low,2014
+CUST-00094,45-54,Retail,North East,High,2017
+CUST-00095,25-34,Retail,Wales,Low,2016
+CUST-00096,55-64,Retail,South West,High,2017
+CUST-00097,45-54,Retail,Wales,Low,2015
+CUST-00098,65+,Private Banking,South East,Low,2021
+CUST-00099,35-44,SME,North East,Medium,2023
+CUST-00100,65+,SME,London,Low,2006
+CUST-00101,25-34,SME,South East,Medium,2005
+CUST-00102,45-54,Retail,Wales,Medium,2020
+CUST-00103,45-54,SME,Midlands,High,2007
+CUST-00104,65+,Retail,Wales,Low,2006
+CUST-00105,55-64,SME,Midlands,Medium,2009
+CUST-00106,55-64,Corporate,North East,Low,2020
+CUST-00107,55-64,Retail,North West,Low,2011
+CUST-00108,18-24,Private Banking,Scotland,Low,2013
+CUST-00109,18-24,SME,Wales,Low,2023
+CUST-00110,65+,Retail,South East,High,2012
+CUST-00111,18-24,Private Banking,Wales,Very High,2013
+CUST-00112,18-24,SME,London,High,2007
+CUST-00113,18-24,Retail,Wales,Medium,2006
+CUST-00114,35-44,Retail,South West,High,2014
+CUST-00115,18-24,Corporate,North West,Low,2019
+CUST-00116,55-64,Private Banking,London,Low,2022
+CUST-00117,55-64,Retail,North East,Low,2018
+CUST-00118,65+,SME,Scotland,Medium,2006
+CUST-00119,65+,Retail,London,High,2014
+CUST-00120,18-24,Retail,London,High,2023
+CUST-00121,65+,Retail,London,Medium,2008
+CUST-00122,18-24,Corporate,South West,Medium,2009
+CUST-00123,25-34,Corporate,London,High,2024
+CUST-00124,65+,SME,North East,High,2021
+CUST-00125,35-44,Retail,South East,Low,2018
+CUST-00126,45-54,SME,London,Medium,2022
+CUST-00127,55-64,Retail,Wales,Low,2005
+CUST-00128,25-34,Private Banking,Wales,Medium,2017
+CUST-00129,18-24,Retail,Scotland,Low,2009
+CUST-00130,65+,Retail,North West,Medium,2006
+CUST-00131,35-44,Retail,South West,Low,2015
+CUST-00132,55-64,SME,Midlands,Medium,2007
+CUST-00133,45-54,SME,North West,Very High,2015
+CUST-00134,55-64,Private Banking,South East,Medium,2007
+CUST-00135,55-64,Retail,Midlands,Medium,2007
+CUST-00136,18-24,Retail,London,Low,2011
+CUST-00137,55-64,SME,Scotland,Low,2024
+CUST-00138,35-44,Retail,South West,Low,2016
+CUST-00139,65+,Retail,London,Low,2014
+CUST-00140,35-44,SME,North West,Low,2016
+CUST-00141,45-54,SME,Wales,Medium,2017
+CUST-00142,25-34,Retail,South East,High,2013
+CUST-00143,45-54,Retail,North West,Medium,2021
+CUST-00144,55-64,Private Banking,North East,High,2015
+CUST-00145,25-34,Retail,North East,Medium,2015
+CUST-00146,65+,Retail,London,Medium,2006
+CUST-00147,55-64,Retail,London,High,2016
+CUST-00148,35-44,Retail,London,Low,2019
+CUST-00149,35-44,Corporate,North East,Low,2013
+CUST-00150,35-44,SME,Wales,Low,2007
+CUST-00151,45-54,Private Banking,South West,Low,2013
+CUST-00152,55-64,SME,South East,Low,2019
+CUST-00153,65+,Retail,Wales,Low,2018
+CUST-00154,25-34,Retail,Wales,Medium,2008
+CUST-00155,65+,SME,South West,High,2009
+CUST-00156,65+,Retail,Scotland,Very High,2013
+CUST-00157,25-34,SME,London,Low,2005
+CUST-00158,35-44,Retail,North West,Medium,2008
+CUST-00159,65+,Retail,London,High,2008
+CUST-00160,25-34,SME,Wales,Medium,2014
+CUST-00161,25-34,Corporate,South East,Low,2022
+CUST-00162,45-54,SME,North East,Medium,2020
+CUST-00163,55-64,Retail,North West,Low,2022
+CUST-00164,35-44,Retail,Scotland,High,2020
+CUST-00165,35-44,Corporate,Scotland,High,2011
+CUST-00166,45-54,Retail,Scotland,High,2014
+CUST-00167,45-54,Retail,London,Medium,2024
+CUST-00168,65+,Retail,London,Medium,2011
+CUST-00169,25-34,Private Banking,London,Low,2018
+CUST-00170,35-44,SME,Scotland,Low,2005
+CUST-00171,25-34,SME,Wales,Low,2019
+CUST-00172,65+,Retail,South West,Medium,2020
+CUST-00173,45-54,Private Banking,Wales,High,2017
+CUST-00174,55-64,Retail,Scotland,High,2019
+CUST-00175,45-54,SME,Scotland,Low,2013
+CUST-00176,65+,Retail,North East,Very High,2019
+CUST-00177,45-54,Retail,North West,Medium,2010
+CUST-00178,18-24,Retail,South West,High,2024
+CUST-00179,25-34,Retail,South West,Medium,2006
+CUST-00180,55-64,SME,Scotland,Low,2021
+CUST-00181,35-44,Retail,North East,High,2006
+CUST-00182,35-44,Retail,South West,Low,2018
+CUST-00183,45-54,Corporate,North East,Medium,2019
+CUST-00184,55-64,Retail,South West,High,2009
+CUST-00185,25-34,Retail,North East,Medium,2024
+CUST-00186,45-54,Retail,North East,Medium,2013
+CUST-00187,45-54,Retail,Wales,High,2013
+CUST-00188,65+,Corporate,South West,Low,2010
+CUST-00189,35-44,Retail,Midlands,Medium,2015
+CUST-00190,65+,Retail,Wales,Low,2011
+CUST-00191,35-44,Private Banking,North East,Medium,2017
+CUST-00192,25-34,Retail,London,Low,2016
+CUST-00193,65+,SME,Wales,Very High,2006
+CUST-00194,35-44,Retail,North West,High,2007
+CUST-00195,18-24,Retail,London,Low,2016
+CUST-00196,18-24,SME,South West,Medium,2011
+CUST-00197,65+,SME,South West,Low,2015
+CUST-00198,45-54,Corporate,Midlands,Low,2009
+CUST-00199,65+,Retail,South West,Low,2024
+CUST-00200,55-64,SME,London,Medium,2010
+CUST-00201,25-34,Retail,North West,Low,2011
+CUST-00202,65+,SME,North West,Low,2020
+CUST-00203,45-54,Retail,Midlands,High,2023
+CUST-00204,65+,Corporate,Wales,Medium,2023
+CUST-00205,35-44,SME,South East,High,2011
+CUST-00206,18-24,Private Banking,North East,Medium,2015
+CUST-00207,18-24,Private Banking,London,Low,2019
+CUST-00208,18-24,Retail,Scotland,Low,2006
+CUST-00209,25-34,Retail,Scotland,Medium,2005
+CUST-00210,18-24,Retail,North East,Low,2006
+CUST-00211,35-44,Retail,South East,Medium,2014
+CUST-00212,35-44,Retail,North West,Low,2007
+CUST-00213,18-24,Retail,London,High,2010
+CUST-00214,35-44,Retail,Scotland,Low,2020
+CUST-00215,45-54,Retail,North West,High,2016
+CUST-00216,25-34,SME,North West,Medium,2009
+CUST-00217,25-34,Retail,South West,Low,2014
+CUST-00218,35-44,Retail,Scotland,Medium,2005
+CUST-00219,18-24,Retail,South West,Low,2023
+CUST-00220,25-34,Retail,Wales,Low,2017
+CUST-00221,18-24,SME,Scotland,Low,2018
+CUST-00222,65+,Corporate,Scotland,Low,2017
+CUST-00223,65+,Corporate,North East,Low,2010
+CUST-00224,25-34,Retail,South West,High,2017
+CUST-00225,18-24,Corporate,North West,Very High,2007
+CUST-00226,25-34,SME,North West,High,2009
+CUST-00227,45-54,Retail,North West,Low,2022
+CUST-00228,18-24,Retail,Wales,Low,2008
+CUST-00229,65+,SME,Wales,Medium,2021
+CUST-00230,25-34,SME,South East,High,2007
+CUST-00231,55-64,Retail,Wales,Low,2020
+CUST-00232,45-54,Retail,South West,Very High,2005
+CUST-00233,45-54,Retail,Scotland,Very High,2016
+CUST-00234,65+,Retail,South East,High,2017
+CUST-00235,55-64,SME,London,Low,2007
+CUST-00236,25-34,Corporate,South East,Medium,2005
+CUST-00237,18-24,Corporate,South East,Medium,2021
+CUST-00238,25-34,SME,Scotland,Medium,2012
+CUST-00239,45-54,SME,Wales,Medium,2010
+CUST-00240,55-64,Retail,South West,Very High,2015
+CUST-00241,18-24,Retail,North East,Low,2013
+CUST-00242,35-44,Corporate,Wales,Low,2012
+CUST-00243,35-44,Private Banking,South East,Medium,2010
+CUST-00244,25-34,Corporate,South West,Low,2023
+CUST-00245,35-44,SME,Midlands,Low,2017
+CUST-00246,65+,Retail,London,Low,2019
+CUST-00247,45-54,SME,North East,Medium,2013
+CUST-00248,18-24,Corporate,North East,High,2020
+CUST-00249,18-24,SME,South East,Low,2014
+CUST-00250,18-24,Retail,North East,Very High,2019
+CUST-00251,45-54,Retail,Midlands,High,2011
+CUST-00252,45-54,Retail,London,Medium,2017
+CUST-00253,45-54,Retail,Midlands,Very High,2011
+CUST-00254,35-44,Retail,North West,Low,2008
+CUST-00255,18-24,Private Banking,North West,Medium,2019
+CUST-00256,25-34,SME,Scotland,Low,2022
+CUST-00257,35-44,Retail,South East,Low,2014
+CUST-00258,45-54,Retail,South East,Medium,2005
+CUST-00259,18-24,SME,South West,Medium,2018
+CUST-00260,35-44,Retail,South East,Low,2010
+CUST-00261,25-34,Corporate,South West,High,2007
+CUST-00262,65+,Private Banking,Scotland,Very High,2006
+CUST-00263,65+,SME,North West,Low,2013
+CUST-00264,18-24,SME,Midlands,High,2015
+CUST-00265,18-24,Retail,North West,Low,2007
+CUST-00266,65+,SME,Wales,Medium,2010
+CUST-00267,65+,SME,Midlands,Low,2005
+CUST-00268,55-64,Private Banking,Midlands,Low,2007
+CUST-00269,55-64,Retail,London,High,2008
+CUST-00270,65+,Retail,London,Low,2013
+CUST-00271,65+,Corporate,Wales,Low,2016
+CUST-00272,65+,Retail,Wales,Low,2009
+CUST-00273,25-34,Private Banking,South East,Low,2006
+CUST-00274,65+,Retail,North West,High,2014
+CUST-00275,35-44,Retail,Scotland,Medium,2012
+CUST-00276,18-24,Private Banking,London,Low,2014
+CUST-00277,18-24,SME,South East,Very High,2024
+CUST-00278,25-34,Retail,Midlands,Low,2007
+CUST-00279,18-24,SME,North West,High,2006
+CUST-00280,35-44,Retail,Wales,Low,2008
+CUST-00281,18-24,SME,North East,Very High,2012
+CUST-00282,35-44,Private Banking,Wales,Low,2011
+CUST-00283,65+,SME,North West,Low,2018
+CUST-00284,45-54,SME,North East,High,2009
+CUST-00285,45-54,SME,Midlands,High,2020
+CUST-00286,18-24,Retail,South West,Very High,2006
+CUST-00287,55-64,Retail,South East,Medium,2020
+CUST-00288,45-54,Private Banking,Wales,Low,2011
+CUST-00289,55-64,SME,Midlands,Medium,2018
+CUST-00290,45-54,Private Banking,Scotland,Medium,2011
+CUST-00291,18-24,Corporate,Wales,Low,2016
+CUST-00292,18-24,Corporate,Wales,Low,2019
+CUST-00293,35-44,SME,Scotland,Very High,2008
+CUST-00294,25-34,Retail,Wales,Very High,2019
+CUST-00295,65+,SME,Scotland,Low,2016
+CUST-00296,45-54,Retail,South East,High,2017
+CUST-00297,55-64,Retail,Midlands,Low,2010
+CUST-00298,18-24,SME,South East,Low,2018
+CUST-00299,25-34,Retail,London,Medium,2021
+CUST-00300,25-34,Corporate,North East,High,2009
+CUST-00301,25-34,Retail,South East,Medium,2020
+CUST-00302,18-24,SME,South West,Low,2023
+CUST-00303,65+,SME,Scotland,Low,2020
+CUST-00304,65+,Retail,North West,Medium,2017
+CUST-00305,55-64,Retail,South West,Low,2013
+CUST-00306,55-64,Retail,Wales,Low,2022
+CUST-00307,35-44,Private Banking,Midlands,Medium,2021
+CUST-00308,65+,Retail,Wales,Low,2014
+CUST-00309,55-64,Retail,North West,Medium,2013
+CUST-00310,65+,Corporate,South West,High,2024
+CUST-00311,65+,SME,North East,Medium,2007
+CUST-00312,35-44,Retail,Scotland,Medium,2017
+CUST-00313,25-34,SME,North West,Low,2012
+CUST-00314,35-44,Corporate,North West,Low,2022
+CUST-00315,35-44,Retail,London,Low,2014
+CUST-00316,55-64,Retail,Wales,High,2020
+CUST-00317,18-24,Private Banking,Midlands,Low,2010
+CUST-00318,25-34,Retail,Midlands,Low,2017
+CUST-00319,25-34,Retail,South West,Very High,2023
+CUST-00320,18-24,Retail,Midlands,High,2022
+CUST-00321,35-44,Corporate,London,Medium,2016
+CUST-00322,25-34,SME,South East,Low,2015
+CUST-00323,55-64,Private Banking,Wales,Medium,2005
+CUST-00324,65+,Retail,Wales,Medium,2019
+CUST-00325,25-34,Retail,North West,Very High,2008
+CUST-00326,35-44,SME,North East,Low,2012
+CUST-00327,55-64,Corporate,North East,High,2023
+CUST-00328,35-44,SME,Wales,Low,2021
+CUST-00329,25-34,Retail,South West,Medium,2016
+CUST-00330,65+,Retail,North West,Low,2015
+CUST-00331,45-54,Retail,London,Low,2006
+CUST-00332,35-44,Retail,North West,High,2018
+CUST-00333,35-44,Retail,South East,High,2006
+CUST-00334,65+,Retail,Midlands,High,2021
+CUST-00335,35-44,SME,Midlands,Low,2016
+CUST-00336,25-34,Retail,Scotland,High,2020
+CUST-00337,25-34,Retail,North West,Medium,2017
+CUST-00338,25-34,Retail,North East,High,2006
+CUST-00339,18-24,Corporate,South East,Low,2006
+CUST-00340,35-44,Retail,South West,Very High,2018
+CUST-00341,65+,Corporate,Midlands,Low,2024
+CUST-00342,65+,Retail,Scotland,High,2009
+CUST-00343,65+,SME,North West,Medium,2005
+CUST-00344,45-54,Corporate,North West,Medium,2019
+CUST-00345,45-54,SME,London,Low,2012
+CUST-00346,35-44,Retail,North West,Low,2020
+CUST-00347,35-44,Retail,Scotland,High,2020
+CUST-00348,25-34,Retail,Midlands,Medium,2016
+CUST-00349,65+,Retail,London,Medium,2005
+CUST-00350,25-34,SME,North East,High,2008
+CUST-00351,18-24,Retail,Midlands,High,2021
+CUST-00352,65+,Retail,Midlands,Low,2016
+CUST-00353,25-34,Retail,Wales,Low,2022
+CUST-00354,18-24,Retail,Scotland,Low,2008
+CUST-00355,45-54,Retail,North East,Low,2011
+CUST-00356,35-44,Retail,North West,Low,2010
+CUST-00357,35-44,Corporate,South East,Medium,2005
+CUST-00358,65+,Retail,London,Low,2007
+CUST-00359,35-44,Corporate,London,Medium,2024
+CUST-00360,55-64,Retail,South East,High,2024
+CUST-00361,25-34,Retail,Midlands,Low,2014
+CUST-00362,65+,Corporate,South West,Medium,2008
+CUST-00363,25-34,Retail,Midlands,Very High,2010
+CUST-00364,65+,Retail,North East,Low,2016
+CUST-00365,45-54,Retail,North West,Low,2024
+CUST-00366,18-24,SME,Scotland,High,2012
+CUST-00367,35-44,SME,Midlands,Low,2012
+CUST-00368,65+,Retail,North East,Very High,2011
+CUST-00369,65+,Retail,Scotland,Medium,2010
+CUST-00370,45-54,Retail,South West,Medium,2011
+CUST-00371,45-54,Retail,London,Low,2015
+CUST-00372,55-64,Retail,North East,Low,2016
+CUST-00373,45-54,Corporate,North West,High,2024
+CUST-00374,65+,SME,South West,Medium,2006
+CUST-00375,65+,Private Banking,Midlands,Very High,2023
+CUST-00376,45-54,Retail,South West,Low,2018
+CUST-00377,18-24,SME,London,Medium,2008
+CUST-00378,65+,Retail,Midlands,Medium,2005
+CUST-00379,65+,Corporate,North West,High,2024
+CUST-00380,35-44,Retail,Wales,Medium,2008
+CUST-00381,18-24,Retail,Midlands,High,2009
+CUST-00382,65+,Corporate,North East,Very High,2008
+CUST-00383,65+,Retail,South West,Medium,2007
+CUST-00384,18-24,Retail,South East,High,2016
+CUST-00385,55-64,Retail,Scotland,Very High,2023
+CUST-00386,35-44,Retail,South West,Low,2020
+CUST-00387,18-24,Retail,North West,High,2019
+CUST-00388,65+,Retail,Scotland,Low,2014
+CUST-00389,45-54,SME,South East,Medium,2007
+CUST-00390,35-44,Retail,Scotland,Medium,2014
+CUST-00391,65+,Retail,South East,Medium,2016
+CUST-00392,25-34,Retail,Scotland,Low,2023
+CUST-00393,25-34,Private Banking,North East,Low,2009
+CUST-00394,18-24,Corporate,South West,Medium,2017
+CUST-00395,18-24,Retail,Midlands,Low,2009
+CUST-00396,45-54,Private Banking,Wales,Very High,2005
+CUST-00397,45-54,Corporate,North West,Medium,2012
+CUST-00398,18-24,Corporate,South West,Very High,2007
+CUST-00399,18-24,Retail,North East,Low,2019
+CUST-00400,45-54,SME,Wales,High,2012
+CUST-00401,65+,Private Banking,London,Low,2010
+CUST-00402,25-34,Retail,South East,Low,2024
+CUST-00403,55-64,SME,North East,Low,2015
+CUST-00404,55-64,Corporate,North West,Very High,2023
+CUST-00405,65+,Retail,North East,Low,2012
+CUST-00406,45-54,Private Banking,Midlands,High,2019
+CUST-00407,35-44,Retail,Midlands,Medium,2010
+CUST-00408,35-44,Retail,Wales,Low,2006
+CUST-00409,55-64,Private Banking,Midlands,High,2021
+CUST-00410,45-54,Retail,North East,Low,2009
+CUST-00411,55-64,Retail,South East,Very High,2018
+CUST-00412,65+,Retail,Scotland,Very High,2005
+CUST-00413,65+,Retail,London,Low,2007
+CUST-00414,45-54,Retail,Wales,High,2017
+CUST-00415,45-54,SME,North East,Low,2018
+CUST-00416,65+,Retail,London,Very High,2006
+CUST-00417,35-44,Private Banking,Midlands,Low,2021
+CUST-00418,35-44,Retail,Midlands,High,2008
+CUST-00419,25-34,SME,Wales,Low,2008
+CUST-00420,35-44,SME,South West,Low,2008
+CUST-00421,55-64,Retail,South East,Very High,2016
+CUST-00422,35-44,Retail,South West,Medium,2013
+CUST-00423,18-24,Retail,Midlands,Very High,2023
+CUST-00424,35-44,SME,South East,Low,2009
+CUST-00425,45-54,Private Banking,London,Medium,2005
+CUST-00426,35-44,Retail,Wales,High,2006
+CUST-00427,55-64,SME,Wales,High,2023
+CUST-00428,35-44,Corporate,North East,Medium,2017
+CUST-00429,35-44,SME,Wales,Low,2023
+CUST-00430,65+,Retail,Wales,Low,2021
+CUST-00431,18-24,Retail,Wales,Medium,2015
+CUST-00432,25-34,Retail,Midlands,Medium,2008
+CUST-00433,18-24,Corporate,Wales,Medium,2019
+CUST-00434,25-34,Private Banking,North East,Low,2008
+CUST-00435,35-44,Retail,North West,Low,2008
+CUST-00436,65+,SME,North East,High,2008
+CUST-00437,55-64,Retail,Midlands,Low,2012
+CUST-00438,25-34,Retail,Wales,Low,2016
+CUST-00439,18-24,Retail,London,Medium,2009
+CUST-00440,55-64,Corporate,South East,Medium,2013
+CUST-00441,25-34,Retail,South East,High,2008
+CUST-00442,25-34,Retail,Wales,Medium,2009
+CUST-00443,25-34,Retail,North West,High,2012
+CUST-00444,18-24,Retail,North East,Low,2012
+CUST-00445,45-54,Private Banking,North East,Low,2012
+CUST-00446,35-44,Corporate,Scotland,Medium,2024
+CUST-00447,35-44,Corporate,South West,Medium,2015
+CUST-00448,55-64,Retail,Wales,Medium,2005
+CUST-00449,35-44,Retail,Midlands,Medium,2014
+CUST-00450,45-54,Corporate,South West,Medium,2007
+CUST-00451,25-34,Corporate,North East,Low,2020
+CUST-00452,65+,Corporate,South East,High,2011
+CUST-00453,55-64,SME,North West,Low,2017
+CUST-00454,65+,SME,Scotland,Low,2010
+CUST-00455,25-34,Retail,South East,Low,2017
+CUST-00456,65+,Corporate,London,Low,2018
+CUST-00457,55-64,Corporate,South East,Low,2024
+CUST-00458,25-34,Retail,North West,High,2018
+CUST-00459,35-44,Retail,South East,High,2011
+CUST-00460,65+,Retail,South West,Low,2013
+CUST-00461,55-64,SME,North East,Low,2016
+CUST-00462,35-44,Retail,Wales,High,2005
+CUST-00463,35-44,Retail,South West,Medium,2009
+CUST-00464,25-34,Corporate,North East,Medium,2006
+CUST-00465,35-44,Retail,Wales,Low,2009
+CUST-00466,25-34,Retail,Midlands,Low,2014
+CUST-00467,45-54,SME,Wales,High,2007
+CUST-00468,65+,Retail,South East,Low,2023
+CUST-00469,65+,SME,Wales,Low,2024
+CUST-00470,18-24,Retail,South East,Medium,2008
+CUST-00471,25-34,SME,North West,Medium,2009
+CUST-00472,65+,Retail,Scotland,High,2010
+CUST-00473,25-34,Private Banking,South East,Low,2015
+CUST-00474,35-44,Corporate,Wales,Low,2012
+CUST-00475,18-24,SME,South East,Low,2013
+CUST-00476,55-64,Corporate,Scotland,Low,2022
+CUST-00477,18-24,Retail,South East,High,2022
+CUST-00478,65+,SME,Scotland,Low,2020
+CUST-00479,18-24,Private Banking,North East,Low,2007
+CUST-00480,55-64,Corporate,South East,Low,2015
+CUST-00481,18-24,SME,North East,Medium,2017
+CUST-00482,25-34,Retail,North West,Low,2015
+CUST-00483,45-54,Retail,Scotland,Medium,2021
+CUST-00484,55-64,Retail,North East,High,2019
+CUST-00485,25-34,Retail,Scotland,Medium,2011
+CUST-00486,55-64,SME,North East,Very High,2023
+CUST-00487,35-44,SME,North West,Very High,2018
+CUST-00488,35-44,Retail,Scotland,Very High,2013
+CUST-00489,18-24,SME,North West,High,2017
+CUST-00490,35-44,Corporate,North East,Very High,2011
+CUST-00491,25-34,SME,North West,High,2010
+CUST-00492,45-54,Retail,Midlands,High,2009
+CUST-00493,25-34,Retail,Scotland,Medium,2014
+CUST-00494,18-24,Corporate,North East,Low,2005
+CUST-00495,35-44,Retail,South West,Low,2012
+CUST-00496,55-64,Corporate,South East,Low,2019
+CUST-00497,25-34,Retail,South East,High,2013
+CUST-00498,55-64,Retail,Midlands,Low,2005
+CUST-00499,35-44,SME,Wales,Very High,2012
+CUST-00500,55-64,Retail,London,Medium,2013
+CUST-00501,25-34,Corporate,South East,Medium,2021
+CUST-00502,55-64,SME,South East,Low,2007
+CUST-00503,25-34,Private Banking,South West,Very High,2021
+CUST-00504,25-34,Retail,South East,Low,2006
+CUST-00505,35-44,Private Banking,London,Low,2006
+CUST-00506,18-24,Corporate,Wales,Low,2016
+CUST-00507,18-24,Corporate,Wales,High,2011
+CUST-00508,45-54,SME,Midlands,Medium,2013
+CUST-00509,25-34,Retail,Midlands,Low,2013
+CUST-00510,55-64,Retail,North East,Low,2009
+CUST-00511,55-64,SME,North West,High,2017
+CUST-00512,65+,SME,South East,Low,2011
+CUST-00513,35-44,Corporate,Wales,Low,2007
+CUST-00514,25-34,Retail,North West,Medium,2016
+CUST-00515,35-44,SME,Scotland,Medium,2023
+CUST-00516,18-24,SME,Scotland,Medium,2018
+CUST-00517,55-64,Retail,Midlands,Low,2013
+CUST-00518,18-24,Retail,North East,Low,2019
+CUST-00519,65+,Retail,North East,Low,2005
+CUST-00520,55-64,Retail,London,Medium,2017
+CUST-00521,65+,Retail,Midlands,High,2017
+CUST-00522,45-54,Retail,Midlands,Medium,2015
+CUST-00523,45-54,Retail,South West,Medium,2016
+CUST-00524,35-44,Retail,Scotland,Very High,2008
+CUST-00525,18-24,Retail,London,Low,2017
+CUST-00526,35-44,SME,Wales,High,2005
+CUST-00527,65+,Private Banking,South East,Medium,2024
+CUST-00528,25-34,Retail,Midlands,Medium,2017
+CUST-00529,25-34,Retail,North East,Low,2009
+CUST-00530,65+,SME,Midlands,Medium,2021
+CUST-00531,55-64,Retail,South East,Very High,2011
+CUST-00532,25-34,SME,North East,Low,2024
+CUST-00533,18-24,SME,Scotland,Very High,2019
+CUST-00534,65+,Retail,Midlands,Very High,2015
+CUST-00535,25-34,Retail,North West,High,2009
+CUST-00536,65+,Corporate,Scotland,Very High,2020
+CUST-00537,18-24,Retail,North West,Low,2006
+CUST-00538,45-54,SME,Midlands,Medium,2013
+CUST-00539,55-64,Retail,North West,Medium,2015
+CUST-00540,18-24,Corporate,South West,Low,2013
+CUST-00541,18-24,SME,North East,Low,2008
+CUST-00542,18-24,Retail,North West,Low,2018
+CUST-00543,55-64,Retail,London,Low,2023
+CUST-00544,45-54,Corporate,London,Low,2008
+CUST-00545,25-34,Retail,Midlands,Medium,2012
+CUST-00546,18-24,Corporate,South East,High,2005
+CUST-00547,45-54,Retail,South West,Low,2018
+CUST-00548,18-24,SME,South East,Low,2019
+CUST-00549,65+,Retail,South West,Medium,2016
+CUST-00550,25-34,Retail,Wales,Medium,2009
+CUST-00551,18-24,SME,North West,Low,2012
+CUST-00552,18-24,SME,South East,Low,2017
+CUST-00553,45-54,SME,North East,High,2005
+CUST-00554,18-24,SME,Wales,Medium,2009
+CUST-00555,65+,Retail,South East,Low,2008
+CUST-00556,35-44,Corporate,Scotland,Low,2023
+CUST-00557,45-54,Retail,South West,Low,2011
+CUST-00558,65+,Retail,North East,Very High,2020
+CUST-00559,25-34,Private Banking,South West,Very High,2008
+CUST-00560,45-54,Corporate,London,Low,2017
+CUST-00561,35-44,SME,Midlands,Medium,2015
+CUST-00562,18-24,Retail,Wales,Medium,2019
+CUST-00563,45-54,Retail,Midlands,High,2015
+CUST-00564,25-34,SME,London,Very High,2012
+CUST-00565,35-44,Retail,South East,Low,2016
+CUST-00566,65+,Retail,South West,Medium,2022
+CUST-00567,25-34,Retail,North East,Low,2016
+CUST-00568,45-54,Retail,London,High,2018
+CUST-00569,45-54,Retail,South East,Very High,2018
+CUST-00570,55-64,Retail,Midlands,Low,2014
+CUST-00571,18-24,Retail,North West,High,2005
+CUST-00572,65+,Corporate,London,Medium,2013
+CUST-00573,25-34,Retail,Wales,Very High,2012
+CUST-00574,65+,Retail,North West,Medium,2008
+CUST-00575,18-24,Retail,London,Medium,2014
+CUST-00576,18-24,Retail,Scotland,Low,2015
+CUST-00577,35-44,SME,London,Low,2011
+CUST-00578,35-44,Retail,Midlands,Medium,2005
+CUST-00579,35-44,Retail,Midlands,Low,2020
+CUST-00580,55-64,Retail,South East,Low,2016
+CUST-00581,45-54,Retail,Scotland,Low,2022
+CUST-00582,35-44,SME,North East,Low,2023
+CUST-00583,65+,SME,Scotland,Low,2023
+CUST-00584,25-34,SME,North West,High,2023
+CUST-00585,55-64,Retail,London,Very High,2024
+CUST-00586,45-54,Retail,London,Low,2024
+CUST-00587,18-24,Corporate,Midlands,Low,2015
+CUST-00588,25-34,Private Banking,North West,Medium,2014
+CUST-00589,25-34,Private Banking,London,Low,2024
+CUST-00590,25-34,Retail,Scotland,Medium,2013
+CUST-00591,55-64,Private Banking,Scotland,Very High,2024
+CUST-00592,25-34,Corporate,South East,Medium,2013
+CUST-00593,35-44,Retail,North East,Low,2011
+CUST-00594,45-54,Retail,Wales,Very High,2011
+CUST-00595,35-44,Retail,Midlands,Low,2019
+CUST-00596,55-64,SME,North West,Low,2010
+CUST-00597,35-44,SME,North West,Low,2014
+CUST-00598,35-44,Corporate,London,Low,2016
+CUST-00599,18-24,Retail,South West,Low,2019
+CUST-00600,18-24,Retail,South West,Medium,2009
+CUST-00601,35-44,Corporate,South East,Medium,2023
+CUST-00602,65+,SME,Midlands,Medium,2019
+CUST-00603,35-44,Retail,North West,Very High,2007
+CUST-00604,45-54,Retail,Midlands,Medium,2017
+CUST-00605,18-24,Retail,South West,Low,2010
+CUST-00606,18-24,Retail,North West,Low,2010
+CUST-00607,35-44,Retail,North West,Low,2023
+CUST-00608,35-44,Retail,North West,Low,2011
+CUST-00609,45-54,Retail,London,Low,2010
+CUST-00610,55-64,Private Banking,London,Very High,2015
+CUST-00611,65+,SME,North West,Medium,2006
+CUST-00612,55-64,Corporate,South East,High,2013
+CUST-00613,55-64,Retail,North East,High,2006
+CUST-00614,65+,Private Banking,Midlands,Low,2020
+CUST-00615,25-34,Retail,Wales,Low,2018
+CUST-00616,55-64,SME,Scotland,High,2022
+CUST-00617,55-64,Retail,North West,Low,2022
+CUST-00618,18-24,Retail,South West,Low,2012
+CUST-00619,18-24,Retail,South West,Low,2022
+CUST-00620,65+,Retail,Wales,Low,2015
+CUST-00621,35-44,Retail,North West,Low,2005
+CUST-00622,18-24,SME,Scotland,Low,2013
+CUST-00623,65+,Private Banking,North West,High,2005
+CUST-00624,55-64,Corporate,South East,Very High,2007
+CUST-00625,45-54,Corporate,South East,Medium,2011
+CUST-00626,45-54,Private Banking,South West,Low,2007
+CUST-00627,35-44,Retail,Wales,Medium,2011
+CUST-00628,45-54,Retail,Scotland,High,2015
+CUST-00629,18-24,Retail,Wales,Low,2012
+CUST-00630,65+,Retail,North West,High,2011
+CUST-00631,35-44,Retail,Wales,Medium,2014
+CUST-00632,18-24,Private Banking,North East,Low,2014
+CUST-00633,25-34,Private Banking,Midlands,High,2023
+CUST-00634,18-24,Private Banking,Wales,Low,2023
+CUST-00635,25-34,Retail,North West,Low,2019
+CUST-00636,35-44,Corporate,North East,Low,2010
+CUST-00637,45-54,Retail,London,Medium,2007
+CUST-00638,45-54,SME,Midlands,Low,2006
+CUST-00639,65+,Corporate,Wales,Very High,2014
+CUST-00640,18-24,Retail,North East,Low,2015
+CUST-00641,65+,Retail,London,Low,2015
+CUST-00642,25-34,Retail,Wales,Low,2010
+CUST-00643,25-34,Retail,Midlands,Medium,2018
+CUST-00644,45-54,Retail,North West,High,2016
+CUST-00645,25-34,Corporate,Scotland,Very High,2023
+CUST-00646,55-64,Retail,South West,Low,2018
+CUST-00647,55-64,Retail,Midlands,Very High,2013
+CUST-00648,45-54,SME,London,Low,2015
+CUST-00649,65+,SME,North East,Medium,2023
+CUST-00650,45-54,Corporate,Scotland,High,2022
+CUST-00651,18-24,Retail,Scotland,Low,2008
+CUST-00652,65+,Retail,London,Medium,2008
+CUST-00653,55-64,Retail,Wales,Low,2018
+CUST-00654,18-24,SME,London,High,2008
+CUST-00655,25-34,SME,South West,Low,2016
+CUST-00656,45-54,Retail,Wales,Low,2005
+CUST-00657,45-54,Retail,London,Medium,2024
+CUST-00658,55-64,SME,South East,Very High,2014
+CUST-00659,65+,Retail,Midlands,Medium,2020
+CUST-00660,45-54,SME,Wales,Low,2022
+CUST-00661,55-64,Retail,London,Very High,2005
+CUST-00662,25-34,Retail,North West,Low,2008
+CUST-00663,55-64,Corporate,Midlands,High,2021
+CUST-00664,18-24,Retail,Wales,Low,2006
+CUST-00665,35-44,Retail,South West,Low,2007
+CUST-00666,25-34,Retail,North East,Medium,2016
+CUST-00667,25-34,Retail,North East,Low,2019
+CUST-00668,35-44,Corporate,North East,Medium,2012
+CUST-00669,45-54,Retail,London,Medium,2018
+CUST-00670,18-24,Retail,London,Medium,2019
+CUST-00671,65+,Corporate,North East,Low,2006
+CUST-00672,18-24,Retail,Scotland,Low,2022
+CUST-00673,35-44,Retail,Scotland,Low,2010
+CUST-00674,55-64,Retail,South West,Medium,2024
+CUST-00675,45-54,Retail,North East,Low,2010
+CUST-00676,35-44,SME,South West,High,2018
+CUST-00677,55-64,Retail,Midlands,Low,2011
+CUST-00678,45-54,Retail,Wales,Medium,2011
+CUST-00679,65+,Retail,North West,Low,2021
+CUST-00680,65+,Retail,Midlands,Medium,2018
+CUST-00681,18-24,Retail,South East,High,2016
+CUST-00682,18-24,SME,South East,Low,2024
+CUST-00683,35-44,Retail,Wales,Low,2021
+CUST-00684,45-54,Retail,Scotland,High,2005
+CUST-00685,25-34,Retail,South West,Medium,2012
+CUST-00686,25-34,SME,Scotland,Low,2016
+CUST-00687,55-64,Corporate,North East,High,2012
+CUST-00688,55-64,SME,Wales,Low,2010
+CUST-00689,45-54,SME,South West,Low,2023
+CUST-00690,65+,Retail,South West,Low,2014
+CUST-00691,35-44,Retail,South East,Low,2007
+CUST-00692,18-24,Retail,London,Very High,2008
+CUST-00693,65+,Corporate,London,High,2023
+CUST-00694,55-64,SME,North East,Low,2017
+CUST-00695,18-24,SME,North East,High,2022
+CUST-00696,45-54,SME,South East,Low,2024
+CUST-00697,25-34,Retail,Wales,Medium,2018
+CUST-00698,55-64,Retail,London,Very High,2009
+CUST-00699,35-44,SME,Midlands,Medium,2006
+CUST-00700,18-24,SME,North East,Low,2016
+CUST-00701,45-54,SME,Wales,Medium,2010
+CUST-00702,55-64,Retail,London,Medium,2017
+CUST-00703,18-24,Retail,North West,Low,2024
+CUST-00704,65+,Retail,Midlands,Medium,2016
+CUST-00705,18-24,Corporate,Wales,Low,2012
+CUST-00706,45-54,Retail,Wales,Medium,2013
+CUST-00707,18-24,Retail,Wales,High,2010
+CUST-00708,35-44,Retail,Midlands,Low,2008
+CUST-00709,65+,Retail,South West,Low,2024
+CUST-00710,25-34,Retail,London,Low,2021
+CUST-00711,65+,Corporate,North East,Low,2016
+CUST-00712,18-24,Private Banking,South East,Medium,2013
+CUST-00713,65+,Corporate,South West,Low,2017
+CUST-00714,45-54,Retail,Wales,Medium,2021
+CUST-00715,25-34,SME,London,Medium,2020
+CUST-00716,65+,Retail,North East,High,2006
+CUST-00717,45-54,Retail,South West,Very High,2020
+CUST-00718,45-54,Retail,North East,Medium,2007
+CUST-00719,55-64,Corporate,South East,Low,2012
+CUST-00720,18-24,Retail,South West,Low,2009
+CUST-00721,35-44,Retail,Scotland,Low,2020
+CUST-00722,45-54,Retail,South West,High,2023
+CUST-00723,65+,SME,North East,High,2015
+CUST-00724,45-54,SME,Scotland,Medium,2005
+CUST-00725,65+,SME,Scotland,Very High,2007
+CUST-00726,35-44,Retail,North West,Low,2015
+CUST-00727,45-54,Retail,North West,Low,2007
+CUST-00728,45-54,Private Banking,Midlands,Low,2008
+CUST-00729,65+,Retail,North West,Low,2009
+CUST-00730,35-44,Private Banking,North West,Medium,2010
+CUST-00731,65+,Retail,London,Medium,2010
+CUST-00732,35-44,SME,Scotland,Low,2018
+CUST-00733,25-34,SME,Scotland,Medium,2011
+CUST-00734,35-44,Retail,Midlands,Low,2018
+CUST-00735,35-44,SME,London,Very High,2017
+CUST-00736,55-64,Retail,South East,High,2017
+CUST-00737,55-64,Retail,North East,Medium,2007
+CUST-00738,65+,Corporate,North West,Low,2006
+CUST-00739,35-44,Retail,London,Low,2022
+CUST-00740,35-44,Retail,London,Low,2013
+CUST-00741,45-54,SME,South West,High,2022
+CUST-00742,18-24,Corporate,Midlands,Low,2006
+CUST-00743,65+,Private Banking,South West,Low,2013
+CUST-00744,35-44,Retail,Wales,Medium,2020
+CUST-00745,18-24,SME,South East,Low,2021
+CUST-00746,25-34,Retail,North West,Medium,2022
+CUST-00747,45-54,SME,Midlands,High,2006
+CUST-00748,25-34,Retail,Midlands,Medium,2022
+CUST-00749,65+,Corporate,South West,High,2023
+CUST-00750,65+,Private Banking,South West,Low,2016
+CUST-00751,55-64,Retail,Scotland,Low,2006
+CUST-00752,25-34,Retail,Scotland,Low,2014
+CUST-00753,45-54,Retail,Wales,High,2008
+CUST-00754,35-44,Retail,South East,Medium,2021
+CUST-00755,55-64,SME,Wales,Low,2024
+CUST-00756,45-54,Retail,North East,High,2022
+CUST-00757,65+,SME,North East,Medium,2008
+CUST-00758,65+,Retail,South East,Very High,2021
+CUST-00759,18-24,Private Banking,Midlands,Medium,2009
+CUST-00760,35-44,Retail,North East,Medium,2009
+CUST-00761,55-64,Retail,Midlands,High,2016
+CUST-00762,25-34,Corporate,Midlands,Medium,2022
+CUST-00763,55-64,Retail,Scotland,Low,2011
+CUST-00764,45-54,Retail,Midlands,Low,2014
+CUST-00765,25-34,Retail,Scotland,Medium,2020
+CUST-00766,55-64,Retail,Wales,Medium,2021
+CUST-00767,25-34,SME,South East,High,2018
+CUST-00768,25-34,Retail,Wales,Medium,2018
+CUST-00769,35-44,Private Banking,Scotland,Low,2012
+CUST-00770,35-44,Private Banking,Midlands,High,2022
+CUST-00771,55-64,Retail,North East,Low,2023
+CUST-00772,35-44,SME,Wales,High,2015
+CUST-00773,55-64,SME,North East,Low,2005
+CUST-00774,35-44,Retail,North West,High,2008
+CUST-00775,55-64,Retail,South West,Medium,2011
+CUST-00776,25-34,Corporate,South West,Low,2009
+CUST-00777,45-54,Retail,South West,Medium,2013
+CUST-00778,45-54,Corporate,North West,Medium,2012
+CUST-00779,35-44,SME,South East,Low,2021
+CUST-00780,55-64,Retail,Scotland,Low,2022
+CUST-00781,55-64,SME,North West,Low,2005
+CUST-00782,35-44,Retail,North East,Low,2008
+CUST-00783,25-34,SME,Wales,Medium,2024
+CUST-00784,18-24,Retail,South East,High,2020
+CUST-00785,35-44,Retail,North East,Low,2020
+CUST-00786,25-34,Retail,South West,Medium,2009
+CUST-00787,45-54,Retail,North East,Medium,2016
+CUST-00788,65+,Corporate,Scotland,High,2018
+CUST-00789,45-54,SME,Scotland,Medium,2020
+CUST-00790,65+,Retail,London,Low,2006
+CUST-00791,45-54,SME,Midlands,Very High,2006
+CUST-00792,65+,Retail,North West,Very High,2020
+CUST-00793,18-24,SME,London,High,2017
+CUST-00794,35-44,Retail,London,Medium,2010
+CUST-00795,35-44,Retail,London,Low,2006
+CUST-00796,45-54,Retail,North East,Low,2018
+CUST-00797,55-64,Private Banking,Scotland,Medium,2014
+CUST-00798,35-44,Retail,Midlands,High,2019
+CUST-00799,55-64,SME,North East,Very High,2015
+CUST-00800,45-54,SME,North East,Low,2020
+CUST-00801,18-24,Retail,Midlands,Very High,2014
+CUST-00802,45-54,Retail,Wales,Low,2011
+CUST-00803,55-64,Retail,South East,Medium,2005
+CUST-00804,18-24,SME,Midlands,High,2005
+CUST-00805,35-44,Retail,Scotland,Low,2020
+CUST-00806,45-54,Private Banking,North East,Low,2010
+CUST-00807,45-54,Private Banking,London,Medium,2024
+CUST-00808,65+,Retail,South East,Medium,2009
+CUST-00809,45-54,Retail,Wales,High,2022
+CUST-00810,35-44,Corporate,North East,Medium,2018
+CUST-00811,65+,Retail,Wales,Medium,2015
+CUST-00812,35-44,SME,Midlands,Low,2013
+CUST-00813,55-64,Retail,South East,Low,2012
+CUST-00814,45-54,Retail,London,Low,2020
+CUST-00815,45-54,Retail,Midlands,Low,2011
+CUST-00816,55-64,SME,North West,Low,2023
+CUST-00817,65+,SME,Midlands,Medium,2005
+CUST-00818,35-44,Retail,South East,Low,2011
+CUST-00819,35-44,Retail,Midlands,Low,2021
+CUST-00820,35-44,Private Banking,South East,Medium,2005
+CUST-00821,65+,Retail,Midlands,Medium,2013
+CUST-00822,25-34,Retail,London,Low,2010
+CUST-00823,25-34,Retail,Scotland,Low,2007
+CUST-00824,18-24,Retail,North West,Low,2011
+CUST-00825,25-34,Retail,South East,Medium,2014
+CUST-00826,65+,Retail,South East,Low,2007
+CUST-00827,45-54,SME,Scotland,Very High,2015
+CUST-00828,65+,Private Banking,Midlands,Low,2009
+CUST-00829,45-54,Retail,Midlands,Medium,2013
+CUST-00830,65+,Private Banking,Midlands,Low,2012
+CUST-00831,25-34,Retail,South West,Medium,2013
+CUST-00832,65+,SME,North East,Medium,2007
+CUST-00833,18-24,Retail,Wales,Medium,2011
+CUST-00834,18-24,Corporate,South West,Low,2005
+CUST-00835,55-64,Retail,South West,Medium,2022
+CUST-00836,18-24,Retail,South East,Medium,2016
+CUST-00837,35-44,Retail,Scotland,Medium,2011
+CUST-00838,55-64,Retail,South West,Medium,2016
+CUST-00839,65+,Retail,Wales,High,2019
+CUST-00840,25-34,Retail,Wales,Low,2005
+CUST-00841,65+,Corporate,South East,Very High,2024
+CUST-00842,25-34,Retail,South East,Low,2011
+CUST-00843,18-24,Corporate,South West,High,2023
+CUST-00844,18-24,Retail,Midlands,High,2023
+CUST-00845,25-34,Retail,North West,Medium,2015
+CUST-00846,18-24,Corporate,South East,Low,2020
+CUST-00847,65+,SME,London,Very High,2007
+CUST-00848,25-34,Retail,North East,Medium,2010
+CUST-00849,65+,Retail,South East,Medium,2008
+CUST-00850,45-54,Private Banking,South West,Low,2015
+CUST-00851,25-34,SME,Wales,High,2009
+CUST-00852,55-64,SME,North East,High,2010
+CUST-00853,55-64,Retail,Scotland,Low,2019
+CUST-00854,25-34,Retail,South West,Low,2008
+CUST-00855,45-54,Corporate,North East,Medium,2007
+CUST-00856,25-34,SME,London,Medium,2014
+CUST-00857,18-24,Private Banking,South East,Medium,2020
+CUST-00858,18-24,SME,Midlands,High,2009
+CUST-00859,18-24,SME,London,Medium,2018
+CUST-00860,45-54,Retail,North East,Low,2020
+CUST-00861,25-34,SME,South West,Low,2013
+CUST-00862,55-64,SME,North East,Low,2023
+CUST-00863,45-54,Retail,North West,Low,2012
+CUST-00864,35-44,Retail,London,Medium,2016
+CUST-00865,35-44,Retail,South East,Low,2021
+CUST-00866,65+,Retail,Midlands,Medium,2020
+CUST-00867,35-44,Retail,North West,Low,2007
+CUST-00868,65+,SME,South West,Medium,2005
+CUST-00869,45-54,Retail,Wales,Low,2009
+CUST-00870,65+,Retail,Midlands,High,2019
+CUST-00871,25-34,SME,Midlands,Very High,2018
+CUST-00872,65+,Corporate,Midlands,Low,2006
+CUST-00873,18-24,SME,North East,Medium,2022
+CUST-00874,35-44,Retail,North East,Medium,2009
+CUST-00875,25-34,Retail,Scotland,Low,2007
+CUST-00876,25-34,Retail,London,High,2013
+CUST-00877,45-54,SME,South East,Low,2006
+CUST-00878,35-44,Private Banking,London,Low,2021
+CUST-00879,18-24,Corporate,North East,Medium,2018
+CUST-00880,35-44,SME,North East,Medium,2010
+CUST-00881,25-34,SME,London,Low,2011
+CUST-00882,55-64,Retail,South West,High,2009
+CUST-00883,55-64,Corporate,Scotland,Medium,2012
+CUST-00884,65+,Corporate,Midlands,High,2024
+CUST-00885,65+,Retail,London,Medium,2011
+CUST-00886,35-44,Retail,South West,Low,2024
+CUST-00887,18-24,SME,South West,Low,2010
+CUST-00888,45-54,Retail,Wales,Medium,2017
+CUST-00889,18-24,Retail,South West,Low,2018
+CUST-00890,25-34,SME,London,Medium,2014
+CUST-00891,18-24,SME,South East,Medium,2021
+CUST-00892,25-34,Retail,South West,Low,2011
+CUST-00893,55-64,Retail,Midlands,Low,2018
+CUST-00894,25-34,Retail,Scotland,Medium,2018
+CUST-00895,18-24,Corporate,Midlands,Very High,2015
+CUST-00896,18-24,SME,Scotland,Low,2020
+CUST-00897,45-54,SME,London,High,2005
+CUST-00898,35-44,Retail,Midlands,Low,2024
+CUST-00899,25-34,SME,North East,Low,2005
+CUST-00900,55-64,Corporate,North West,Medium,2008
+CUST-00901,18-24,Retail,Scotland,Low,2021
+CUST-00902,18-24,Retail,London,Low,2006
+CUST-00903,55-64,Retail,South West,Low,2020
+CUST-00904,65+,Retail,London,Very High,2019
+CUST-00905,18-24,Retail,Wales,Medium,2006
+CUST-00906,25-34,SME,North West,Low,2024
+CUST-00907,25-34,Private Banking,Wales,Medium,2014
+CUST-00908,55-64,Corporate,Wales,Low,2012
+CUST-00909,18-24,Private Banking,Scotland,Low,2020
+CUST-00910,25-34,Retail,London,Medium,2006
+CUST-00911,65+,Corporate,Wales,Low,2007
+CUST-00912,18-24,Retail,Scotland,Low,2005
+CUST-00913,35-44,SME,Wales,Medium,2020
+CUST-00914,35-44,Retail,Scotland,Medium,2008
+CUST-00915,45-54,Private Banking,North East,Very High,2021
+CUST-00916,65+,Private Banking,North East,Medium,2013
+CUST-00917,25-34,Retail,London,Low,2024
+CUST-00918,18-24,SME,South West,Low,2020
+CUST-00919,55-64,SME,South East,Medium,2010
+CUST-00920,35-44,Retail,London,Low,2011
+CUST-00921,45-54,SME,North East,Low,2010
+CUST-00922,55-64,Corporate,South West,Low,2018
+CUST-00923,25-34,Retail,Wales,Low,2008
+CUST-00924,35-44,Retail,North West,Low,2006
+CUST-00925,18-24,Private Banking,South East,Low,2009
+CUST-00926,25-34,Retail,Wales,Low,2022
+CUST-00927,55-64,Retail,South West,Medium,2007
+CUST-00928,18-24,Retail,North West,Medium,2021
+CUST-00929,25-34,Private Banking,Midlands,High,2015
+CUST-00930,45-54,Retail,Wales,Low,2005
+CUST-00931,18-24,Retail,London,High,2010
+CUST-00932,45-54,Retail,South East,Low,2018
+CUST-00933,18-24,Retail,Midlands,Low,2006
+CUST-00934,25-34,SME,North West,Low,2024
+CUST-00935,65+,SME,South West,Low,2008
+CUST-00936,45-54,SME,Scotland,Medium,2021
+CUST-00937,35-44,Retail,Scotland,Medium,2024
+CUST-00938,18-24,Retail,London,Medium,2010
+CUST-00939,18-24,SME,South East,Low,2005
+CUST-00940,45-54,Retail,South East,Low,2013
+CUST-00941,45-54,SME,Wales,Low,2015
+CUST-00942,35-44,Private Banking,North West,Medium,2020
+CUST-00943,65+,Retail,Midlands,Medium,2007
+CUST-00944,65+,Retail,North East,Low,2024
+CUST-00945,35-44,Retail,London,Medium,2009
+CUST-00946,18-24,Retail,London,Medium,2023
+CUST-00947,45-54,SME,Scotland,Very High,2013
+CUST-00948,25-34,SME,North East,Low,2007
+CUST-00949,55-64,Retail,North West,Low,2024
+CUST-00950,35-44,Corporate,Scotland,Medium,2017
+CUST-00951,65+,Corporate,Midlands,High,2022
+CUST-00952,45-54,Private Banking,Midlands,Low,2010
+CUST-00953,18-24,Retail,South East,Low,2008
+CUST-00954,35-44,Corporate,North East,Medium,2010
+CUST-00955,25-34,Corporate,North West,Medium,2012
+CUST-00956,18-24,Retail,Midlands,Low,2018
+CUST-00957,18-24,SME,Scotland,High,2011
+CUST-00958,35-44,Retail,South West,Low,2005
+CUST-00959,25-34,Retail,Midlands,Low,2016
+CUST-00960,45-54,SME,South East,Medium,2018
+CUST-00961,25-34,SME,North West,Low,2022
+CUST-00962,45-54,Retail,Scotland,Low,2018
+CUST-00963,35-44,Retail,South East,Medium,2005
+CUST-00964,65+,Corporate,London,Low,2008
+CUST-00965,55-64,Retail,Midlands,Medium,2018
+CUST-00966,65+,Private Banking,London,Medium,2010
+CUST-00967,35-44,SME,South West,High,2015
+CUST-00968,25-34,Retail,South West,Medium,2023
+CUST-00969,18-24,Retail,North West,Low,2012
+CUST-00970,55-64,Retail,South East,Very High,2019
+CUST-00971,65+,Retail,London,High,2006
+CUST-00972,55-64,Retail,Scotland,Medium,2021
+CUST-00973,35-44,Corporate,South West,Medium,2021
+CUST-00974,55-64,Retail,South West,Medium,2015
+CUST-00975,55-64,Retail,Wales,Low,2015
+CUST-00976,45-54,Retail,Scotland,Low,2009
+CUST-00977,18-24,Retail,North East,Medium,2006
+CUST-00978,65+,Retail,North West,High,2018
+CUST-00979,35-44,Retail,South East,Low,2018
+CUST-00980,18-24,Private Banking,Midlands,High,2021
+CUST-00981,25-34,Private Banking,Scotland,Medium,2013
+CUST-00982,25-34,SME,South West,Low,2011
+CUST-00983,35-44,SME,London,Low,2011
+CUST-00984,25-34,Retail,South West,Low,2012
+CUST-00985,18-24,SME,North West,High,2018
+CUST-00986,55-64,Corporate,London,Low,2018
+CUST-00987,45-54,Retail,London,Medium,2008
+CUST-00988,65+,Private Banking,South East,High,2023
+CUST-00989,18-24,Retail,North East,Low,2014
+CUST-00990,55-64,Retail,Wales,Low,2020
+CUST-00991,18-24,Retail,Scotland,High,2014
+CUST-00992,25-34,Retail,Scotland,Very High,2013
+CUST-00993,35-44,SME,Midlands,Medium,2018
+CUST-00994,35-44,Corporate,South East,High,2023
+CUST-00995,25-34,SME,Midlands,Medium,2006
+CUST-00996,65+,SME,South East,Medium,2019
+CUST-00997,25-34,Retail,Wales,Medium,2017
+CUST-00998,35-44,Retail,South West,Medium,2022
+CUST-00999,35-44,Corporate,South East,Medium,2009
+CUST-01000,55-64,Retail,Midlands,High,2022
+CUST-01001,65+,Retail,Scotland,Low,2017
+CUST-01002,45-54,SME,Wales,Medium,2014
+CUST-01003,45-54,Retail,Wales,High,2015
+CUST-01004,65+,Private Banking,South East,Medium,2024
+CUST-01005,65+,SME,North East,High,2021
+CUST-01006,25-34,SME,Scotland,Medium,2015
+CUST-01007,65+,Retail,London,High,2020
+CUST-01008,45-54,Retail,South West,Low,2008
+CUST-01009,65+,Retail,Midlands,High,2024
+CUST-01010,18-24,Retail,Wales,Medium,2019
+CUST-01011,45-54,SME,South East,High,2021
+CUST-01012,18-24,Corporate,Wales,Low,2015
+CUST-01013,35-44,Retail,South East,High,2018
+CUST-01014,35-44,Private Banking,South East,Medium,2007
+CUST-01015,35-44,SME,North East,High,2010
+CUST-01016,35-44,Retail,London,Medium,2020
+CUST-01017,45-54,SME,South West,Medium,2013
+CUST-01018,45-54,Retail,London,Medium,2023
+CUST-01019,25-34,Corporate,South West,Low,2020
+CUST-01020,65+,Corporate,South East,Medium,2011
+CUST-01021,65+,Retail,South East,High,2022
+CUST-01022,35-44,Retail,South East,Low,2021
+CUST-01023,55-64,Retail,Wales,Low,2005
+CUST-01024,55-64,Retail,Scotland,High,2019
+CUST-01025,65+,Retail,North East,High,2007
+CUST-01026,35-44,Retail,Midlands,High,2021
+CUST-01027,25-34,Retail,North East,Low,2010
+CUST-01028,18-24,Corporate,Wales,Very High,2022
+CUST-01029,25-34,Retail,Midlands,Very High,2010
+CUST-01030,18-24,Retail,Midlands,Medium,2023
+CUST-01031,45-54,Retail,South East,Low,2017
+CUST-01032,25-34,SME,Midlands,Low,2011
+CUST-01033,18-24,SME,South West,Medium,2016
+CUST-01034,55-64,Retail,North East,Low,2011
+CUST-01035,45-54,Retail,Scotland,Very High,2019
+CUST-01036,35-44,SME,North West,High,2016
+CUST-01037,25-34,SME,Wales,High,2007
+CUST-01038,25-34,Private Banking,Scotland,Low,2016
+CUST-01039,35-44,Retail,Scotland,Low,2016
+CUST-01040,55-64,Corporate,Scotland,Low,2015
+CUST-01041,55-64,Corporate,London,Low,2018
+CUST-01042,25-34,SME,North West,Low,2012
+CUST-01043,25-34,Corporate,South East,Low,2020
+CUST-01044,25-34,Retail,Scotland,Low,2009
+CUST-01045,65+,Retail,London,Low,2022
+CUST-01046,35-44,Retail,South East,High,2009
+CUST-01047,35-44,SME,South West,High,2012
+CUST-01048,25-34,Retail,North West,Low,2007
+CUST-01049,18-24,Retail,Scotland,Low,2021
+CUST-01050,45-54,Retail,South West,Low,2020
+CUST-01051,35-44,SME,North West,High,2010
+CUST-01052,25-34,SME,London,Low,2008
+CUST-01053,55-64,Retail,Midlands,Low,2020
+CUST-01054,18-24,Private Banking,Scotland,Low,2017
+CUST-01055,55-64,SME,London,Low,2017
+CUST-01056,18-24,SME,South West,Medium,2013
+CUST-01057,45-54,Retail,London,Low,2005
+CUST-01058,35-44,Retail,Midlands,High,2016
+CUST-01059,45-54,Retail,London,Medium,2018
+CUST-01060,25-34,Retail,South West,Medium,2019
+CUST-01061,25-34,Private Banking,North East,High,2016
+CUST-01062,55-64,Corporate,Midlands,High,2019
+CUST-01063,55-64,Retail,South West,High,2008
+CUST-01064,45-54,Corporate,South East,Medium,2013
+CUST-01065,55-64,Private Banking,North East,High,2017
+CUST-01066,25-34,SME,Scotland,Medium,2023
+CUST-01067,35-44,SME,Scotland,High,2023
+CUST-01068,25-34,Retail,Midlands,Very High,2019
+CUST-01069,55-64,Retail,Midlands,High,2014
+CUST-01070,25-34,Retail,London,High,2006
+CUST-01071,25-34,Corporate,North West,Medium,2020
+CUST-01072,25-34,Retail,Wales,Low,2015
+CUST-01073,18-24,Retail,North East,Medium,2012
+CUST-01074,35-44,Retail,London,Low,2023
+CUST-01075,18-24,Retail,South West,Low,2013
+CUST-01076,18-24,Retail,Midlands,Low,2020
+CUST-01077,25-34,SME,North West,Medium,2010
+CUST-01078,45-54,Private Banking,Midlands,Very High,2018
+CUST-01079,35-44,Retail,North East,High,2014
+CUST-01080,55-64,SME,London,Low,2024
+CUST-01081,35-44,Private Banking,North East,Low,2013
+CUST-01082,25-34,Private Banking,South East,Medium,2024
+CUST-01083,65+,SME,North West,Low,2005
+CUST-01084,25-34,Retail,North East,Low,2008
+CUST-01085,18-24,SME,Wales,Medium,2014
+CUST-01086,55-64,Retail,South East,Low,2005
+CUST-01087,18-24,Retail,North West,Low,2010
+CUST-01088,18-24,SME,North East,Low,2017
+CUST-01089,25-34,SME,North East,Very High,2021
+CUST-01090,18-24,Retail,Wales,Medium,2013
+CUST-01091,65+,Retail,Midlands,Low,2007
+CUST-01092,55-64,SME,Midlands,High,2017
+CUST-01093,45-54,SME,London,Medium,2012
+CUST-01094,45-54,Retail,North East,Low,2023
+CUST-01095,45-54,SME,Midlands,Medium,2020
+CUST-01096,35-44,Retail,London,Medium,2013
+CUST-01097,65+,SME,London,Medium,2013
+CUST-01098,25-34,SME,Scotland,Medium,2018
+CUST-01099,18-24,Retail,South West,Medium,2012
+CUST-01100,55-64,Retail,London,Medium,2010
+CUST-01101,45-54,Retail,North West,Low,2021
+CUST-01102,35-44,Retail,Midlands,Medium,2021
+CUST-01103,55-64,Retail,Wales,Low,2005
+CUST-01104,35-44,SME,London,Low,2011
+CUST-01105,45-54,SME,North West,Very High,2005
+CUST-01106,25-34,Retail,South East,Medium,2012
+CUST-01107,18-24,Retail,London,Low,2016
+CUST-01108,65+,Retail,South East,Low,2024
+CUST-01109,55-64,SME,Midlands,Low,2015
+CUST-01110,65+,Retail,North West,Medium,2024
+CUST-01111,45-54,Corporate,South West,Low,2021
+CUST-01112,65+,Retail,North East,Low,2018
+CUST-01113,55-64,Private Banking,Scotland,Medium,2023
+CUST-01114,45-54,Retail,North East,Low,2007
+CUST-01115,35-44,Corporate,South East,Low,2020
+CUST-01116,55-64,Retail,Scotland,Medium,2018
+CUST-01117,35-44,Retail,South West,High,2018
+CUST-01118,55-64,Retail,North East,Medium,2022
+CUST-01119,45-54,Retail,Midlands,Low,2013
+CUST-01120,45-54,SME,North East,Medium,2013
+CUST-01121,65+,Retail,North East,Low,2010
+CUST-01122,65+,SME,South East,Low,2015
+CUST-01123,18-24,Corporate,South East,High,2018
+CUST-01124,45-54,Retail,Wales,Medium,2005
+CUST-01125,18-24,Retail,North West,Medium,2010
+CUST-01126,45-54,Retail,North West,Medium,2006
+CUST-01127,55-64,SME,South East,Low,2021
+CUST-01128,25-34,Retail,Wales,High,2006
+CUST-01129,65+,Retail,North West,High,2011
+CUST-01130,65+,SME,London,Very High,2006
+CUST-01131,25-34,Private Banking,South West,Medium,2018
+CUST-01132,18-24,Retail,Scotland,Low,2007
+CUST-01133,65+,Retail,North West,Medium,2011
+CUST-01134,18-24,Retail,South East,Medium,2013
+CUST-01135,45-54,Retail,South West,Low,2024
+CUST-01136,45-54,Retail,Wales,Low,2009
+CUST-01137,45-54,Retail,South East,Low,2024
+CUST-01138,45-54,Retail,London,Low,2016
+CUST-01139,18-24,Retail,North West,Low,2013
+CUST-01140,25-34,Private Banking,Midlands,Medium,2024
+CUST-01141,45-54,Retail,Midlands,Very High,2021
+CUST-01142,25-34,Retail,Wales,Low,2006
+CUST-01143,55-64,Retail,North West,Medium,2017
+CUST-01144,55-64,Corporate,Midlands,Low,2009
+CUST-01145,45-54,Retail,South East,Medium,2020
+CUST-01146,18-24,SME,North West,Low,2010
+CUST-01147,25-34,Retail,South West,Low,2013
+CUST-01148,45-54,Retail,North East,Medium,2014
+CUST-01149,25-34,Retail,Wales,Low,2024
+CUST-01150,25-34,Corporate,Wales,Low,2020
+CUST-01151,35-44,SME,Wales,Very High,2017
+CUST-01152,35-44,Retail,South East,High,2012
+CUST-01153,25-34,Retail,Scotland,Medium,2006
+CUST-01154,35-44,Corporate,Scotland,Low,2012
+CUST-01155,65+,SME,Midlands,High,2018
+CUST-01156,18-24,Retail,Scotland,High,2010
+CUST-01157,35-44,Retail,North West,Low,2006
+CUST-01158,55-64,SME,South East,Very High,2015
+CUST-01159,45-54,Corporate,North East,Low,2008
+CUST-01160,25-34,Retail,Midlands,Very High,2021
+CUST-01161,55-64,Retail,Wales,Very High,2013
+CUST-01162,45-54,SME,Wales,Low,2010
+CUST-01163,55-64,Retail,South West,Medium,2020
+CUST-01164,35-44,Retail,South West,Medium,2008
+CUST-01165,55-64,SME,Midlands,Low,2013
+CUST-01166,45-54,Retail,South East,Low,2012
+CUST-01167,25-34,Retail,Wales,Low,2014
+CUST-01168,45-54,Retail,London,High,2017
+CUST-01169,55-64,Retail,South East,Low,2019
+CUST-01170,55-64,Retail,South East,High,2009
+CUST-01171,25-34,SME,Scotland,Low,2011
+CUST-01172,55-64,Retail,Scotland,High,2018
+CUST-01173,35-44,Corporate,North West,Medium,2018
+CUST-01174,18-24,SME,Scotland,Medium,2023
+CUST-01175,25-34,Corporate,North West,Medium,2022
+CUST-01176,55-64,SME,North West,Medium,2010
+CUST-01177,35-44,Retail,North East,Medium,2015
+CUST-01178,35-44,SME,Scotland,Very High,2022
+CUST-01179,35-44,Retail,South West,Low,2005
+CUST-01180,45-54,SME,Scotland,Medium,2023
+CUST-01181,55-64,Retail,Wales,Medium,2007
+CUST-01182,45-54,Retail,London,Medium,2015
+CUST-01183,55-64,SME,Wales,High,2017
+CUST-01184,35-44,Retail,London,Medium,2012
+CUST-01185,35-44,Retail,North West,Medium,2006
+CUST-01186,55-64,Retail,South West,Low,2009
+CUST-01187,25-34,Retail,Midlands,Medium,2019
+CUST-01188,45-54,Corporate,London,Low,2006
+CUST-01189,25-34,Retail,South East,Medium,2017
+CUST-01190,25-34,Retail,South East,High,2017
+CUST-01191,55-64,Retail,London,Low,2012
+CUST-01192,45-54,Private Banking,South East,Medium,2019
+CUST-01193,25-34,SME,North West,Very High,2007
+CUST-01194,45-54,Private Banking,South West,Medium,2018
+CUST-01195,25-34,Retail,Wales,High,2022
+CUST-01196,55-64,Corporate,South West,Medium,2021
+CUST-01197,65+,Retail,South East,Low,2023
+CUST-01198,35-44,SME,South West,Low,2016
+CUST-01199,65+,Retail,North West,High,2023
+CUST-01200,18-24,Retail,South West,High,2007
+CUST-01201,18-24,Retail,North East,Low,2006
+CUST-01202,45-54,SME,South East,Medium,2008
+CUST-01203,45-54,Retail,Midlands,Low,2020
+CUST-01204,55-64,Retail,North West,Low,2007
+CUST-01205,18-24,SME,South East,Medium,2011
+CUST-01206,18-24,SME,Midlands,Very High,2008
+CUST-01207,55-64,Retail,North West,Low,2021
+CUST-01208,25-34,SME,South West,High,2008
+CUST-01209,35-44,Private Banking,North West,Medium,2018
+CUST-01210,18-24,SME,Wales,Medium,2006
+CUST-01211,35-44,Corporate,Midlands,Low,2014
+CUST-01212,45-54,SME,South West,Medium,2021
+CUST-01213,35-44,SME,Scotland,Medium,2013
+CUST-01214,25-34,Retail,South West,High,2008
+CUST-01215,25-34,Retail,North West,High,2008
+CUST-01216,25-34,Corporate,Wales,Medium,2006
+CUST-01217,45-54,Private Banking,Midlands,Low,2023
+CUST-01218,25-34,Corporate,Midlands,Very High,2010
+CUST-01219,65+,Retail,Wales,High,2011
+CUST-01220,35-44,SME,London,High,2020
+CUST-01221,35-44,Corporate,Midlands,Very High,2019
+CUST-01222,65+,Retail,Scotland,Low,2013
+CUST-01223,65+,SME,North West,High,2024
+CUST-01224,18-24,SME,North East,Low,2007
+CUST-01225,65+,Corporate,South East,High,2024
+CUST-01226,25-34,SME,South East,Very High,2006
+CUST-01227,25-34,SME,London,Low,2015
+CUST-01228,55-64,Retail,South East,Low,2016
+CUST-01229,25-34,Retail,Wales,Medium,2010
+CUST-01230,55-64,Retail,Wales,Very High,2005
+CUST-01231,35-44,Retail,Scotland,Low,2020
+CUST-01232,65+,Retail,South West,Medium,2020
+CUST-01233,55-64,Retail,North East,Low,2013
+CUST-01234,45-54,SME,London,Very High,2022
+CUST-01235,45-54,SME,North East,Low,2005
+CUST-01236,45-54,Retail,South West,Low,2016
+CUST-01237,18-24,Corporate,Wales,Low,2009
+CUST-01238,65+,Private Banking,North West,Low,2006
+CUST-01239,18-24,Retail,North East,Medium,2010
+CUST-01240,18-24,Retail,Scotland,Low,2021
+CUST-01241,18-24,SME,London,Low,2006
+CUST-01242,25-34,Private Banking,South West,Medium,2020
+CUST-01243,55-64,Corporate,Scotland,High,2016
+CUST-01244,25-34,SME,Scotland,Low,2006
+CUST-01245,25-34,Private Banking,Wales,High,2015
+CUST-01246,25-34,SME,Wales,Medium,2009
+CUST-01247,65+,Private Banking,Wales,Medium,2024
+CUST-01248,55-64,Retail,North East,Low,2016
+CUST-01249,55-64,Retail,Midlands,Low,2022
+CUST-01250,18-24,Retail,South West,Medium,2016
+CUST-01251,35-44,Retail,Wales,Low,2019
+CUST-01252,65+,Retail,North East,Low,2011
+CUST-01253,25-34,Corporate,Midlands,Low,2015
+CUST-01254,65+,Retail,North East,Low,2019
+CUST-01255,45-54,SME,South East,Medium,2010
+CUST-01256,45-54,Retail,Scotland,Medium,2013
+CUST-01257,35-44,Retail,North East,Low,2021
+CUST-01258,55-64,SME,Scotland,High,2005
+CUST-01259,55-64,SME,Midlands,Low,2016
+CUST-01260,65+,Corporate,North East,Low,2008
+CUST-01261,45-54,SME,London,Low,2009
+CUST-01262,18-24,SME,South West,Low,2015
+CUST-01263,25-34,Retail,London,Low,2010
+CUST-01264,25-34,SME,South East,Low,2009
+CUST-01265,25-34,Retail,Midlands,Medium,2016
+CUST-01266,18-24,Retail,South West,Low,2011
+CUST-01267,55-64,Retail,North East,High,2019
+CUST-01268,45-54,Corporate,Midlands,Medium,2009
+CUST-01269,35-44,Retail,North West,Low,2010
+CUST-01270,25-34,Corporate,Scotland,High,2007
+CUST-01271,55-64,Retail,Midlands,Medium,2010
+CUST-01272,45-54,Corporate,Scotland,Low,2024
+CUST-01273,65+,Retail,Wales,Medium,2009
+CUST-01274,35-44,SME,North West,Low,2005
+CUST-01275,55-64,Retail,Midlands,High,2012
+CUST-01276,25-34,Retail,North East,Very High,2008
+CUST-01277,35-44,Private Banking,Wales,Low,2022
+CUST-01278,25-34,Retail,London,High,2017
+CUST-01279,65+,SME,Midlands,Low,2012
+CUST-01280,45-54,Corporate,Midlands,Low,2024
+CUST-01281,65+,SME,Wales,Medium,2019
+CUST-01282,25-34,Retail,North West,High,2020
+CUST-01283,55-64,Retail,North West,Low,2024
+CUST-01284,45-54,Private Banking,Wales,High,2007
+CUST-01285,18-24,Retail,North West,Low,2005
+CUST-01286,35-44,SME,Midlands,High,2005
+CUST-01287,55-64,Retail,Scotland,Medium,2005
+CUST-01288,18-24,Retail,North East,Low,2008
+CUST-01289,18-24,SME,North West,High,2020
+CUST-01290,45-54,Retail,Scotland,High,2007
+CUST-01291,45-54,Retail,Midlands,Low,2017
+CUST-01292,55-64,Retail,Scotland,Low,2013
+CUST-01293,65+,SME,North East,High,2005
+CUST-01294,45-54,SME,North East,Medium,2009
+CUST-01295,55-64,Retail,North East,Medium,2017
+CUST-01296,45-54,Retail,London,Medium,2006
+CUST-01297,35-44,Retail,North East,Medium,2007
+CUST-01298,35-44,Retail,Midlands,Low,2024
+CUST-01299,18-24,Retail,North West,Medium,2019
+CUST-01300,65+,SME,Midlands,Low,2010
+CUST-01301,35-44,Retail,Wales,Low,2014
+CUST-01302,55-64,SME,North East,Low,2020
+CUST-01303,35-44,SME,London,Medium,2017
+CUST-01304,65+,Retail,South West,Low,2021
+CUST-01305,45-54,SME,Wales,Low,2009
+CUST-01306,18-24,SME,Scotland,Medium,2011
+CUST-01307,55-64,Retail,South East,High,2013
+CUST-01308,65+,Corporate,South West,Low,2006
+CUST-01309,45-54,SME,London,Medium,2018
+CUST-01310,55-64,Private Banking,Wales,High,2018
+CUST-01311,18-24,Corporate,Scotland,High,2006
+CUST-01312,45-54,Retail,North East,High,2014
+CUST-01313,18-24,Retail,South East,Medium,2007
+CUST-01314,65+,Retail,South West,Low,2011
+CUST-01315,35-44,Private Banking,Scotland,Low,2017
+CUST-01316,65+,SME,Wales,Medium,2011
+CUST-01317,65+,Retail,South East,High,2007
+CUST-01318,65+,Retail,London,High,2018
+CUST-01319,55-64,Retail,North West,Medium,2016
+CUST-01320,18-24,Retail,Wales,Medium,2015
+CUST-01321,45-54,SME,South West,Low,2023
+CUST-01322,65+,SME,North West,Low,2021
+CUST-01323,35-44,Retail,South East,Low,2012
+CUST-01324,25-34,Retail,Scotland,Low,2010
+CUST-01325,65+,Retail,London,Medium,2006
+CUST-01326,55-64,Retail,Scotland,Low,2009
+CUST-01327,18-24,Retail,Midlands,Low,2011
+CUST-01328,25-34,Corporate,South East,Very High,2009
+CUST-01329,65+,Corporate,Midlands,Low,2016
+CUST-01330,55-64,Retail,Wales,Low,2013
+CUST-01331,35-44,Retail,South West,High,2024
+CUST-01332,45-54,SME,North East,Low,2023
+CUST-01333,18-24,SME,London,Medium,2007
+CUST-01334,35-44,Retail,Midlands,High,2022
+CUST-01335,55-64,Retail,South East,Low,2024
+CUST-01336,18-24,SME,Wales,Low,2007
+CUST-01337,35-44,Retail,South East,Low,2020
+CUST-01338,65+,Retail,North West,Very High,2020
+CUST-01339,55-64,Retail,South West,Medium,2005
+CUST-01340,25-34,Corporate,North East,Medium,2019
+CUST-01341,55-64,SME,South East,Medium,2020
+CUST-01342,65+,SME,Midlands,Low,2013
+CUST-01343,25-34,SME,Scotland,Medium,2014
+CUST-01344,65+,Retail,South West,Low,2012
+CUST-01345,65+,Retail,North West,Low,2015
+CUST-01346,35-44,Retail,Midlands,Low,2020
+CUST-01347,25-34,Corporate,Scotland,Low,2013
+CUST-01348,45-54,Retail,Midlands,Low,2016
+CUST-01349,35-44,Retail,South East,Medium,2008
+CUST-01350,45-54,SME,North East,Low,2006
+CUST-01351,55-64,Retail,North East,Low,2006
+CUST-01352,45-54,Retail,Midlands,Low,2023
+CUST-01353,45-54,Corporate,South East,Low,2012
+CUST-01354,55-64,Retail,North West,Medium,2007
+CUST-01355,45-54,Retail,South East,Medium,2014
+CUST-01356,55-64,Retail,South East,Low,2005
+CUST-01357,45-54,Corporate,Scotland,Low,2023
+CUST-01358,18-24,Retail,London,Low,2012
+CUST-01359,55-64,Retail,South West,Medium,2014
+CUST-01360,35-44,Retail,South West,Very High,2023
+CUST-01361,65+,Private Banking,Scotland,Medium,2021
+CUST-01362,45-54,Retail,Scotland,Low,2018
+CUST-01363,55-64,SME,South East,Medium,2005
+CUST-01364,45-54,Retail,London,Low,2013
+CUST-01365,55-64,Retail,London,Low,2014
+CUST-01366,18-24,SME,Scotland,Low,2011
+CUST-01367,65+,SME,South West,Very High,2012
+CUST-01368,65+,Retail,Wales,High,2019
+CUST-01369,18-24,Retail,Wales,Low,2021
+CUST-01370,18-24,Private Banking,Scotland,Low,2011
+CUST-01371,65+,Retail,South East,Low,2018
+CUST-01372,65+,Retail,South East,High,2009
+CUST-01373,25-34,Corporate,Midlands,Low,2024
+CUST-01374,55-64,SME,Midlands,Low,2013
+CUST-01375,25-34,SME,Scotland,Medium,2022
+CUST-01376,45-54,Retail,London,Very High,2005
+CUST-01377,55-64,Retail,Scotland,Low,2023
+CUST-01378,45-54,Retail,Midlands,Medium,2018
+CUST-01379,65+,Retail,Midlands,Medium,2021
+CUST-01380,25-34,SME,North East,Low,2023
+CUST-01381,18-24,SME,North West,Medium,2017
+CUST-01382,55-64,Corporate,South West,Low,2006
+CUST-01383,55-64,Retail,London,Low,2005
+CUST-01384,65+,Retail,Wales,Low,2013
+CUST-01385,18-24,Retail,North West,Low,2007
+CUST-01386,45-54,SME,London,Low,2009
+CUST-01387,18-24,Retail,North East,Medium,2022
+CUST-01388,18-24,Retail,Wales,Very High,2017
+CUST-01389,45-54,Retail,North West,Low,2007
+CUST-01390,65+,SME,North East,Low,2018
+CUST-01391,45-54,Retail,North West,Low,2009
+CUST-01392,35-44,Retail,Scotland,Medium,2009
+CUST-01393,25-34,Retail,Scotland,Medium,2010
+CUST-01394,45-54,SME,North West,Low,2012
+CUST-01395,45-54,SME,South East,Low,2020
+CUST-01396,45-54,Corporate,South East,Low,2021
+CUST-01397,18-24,Retail,Wales,Low,2017
+CUST-01398,65+,Retail,Midlands,Low,2013
+CUST-01399,55-64,Retail,Wales,Low,2006
+CUST-01400,25-34,Corporate,Wales,Medium,2020
+CUST-01401,45-54,Retail,North West,Medium,2022
+CUST-01402,65+,SME,North West,Medium,2022
+CUST-01403,25-34,Retail,Wales,Low,2020
+CUST-01404,18-24,Retail,South West,Medium,2023
+CUST-01405,18-24,SME,North East,Low,2007
+CUST-01406,55-64,Retail,South West,High,2012
+CUST-01407,55-64,Corporate,North West,Low,2018
+CUST-01408,35-44,Retail,Wales,Low,2014
+CUST-01409,35-44,SME,North West,Medium,2022
+CUST-01410,45-54,Retail,Midlands,High,2017
+CUST-01411,55-64,SME,North West,Low,2024
+CUST-01412,45-54,Corporate,Midlands,Low,2006
+CUST-01413,45-54,Retail,South West,Medium,2016
+CUST-01414,55-64,SME,North East,Medium,2018
+CUST-01415,45-54,SME,South East,Medium,2017
+CUST-01416,25-34,Retail,South West,Very High,2009
+CUST-01417,45-54,Retail,South East,High,2018
+CUST-01418,55-64,Retail,London,Low,2014
+CUST-01419,25-34,Retail,South East,Low,2005
+CUST-01420,35-44,Retail,Scotland,Low,2017
+CUST-01421,55-64,Retail,London,Medium,2018
+CUST-01422,65+,Retail,London,Medium,2014
+CUST-01423,55-64,Corporate,North East,Low,2007
+CUST-01424,65+,Retail,North East,Low,2008
+CUST-01425,25-34,SME,North West,Low,2016
+CUST-01426,25-34,Retail,Midlands,High,2005
+CUST-01427,25-34,Retail,Wales,High,2018
+CUST-01428,45-54,Retail,South West,Low,2014
+CUST-01429,45-54,Retail,Scotland,Low,2015
+CUST-01430,45-54,Retail,South West,High,2005
+CUST-01431,45-54,SME,North East,Low,2021
+CUST-01432,55-64,Retail,Scotland,Low,2015
+CUST-01433,65+,Retail,Wales,Low,2006
+CUST-01434,25-34,Retail,Midlands,Medium,2017
+CUST-01435,45-54,Corporate,South West,Low,2015
+CUST-01436,65+,SME,North West,Medium,2017
+CUST-01437,35-44,SME,North West,Low,2015
+CUST-01438,18-24,Corporate,London,Low,2005
+CUST-01439,25-34,Retail,Scotland,Medium,2012
+CUST-01440,65+,Corporate,South West,Low,2020
+CUST-01441,25-34,Retail,South East,Low,2016
+CUST-01442,35-44,Private Banking,Scotland,Low,2009
+CUST-01443,65+,Private Banking,South East,High,2021
+CUST-01444,25-34,SME,North East,Low,2007
+CUST-01445,45-54,Retail,North West,High,2019
+CUST-01446,45-54,Retail,Scotland,Medium,2008
+CUST-01447,65+,Retail,North West,Low,2009
+CUST-01448,65+,SME,London,Medium,2012
+CUST-01449,25-34,Retail,Scotland,Low,2013
+CUST-01450,35-44,Retail,Scotland,Medium,2024
+CUST-01451,35-44,Retail,Midlands,Low,2007
+CUST-01452,35-44,Retail,Midlands,Medium,2016
+CUST-01453,35-44,Private Banking,London,Low,2006
+CUST-01454,35-44,Retail,Wales,High,2023
+CUST-01455,55-64,SME,Midlands,Low,2021
+CUST-01456,35-44,Private Banking,London,Low,2016
+CUST-01457,65+,Corporate,Wales,Medium,2024
+CUST-01458,65+,Retail,Wales,Medium,2005
+CUST-01459,55-64,Retail,North East,Medium,2022
+CUST-01460,18-24,Retail,Wales,Low,2021
+CUST-01461,35-44,SME,Scotland,Low,2011
+CUST-01462,65+,Private Banking,South East,Low,2017
+CUST-01463,65+,Retail,London,High,2018
+CUST-01464,45-54,Retail,North West,Low,2016
+CUST-01465,45-54,Retail,London,Medium,2007
+CUST-01466,25-34,Private Banking,South East,High,2010
+CUST-01467,45-54,Retail,South East,Low,2012
+CUST-01468,65+,Retail,South East,Medium,2005
+CUST-01469,35-44,SME,North East,Low,2005
+CUST-01470,45-54,Private Banking,North West,Low,2011
+CUST-01471,18-24,Retail,South West,High,2016
+CUST-01472,65+,SME,South East,Low,2006
+CUST-01473,45-54,Retail,South East,Medium,2012
+CUST-01474,18-24,SME,North West,Low,2014
+CUST-01475,65+,Private Banking,South West,Low,2015
+CUST-01476,18-24,SME,North West,Low,2019
+CUST-01477,25-34,Retail,Wales,Low,2022
+CUST-01478,25-34,SME,Wales,Medium,2021
+CUST-01479,55-64,Retail,South East,Low,2009
+CUST-01480,25-34,Retail,South West,Low,2015
+CUST-01481,45-54,Retail,Midlands,Medium,2009
+CUST-01482,55-64,Corporate,North West,Low,2005
+CUST-01483,35-44,SME,South West,Medium,2019
+CUST-01484,45-54,Retail,South East,Medium,2018
+CUST-01485,18-24,Retail,South West,High,2010
+CUST-01486,35-44,Retail,South West,High,2010
+CUST-01487,65+,Retail,South East,Low,2012
+CUST-01488,25-34,Retail,North West,Low,2023
+CUST-01489,55-64,Retail,London,Low,2022
+CUST-01490,25-34,Corporate,North West,Very High,2013
+CUST-01491,25-34,Retail,Midlands,Low,2011
+CUST-01492,25-34,Retail,North West,Low,2016
+CUST-01493,35-44,Retail,London,Low,2020
+CUST-01494,35-44,Retail,North West,Low,2008
+CUST-01495,65+,Corporate,North East,Low,2009
+CUST-01496,35-44,SME,Scotland,Low,2017
+CUST-01497,35-44,Retail,London,Low,2017
+CUST-01498,45-54,Retail,London,Low,2011
+CUST-01499,65+,SME,Midlands,Low,2005
+CUST-01500,45-54,Retail,Wales,Low,2021
+CUST-01501,45-54,Retail,London,Medium,2005
+CUST-01502,55-64,Corporate,South West,High,2017
+CUST-01503,55-64,Retail,Midlands,Low,2024
+CUST-01504,45-54,Retail,North East,Medium,2022
+CUST-01505,25-34,Retail,London,Low,2022
+CUST-01506,65+,Retail,Midlands,High,2024
+CUST-01507,45-54,Corporate,North East,High,2013
+CUST-01508,35-44,SME,South West,High,2019
+CUST-01509,45-54,Private Banking,Wales,Low,2011
+CUST-01510,25-34,Retail,South West,Very High,2008
+CUST-01511,25-34,SME,North East,Low,2022
+CUST-01512,25-34,Retail,Wales,Medium,2013
+CUST-01513,35-44,SME,Wales,High,2024
+CUST-01514,45-54,Retail,North West,Very High,2010
+CUST-01515,55-64,SME,Scotland,Low,2020
+CUST-01516,55-64,Retail,North West,Low,2017
+CUST-01517,45-54,Retail,North West,Very High,2024
+CUST-01518,25-34,Retail,South West,Low,2011
+CUST-01519,55-64,Retail,North West,Medium,2015
+CUST-01520,18-24,Retail,North East,High,2011
+CUST-01521,55-64,Corporate,Wales,Low,2012
+CUST-01522,18-24,Retail,South West,Low,2017
+CUST-01523,55-64,Retail,Midlands,High,2016
+CUST-01524,55-64,Retail,Midlands,Medium,2008
+CUST-01525,25-34,SME,North East,Low,2019
+CUST-01526,45-54,Retail,North East,High,2011
+CUST-01527,45-54,SME,North East,Low,2021
+CUST-01528,25-34,SME,North East,Low,2019
+CUST-01529,55-64,Corporate,South East,Medium,2013
+CUST-01530,55-64,SME,North East,Medium,2023
+CUST-01531,45-54,Retail,Scotland,High,2018
+CUST-01532,35-44,SME,London,High,2006
+CUST-01533,55-64,Corporate,South West,Low,2013
+CUST-01534,65+,SME,London,Low,2021
+CUST-01535,45-54,Private Banking,South East,Low,2021
+CUST-01536,18-24,SME,Scotland,Medium,2018
+CUST-01537,55-64,Retail,Wales,Low,2016
+CUST-01538,55-64,SME,South West,Low,2020
+CUST-01539,25-34,SME,South East,Low,2018
+CUST-01540,18-24,Retail,North West,Low,2023
+CUST-01541,35-44,Private Banking,Midlands,Medium,2005
+CUST-01542,35-44,Retail,North West,Low,2011
+CUST-01543,35-44,Retail,Wales,Low,2015
+CUST-01544,55-64,Retail,Wales,Low,2007
+CUST-01545,35-44,Retail,Wales,Medium,2008
+CUST-01546,18-24,Corporate,South West,Low,2010
+CUST-01547,55-64,Retail,North West,High,2019
+CUST-01548,55-64,Retail,South East,Medium,2024
+CUST-01549,18-24,Retail,North West,Low,2024
+CUST-01550,35-44,Retail,South West,High,2023
+CUST-01551,65+,Corporate,South West,Medium,2017
+CUST-01552,65+,Retail,London,Medium,2013
+CUST-01553,25-34,SME,Midlands,Medium,2010
+CUST-01554,18-24,Retail,London,High,2023
+CUST-01555,18-24,Corporate,South East,Low,2008
+CUST-01556,55-64,Private Banking,Midlands,Medium,2010
+CUST-01557,35-44,Retail,North West,High,2018
+CUST-01558,35-44,SME,Scotland,Low,2019
+CUST-01559,65+,Retail,South West,Low,2008
+CUST-01560,25-34,Retail,South East,Medium,2006
+CUST-01561,45-54,Retail,London,Medium,2020
+CUST-01562,55-64,Corporate,South East,Low,2020
+CUST-01563,65+,Retail,Scotland,Low,2012
+CUST-01564,45-54,Private Banking,North East,Low,2009
+CUST-01565,18-24,Retail,South East,Medium,2006
+CUST-01566,35-44,Private Banking,North East,Medium,2005
+CUST-01567,35-44,Retail,North West,Low,2005
+CUST-01568,65+,Corporate,North East,High,2007
+CUST-01569,45-54,Retail,Wales,Low,2023
+CUST-01570,45-54,Retail,Midlands,Low,2022
+CUST-01571,65+,Retail,South West,Low,2009
+CUST-01572,18-24,Retail,Wales,Low,2015
+CUST-01573,35-44,Corporate,Wales,Low,2015
+CUST-01574,35-44,Retail,North East,Low,2020
+CUST-01575,35-44,Retail,London,Medium,2006
+CUST-01576,35-44,Retail,South East,Low,2024
+CUST-01577,35-44,Retail,South East,Low,2017
+CUST-01578,45-54,Retail,South East,Low,2013
+CUST-01579,18-24,Corporate,North West,Medium,2023
+CUST-01580,25-34,Private Banking,South West,Low,2021
+CUST-01581,35-44,Retail,North East,Low,2021
+CUST-01582,35-44,SME,Midlands,High,2010
+CUST-01583,35-44,Retail,North West,Medium,2006
+CUST-01584,65+,SME,Midlands,Medium,2016
+CUST-01585,45-54,Private Banking,North West,Medium,2019
+CUST-01586,45-54,Retail,South West,Medium,2010
+CUST-01587,25-34,Retail,North West,Low,2009
+CUST-01588,45-54,Retail,Scotland,High,2011
+CUST-01589,25-34,Private Banking,South East,Medium,2010
+CUST-01590,35-44,Retail,South West,Low,2023
+CUST-01591,45-54,Retail,Wales,Low,2019
+CUST-01592,25-34,Retail,North East,High,2005
+CUST-01593,35-44,Retail,North East,Medium,2005
+CUST-01594,18-24,SME,South East,Very High,2022
+CUST-01595,35-44,Retail,Wales,High,2016
+CUST-01596,25-34,SME,Midlands,Medium,2024
+CUST-01597,18-24,Retail,North West,Medium,2023
+CUST-01598,45-54,SME,North West,Low,2016
+CUST-01599,65+,SME,Scotland,Low,2018
+CUST-01600,65+,SME,Scotland,Low,2014
+CUST-01601,35-44,Corporate,London,Medium,2014
+CUST-01602,65+,SME,London,Medium,2006
+CUST-01603,45-54,SME,Midlands,Medium,2017
+CUST-01604,18-24,Retail,South West,Medium,2018
+CUST-01605,65+,Retail,South East,Medium,2006
+CUST-01606,65+,Retail,Wales,Medium,2013
+CUST-01607,45-54,SME,Wales,Low,2023
+CUST-01608,18-24,SME,Scotland,Medium,2020
+CUST-01609,45-54,Retail,North West,Low,2019
+CUST-01610,25-34,Retail,North East,Low,2007
+CUST-01611,45-54,SME,North West,Medium,2014
+CUST-01612,18-24,Retail,London,Medium,2020
+CUST-01613,18-24,SME,Midlands,High,2021
+CUST-01614,25-34,Retail,South West,Medium,2013
+CUST-01615,65+,Retail,South West,Low,2019
+CUST-01616,45-54,Retail,South West,Low,2009
+CUST-01617,55-64,Retail,North East,High,2020
+CUST-01618,55-64,Retail,North West,Low,2015
+CUST-01619,18-24,SME,South East,Low,2023
+CUST-01620,25-34,SME,Wales,High,2021
+CUST-01621,45-54,Retail,North East,Medium,2017
+CUST-01622,45-54,Corporate,Scotland,Medium,2008
+CUST-01623,25-34,Retail,North East,Medium,2021
+CUST-01624,65+,Retail,Wales,Low,2016
+CUST-01625,55-64,Retail,London,Low,2017
+CUST-01626,25-34,Corporate,North West,High,2015
+CUST-01627,25-34,Corporate,Scotland,Low,2008
+CUST-01628,55-64,Retail,Scotland,Low,2023
+CUST-01629,45-54,Corporate,London,High,2005
+CUST-01630,18-24,SME,Wales,Low,2015
+CUST-01631,55-64,Corporate,South West,Low,2020
+CUST-01632,18-24,SME,South West,Medium,2016
+CUST-01633,65+,Retail,Wales,Very High,2013
+CUST-01634,25-34,Private Banking,South East,High,2006
+CUST-01635,55-64,Retail,North East,Low,2011
+CUST-01636,18-24,Corporate,North East,High,2022
+CUST-01637,65+,Corporate,North West,Medium,2011
+CUST-01638,25-34,Corporate,South East,Low,2018
+CUST-01639,55-64,Private Banking,South East,High,2023
+CUST-01640,45-54,Corporate,South East,Medium,2012
+CUST-01641,18-24,SME,Wales,Medium,2011
+CUST-01642,65+,Retail,London,Medium,2008
+CUST-01643,35-44,Private Banking,South West,Very High,2009
+CUST-01644,18-24,SME,North West,Low,2020
+CUST-01645,25-34,Retail,Scotland,Low,2019
+CUST-01646,35-44,Retail,Wales,Low,2006
+CUST-01647,35-44,Private Banking,Wales,High,2021
+CUST-01648,35-44,Retail,North East,Low,2017
+CUST-01649,55-64,Corporate,Wales,Low,2008
+CUST-01650,65+,Retail,North West,Low,2009
+CUST-01651,55-64,Retail,Wales,Low,2012
+CUST-01652,55-64,Private Banking,North East,Low,2024
+CUST-01653,18-24,Retail,North East,Medium,2006
+CUST-01654,55-64,Corporate,North East,High,2021
+CUST-01655,55-64,SME,North East,Medium,2011
+CUST-01656,18-24,SME,London,Low,2017
+CUST-01657,45-54,SME,South West,Medium,2016
+CUST-01658,35-44,SME,Wales,Low,2020
+CUST-01659,45-54,SME,Scotland,Medium,2022
+CUST-01660,55-64,Retail,North West,High,2020
+CUST-01661,55-64,SME,London,Medium,2015
+CUST-01662,55-64,SME,South East,Medium,2011
+CUST-01663,35-44,Retail,North West,Low,2015
+CUST-01664,55-64,SME,London,High,2008
+CUST-01665,35-44,SME,South East,Low,2019
+CUST-01666,25-34,SME,Midlands,Medium,2018
+CUST-01667,55-64,SME,North West,Low,2017
+CUST-01668,45-54,Corporate,South West,Low,2015
+CUST-01669,18-24,Retail,South East,Medium,2023
+CUST-01670,25-34,SME,South East,Low,2014
+CUST-01671,55-64,Retail,South West,High,2019
+CUST-01672,18-24,Private Banking,North East,High,2022
+CUST-01673,65+,Retail,North West,Low,2017
+CUST-01674,55-64,Retail,Midlands,Medium,2016
+CUST-01675,35-44,Retail,Scotland,Low,2010
+CUST-01676,45-54,SME,Scotland,Medium,2011
+CUST-01677,35-44,Retail,Wales,High,2009
+CUST-01678,25-34,Retail,Scotland,Medium,2007
+CUST-01679,18-24,Retail,South East,Low,2015
+CUST-01680,45-54,SME,South West,Low,2010
+CUST-01681,25-34,SME,South East,Low,2019
+CUST-01682,65+,Retail,Midlands,Medium,2010
+CUST-01683,55-64,Retail,North East,Low,2007
+CUST-01684,65+,Retail,Scotland,Medium,2021
+CUST-01685,55-64,Retail,North East,Low,2007
+CUST-01686,65+,Retail,South East,Medium,2021
+CUST-01687,55-64,SME,South East,Low,2021
+CUST-01688,35-44,SME,South East,High,2017
+CUST-01689,55-64,Private Banking,South East,Low,2016
+CUST-01690,18-24,Retail,Wales,Medium,2010
+CUST-01691,45-54,SME,North East,Medium,2020
+CUST-01692,65+,Retail,Wales,Low,2005
+CUST-01693,55-64,SME,North West,Medium,2014
+CUST-01694,25-34,Corporate,Wales,High,2022
+CUST-01695,18-24,Retail,South West,Low,2022
+CUST-01696,25-34,Retail,South East,Low,2016
+CUST-01697,45-54,SME,Midlands,Low,2024
+CUST-01698,65+,SME,North East,Medium,2007
+CUST-01699,65+,Retail,London,High,2008
+CUST-01700,18-24,Retail,North East,Medium,2018
+CUST-01701,25-34,Retail,Midlands,Low,2021
+CUST-01702,18-24,SME,North East,Low,2015
+CUST-01703,35-44,Retail,Wales,Low,2022
+CUST-01704,18-24,Retail,South East,Low,2011
+CUST-01705,25-34,SME,South East,Medium,2007
+CUST-01706,25-34,SME,North West,Medium,2012
+CUST-01707,55-64,Private Banking,Scotland,Low,2008
+CUST-01708,65+,SME,North West,Low,2011
+CUST-01709,18-24,Retail,Wales,Low,2007
+CUST-01710,45-54,Retail,Scotland,High,2018
+CUST-01711,45-54,Retail,London,Low,2015
+CUST-01712,65+,Retail,Midlands,Medium,2018
+CUST-01713,35-44,SME,South West,Very High,2006
+CUST-01714,35-44,Corporate,London,Medium,2022
+CUST-01715,45-54,Retail,Midlands,High,2016
+CUST-01716,45-54,Retail,South East,Low,2014
+CUST-01717,65+,SME,North East,Medium,2006
+CUST-01718,65+,SME,South West,High,2005
+CUST-01719,45-54,Retail,London,Medium,2024
+CUST-01720,18-24,SME,Wales,High,2023
+CUST-01721,45-54,Retail,South West,Very High,2017
+CUST-01722,65+,Corporate,North East,High,2008
+CUST-01723,45-54,Retail,South West,Low,2013
+CUST-01724,35-44,Retail,North West,Medium,2005
+CUST-01725,35-44,Corporate,South West,Very High,2008
+CUST-01726,25-34,Retail,Midlands,Low,2014
+CUST-01727,55-64,Private Banking,North East,Low,2020
+CUST-01728,45-54,Retail,Scotland,Low,2006
+CUST-01729,35-44,Retail,Scotland,Low,2008
+CUST-01730,45-54,Retail,North West,High,2005
+CUST-01731,65+,SME,South East,Low,2009
+CUST-01732,55-64,SME,South West,High,2013
+CUST-01733,65+,Retail,Midlands,Low,2024
+CUST-01734,65+,Retail,London,Medium,2010
+CUST-01735,35-44,Retail,South West,Low,2013
+CUST-01736,18-24,Corporate,London,Low,2015
+CUST-01737,45-54,Retail,North West,Medium,2007
+CUST-01738,65+,Retail,London,Low,2016
+CUST-01739,65+,Corporate,London,Low,2015
+CUST-01740,35-44,Retail,London,Low,2019
+CUST-01741,18-24,SME,London,Low,2007
+CUST-01742,45-54,Retail,Midlands,Very High,2006
+CUST-01743,18-24,Retail,Wales,Medium,2015
+CUST-01744,45-54,Corporate,North West,Low,2021
+CUST-01745,65+,Private Banking,South West,Low,2005
+CUST-01746,18-24,SME,Scotland,Low,2006
+CUST-01747,35-44,Private Banking,North West,Low,2016
+CUST-01748,35-44,Retail,Wales,High,2007
+CUST-01749,35-44,Retail,London,High,2015
+CUST-01750,35-44,Retail,South West,Medium,2006
+CUST-01751,45-54,Retail,South East,Low,2023
+CUST-01752,45-54,Retail,North West,Low,2017
+CUST-01753,25-34,Retail,North West,Medium,2021
+CUST-01754,25-34,Retail,North East,Very High,2008
+CUST-01755,55-64,Retail,South East,Low,2020
+CUST-01756,18-24,SME,Wales,Medium,2018
+CUST-01757,55-64,Corporate,North West,High,2021
+CUST-01758,55-64,SME,South East,High,2012
+CUST-01759,65+,Retail,Midlands,Low,2015
+CUST-01760,35-44,Retail,North West,Low,2023
+CUST-01761,18-24,Retail,Scotland,Medium,2008
+CUST-01762,45-54,SME,Wales,High,2017
+CUST-01763,65+,SME,North West,Medium,2018
+CUST-01764,65+,Retail,North East,Low,2013
+CUST-01765,25-34,SME,South West,Low,2016
+CUST-01766,35-44,Retail,London,Low,2005
+CUST-01767,35-44,SME,North East,Medium,2018
+CUST-01768,25-34,SME,South East,Medium,2010
+CUST-01769,55-64,Corporate,Scotland,Medium,2009
+CUST-01770,18-24,Retail,North East,Low,2005
+CUST-01771,35-44,Retail,North East,Low,2024
+CUST-01772,35-44,Retail,Midlands,Very High,2014
+CUST-01773,35-44,Retail,South East,Medium,2021
+CUST-01774,55-64,Retail,South West,Low,2005
+CUST-01775,45-54,SME,London,High,2011
+CUST-01776,35-44,Retail,North West,Medium,2008
+CUST-01777,35-44,Retail,Wales,Medium,2015
+CUST-01778,35-44,Retail,North West,Low,2016
+CUST-01779,45-54,Retail,Scotland,Low,2022
+CUST-01780,35-44,Retail,Midlands,Low,2013
+CUST-01781,65+,Corporate,Midlands,High,2021
+CUST-01782,25-34,Retail,Scotland,Low,2013
+CUST-01783,18-24,SME,North East,Medium,2024
+CUST-01784,45-54,Retail,South East,Low,2020
+CUST-01785,45-54,Private Banking,London,Low,2017
+CUST-01786,65+,Retail,South East,Medium,2021
+CUST-01787,35-44,Retail,Midlands,Low,2010
+CUST-01788,65+,SME,North East,High,2007
+CUST-01789,55-64,Corporate,South East,Medium,2013
+CUST-01790,18-24,SME,Wales,Low,2014
+CUST-01791,25-34,Corporate,London,High,2014
+CUST-01792,18-24,Retail,London,Low,2009
+CUST-01793,55-64,Retail,London,Medium,2012
+CUST-01794,55-64,SME,South East,Low,2019
+CUST-01795,35-44,Retail,North East,Low,2020
+CUST-01796,35-44,Corporate,South East,Low,2016
+CUST-01797,25-34,Retail,South West,Medium,2012
+CUST-01798,65+,Private Banking,North East,Medium,2023
+CUST-01799,45-54,SME,South East,Very High,2011
+CUST-01800,55-64,Retail,Midlands,Medium,2024
+CUST-01801,65+,Retail,Midlands,Low,2017
+CUST-01802,18-24,Retail,London,Medium,2018
+CUST-01803,18-24,SME,North West,High,2022
+CUST-01804,18-24,Private Banking,South West,High,2008
+CUST-01805,18-24,Retail,Scotland,Medium,2012
+CUST-01806,55-64,SME,South West,Medium,2009
+CUST-01807,55-64,Retail,North East,Low,2017
+CUST-01808,45-54,Corporate,Wales,Low,2016
+CUST-01809,18-24,Retail,South East,Low,2006
+CUST-01810,65+,Retail,North East,Medium,2019
+CUST-01811,25-34,Retail,Midlands,Low,2014
+CUST-01812,18-24,Corporate,South West,Medium,2023
+CUST-01813,35-44,Retail,Midlands,High,2022
+CUST-01814,45-54,SME,Scotland,Very High,2014
+CUST-01815,65+,Corporate,North East,Medium,2007
+CUST-01816,55-64,Retail,South West,Low,2014
+CUST-01817,35-44,Retail,South West,Low,2021
+CUST-01818,35-44,SME,South West,Low,2015
+CUST-01819,65+,Retail,North East,Low,2017
+CUST-01820,35-44,SME,London,Low,2019
+CUST-01821,25-34,Private Banking,London,High,2011
+CUST-01822,55-64,Retail,North West,Low,2010
+CUST-01823,25-34,Retail,North West,High,2015
+CUST-01824,55-64,SME,Midlands,High,2020
+CUST-01825,25-34,Retail,South West,Low,2007
+CUST-01826,18-24,Retail,Midlands,Very High,2007
+CUST-01827,65+,Retail,North West,Medium,2012
+CUST-01828,45-54,SME,Midlands,High,2008
+CUST-01829,45-54,Retail,North East,Medium,2011
+CUST-01830,25-34,Retail,South East,Low,2008
+CUST-01831,45-54,Retail,South West,Medium,2014
+CUST-01832,45-54,Retail,Midlands,Low,2020
+CUST-01833,35-44,Retail,South West,Low,2023
+CUST-01834,18-24,Retail,London,Low,2022
+CUST-01835,18-24,Retail,North West,Medium,2018
+CUST-01836,55-64,Retail,South West,High,2005
+CUST-01837,25-34,Retail,Midlands,Low,2023
+CUST-01838,18-24,Retail,North West,Low,2007
+CUST-01839,45-54,Retail,Scotland,High,2007
+CUST-01840,45-54,Corporate,South East,Low,2016
+CUST-01841,55-64,Corporate,South West,Medium,2021
+CUST-01842,55-64,Retail,South East,Low,2018
+CUST-01843,18-24,SME,Wales,Medium,2007
+CUST-01844,25-34,Retail,Midlands,Low,2010
+CUST-01845,65+,Retail,Wales,Medium,2006
+CUST-01846,55-64,SME,South West,Medium,2009
+CUST-01847,25-34,Retail,Wales,Medium,2005
+CUST-01848,45-54,Retail,North East,High,2019
+CUST-01849,55-64,Retail,North East,Very High,2006
+CUST-01850,45-54,SME,Scotland,Very High,2007
+CUST-01851,65+,Retail,North East,Low,2014
+CUST-01852,25-34,SME,London,Low,2014
+CUST-01853,55-64,Private Banking,Wales,High,2019
+CUST-01854,65+,SME,Midlands,Low,2005
+CUST-01855,35-44,SME,North West,Very High,2011
+CUST-01856,65+,Corporate,London,Low,2005
+CUST-01857,25-34,Retail,Midlands,Low,2009
+CUST-01858,45-54,Retail,North West,High,2016
+CUST-01859,65+,Retail,North East,High,2022
+CUST-01860,65+,SME,South West,Low,2016
+CUST-01861,18-24,Retail,South East,High,2009
+CUST-01862,55-64,Retail,Wales,Low,2019
+CUST-01863,55-64,Retail,South East,Medium,2006
+CUST-01864,65+,Retail,South West,Low,2009
+CUST-01865,18-24,Retail,South West,Low,2010
+CUST-01866,18-24,Retail,North West,Medium,2010
+CUST-01867,25-34,Retail,Wales,Very High,2015
+CUST-01868,35-44,Retail,South West,Low,2016
+CUST-01869,65+,Corporate,Wales,Medium,2008
+CUST-01870,25-34,Retail,Wales,High,2010
+CUST-01871,65+,SME,London,High,2005
+CUST-01872,55-64,Corporate,North West,Low,2009
+CUST-01873,65+,Retail,London,High,2007
+CUST-01874,35-44,Retail,Scotland,High,2022
+CUST-01875,18-24,Retail,Midlands,Low,2007
+CUST-01876,18-24,Retail,South West,Very High,2018
+CUST-01877,55-64,SME,Scotland,Medium,2020
+CUST-01878,65+,Retail,South West,Medium,2017
+CUST-01879,35-44,SME,Midlands,Medium,2008
+CUST-01880,35-44,Private Banking,London,High,2024
+CUST-01881,65+,SME,Scotland,High,2009
+CUST-01882,25-34,Retail,Scotland,Medium,2005
+CUST-01883,65+,Retail,North East,Very High,2018
+CUST-01884,25-34,Retail,North West,Medium,2021
+CUST-01885,55-64,Retail,North West,Very High,2022
+CUST-01886,25-34,Retail,Scotland,Low,2005
+CUST-01887,65+,Retail,North West,Low,2021
+CUST-01888,55-64,Corporate,London,Low,2009
+CUST-01889,25-34,SME,London,Low,2013
+CUST-01890,25-34,Retail,South East,Medium,2024
+CUST-01891,25-34,Corporate,Midlands,Low,2023
+CUST-01892,25-34,Corporate,North West,Low,2010
+CUST-01893,18-24,Retail,Midlands,Low,2009
+CUST-01894,65+,SME,North West,Medium,2009
+CUST-01895,45-54,Retail,Wales,Medium,2017
+CUST-01896,65+,SME,Midlands,Medium,2010
+CUST-01897,65+,SME,Wales,Low,2006
+CUST-01898,35-44,Corporate,Scotland,Low,2009
+CUST-01899,55-64,Retail,Wales,Low,2005
+CUST-01900,18-24,Corporate,South East,Low,2011
+CUST-01901,45-54,SME,South West,Medium,2015
+CUST-01902,45-54,Retail,South East,Medium,2016
+CUST-01903,45-54,Retail,North East,Very High,2013
+CUST-01904,25-34,Retail,North East,High,2021
+CUST-01905,55-64,Corporate,Wales,Low,2024
+CUST-01906,35-44,Corporate,London,Low,2012
+CUST-01907,45-54,Retail,Scotland,Low,2017
+CUST-01908,55-64,Retail,South West,Low,2022
+CUST-01909,18-24,SME,Midlands,Low,2007
+CUST-01910,65+,Corporate,Scotland,Medium,2009
+CUST-01911,18-24,Corporate,South West,Low,2012
+CUST-01912,45-54,Retail,North East,Medium,2006
+CUST-01913,65+,Retail,North East,High,2005
+CUST-01914,25-34,Retail,Midlands,Low,2019
+CUST-01915,65+,SME,South East,Medium,2014
+CUST-01916,65+,Retail,South West,Low,2014
+CUST-01917,35-44,SME,Scotland,Low,2013
+CUST-01918,18-24,Corporate,South West,Low,2011
+CUST-01919,18-24,Corporate,Wales,Medium,2017
+CUST-01920,55-64,SME,North West,High,2013
+CUST-01921,18-24,Retail,Midlands,Low,2006
+CUST-01922,18-24,Retail,North West,Low,2005
+CUST-01923,18-24,SME,North East,Low,2018
+CUST-01924,55-64,Corporate,South East,Medium,2020
+CUST-01925,45-54,Retail,South West,Low,2023
+CUST-01926,45-54,Retail,North West,High,2016
+CUST-01927,25-34,Retail,London,Low,2024
+CUST-01928,18-24,SME,London,Low,2015
+CUST-01929,18-24,Retail,Wales,Medium,2013
+CUST-01930,25-34,Corporate,Midlands,High,2013
+CUST-01931,35-44,Corporate,North East,Low,2010
+CUST-01932,35-44,Retail,North West,Low,2016
+CUST-01933,65+,Retail,Wales,High,2021
+CUST-01934,45-54,Retail,Midlands,High,2021
+CUST-01935,18-24,SME,North West,Low,2022
+CUST-01936,35-44,Retail,Scotland,Very High,2012
+CUST-01937,18-24,Retail,Scotland,Low,2015
+CUST-01938,55-64,Retail,Scotland,Low,2017
+CUST-01939,45-54,Retail,Wales,Low,2006
+CUST-01940,35-44,SME,South East,Medium,2021
+CUST-01941,55-64,SME,North West,Low,2018
+CUST-01942,45-54,SME,Scotland,Medium,2020
+CUST-01943,18-24,Retail,Scotland,Low,2014
+CUST-01944,35-44,Retail,North East,Medium,2012
+CUST-01945,25-34,Retail,North East,High,2006
+CUST-01946,65+,SME,North East,Low,2008
+CUST-01947,18-24,Retail,North West,Low,2019
+CUST-01948,45-54,SME,Scotland,Low,2008
+CUST-01949,18-24,SME,South West,Low,2024
+CUST-01950,65+,Retail,North East,Medium,2016
+CUST-01951,55-64,Corporate,London,Medium,2019
+CUST-01952,45-54,Retail,Scotland,Medium,2017
+CUST-01953,55-64,Retail,South West,Low,2023
+CUST-01954,18-24,SME,North West,Low,2024
+CUST-01955,55-64,Private Banking,Wales,High,2006
+CUST-01956,55-64,SME,North East,Low,2006
+CUST-01957,18-24,Retail,Midlands,Low,2012
+CUST-01958,65+,Retail,Scotland,Very High,2019
+CUST-01959,25-34,Retail,South East,Low,2020
+CUST-01960,25-34,Retail,South East,Low,2007
+CUST-01961,55-64,Retail,South West,Low,2006
+CUST-01962,25-34,Retail,North West,Medium,2015
+CUST-01963,35-44,SME,Wales,Low,2015
+CUST-01964,55-64,Retail,London,Medium,2012
+CUST-01965,35-44,Retail,Scotland,Low,2022
+CUST-01966,25-34,Retail,South West,Medium,2006
+CUST-01967,35-44,Corporate,Midlands,Medium,2019
+CUST-01968,65+,Retail,Wales,Very High,2010
+CUST-01969,35-44,SME,Wales,Medium,2014
+CUST-01970,25-34,Retail,South East,Low,2008
+CUST-01971,55-64,Retail,South West,Low,2022
+CUST-01972,45-54,Retail,North East,Very High,2015
+CUST-01973,65+,Retail,North West,Medium,2017
+CUST-01974,55-64,Corporate,North East,Medium,2024
+CUST-01975,35-44,SME,Wales,Low,2016
+CUST-01976,45-54,SME,North East,Medium,2022
+CUST-01977,18-24,Retail,Wales,Low,2019
+CUST-01978,45-54,SME,Scotland,High,2013
+CUST-01979,45-54,Retail,North West,Medium,2011
+CUST-01980,25-34,Retail,London,High,2024
+CUST-01981,35-44,SME,Wales,Low,2010
+CUST-01982,55-64,SME,London,Medium,2023
+CUST-01983,45-54,Retail,London,Medium,2010
+CUST-01984,55-64,Retail,North West,Medium,2016
+CUST-01985,55-64,SME,North East,Low,2023
+CUST-01986,55-64,Corporate,South West,Medium,2016
+CUST-01987,35-44,SME,London,Very High,2013
+CUST-01988,55-64,Retail,South West,Medium,2016
+CUST-01989,25-34,Retail,South West,Low,2011
+CUST-01990,25-34,Retail,Wales,Medium,2006
+CUST-01991,25-34,Retail,Scotland,Medium,2015
+CUST-01992,45-54,SME,South West,Medium,2012
+CUST-01993,65+,SME,South West,Low,2021
+CUST-01994,18-24,Retail,North East,High,2020
+CUST-01995,45-54,Private Banking,South West,Medium,2016
+CUST-01996,25-34,Retail,South West,High,2017
+CUST-01997,55-64,Retail,London,Medium,2016
+CUST-01998,18-24,Retail,North East,Low,2023
+CUST-01999,55-64,Corporate,North East,Medium,2022
+CUST-02000,55-64,Corporate,Scotland,Low,2019
