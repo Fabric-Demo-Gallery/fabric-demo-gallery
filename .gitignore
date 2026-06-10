@@ -30,3 +30,6 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Temp deploy/validation/audit helpers
+backend/_tmp_*.py
