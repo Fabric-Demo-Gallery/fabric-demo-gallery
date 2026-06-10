@@ -1,501 +1,501 @@
 route_id,origin,destination,distance_km,route_type,sla_hours,toll_cost_gbp
-RT-0001,Bristol,Edinburgh,462.5,Express,6.3,16.09
-RT-0002,Leeds,Nottingham,158.5,Express,2.4,38.78
-RT-0003,London,Bristol,451.9,Express,6.3,33.18
-RT-0004,Southampton,Newcastle,588.9,Express,6.6,6.31
-RT-0005,Cardiff,Bristol,524.4,Express,8.3,45.52
-RT-0006,London,Nottingham,103.6,Regional,1.7,39.08
-RT-0007,Glasgow,Bristol,381.5,Express,4.8,42.59
-RT-0008,Southampton,Newcastle,518.4,Express,5.8,31.34
-RT-0009,Leicester,Sheffield,526.0,Long Haul,6.7,11.74
-RT-0010,Newcastle,Glasgow,598.5,Long Haul,8.2,4.92
-RT-0011,Newcastle,Nottingham,526.1,Express,8.1,14.97
-RT-0012,London,Southampton,208.1,Long Haul,3.0,18.74
-RT-0013,Manchester,Leeds,328.1,Overnight,4.1,9.0
-RT-0014,Manchester,Birmingham,373.5,Express,4.8,12.04
-RT-0015,Cardiff,Manchester,154.7,Last Mile,2.1,33.34
-RT-0016,Leicester,Sheffield,542.7,Overnight,8.4,22.09
-RT-0017,Bristol,Cardiff,193.5,Express,2.4,22.84
-RT-0018,Glasgow,Leeds,599.6,Express,9.5,19.07
-RT-0019,Bristol,Cardiff,191.6,Last Mile,3.2,41.5
-RT-0020,Liverpool,Glasgow,24.7,Long Haul,0.3,37.26
-RT-0021,Southampton,Glasgow,469.9,Regional,6.0,17.62
-RT-0022,Newcastle,Leeds,380.1,Regional,4.8,45.17
-RT-0023,Newcastle,London,199.2,Express,3.3,18.24
-RT-0024,Manchester,Birmingham,547.6,Last Mile,6.6,8.78
-RT-0025,Manchester,Leicester,332.9,Last Mile,4.4,45.67
-RT-0026,Southampton,Manchester,169.0,Express,1.9,14.76
-RT-0027,Southampton,Bristol,486.5,Express,5.5,7.04
-RT-0028,Leeds,Newcastle,440.0,Express,4.9,40.23
-RT-0029,Bristol,Birmingham,478.6,Long Haul,7.0,6.18
-RT-0030,Bristol,Newcastle,454.4,Last Mile,5.9,41.12
-RT-0031,Bristol,Birmingham,411.4,Express,6.8,44.21
-RT-0032,Edinburgh,Bristol,550.8,Regional,6.9,31.77
-RT-0033,Sheffield,Nottingham,195.3,Express,3.1,2.27
-RT-0034,London,Glasgow,597.6,Long Haul,9.5,44.36
-RT-0035,Manchester,Liverpool,283.1,Overnight,3.9,37.11
-RT-0036,Manchester,Liverpool,399.9,Express,5.1,46.95
-RT-0037,Glasgow,London,420.4,Regional,5.7,47.53
-RT-0038,Southampton,Bristol,77.6,Last Mile,1.0,48.89
-RT-0039,Bristol,London,250.9,Regional,2.8,47.45
-RT-0040,Southampton,Sheffield,73.2,Regional,0.9,29.86
-RT-0041,London,Southampton,476.3,Regional,5.3,39.35
-RT-0042,Leeds,Birmingham,501.3,Overnight,7.6,10.8
-RT-0043,Southampton,Leeds,210.6,Regional,2.5,29.8
-RT-0044,Glasgow,Manchester,592.8,Overnight,8.8,8.72
-RT-0045,Newcastle,London,96.4,Last Mile,1.2,11.9
-RT-0046,Bristol,London,121.1,Long Haul,1.9,21.05
-RT-0047,Birmingham,Nottingham,56.9,Express,0.7,25.66
-RT-0048,Birmingham,Sheffield,312.2,Overnight,5.1,39.16
-RT-0049,Southampton,Newcastle,322.4,Express,4.1,1.56
-RT-0050,Sheffield,Liverpool,267.2,Long Haul,3.6,45.49
-RT-0051,Birmingham,Southampton,206.8,Regional,3.3,13.75
-RT-0052,Newcastle,Cardiff,338.0,Last Mile,4.7,29.87
-RT-0053,Glasgow,Sheffield,313.2,Express,5.0,35.09
-RT-0054,Southampton,Newcastle,397.5,Overnight,4.9,10.75
-RT-0055,Sheffield,Leeds,260.0,Express,3.6,36.48
-RT-0056,Bristol,Liverpool,201.3,Last Mile,2.8,7.63
-RT-0057,Sheffield,Birmingham,72.9,Long Haul,1.2,4.83
-RT-0058,Nottingham,Bristol,490.8,Overnight,7.9,47.83
-RT-0059,Edinburgh,Bristol,408.6,Express,5.8,33.27
-RT-0060,Leicester,Liverpool,523.5,Long Haul,5.9,30.02
-RT-0061,Bristol,Birmingham,355.2,Regional,5.5,24.11
-RT-0062,Southampton,Birmingham,223.1,Overnight,3.1,38.13
-RT-0063,Cardiff,Leeds,488.2,Overnight,5.5,40.92
-RT-0064,Cardiff,Newcastle,392.8,Long Haul,5.0,32.89
-RT-0065,Nottingham,Glasgow,36.8,Last Mile,0.5,15.45
-RT-0066,Bristol,Southampton,23.5,Regional,0.3,20.04
-RT-0067,Manchester,Nottingham,387.2,Long Haul,6.2,26.52
-RT-0068,Liverpool,Southampton,283.1,Regional,4.0,36.08
-RT-0069,Leicester,Cardiff,365.8,Long Haul,5.7,37.72
-RT-0070,London,Newcastle,67.3,Express,0.8,24.28
-RT-0071,Sheffield,Liverpool,178.4,Overnight,2.8,21.5
-RT-0072,Glasgow,Newcastle,413.5,Express,5.5,15.42
-RT-0073,Leeds,Liverpool,591.0,Long Haul,9.8,15.07
-RT-0074,Leeds,Leicester,99.6,Last Mile,1.5,6.0
-RT-0075,Sheffield,Nottingham,269.8,Regional,3.8,35.18
-RT-0076,Edinburgh,Southampton,503.3,Last Mile,8.1,43.09
-RT-0077,London,Liverpool,30.9,Long Haul,0.4,28.79
-RT-0078,Cardiff,Liverpool,431.5,Express,6.3,20.25
-RT-0079,Bristol,Manchester,484.8,Overnight,6.6,34.48
-RT-0080,Bristol,Birmingham,273.3,Long Haul,4.1,29.44
-RT-0081,Edinburgh,Birmingham,249.5,Last Mile,3.0,11.08
-RT-0082,Leicester,Manchester,64.3,Long Haul,0.8,9.7
-RT-0083,Leicester,Bristol,223.6,Regional,3.3,7.32
-RT-0084,Leeds,Manchester,369.4,Long Haul,5.7,38.64
-RT-0085,Sheffield,Southampton,457.6,Overnight,6.2,46.21
-RT-0086,Cardiff,Newcastle,388.5,Overnight,5.6,48.55
-RT-0087,Bristol,Manchester,275.1,Express,3.8,15.14
-RT-0088,Glasgow,Cardiff,52.6,Overnight,0.8,23.09
-RT-0089,London,Southampton,233.9,Last Mile,3.8,43.21
-RT-0090,Southampton,Birmingham,376.7,Overnight,5.3,29.02
-RT-0091,Leicester,Nottingham,539.6,Express,6.2,28.58
-RT-0092,Leeds,Bristol,370.9,Overnight,5.7,3.09
-RT-0093,Birmingham,Leicester,541.5,Last Mile,6.1,4.22
-RT-0094,Newcastle,Manchester,42.7,Express,0.5,26.2
-RT-0095,Cardiff,Manchester,231.1,Last Mile,3.2,38.72
-RT-0096,Newcastle,Cardiff,50.4,Last Mile,0.8,4.73
-RT-0097,Newcastle,Liverpool,184.8,Overnight,2.1,16.67
-RT-0098,Cardiff,Newcastle,102.0,Last Mile,1.5,32.8
-RT-0099,Newcastle,Liverpool,94.8,Long Haul,1.4,18.83
-RT-0100,Leicester,Bristol,491.6,Overnight,7.8,33.52
-RT-0101,Edinburgh,Bristol,30.6,Last Mile,0.5,10.71
-RT-0102,Leicester,Sheffield,131.4,Regional,2.0,14.79
-RT-0103,Leicester,Birmingham,314.5,Overnight,3.7,44.18
-RT-0104,London,Newcastle,215.3,Overnight,3.4,18.84
-RT-0105,Manchester,Southampton,502.2,Overnight,6.0,8.28
-RT-0106,Sheffield,London,258.3,Regional,2.9,30.53
-RT-0107,Leicester,Nottingham,474.6,Regional,6.2,15.47
-RT-0108,Leicester,Southampton,292.0,Regional,4.1,47.36
-RT-0109,Sheffield,Southampton,466.3,Express,6.2,20.93
-RT-0110,Manchester,Leeds,484.7,Regional,5.6,2.61
-RT-0111,Sheffield,Bristol,341.6,Long Haul,4.2,25.8
-RT-0112,Birmingham,Glasgow,68.6,Regional,1.0,45.27
-RT-0113,Manchester,Liverpool,73.2,Regional,0.9,44.23
-RT-0114,London,Liverpool,50.9,Overnight,0.7,19.31
-RT-0115,Birmingham,Bristol,150.2,Last Mile,1.7,41.96
-RT-0116,Newcastle,Bristol,479.0,Regional,7.8,45.87
-RT-0117,Sheffield,Nottingham,502.0,Express,6.8,0.26
-RT-0118,Birmingham,London,168.4,Regional,2.2,36.36
-RT-0119,Edinburgh,Liverpool,84.5,Last Mile,1.3,6.09
-RT-0120,Leeds,Liverpool,390.6,Overnight,5.3,5.54
-RT-0121,Sheffield,Cardiff,330.9,Overnight,4.3,35.93
-RT-0122,Glasgow,Liverpool,20.9,Last Mile,0.3,20.83
-RT-0123,Newcastle,Southampton,69.7,Last Mile,1.1,26.3
-RT-0124,Edinburgh,Leicester,593.2,Overnight,9.8,43.67
-RT-0125,London,Newcastle,244.4,Last Mile,3.6,0.81
-RT-0126,Leicester,Birmingham,220.0,Long Haul,2.6,36.76
-RT-0127,Bristol,Manchester,45.7,Overnight,0.7,32.14
-RT-0128,Southampton,Leicester,417.1,Express,5.3,40.57
-RT-0129,Birmingham,Nottingham,470.2,Express,7.7,10.08
-RT-0130,Leicester,Leeds,533.8,Last Mile,6.1,25.77
-RT-0131,Southampton,Edinburgh,294.6,Long Haul,3.6,9.56
-RT-0132,Bristol,Leicester,47.7,Last Mile,0.7,39.97
-RT-0133,Liverpool,Southampton,451.1,Express,6.4,9.34
-RT-0134,Nottingham,Sheffield,233.1,Overnight,3.4,4.13
-RT-0135,Liverpool,Birmingham,269.8,Regional,3.5,16.06
-RT-0136,Birmingham,Bristol,403.3,Last Mile,5.5,35.88
-RT-0137,Manchester,Nottingham,277.5,Express,4.5,43.5
-RT-0138,Bristol,Cardiff,598.9,Last Mile,7.6,39.57
-RT-0139,London,Birmingham,409.3,Express,5.8,40.05
-RT-0140,Newcastle,Manchester,572.6,Regional,6.7,33.9
-RT-0141,Sheffield,London,93.2,Regional,1.1,18.32
-RT-0142,Liverpool,Cardiff,38.8,Regional,0.5,47.44
-RT-0143,Bristol,Sheffield,462.6,Overnight,7.2,18.35
-RT-0144,Bristol,Newcastle,181.6,Long Haul,3.0,9.3
-RT-0145,Edinburgh,Liverpool,549.9,Long Haul,8.1,13.01
-RT-0146,Sheffield,Leeds,597.9,Last Mile,7.4,49.93
-RT-0147,Leeds,Birmingham,98.7,Long Haul,1.3,44.93
-RT-0148,Sheffield,Birmingham,490.1,Last Mile,6.1,35.48
-RT-0149,Edinburgh,Southampton,188.4,Last Mile,2.2,35.59
-RT-0150,Nottingham,Newcastle,121.0,Last Mile,1.6,6.07
-RT-0151,Leeds,Leicester,100.5,Express,1.7,27.7
-RT-0152,Bristol,Sheffield,486.1,Overnight,7.6,44.21
-RT-0153,Birmingham,Glasgow,250.9,Express,3.3,38.46
-RT-0154,Southampton,Cardiff,62.8,Last Mile,0.8,22.5
-RT-0155,Newcastle,Edinburgh,219.8,Overnight,2.8,9.1
-RT-0156,Manchester,Liverpool,311.7,Long Haul,3.7,25.91
-RT-0157,Glasgow,Manchester,113.9,Regional,1.6,47.05
-RT-0158,Glasgow,Birmingham,165.4,Overnight,2.4,31.25
-RT-0159,Cardiff,Edinburgh,74.2,Regional,1.0,29.03
-RT-0160,Manchester,Newcastle,382.2,Overnight,5.4,46.2
-RT-0161,London,Southampton,67.1,Overnight,1.0,10.54
-RT-0162,Cardiff,Liverpool,378.5,Long Haul,5.1,31.36
-RT-0163,Glasgow,Newcastle,574.9,Express,8.5,40.37
-RT-0164,Liverpool,Glasgow,283.1,Long Haul,4.4,20.78
-RT-0165,Sheffield,Leeds,217.3,Regional,3.1,35.92
-RT-0166,Nottingham,Bristol,585.7,Regional,7.1,25.75
-RT-0167,Birmingham,Bristol,160.2,Long Haul,2.4,12.4
-RT-0168,Birmingham,London,188.3,Express,2.2,20.91
-RT-0169,Southampton,Manchester,491.8,Overnight,6.0,9.49
-RT-0170,Manchester,Sheffield,597.7,Express,8.0,15.43
-RT-0171,London,Birmingham,568.2,Overnight,7.7,12.04
-RT-0172,Cardiff,Bristol,48.2,Last Mile,0.6,44.12
-RT-0173,Newcastle,Southampton,292.9,Overnight,4.9,5.37
-RT-0174,Manchester,Glasgow,442.0,Express,6.2,20.03
-RT-0175,Cardiff,Edinburgh,132.9,Overnight,1.9,19.32
-RT-0176,Sheffield,Leicester,338.9,Overnight,4.2,5.94
-RT-0177,Birmingham,Liverpool,236.5,Last Mile,3.1,18.28
-RT-0178,Manchester,Leeds,369.4,Express,4.9,2.27
-RT-0179,Manchester,Nottingham,213.2,Express,2.8,7.45
-RT-0180,Edinburgh,Manchester,210.2,Overnight,3.0,19.65
-RT-0181,Cardiff,Nottingham,508.7,Overnight,7.3,41.41
-RT-0182,Edinburgh,Sheffield,431.1,Last Mile,5.8,0.83
-RT-0183,Bristol,Newcastle,83.6,Express,1.1,39.84
-RT-0184,Nottingham,Southampton,385.0,Overnight,5.2,48.35
-RT-0185,Leicester,Southampton,355.5,Regional,4.4,29.18
-RT-0186,Manchester,Edinburgh,384.8,Overnight,4.6,19.01
-RT-0187,Southampton,Newcastle,160.5,Overnight,1.8,5.49
-RT-0188,London,Sheffield,201.9,Regional,2.8,10.19
-RT-0189,Edinburgh,Leicester,374.7,Express,4.3,36.79
-RT-0190,London,Nottingham,100.1,Regional,1.3,49.91
-RT-0191,Sheffield,Edinburgh,238.6,Regional,3.2,26.66
-RT-0192,Edinburgh,Bristol,412.0,Last Mile,5.3,9.61
-RT-0193,Leeds,Glasgow,343.7,Regional,3.9,49.11
-RT-0194,Leicester,Glasgow,428.8,Express,6.2,17.44
-RT-0195,Leicester,Nottingham,178.6,Long Haul,2.3,27.16
-RT-0196,Liverpool,Bristol,573.7,Regional,8.3,14.38
-RT-0197,Nottingham,Birmingham,220.9,Express,2.8,37.37
-RT-0198,Leeds,Southampton,500.2,Last Mile,5.7,34.81
-RT-0199,Manchester,Birmingham,377.1,Overnight,5.6,2.54
-RT-0200,Edinburgh,Leeds,390.0,Long Haul,6.2,16.51
-RT-0201,Sheffield,Birmingham,415.1,Regional,6.9,27.52
-RT-0202,Manchester,Liverpool,398.7,Express,5.4,9.97
-RT-0203,Glasgow,Bristol,185.5,Long Haul,2.1,4.47
-RT-0204,Cardiff,Leeds,330.4,Long Haul,3.8,8.75
-RT-0205,Southampton,Manchester,561.7,Long Haul,6.2,19.85
-RT-0206,Sheffield,Manchester,563.2,Last Mile,6.5,0.46
-RT-0207,Cardiff,Southampton,82.2,Last Mile,1.2,49.45
-RT-0208,Edinburgh,Southampton,306.5,Regional,3.6,23.4
-RT-0209,Leeds,Leicester,85.3,Regional,1.0,32.41
-RT-0210,Nottingham,Manchester,28.2,Last Mile,0.3,28.39
-RT-0211,Leicester,Leeds,121.8,Express,1.4,25.76
-RT-0212,Birmingham,Liverpool,408.2,Regional,4.6,23.87
-RT-0213,Leeds,London,171.3,Regional,2.3,13.35
-RT-0214,Bristol,Glasgow,357.8,Overnight,5.9,32.68
-RT-0215,Nottingham,Leeds,56.0,Long Haul,0.8,7.99
-RT-0216,Newcastle,Edinburgh,555.4,Last Mile,6.9,31.94
-RT-0217,Glasgow,Bristol,376.5,Regional,4.2,23.91
-RT-0218,Sheffield,Nottingham,593.5,Last Mile,8.2,27.46
-RT-0219,Sheffield,Leicester,331.8,Regional,4.0,34.02
-RT-0220,Cardiff,Leicester,67.5,Express,0.9,18.09
-RT-0221,Cardiff,Birmingham,55.8,Overnight,0.6,10.11
-RT-0222,Edinburgh,Manchester,115.4,Overnight,1.6,34.01
-RT-0223,Nottingham,Cardiff,303.5,Overnight,4.1,2.78
-RT-0224,Manchester,Edinburgh,260.9,Overnight,4.2,23.12
-RT-0225,Leicester,Glasgow,439.5,Express,6.5,0.15
-RT-0226,Leeds,Cardiff,62.4,Express,0.9,3.19
-RT-0227,London,Birmingham,592.0,Express,9.7,20.44
-RT-0228,Leicester,Manchester,464.2,Express,6.5,44.57
-RT-0229,Sheffield,Liverpool,237.9,Overnight,3.7,43.01
-RT-0230,Birmingham,Manchester,595.9,Express,7.9,36.39
-RT-0231,Leeds,London,458.6,Last Mile,6.2,35.95
-RT-0232,Liverpool,Edinburgh,240.0,Regional,3.6,17.31
-RT-0233,Glasgow,Leeds,563.7,Long Haul,9.2,33.01
-RT-0234,Cardiff,Leicester,563.0,Long Haul,8.4,3.36
-RT-0235,Cardiff,London,278.9,Long Haul,4.1,2.21
-RT-0236,Sheffield,Leeds,333.1,Long Haul,5.2,49.67
-RT-0237,Leeds,Nottingham,354.1,Overnight,4.5,33.63
-RT-0238,Bristol,Leeds,195.0,Regional,2.2,26.06
-RT-0239,Liverpool,Glasgow,179.6,Overnight,2.0,43.99
-RT-0240,Manchester,Newcastle,413.7,Overnight,5.5,48.61
-RT-0241,Newcastle,Southampton,241.1,Overnight,3.5,20.82
-RT-0242,Manchester,Glasgow,238.3,Overnight,3.2,42.47
-RT-0243,Glasgow,Nottingham,103.7,Express,1.2,28.12
-RT-0244,Liverpool,Edinburgh,327.4,Express,4.9,10.17
-RT-0245,Newcastle,Birmingham,554.9,Last Mile,8.8,36.23
-RT-0246,Leeds,London,175.7,Overnight,2.3,43.68
-RT-0247,Leeds,Leicester,461.8,Overnight,6.9,10.44
-RT-0248,Bristol,Glasgow,575.1,Long Haul,8.7,9.5
-RT-0249,Nottingham,Birmingham,453.2,Express,5.2,34.78
-RT-0250,Nottingham,Leeds,250.0,Regional,3.3,38.78
-RT-0251,Liverpool,Sheffield,329.5,Last Mile,4.8,17.98
-RT-0252,Sheffield,Southampton,77.2,Express,0.9,16.01
-RT-0253,Leeds,Bristol,201.5,Long Haul,2.6,11.06
-RT-0254,Manchester,London,171.2,Overnight,2.2,20.88
-RT-0255,Manchester,Leeds,211.3,Express,2.7,12.29
-RT-0256,Edinburgh,Newcastle,567.2,Last Mile,8.4,41.08
-RT-0257,Nottingham,Newcastle,449.0,Express,6.9,39.75
-RT-0258,Manchester,Southampton,437.8,Express,6.7,44.47
-RT-0259,Newcastle,London,323.9,Long Haul,3.7,33.41
-RT-0260,Leicester,London,259.2,Regional,4.2,7.55
-RT-0261,Leeds,Edinburgh,284.5,Long Haul,3.6,33.34
-RT-0262,Cardiff,Sheffield,402.4,Long Haul,6.7,27.58
-RT-0263,London,Southampton,327.1,Last Mile,4.3,14.33
-RT-0264,Edinburgh,Nottingham,410.9,Regional,6.5,4.82
-RT-0265,Manchester,Leeds,131.3,Overnight,1.9,17.72
-RT-0266,Leicester,Liverpool,65.8,Express,0.9,12.16
-RT-0267,Nottingham,Leeds,194.0,Long Haul,2.4,42.91
-RT-0268,Leicester,London,74.2,Express,1.0,23.8
-RT-0269,Newcastle,London,427.7,Long Haul,5.7,21.7
-RT-0270,Leicester,Bristol,348.2,Long Haul,4.0,45.96
-RT-0271,Leeds,Southampton,542.7,Overnight,7.3,2.33
-RT-0272,Birmingham,Newcastle,556.8,Overnight,7.2,1.65
-RT-0273,Southampton,Bristol,29.1,Regional,0.4,37.61
-RT-0274,Nottingham,Liverpool,558.7,Last Mile,8.6,12.02
-RT-0275,Southampton,Liverpool,412.7,Overnight,5.9,37.78
-RT-0276,Manchester,Leicester,593.3,Long Haul,7.9,48.72
-RT-0277,London,Birmingham,273.5,Long Haul,3.9,38.45
-RT-0278,Cardiff,Liverpool,582.0,Last Mile,9.6,13.67
-RT-0279,Sheffield,Southampton,152.3,Overnight,1.7,21.59
-RT-0280,Newcastle,Cardiff,403.2,Long Haul,4.8,14.77
-RT-0281,Leeds,Nottingham,62.6,Last Mile,1.0,35.58
-RT-0282,Newcastle,Manchester,449.0,Last Mile,6.3,4.58
-RT-0283,Glasgow,Sheffield,228.8,Last Mile,3.6,4.36
-RT-0284,Liverpool,Sheffield,343.1,Overnight,4.7,1.31
-RT-0285,Bristol,Edinburgh,74.0,Overnight,0.9,43.19
-RT-0286,London,Glasgow,260.0,Long Haul,3.2,27.98
-RT-0287,Leeds,Cardiff,322.2,Express,5.0,13.45
-RT-0288,Glasgow,Sheffield,104.6,Regional,1.4,21.06
-RT-0289,Sheffield,Leicester,64.6,Last Mile,0.7,36.04
-RT-0290,Sheffield,Cardiff,377.7,Express,6.0,15.23
-RT-0291,Liverpool,Bristol,508.1,Express,6.0,16.48
-RT-0292,Bristol,Liverpool,493.0,Overnight,7.7,16.03
-RT-0293,Nottingham,Leeds,297.8,Regional,3.3,48.44
-RT-0294,Glasgow,Nottingham,423.1,Express,4.8,39.1
-RT-0295,Bristol,Liverpool,182.6,Express,2.6,46.6
-RT-0296,Leeds,Cardiff,598.4,Regional,7.4,27.5
-RT-0297,Nottingham,Sheffield,566.9,Regional,7.7,14.57
-RT-0298,Nottingham,Birmingham,495.0,Express,6.2,6.96
-RT-0299,Glasgow,Leeds,166.6,Regional,2.0,39.45
-RT-0300,Birmingham,Sheffield,594.6,Express,7.7,26.72
-RT-0301,Southampton,Nottingham,262.6,Long Haul,3.1,17.98
-RT-0302,Leicester,Edinburgh,364.4,Long Haul,5.8,12.41
-RT-0303,Newcastle,Bristol,116.5,Overnight,1.9,49.18
-RT-0304,Newcastle,Southampton,251.8,Last Mile,2.8,21.52
-RT-0305,London,Birmingham,170.1,Overnight,2.1,27.9
-RT-0306,Nottingham,Cardiff,148.2,Last Mile,2.1,38.62
-RT-0307,Cardiff,Nottingham,310.3,Last Mile,3.5,24.14
-RT-0308,Glasgow,Liverpool,553.9,Long Haul,8.7,47.03
-RT-0309,Manchester,Bristol,200.9,Express,2.4,26.06
-RT-0310,Bristol,Sheffield,76.6,Express,1.1,15.01
-RT-0311,Leicester,Nottingham,86.7,Last Mile,1.1,33.86
-RT-0312,Manchester,Nottingham,161.5,Regional,2.1,16.55
-RT-0313,Liverpool,Sheffield,154.5,Express,2.0,9.32
-RT-0314,Newcastle,Liverpool,249.4,Overnight,2.9,22.48
-RT-0315,Liverpool,Southampton,22.6,Regional,0.3,37.62
-RT-0316,Leicester,Southampton,56.3,Long Haul,0.7,26.84
-RT-0317,Bristol,Southampton,134.3,Long Haul,2.0,43.13
-RT-0318,Edinburgh,Newcastle,201.8,Express,2.6,29.35
-RT-0319,Bristol,Southampton,510.4,Overnight,7.8,33.68
-RT-0320,Leicester,Glasgow,552.8,Overnight,8.8,6.7
-RT-0321,Birmingham,Leeds,197.1,Regional,2.8,7.07
-RT-0322,Liverpool,Southampton,365.9,Overnight,5.1,9.29
-RT-0323,Newcastle,Edinburgh,422.2,Regional,5.5,24.48
-RT-0324,Manchester,Southampton,202.5,Express,2.6,43.28
-RT-0325,London,Sheffield,99.2,Express,1.1,25.27
-RT-0326,Sheffield,Liverpool,417.1,Express,5.1,22.19
-RT-0327,Manchester,Birmingham,347.9,Regional,5.1,13.74
-RT-0328,Edinburgh,Glasgow,117.6,Express,1.5,38.63
-RT-0329,Sheffield,Edinburgh,316.3,Overnight,5.0,38.76
-RT-0330,Southampton,Bristol,334.4,Long Haul,4.0,22.07
-RT-0331,Leeds,Liverpool,79.4,Regional,1.2,49.97
-RT-0332,Sheffield,Glasgow,222.2,Long Haul,3.0,49.7
-RT-0333,Leicester,Southampton,157.4,Overnight,2.0,43.05
-RT-0334,Cardiff,Newcastle,268.3,Overnight,4.2,10.33
-RT-0335,Leeds,Leicester,54.4,Last Mile,0.7,29.84
-RT-0336,Manchester,Bristol,587.8,Last Mile,8.6,13.37
-RT-0337,Southampton,Edinburgh,591.6,Long Haul,9.2,37.5
-RT-0338,Liverpool,London,595.6,Regional,7.3,6.63
-RT-0339,Manchester,Nottingham,206.8,Regional,2.5,33.81
-RT-0340,Sheffield,Manchester,354.9,Last Mile,4.5,18.76
-RT-0341,Birmingham,Newcastle,480.9,Long Haul,6.7,37.49
-RT-0342,Nottingham,Bristol,283.7,Express,4.1,0.12
-RT-0343,Leicester,Nottingham,74.0,Express,0.9,34.86
-RT-0344,Southampton,Birmingham,481.5,Express,7.2,21.48
-RT-0345,Leeds,Sheffield,175.8,Last Mile,2.5,28.9
-RT-0346,Cardiff,Sheffield,477.2,Long Haul,7.8,31.31
-RT-0347,Southampton,Sheffield,29.4,Regional,0.4,0.03
-RT-0348,Liverpool,Leeds,597.5,Regional,6.9,15.09
-RT-0349,Southampton,Glasgow,74.1,Last Mile,1.1,18.59
-RT-0350,Newcastle,Manchester,50.0,Last Mile,0.6,37.76
-RT-0351,Liverpool,Newcastle,72.9,Long Haul,1.2,23.84
-RT-0352,Manchester,Cardiff,151.2,Express,2.5,34.78
-RT-0353,Southampton,Birmingham,593.1,Express,7.3,23.89
-RT-0354,Leeds,Liverpool,71.8,Long Haul,1.1,18.38
-RT-0355,Glasgow,Manchester,242.0,Regional,3.1,33.86
-RT-0356,Birmingham,Edinburgh,346.7,Overnight,4.4,22.0
-RT-0357,Nottingham,Leeds,384.3,Regional,4.4,30.8
-RT-0358,Sheffield,Leeds,70.3,Long Haul,1.1,6.16
-RT-0359,Nottingham,Liverpool,223.9,Express,3.2,6.99
-RT-0360,Glasgow,Newcastle,68.9,Overnight,0.9,36.06
-RT-0361,Glasgow,Leicester,565.9,Long Haul,6.6,32.92
-RT-0362,Glasgow,Leeds,320.3,Overnight,4.9,19.59
-RT-0363,Newcastle,London,474.6,Regional,6.3,5.64
-RT-0364,Sheffield,Newcastle,364.5,Overnight,4.2,0.6
-RT-0365,Bristol,Southampton,96.6,Overnight,1.3,27.32
-RT-0366,Manchester,Leicester,293.2,Long Haul,4.8,3.38
-RT-0367,Glasgow,Leeds,43.1,Long Haul,0.5,19.9
-RT-0368,Glasgow,Newcastle,433.3,Express,6.0,20.11
-RT-0369,Newcastle,Edinburgh,331.8,Regional,4.9,15.5
-RT-0370,Edinburgh,Leeds,585.1,Regional,7.7,19.54
-RT-0371,Newcastle,Leicester,504.0,Long Haul,7.3,21.87
-RT-0372,Southampton,Leeds,53.6,Long Haul,0.6,5.8
-RT-0373,Cardiff,Southampton,51.9,Regional,0.8,35.4
-RT-0374,Nottingham,London,115.0,Last Mile,1.5,39.15
-RT-0375,Nottingham,Glasgow,116.8,Regional,1.4,43.67
-RT-0376,Nottingham,Birmingham,467.4,Long Haul,6.7,21.47
-RT-0377,Edinburgh,Birmingham,172.5,Overnight,2.2,24.81
-RT-0378,Edinburgh,Bristol,52.2,Overnight,0.8,7.87
-RT-0379,Leicester,Birmingham,538.7,Long Haul,8.1,25.44
-RT-0380,London,Southampton,161.8,Express,2.3,46.01
-RT-0381,Manchester,London,340.7,Express,5.1,12.41
-RT-0382,Nottingham,Bristol,177.3,Long Haul,2.3,5.97
-RT-0383,Newcastle,London,124.0,Overnight,1.4,47.7
-RT-0384,Birmingham,Sheffield,522.3,Last Mile,7.5,27.65
-RT-0385,London,Bristol,136.4,Overnight,1.6,36.98
-RT-0386,Leeds,Sheffield,233.6,Express,2.6,38.79
-RT-0387,Nottingham,Edinburgh,461.1,Regional,7.1,46.62
-RT-0388,London,Leeds,334.1,Long Haul,3.8,0.07
-RT-0389,Newcastle,Liverpool,512.4,Last Mile,8.1,26.49
-RT-0390,Leeds,Liverpool,305.4,Long Haul,3.4,7.12
-RT-0391,Glasgow,Birmingham,45.5,Regional,0.5,25.99
-RT-0392,Nottingham,Bristol,285.9,Long Haul,3.7,25.27
-RT-0393,Newcastle,Liverpool,63.4,Overnight,1.0,33.12
-RT-0394,Manchester,Leeds,189.2,Last Mile,2.2,19.65
-RT-0395,Southampton,Nottingham,209.2,Express,3.1,3.73
-RT-0396,Leeds,Manchester,472.4,Overnight,7.5,5.28
-RT-0397,Sheffield,Southampton,202.1,Long Haul,2.7,48.23
-RT-0398,Leeds,Sheffield,198.8,Last Mile,2.3,4.52
-RT-0399,Leicester,Newcastle,196.4,Overnight,3.2,41.8
-RT-0400,Bristol,Manchester,72.9,Regional,0.8,19.81
-RT-0401,London,Newcastle,193.3,Regional,3.2,20.22
-RT-0402,Sheffield,Edinburgh,453.9,Regional,7.2,5.1
-RT-0403,Leicester,Manchester,90.4,Long Haul,1.1,49.13
-RT-0404,Manchester,Leeds,497.7,Last Mile,6.2,46.88
-RT-0405,Birmingham,Cardiff,359.9,Long Haul,5.9,3.22
-RT-0406,Newcastle,Sheffield,489.4,Long Haul,5.6,41.47
-RT-0407,Bristol,Birmingham,44.8,Express,0.7,46.21
-RT-0408,Liverpool,Nottingham,249.1,Long Haul,3.5,21.33
-RT-0409,Bristol,Leeds,546.8,Last Mile,8.0,44.17
-RT-0410,London,Cardiff,379.1,Regional,4.8,24.94
-RT-0411,Edinburgh,Sheffield,55.4,Last Mile,0.8,20.96
-RT-0412,Newcastle,Leicester,325.0,Overnight,3.9,49.47
-RT-0413,Leicester,Nottingham,228.3,Overnight,2.7,17.2
-RT-0414,Cardiff,Edinburgh,206.5,Last Mile,3.2,15.94
-RT-0415,Leeds,London,539.5,Last Mile,8.7,49.58
-RT-0416,Edinburgh,Bristol,464.8,Regional,5.2,5.01
-RT-0417,Newcastle,Leeds,174.6,Long Haul,2.1,47.39
-RT-0418,Cardiff,Leicester,245.3,Regional,3.8,29.63
-RT-0419,Leicester,Nottingham,424.6,Overnight,7.0,35.03
-RT-0420,Cardiff,Southampton,102.4,Regional,1.2,40.52
-RT-0421,Sheffield,Edinburgh,199.3,Express,3.3,2.81
-RT-0422,Cardiff,Leeds,31.6,Express,0.5,45.89
-RT-0423,Leeds,Leicester,95.7,Regional,1.1,42.21
-RT-0424,Bristol,London,32.7,Overnight,0.4,7.08
-RT-0425,Birmingham,Edinburgh,519.2,Long Haul,7.3,47.1
-RT-0426,Liverpool,Cardiff,78.6,Last Mile,1.1,48.79
-RT-0427,Nottingham,Liverpool,479.3,Express,6.0,8.71
-RT-0428,Edinburgh,Nottingham,536.0,Overnight,6.4,11.16
-RT-0429,Cardiff,Manchester,239.5,Last Mile,3.8,36.44
-RT-0430,Nottingham,Cardiff,247.1,Overnight,4.1,30.12
-RT-0431,Leicester,Cardiff,148.1,Overnight,2.3,24.81
-RT-0432,Bristol,Nottingham,65.1,Last Mile,0.7,8.39
-RT-0433,Birmingham,Nottingham,408.6,Last Mile,5.6,13.26
-RT-0434,Leeds,Nottingham,59.3,Last Mile,0.7,36.02
-RT-0435,London,Liverpool,274.2,Express,3.1,44.23
-RT-0436,Sheffield,Liverpool,223.7,Express,3.5,23.97
-RT-0437,Southampton,Cardiff,397.6,Regional,6.1,3.69
-RT-0438,Southampton,London,191.0,Last Mile,2.8,5.24
-RT-0439,Bristol,Manchester,535.0,Regional,6.5,27.35
-RT-0440,Birmingham,Bristol,364.5,Overnight,4.2,35.23
-RT-0441,Liverpool,Newcastle,115.7,Express,1.8,5.06
-RT-0442,Leeds,Southampton,257.4,Overnight,3.2,36.5
-RT-0443,Glasgow,Newcastle,183.3,Regional,2.9,19.65
-RT-0444,Edinburgh,Sheffield,109.1,Last Mile,1.8,4.38
-RT-0445,Southampton,Newcastle,382.6,Express,5.8,1.29
-RT-0446,Manchester,Newcastle,189.3,Long Haul,2.6,5.78
-RT-0447,Leicester,Liverpool,293.1,Last Mile,4.7,27.21
-RT-0448,Manchester,Bristol,533.6,Last Mile,8.1,2.23
-RT-0449,Sheffield,Southampton,172.8,Last Mile,2.2,7.56
-RT-0450,Nottingham,Newcastle,76.1,Last Mile,0.9,20.7
-RT-0451,Leicester,Cardiff,152.0,Long Haul,1.8,40.92
-RT-0452,Liverpool,Edinburgh,418.5,Express,5.4,11.78
-RT-0453,Glasgow,Birmingham,249.0,Long Haul,3.3,45.02
-RT-0454,Leicester,Cardiff,413.0,Overnight,6.4,47.46
-RT-0455,Sheffield,Manchester,570.5,Regional,6.4,40.42
-RT-0456,Manchester,London,265.6,Express,4.0,41.13
-RT-0457,Manchester,Cardiff,169.6,Long Haul,2.7,27.82
-RT-0458,Edinburgh,Bristol,516.8,Overnight,7.0,43.67
-RT-0459,Leicester,Nottingham,381.4,Overnight,4.6,5.63
-RT-0460,Manchester,Southampton,348.6,Overnight,4.2,46.98
-RT-0461,Birmingham,Cardiff,472.1,Last Mile,5.5,44.01
-RT-0462,Liverpool,Glasgow,242.2,Express,3.1,23.65
-RT-0463,Manchester,Glasgow,253.7,Overnight,3.2,34.68
-RT-0464,London,Liverpool,536.0,Last Mile,6.6,2.46
-RT-0465,Sheffield,Glasgow,540.3,Long Haul,7.7,39.68
-RT-0466,Glasgow,Southampton,508.9,Long Haul,5.7,11.4
-RT-0467,Glasgow,Nottingham,277.0,Last Mile,4.1,20.84
-RT-0468,Newcastle,Birmingham,129.0,Regional,1.5,20.36
-RT-0469,Sheffield,Leicester,319.6,Last Mile,3.8,25.76
-RT-0470,Manchester,Birmingham,200.5,Overnight,2.8,39.03
-RT-0471,Edinburgh,Cardiff,36.8,Regional,0.4,10.04
-RT-0472,London,Leeds,39.2,Long Haul,0.4,35.23
-RT-0473,Glasgow,Bristol,497.6,Overnight,6.9,46.15
-RT-0474,Newcastle,London,160.3,Express,2.1,8.88
-RT-0475,Southampton,Sheffield,360.4,Last Mile,5.1,41.88
-RT-0476,Glasgow,Nottingham,501.9,Long Haul,7.3,19.33
-RT-0477,Manchester,Cardiff,472.3,Regional,5.5,32.37
-RT-0478,Newcastle,Leeds,176.1,Express,2.3,43.23
-RT-0479,Leicester,Newcastle,25.2,Regional,0.3,30.06
-RT-0480,London,Leeds,166.4,Last Mile,2.0,35.47
-RT-0481,Glasgow,Liverpool,539.4,Last Mile,7.3,10.91
-RT-0482,Glasgow,Newcastle,322.0,Overnight,4.5,5.12
-RT-0483,Edinburgh,Newcastle,580.6,Last Mile,7.6,29.69
-RT-0484,Glasgow,Southampton,417.0,Express,6.7,49.42
-RT-0485,Newcastle,Bristol,519.7,Last Mile,6.5,47.61
-RT-0486,Newcastle,Glasgow,129.2,Overnight,1.6,44.98
-RT-0487,Leicester,Southampton,489.8,Express,6.1,34.04
-RT-0488,Nottingham,London,400.1,Last Mile,5.9,20.93
-RT-0489,Liverpool,Nottingham,40.5,Overnight,0.5,17.16
-RT-0490,Nottingham,Leeds,418.1,Express,4.8,33.59
-RT-0491,Edinburgh,Glasgow,510.3,Overnight,7.8,4.88
-RT-0492,Manchester,Nottingham,170.0,Overnight,2.1,9.15
-RT-0493,Newcastle,Bristol,399.6,Regional,5.7,37.21
-RT-0494,Glasgow,Liverpool,477.1,Last Mile,6.7,29.28
-RT-0495,Sheffield,Birmingham,292.9,Overnight,3.8,31.03
-RT-0496,Sheffield,Leeds,310.3,Express,4.1,20.66
-RT-0497,Southampton,Manchester,99.7,Regional,1.4,49.36
-RT-0498,Sheffield,Manchester,203.5,Regional,2.4,24.38
-RT-0499,Newcastle,Manchester,201.8,Long Haul,3.4,13.68
-RT-0500,Leicester,Southampton,117.8,Regional,1.6,38.18
+RT-0001,Cardiff,Newcastle,264.5,Standard,6.1,10.73
+RT-0002,Nottingham,Newcastle,20.0,Standard,0.5,0.91
+RT-0003,Birmingham,Bristol,224.2,Standard,5.1,8.22
+RT-0004,Cardiff,Birmingham,49.9,Standard,1.1,1.65
+RT-0005,Glasgow,Leeds,122.1,Express,2.8,7.07
+RT-0006,Liverpool,Nottingham,539.8,Standard,12.4,22.36
+RT-0007,Nottingham,Newcastle,345.8,Economy,7.9,14.29
+RT-0008,Newcastle,Edinburgh,175.4,Standard,4.0,4.93
+RT-0009,Cardiff,Liverpool,251.4,Standard,5.8,5.98
+RT-0010,Cardiff,Liverpool,389.6,Economy,8.9,9.93
+RT-0011,Nottingham,Sheffield,202.3,Standard,4.6,10.38
+RT-0012,Nottingham,Liverpool,127.9,Express,2.9,5.58
+RT-0013,London,Birmingham,326.8,Standard,7.5,14.02
+RT-0014,Glasgow,Edinburgh,325.7,Economy,7.5,16.92
+RT-0015,Edinburgh,Glasgow,20.0,Economy,0.5,0.5
+RT-0016,Newcastle,Manchester,501.4,Standard,11.5,18.42
+RT-0017,Nottingham,Liverpool,402.1,Standard,9.2,22.49
+RT-0018,Newcastle,Liverpool,320.6,Standard,7.3,10.44
+RT-0019,Bristol,Manchester,337.5,Economy,7.7,12.66
+RT-0020,Liverpool,Leeds,502.2,Standard,11.5,28.85
+RT-0021,Leeds,Newcastle,406.7,Standard,9.3,24.18
+RT-0022,London,Liverpool,406.3,Express,9.3,21.95
+RT-0023,Sheffield,Cardiff,20.0,Standard,0.5,0.95
+RT-0024,Edinburgh,London,476.4,Economy,10.9,15.16
+RT-0025,Nottingham,Glasgow,160.9,Standard,3.7,9.13
+RT-0026,Liverpool,Newcastle,68.1,Economy,1.6,3.76
+RT-0027,Liverpool,Bristol,348.9,Express,8.0,20.92
+RT-0028,London,Liverpool,300.7,Express,6.9,16.81
+RT-0029,Sheffield,London,174.3,Express,4.0,8.9
+RT-0030,Newcastle,Birmingham,220.9,Standard,5.1,4.74
+RT-0031,London,Manchester,404.4,Standard,9.3,21.05
+RT-0032,Nottingham,Birmingham,20.0,Express,0.5,1.04
+RT-0033,Nottingham,Sheffield,309.7,Standard,7.1,16.57
+RT-0034,Glasgow,London,164.6,Express,3.8,6.61
+RT-0035,Edinburgh,Newcastle,293.8,Economy,6.7,7.7
+RT-0036,Newcastle,Liverpool,146.8,Express,3.4,7.1
+RT-0037,Edinburgh,Nottingham,72.7,Express,1.7,3.25
+RT-0038,London,Manchester,260.3,Standard,6.0,7.01
+RT-0039,Leeds,Manchester,199.9,Economy,4.6,7.67
+RT-0040,Edinburgh,Newcastle,251.6,Standard,5.8,6.49
+RT-0041,Birmingham,Nottingham,228.6,Standard,5.2,10.97
+RT-0042,Bristol,Liverpool,447.2,Express,10.2,18.04
+RT-0043,Liverpool,Leeds,572.7,Express,13.1,14.52
+RT-0044,Nottingham,Bristol,441.4,Standard,10.1,19.62
+RT-0045,Leeds,Cardiff,327.1,Standard,7.5,9.39
+RT-0046,Nottingham,Edinburgh,112.4,Express,2.6,4.13
+RT-0047,Glasgow,Edinburgh,445.9,Standard,10.2,19.01
+RT-0048,Cardiff,Liverpool,237.3,Standard,5.4,7.75
+RT-0049,Birmingham,Newcastle,439.6,Standard,10.1,19.8
+RT-0050,Edinburgh,Bristol,313.5,Standard,7.2,17.38
+RT-0051,Manchester,Nottingham,271.5,Standard,6.2,14.12
+RT-0052,Birmingham,Leeds,152.3,Standard,3.5,3.75
+RT-0053,London,Manchester,442.8,Express,10.1,13.83
+RT-0054,Edinburgh,Bristol,233.7,Standard,5.4,11.62
+RT-0055,Sheffield,London,20.0,Economy,0.5,0.7
+RT-0056,Liverpool,Manchester,172.1,Express,3.9,5.95
+RT-0057,Edinburgh,Nottingham,643.1,Economy,14.7,20.86
+RT-0058,Newcastle,Cardiff,45.9,Standard,1.1,2.09
+RT-0059,Leeds,London,398.6,Standard,9.1,10.58
+RT-0060,Liverpool,Manchester,414.7,Economy,9.5,17.52
+RT-0061,Birmingham,Sheffield,480.4,Express,11.0,18.22
+RT-0062,Sheffield,Leeds,498.3,Economy,11.4,18.61
+RT-0063,Glasgow,Edinburgh,225.7,Express,5.2,12.71
+RT-0064,Nottingham,London,45.1,Express,1.0,1.79
+RT-0065,Nottingham,Edinburgh,20.0,Express,0.5,0.59
+RT-0066,Sheffield,Newcastle,317.1,Standard,7.3,14.85
+RT-0067,Newcastle,Liverpool,310.5,Standard,7.1,12.91
+RT-0068,Sheffield,Bristol,337.8,Standard,7.7,17.14
+RT-0069,Liverpool,Sheffield,266.9,Economy,6.1,11.61
+RT-0070,Manchester,Sheffield,93.3,Standard,2.1,3.85
+RT-0071,Edinburgh,Manchester,269.4,Economy,6.2,12.19
+RT-0072,Leeds,Manchester,415.0,Express,9.5,8.71
+RT-0073,Cardiff,Nottingham,362.3,Standard,8.3,15.92
+RT-0074,Edinburgh,London,319.3,Standard,7.3,14.48
+RT-0075,Liverpool,Nottingham,480.4,Standard,11.0,24.24
+RT-0076,Cardiff,Sheffield,20.0,Economy,0.5,1.03
+RT-0077,Glasgow,Sheffield,387.2,Standard,8.9,14.56
+RT-0078,Cardiff,Edinburgh,315.3,Economy,7.2,18.72
+RT-0079,Manchester,Leeds,553.2,Standard,12.7,18.73
+RT-0080,London,Birmingham,87.8,Economy,2.0,3.48
+RT-0081,Sheffield,Nottingham,316.2,Economy,7.2,11.53
+RT-0082,London,Newcastle,471.2,Standard,10.8,24.54
+RT-0083,Bristol,Nottingham,394.4,Express,9.0,13.77
+RT-0084,Nottingham,London,124.9,Standard,2.9,6.06
+RT-0085,Cardiff,Newcastle,159.0,Standard,3.6,8.27
+RT-0086,Leeds,London,187.9,Standard,4.3,10.21
+RT-0087,Glasgow,London,320.3,Standard,7.3,6.79
+RT-0088,Newcastle,Leeds,218.3,Standard,5.0,6.44
+RT-0089,Leeds,Sheffield,521.6,Economy,11.9,16.67
+RT-0090,Liverpool,Edinburgh,233.4,Express,5.3,12.95
+RT-0091,Sheffield,Birmingham,366.9,Standard,8.4,17.87
+RT-0092,Glasgow,Newcastle,587.9,Express,13.5,21.35
+RT-0093,Edinburgh,Manchester,372.3,Economy,8.5,17.88
+RT-0094,Liverpool,Edinburgh,304.7,Economy,7.0,12.15
+RT-0095,Leeds,Manchester,530.2,Express,12.1,14.89
+RT-0096,Edinburgh,London,149.6,Standard,3.4,5.05
+RT-0097,Glasgow,Leeds,26.2,Economy,0.6,1.09
+RT-0098,Nottingham,Bristol,267.8,Express,6.1,8.84
+RT-0099,Sheffield,Newcastle,201.6,Standard,4.6,8.8
+RT-0100,Cardiff,Liverpool,172.9,Express,4.0,5.69
+RT-0101,Birmingham,Manchester,637.4,Standard,14.6,32.94
+RT-0102,Cardiff,Newcastle,402.5,Standard,9.2,24.07
+RT-0103,Cardiff,Liverpool,214.7,Express,4.9,9.12
+RT-0104,Bristol,Manchester,211.2,Economy,4.8,8.55
+RT-0105,Nottingham,Leeds,422.8,Economy,9.7,10.2
+RT-0106,Bristol,London,20.0,Express,0.5,0.76
+RT-0107,Bristol,Edinburgh,446.9,Express,10.2,10.93
+RT-0108,Cardiff,Leeds,437.4,Standard,10.0,12.37
+RT-0109,Nottingham,Bristol,246.8,Standard,5.7,4.95
+RT-0110,Bristol,Manchester,124.7,Express,2.9,5.03
+RT-0111,Bristol,Edinburgh,45.5,Standard,1.0,2.33
+RT-0112,Glasgow,Sheffield,265.6,Standard,6.1,7.89
+RT-0113,Sheffield,Glasgow,141.6,Express,3.2,4.7
+RT-0114,Birmingham,Nottingham,109.0,Standard,2.5,5.28
+RT-0115,Birmingham,Manchester,362.3,Express,8.3,20.56
+RT-0116,Manchester,London,396.7,Express,9.1,9.69
+RT-0117,Liverpool,Edinburgh,430.3,Standard,9.9,18.76
+RT-0118,Liverpool,Sheffield,294.9,Economy,6.8,13.2
+RT-0119,Glasgow,Manchester,224.2,Economy,5.1,6.77
+RT-0120,Birmingham,Nottingham,127.7,Standard,2.9,7.59
+RT-0121,London,Leeds,141.9,Standard,3.2,7.37
+RT-0122,Manchester,Cardiff,467.4,Standard,10.7,15.29
+RT-0123,Newcastle,London,331.1,Standard,7.6,6.87
+RT-0124,Liverpool,Manchester,88.0,Standard,2.0,4.36
+RT-0125,Newcastle,Bristol,318.3,Standard,7.3,7.97
+RT-0126,Newcastle,Manchester,116.0,Express,2.7,4.67
+RT-0127,Manchester,Nottingham,272.3,Express,6.2,16.26
+RT-0128,Edinburgh,Cardiff,281.7,Economy,6.5,15.56
+RT-0129,Leeds,Edinburgh,117.6,Express,2.7,2.59
+RT-0130,Glasgow,Cardiff,356.7,Standard,8.2,19.06
+RT-0131,Birmingham,London,429.4,Express,9.8,23.6
+RT-0132,Sheffield,Birmingham,153.2,Standard,3.5,5.49
+RT-0133,Newcastle,Cardiff,473.1,Standard,10.8,23.81
+RT-0134,Liverpool,Nottingham,232.1,Standard,5.3,4.76
+RT-0135,London,Newcastle,317.9,Standard,7.3,7.55
+RT-0136,Newcastle,Sheffield,219.7,Standard,5.0,5.71
+RT-0137,Leeds,Nottingham,207.8,Express,4.8,11.3
+RT-0138,Nottingham,Sheffield,105.7,Standard,2.4,5.21
+RT-0139,Cardiff,Sheffield,284.6,Standard,6.5,14.14
+RT-0140,Cardiff,Newcastle,339.4,Standard,7.8,8.21
+RT-0141,Newcastle,Sheffield,167.1,Economy,3.8,4.01
+RT-0142,London,Bristol,555.6,Express,12.7,32.87
+RT-0143,Nottingham,Leeds,543.1,Economy,12.4,19.43
+RT-0144,Cardiff,Bristol,720.0,Standard,16.5,26.18
+RT-0145,London,Cardiff,225.7,Standard,5.2,6.29
+RT-0146,Leeds,Glasgow,321.8,Express,7.4,8.53
+RT-0147,Bristol,Liverpool,20.0,Economy,0.5,0.59
+RT-0148,Birmingham,Manchester,271.2,Economy,6.2,8.44
+RT-0149,Glasgow,Birmingham,78.7,Standard,1.8,3.05
+RT-0150,Glasgow,Birmingham,321.8,Standard,7.4,18.79
+RT-0151,Birmingham,Liverpool,20.0,Express,0.5,0.6
+RT-0152,Manchester,Leeds,264.5,Economy,6.1,14.83
+RT-0153,Manchester,Nottingham,113.3,Economy,2.6,2.59
+RT-0154,Leeds,Manchester,466.7,Standard,10.7,11.15
+RT-0155,Newcastle,Sheffield,155.0,Standard,3.6,4.13
+RT-0156,London,Bristol,233.2,Economy,5.3,10.12
+RT-0157,Edinburgh,Newcastle,351.8,Standard,8.1,12.73
+RT-0158,Manchester,Newcastle,257.9,Express,5.9,14.87
+RT-0159,Leeds,Manchester,246.2,Express,5.6,7.53
+RT-0160,Birmingham,Sheffield,167.2,Standard,3.8,6.35
+RT-0161,Birmingham,Bristol,428.1,Economy,9.8,23.54
+RT-0162,Liverpool,Bristol,359.4,Express,8.2,10.71
+RT-0163,Bristol,Manchester,149.9,Economy,3.4,7.66
+RT-0164,Bristol,Edinburgh,562.3,Standard,12.9,23.32
+RT-0165,Newcastle,Leeds,291.4,Express,6.7,16.92
+RT-0166,Manchester,Edinburgh,527.1,Express,12.1,22.23
+RT-0167,Nottingham,Birmingham,266.8,Express,6.1,6.61
+RT-0168,Manchester,Nottingham,413.0,Standard,9.5,15.94
+RT-0169,Nottingham,Leeds,226.6,Express,5.2,13.5
+RT-0170,Manchester,Sheffield,20.0,Standard,0.5,0.52
+RT-0171,Newcastle,Nottingham,105.6,Express,2.4,3.56
+RT-0172,London,Newcastle,616.4,Economy,14.1,31.9
+RT-0173,Newcastle,Birmingham,299.7,Standard,6.9,13.65
+RT-0174,Newcastle,London,75.3,Express,1.7,1.69
+RT-0175,Leeds,Edinburgh,285.2,Express,6.5,12.92
+RT-0176,Glasgow,Leeds,372.5,Standard,8.5,18.27
+RT-0177,Liverpool,Glasgow,218.1,Standard,5.0,8.49
+RT-0178,Cardiff,Nottingham,50.4,Express,1.2,2.37
+RT-0179,Nottingham,Newcastle,374.8,Standard,8.6,20.88
+RT-0180,Liverpool,Newcastle,370.6,Standard,8.5,17.2
+RT-0181,Birmingham,Leeds,501.9,Standard,11.5,24.86
+RT-0182,Leeds,Glasgow,332.9,Standard,7.6,13.44
+RT-0183,Liverpool,Sheffield,403.6,Standard,9.2,13.6
+RT-0184,Liverpool,Leeds,375.1,Express,8.6,8.88
+RT-0185,Bristol,Liverpool,223.8,Standard,5.1,4.65
+RT-0186,Sheffield,Bristol,496.3,Economy,11.4,27.01
+RT-0187,Newcastle,Birmingham,126.8,Express,2.9,3.93
+RT-0188,Newcastle,Manchester,373.0,Standard,8.5,21.04
+RT-0189,Liverpool,Birmingham,372.4,Standard,8.5,21.64
+RT-0190,Edinburgh,Cardiff,285.4,Standard,6.5,9.37
+RT-0191,Liverpool,Nottingham,310.4,Standard,7.1,6.5
+RT-0192,Edinburgh,Leeds,279.8,Standard,6.4,10.56
+RT-0193,Birmingham,Nottingham,381.6,Standard,8.7,15.94
+RT-0194,Liverpool,Glasgow,295.3,Standard,6.8,8.79
+RT-0195,Leeds,Nottingham,361.4,Economy,8.3,21.37
+RT-0196,London,Newcastle,249.4,Economy,5.7,9.78
+RT-0197,Cardiff,Glasgow,500.8,Standard,11.5,15.81
+RT-0198,Bristol,Birmingham,346.7,Standard,7.9,9.97
+RT-0199,Cardiff,Newcastle,449.8,Express,10.3,9.13
+RT-0200,London,Leeds,348.3,Economy,8.0,8.89
+RT-0201,Liverpool,Newcastle,112.8,Standard,2.6,6.76
+RT-0202,Bristol,Birmingham,314.0,Standard,7.2,14.06
+RT-0203,Sheffield,Nottingham,495.3,Express,11.3,12.64
+RT-0204,Cardiff,Newcastle,289.3,Economy,6.6,13.46
+RT-0205,Glasgow,Manchester,48.5,Express,1.1,1.79
+RT-0206,Edinburgh,Cardiff,281.3,Standard,6.4,12.97
+RT-0207,London,Nottingham,463.9,Express,10.6,22.79
+RT-0208,Manchester,Nottingham,466.3,Standard,10.7,17.25
+RT-0209,Birmingham,London,357.9,Standard,8.2,18.43
+RT-0210,Liverpool,Sheffield,160.8,Standard,3.7,5.28
+RT-0211,Birmingham,Newcastle,239.2,Standard,5.5,13.33
+RT-0212,Bristol,Manchester,291.8,Express,6.7,7.63
+RT-0213,Bristol,Edinburgh,131.7,Express,3.0,2.64
+RT-0214,Manchester,Glasgow,244.6,Express,5.6,11.27
+RT-0215,Liverpool,Sheffield,265.2,Express,6.1,14.44
+RT-0216,Bristol,Sheffield,240.5,Economy,5.5,5.7
+RT-0217,Glasgow,Leeds,473.3,Express,10.8,23.71
+RT-0218,Birmingham,Edinburgh,280.6,Standard,6.4,9.74
+RT-0219,Leeds,Birmingham,198.5,Economy,4.5,4.91
+RT-0220,Newcastle,London,222.4,Express,5.1,11.77
+RT-0221,London,Glasgow,424.4,Express,9.7,19.58
+RT-0222,Birmingham,Glasgow,296.6,Economy,6.8,17.51
+RT-0223,Nottingham,Newcastle,67.3,Express,1.5,3.11
+RT-0224,Nottingham,Bristol,53.9,Standard,1.2,2.27
+RT-0225,Leeds,Sheffield,550.3,Express,12.6,12.09
+RT-0226,Nottingham,Edinburgh,20.0,Express,0.5,0.73
+RT-0227,Bristol,Newcastle,40.0,Standard,0.9,1.42
+RT-0228,Newcastle,Birmingham,342.6,Standard,7.8,14.58
+RT-0229,Cardiff,Liverpool,374.9,Express,8.6,10.68
+RT-0230,Cardiff,Sheffield,334.8,Express,7.7,18.62
+RT-0231,Manchester,Edinburgh,431.1,Economy,9.9,9.65
+RT-0232,Leeds,Birmingham,574.1,Express,13.1,27.09
+RT-0233,London,Bristol,121.3,Express,2.8,4.48
+RT-0234,Edinburgh,Manchester,264.6,Economy,6.1,8.68
+RT-0235,Leeds,Bristol,148.1,Standard,3.4,4.53
+RT-0236,Nottingham,Edinburgh,206.6,Economy,4.7,11.82
+RT-0237,Liverpool,Manchester,73.3,Express,1.7,3.28
+RT-0238,Leeds,Manchester,478.7,Economy,11.0,25.27
+RT-0239,Liverpool,Glasgow,397.4,Express,9.1,14.33
+RT-0240,London,Leeds,193.5,Standard,4.4,10.11
+RT-0241,Nottingham,Manchester,111.6,Standard,2.6,4.44
+RT-0242,Bristol,Nottingham,293.0,Standard,6.7,12.71
+RT-0243,Glasgow,Manchester,365.6,Express,8.4,8.82
+RT-0244,Newcastle,Sheffield,129.8,Standard,3.0,4.72
+RT-0245,Glasgow,Leeds,290.2,Economy,6.6,16.63
+RT-0246,Liverpool,Leeds,46.1,Standard,1.1,1.97
+RT-0247,Leeds,Edinburgh,325.3,Standard,7.5,10.68
+RT-0248,Nottingham,Bristol,274.2,Express,6.3,7.31
+RT-0249,Edinburgh,Liverpool,294.6,Express,6.7,12.52
+RT-0250,Newcastle,Liverpool,262.7,Economy,6.0,15.0
+RT-0251,Birmingham,Cardiff,369.0,Express,8.5,21.34
+RT-0252,Sheffield,Leeds,336.0,Standard,7.7,6.78
+RT-0253,Cardiff,London,523.0,Standard,12.0,11.02
+RT-0254,Leeds,Newcastle,20.0,Standard,0.5,0.77
+RT-0255,Glasgow,London,317.6,Standard,7.3,17.51
+RT-0256,Nottingham,Leeds,403.6,Express,9.2,10.67
+RT-0257,Glasgow,Newcastle,20.0,Standard,0.5,1.17
+RT-0258,London,Nottingham,180.8,Express,4.1,7.91
+RT-0259,Nottingham,Newcastle,20.0,Economy,0.5,0.79
+RT-0260,Birmingham,Cardiff,20.0,Standard,0.5,0.74
+RT-0261,Nottingham,Leeds,227.9,Express,5.2,11.8
+RT-0262,Birmingham,Sheffield,340.6,Standard,7.8,18.72
+RT-0263,London,Manchester,336.4,Standard,7.7,16.01
+RT-0264,Edinburgh,Manchester,195.9,Standard,4.5,8.77
+RT-0265,Manchester,London,425.1,Standard,9.7,12.15
+RT-0266,Glasgow,Manchester,391.3,Standard,9.0,9.34
+RT-0267,Edinburgh,Nottingham,320.5,Economy,7.3,18.9
+RT-0268,Birmingham,London,378.7,Economy,8.7,17.18
+RT-0269,Leeds,Glasgow,344.2,Express,7.9,14.24
+RT-0270,Leeds,Nottingham,626.5,Express,14.3,30.22
+RT-0271,Edinburgh,Bristol,263.6,Express,6.0,15.14
+RT-0272,Newcastle,Sheffield,332.9,Economy,7.6,8.73
+RT-0273,Liverpool,Glasgow,203.9,Standard,4.7,7.32
+RT-0274,Newcastle,Leeds,417.4,Economy,9.6,13.54
+RT-0275,Newcastle,Birmingham,336.5,Economy,7.7,8.0
+RT-0276,Liverpool,Sheffield,423.9,Economy,9.7,25.03
+RT-0277,Cardiff,Sheffield,39.2,Express,0.9,2.03
+RT-0278,Bristol,Cardiff,306.6,Economy,7.0,18.05
+RT-0279,Glasgow,Liverpool,20.0,Standard,0.5,0.71
+RT-0280,Bristol,Leeds,294.1,Express,6.7,6.79
+RT-0281,Edinburgh,Newcastle,142.6,Economy,3.3,6.35
+RT-0282,Manchester,London,349.3,Express,8.0,20.62
+RT-0283,Newcastle,Birmingham,252.6,Economy,5.8,14.93
+RT-0284,London,Bristol,231.4,Express,5.3,5.21
+RT-0285,Manchester,Bristol,384.2,Economy,8.8,15.94
+RT-0286,Cardiff,Edinburgh,357.0,Economy,8.2,15.96
+RT-0287,Cardiff,Sheffield,469.1,Standard,10.7,11.08
+RT-0288,Glasgow,Birmingham,429.3,Economy,9.8,15.08
+RT-0289,Bristol,Newcastle,248.6,Express,5.7,8.16
+RT-0290,Birmingham,Liverpool,143.3,Standard,3.3,4.18
+RT-0291,Newcastle,Cardiff,391.8,Economy,9.0,10.78
+RT-0292,Newcastle,Manchester,34.7,Standard,0.8,1.4
+RT-0293,Nottingham,Leeds,20.0,Standard,0.5,0.78
+RT-0294,Nottingham,Leeds,334.1,Standard,7.7,9.73
+RT-0295,Liverpool,Cardiff,323.5,Economy,7.4,12.54
+RT-0296,Glasgow,Sheffield,191.0,Express,4.4,10.1
+RT-0297,Liverpool,Cardiff,220.7,Standard,5.1,10.05
+RT-0298,Birmingham,Sheffield,293.6,Standard,6.7,13.65
+RT-0299,Newcastle,Cardiff,171.3,Standard,3.9,6.34
+RT-0300,Cardiff,Newcastle,286.0,Standard,6.6,10.98
+RT-0301,Edinburgh,Birmingham,20.0,Express,0.5,0.56
+RT-0302,Leeds,Cardiff,20.0,Economy,0.5,0.62
+RT-0303,Edinburgh,Manchester,61.4,Express,1.4,1.71
+RT-0304,Leeds,Bristol,364.5,Economy,8.3,18.38
+RT-0305,Birmingham,Liverpool,158.6,Standard,3.6,6.21
+RT-0306,Newcastle,Manchester,306.8,Standard,7.0,7.7
+RT-0307,Liverpool,Edinburgh,119.2,Express,2.7,4.68
+RT-0308,Birmingham,Newcastle,107.5,Economy,2.5,4.08
+RT-0309,Glasgow,Sheffield,186.3,Standard,4.3,5.04
+RT-0310,Birmingham,Edinburgh,354.8,Express,8.1,17.77
+RT-0311,Birmingham,Leeds,299.9,Express,6.9,11.26
+RT-0312,Liverpool,Bristol,20.0,Express,0.5,1.01
+RT-0313,London,Nottingham,476.8,Standard,10.9,26.07
+RT-0314,Cardiff,Nottingham,20.0,Economy,0.5,1.13
+RT-0315,Edinburgh,Newcastle,441.8,Express,10.1,9.12
+RT-0316,Edinburgh,Glasgow,372.6,Standard,8.5,15.92
+RT-0317,Newcastle,Edinburgh,105.3,Express,2.4,3.05
+RT-0318,Birmingham,Newcastle,26.9,Economy,0.6,1.48
+RT-0319,Manchester,Sheffield,406.0,Standard,9.3,12.47
+RT-0320,Newcastle,Edinburgh,244.5,Standard,5.6,10.34
+RT-0321,Cardiff,Bristol,339.3,Express,7.8,7.57
+RT-0322,Cardiff,Nottingham,225.2,Economy,5.2,10.64
+RT-0323,Liverpool,Birmingham,395.7,Economy,9.1,12.1
+RT-0324,Nottingham,Sheffield,301.0,Standard,6.9,15.83
+RT-0325,Glasgow,Birmingham,184.8,Economy,4.2,5.65
+RT-0326,London,Glasgow,41.9,Express,1.0,2.14
+RT-0327,Cardiff,Newcastle,278.1,Economy,6.4,7.93
+RT-0328,Liverpool,London,434.3,Economy,9.9,9.36
+RT-0329,Birmingham,Bristol,257.0,Economy,5.9,6.06
+RT-0330,Manchester,Glasgow,36.9,Standard,0.8,1.02
+RT-0331,Birmingham,Bristol,211.7,Standard,4.8,11.53
+RT-0332,Edinburgh,Liverpool,170.6,Economy,3.9,6.22
+RT-0333,Cardiff,Leeds,315.8,Express,7.2,15.53
+RT-0334,Manchester,Newcastle,449.9,Standard,10.3,12.61
+RT-0335,Birmingham,Bristol,483.7,Express,11.1,25.08
+RT-0336,Birmingham,Sheffield,222.4,Express,5.1,6.89
+RT-0337,Manchester,Bristol,291.8,Economy,6.7,10.53
+RT-0338,Nottingham,Birmingham,20.0,Standard,0.5,0.43
+RT-0339,Manchester,Birmingham,287.0,Economy,6.6,8.16
+RT-0340,Leeds,Nottingham,449.8,Economy,10.3,13.09
+RT-0341,Edinburgh,London,441.7,Standard,10.1,19.77
+RT-0342,Edinburgh,Newcastle,277.4,Economy,6.4,15.96
+RT-0343,Manchester,Newcastle,426.1,Economy,9.8,17.51
+RT-0344,Nottingham,Liverpool,355.5,Standard,8.1,11.2
+RT-0345,Glasgow,Manchester,56.2,Standard,1.3,2.26
+RT-0346,Edinburgh,Cardiff,253.2,Economy,5.8,14.31
+RT-0347,Newcastle,Birmingham,360.4,Standard,8.3,14.75
+RT-0348,Newcastle,Birmingham,338.3,Economy,7.7,16.53
+RT-0349,Newcastle,Nottingham,638.0,Standard,14.6,29.05
+RT-0350,Cardiff,Glasgow,458.7,Express,10.5,16.74
+RT-0351,Cardiff,Sheffield,322.3,Economy,7.4,11.38
+RT-0352,Cardiff,Nottingham,300.3,Standard,6.9,15.26
+RT-0353,Birmingham,Leeds,428.3,Standard,9.8,22.78
+RT-0354,Nottingham,London,54.9,Standard,1.3,2.34
+RT-0355,Cardiff,Glasgow,184.1,Standard,4.2,10.05
+RT-0356,Newcastle,London,258.8,Economy,5.9,5.7
+RT-0357,Leeds,Newcastle,256.7,Economy,5.9,12.8
+RT-0358,Liverpool,Sheffield,92.6,Standard,2.1,4.74
+RT-0359,Newcastle,Birmingham,20.0,Express,0.5,1.17
+RT-0360,Glasgow,Liverpool,301.2,Standard,6.9,12.43
+RT-0361,Manchester,Edinburgh,212.0,Standard,4.9,5.95
+RT-0362,London,Sheffield,192.9,Standard,4.4,8.32
+RT-0363,Manchester,Birmingham,128.1,Economy,2.9,7.29
+RT-0364,Newcastle,Bristol,370.9,Express,8.5,8.75
+RT-0365,Birmingham,Manchester,180.6,Economy,4.1,4.15
+RT-0366,London,Birmingham,138.9,Standard,3.2,7.08
+RT-0367,London,Cardiff,266.4,Standard,6.1,10.89
+RT-0368,Nottingham,Cardiff,202.5,Standard,4.6,7.84
+RT-0369,London,Birmingham,157.0,Express,3.6,4.11
+RT-0370,Newcastle,Birmingham,356.0,Standard,8.2,16.89
+RT-0371,Cardiff,Sheffield,193.5,Economy,4.4,6.25
+RT-0372,Newcastle,Birmingham,163.8,Economy,3.8,5.21
+RT-0373,Nottingham,Edinburgh,444.9,Standard,10.2,19.96
+RT-0374,Glasgow,Cardiff,125.4,Express,2.9,5.99
+RT-0375,Cardiff,Liverpool,185.5,Express,4.2,7.03
+RT-0376,London,Glasgow,97.5,Express,2.2,3.67
+RT-0377,Newcastle,Liverpool,212.3,Economy,4.9,8.26
+RT-0378,Edinburgh,Glasgow,447.9,Economy,10.3,17.77
+RT-0379,Nottingham,Glasgow,111.8,Standard,2.6,2.56
+RT-0380,Leeds,Edinburgh,20.0,Economy,0.5,0.79
+RT-0381,Edinburgh,Glasgow,446.4,Standard,10.2,12.16
+RT-0382,Glasgow,Birmingham,31.2,Express,0.7,1.16
+RT-0383,Leeds,Newcastle,20.0,Express,0.5,0.86
+RT-0384,Nottingham,Manchester,195.5,Express,4.5,8.81
+RT-0385,Birmingham,Leeds,234.3,Standard,5.4,11.81
+RT-0386,Manchester,Bristol,351.6,Standard,8.1,17.66
+RT-0387,Glasgow,Sheffield,20.0,Express,0.5,0.63
+RT-0388,Leeds,Birmingham,305.5,Standard,7.0,18.25
+RT-0389,London,Nottingham,352.6,Standard,8.1,19.18
+RT-0390,Leeds,Nottingham,463.3,Standard,10.6,24.7
+RT-0391,Birmingham,Leeds,409.1,Economy,9.4,24.3
+RT-0392,Nottingham,Newcastle,392.1,Express,9.0,12.87
+RT-0393,Cardiff,Edinburgh,366.8,Standard,8.4,16.68
+RT-0394,Leeds,Glasgow,501.7,Standard,11.5,16.67
+RT-0395,Edinburgh,Manchester,411.8,Economy,9.4,15.59
+RT-0396,London,Bristol,284.9,Standard,6.5,5.94
+RT-0397,Nottingham,Bristol,183.8,Standard,4.2,5.7
+RT-0398,Liverpool,London,351.3,Standard,8.0,7.33
+RT-0399,London,Sheffield,339.0,Standard,7.8,12.81
+RT-0400,Liverpool,Leeds,491.9,Economy,11.3,27.41
+RT-0401,Manchester,London,248.6,Economy,5.7,10.44
+RT-0402,Liverpool,Manchester,410.8,Standard,9.4,20.13
+RT-0403,Birmingham,Cardiff,120.3,Standard,2.8,3.85
+RT-0404,Nottingham,Glasgow,493.8,Express,11.3,10.78
+RT-0405,Manchester,Leeds,211.5,Express,4.8,7.94
+RT-0406,Edinburgh,Liverpool,120.5,Economy,2.8,6.31
+RT-0407,Birmingham,Liverpool,433.7,Standard,9.9,19.14
+RT-0408,Liverpool,Birmingham,240.0,Express,5.5,9.17
+RT-0409,Manchester,Glasgow,212.5,Economy,4.9,12.12
+RT-0410,Glasgow,Birmingham,370.4,Express,8.5,21.11
+RT-0411,Edinburgh,Nottingham,284.9,Economy,6.5,16.75
+RT-0412,Birmingham,Sheffield,162.9,Standard,3.7,3.77
+RT-0413,London,Sheffield,458.5,Standard,10.5,16.82
+RT-0414,Cardiff,Edinburgh,232.4,Standard,5.3,5.35
+RT-0415,Liverpool,Newcastle,20.0,Standard,0.5,0.81
+RT-0416,Edinburgh,Bristol,192.5,Standard,4.4,6.69
+RT-0417,Nottingham,Manchester,22.1,Standard,0.5,1.28
+RT-0418,Edinburgh,Newcastle,77.5,Economy,1.8,2.72
+RT-0419,Birmingham,Sheffield,178.4,Standard,4.1,10.18
+RT-0420,Manchester,Bristol,95.8,Economy,2.2,2.49
+RT-0421,Glasgow,London,167.2,Standard,3.8,3.82
+RT-0422,Leeds,Edinburgh,288.5,Express,6.6,9.64
+RT-0423,London,Sheffield,312.3,Economy,7.2,11.82
+RT-0424,Newcastle,Nottingham,237.0,Express,5.4,13.13
+RT-0425,Liverpool,Glasgow,239.4,Express,5.5,11.37
+RT-0426,Manchester,London,315.8,Express,7.2,11.89
+RT-0427,Liverpool,Leeds,244.6,Express,5.6,5.21
+RT-0428,Liverpool,Edinburgh,78.9,Standard,1.8,1.92
+RT-0429,Leeds,London,516.3,Standard,11.8,18.46
+RT-0430,Newcastle,Liverpool,284.7,Standard,6.5,12.45
+RT-0431,Manchester,London,309.8,Standard,7.1,11.41
+RT-0432,Liverpool,Manchester,338.6,Economy,7.8,7.07
+RT-0433,Nottingham,Edinburgh,293.2,Express,6.7,15.1
+RT-0434,Edinburgh,Cardiff,200.4,Economy,4.6,4.35
+RT-0435,Leeds,Glasgow,345.1,Express,7.9,11.54
+RT-0436,Manchester,Nottingham,265.9,Standard,6.1,14.28
+RT-0437,Edinburgh,Bristol,90.3,Economy,2.1,3.52
+RT-0438,London,Birmingham,303.9,Standard,7.0,7.18
+RT-0439,Edinburgh,Leeds,351.5,Standard,8.1,20.68
+RT-0440,Nottingham,Birmingham,269.5,Economy,6.2,10.22
+RT-0441,Manchester,Leeds,20.0,Standard,0.5,0.82
+RT-0442,Sheffield,Nottingham,206.0,Standard,4.7,4.38
+RT-0443,Leeds,Glasgow,390.5,Standard,8.9,10.64
+RT-0444,Edinburgh,Liverpool,324.2,Standard,7.4,11.01
+RT-0445,Bristol,Liverpool,165.5,Standard,3.8,8.95
+RT-0446,London,Cardiff,354.7,Economy,8.1,11.96
+RT-0447,Liverpool,London,96.3,Express,2.2,2.84
+RT-0448,Liverpool,Newcastle,288.1,Economy,6.6,16.56
+RT-0449,Birmingham,Cardiff,189.6,Standard,4.3,11.32
+RT-0450,Glasgow,Bristol,320.9,Standard,7.4,13.26
+RT-0451,Newcastle,Manchester,424.7,Express,9.7,24.25
+RT-0452,Cardiff,Birmingham,228.7,Express,5.2,6.77
+RT-0453,Leeds,Bristol,288.5,Express,6.6,10.14
+RT-0454,Glasgow,Leeds,20.0,Standard,0.5,0.47
+RT-0455,Cardiff,London,106.9,Economy,2.4,6.38
+RT-0456,Leeds,Nottingham,265.7,Standard,6.1,8.66
+RT-0457,London,Newcastle,309.3,Economy,7.1,17.26
+RT-0458,Birmingham,Glasgow,294.2,Economy,6.7,9.51
+RT-0459,London,Nottingham,20.0,Economy,0.5,1.02
+RT-0460,London,Birmingham,172.9,Express,4.0,8.79
+RT-0461,Liverpool,Newcastle,490.1,Economy,11.2,11.72
+RT-0462,Newcastle,Bristol,338.6,Express,7.8,12.84
+RT-0463,Glasgow,Birmingham,353.4,Standard,8.1,19.5
+RT-0464,Birmingham,Bristol,312.3,Standard,7.2,10.34
+RT-0465,Liverpool,Glasgow,158.6,Express,3.6,6.36
+RT-0466,London,Birmingham,611.0,Standard,14.0,22.32
+RT-0467,Glasgow,Sheffield,294.7,Economy,6.7,15.14
+RT-0468,Glasgow,Nottingham,160.2,Express,3.7,6.58
+RT-0469,Edinburgh,Manchester,327.9,Standard,7.5,10.01
+RT-0470,Manchester,Nottingham,685.6,Standard,15.7,33.49
+RT-0471,Bristol,London,138.6,Economy,3.2,3.15
+RT-0472,Edinburgh,Glasgow,270.5,Standard,6.2,6.69
+RT-0473,Leeds,Nottingham,313.6,Express,7.2,10.33
+RT-0474,Manchester,Cardiff,381.6,Standard,8.7,10.02
+RT-0475,Liverpool,Manchester,475.2,Standard,10.9,27.03
+RT-0476,Nottingham,London,701.9,Economy,16.1,40.64
+RT-0477,Leeds,Bristol,152.4,Standard,3.5,5.58
+RT-0478,Bristol,Birmingham,330.3,Express,7.6,15.92
+RT-0479,Cardiff,London,370.5,Standard,8.5,12.43
+RT-0480,Cardiff,Liverpool,20.0,Economy,0.5,1.0
+RT-0481,Leeds,Sheffield,261.7,Standard,6.0,9.09
+RT-0482,Sheffield,Glasgow,388.9,Express,8.9,13.52
+RT-0483,Edinburgh,Birmingham,306.0,Express,7.0,9.32
+RT-0484,Bristol,Cardiff,247.7,Standard,5.7,10.25
+RT-0485,Nottingham,Liverpool,293.6,Standard,6.7,17.22
+RT-0486,Bristol,Edinburgh,211.6,Economy,4.8,4.73
+RT-0487,Liverpool,Leeds,398.6,Economy,9.1,15.28
+RT-0488,London,Birmingham,150.0,Express,3.4,7.51
+RT-0489,London,Edinburgh,182.6,Economy,4.2,8.25
+RT-0490,Nottingham,Edinburgh,292.9,Economy,6.7,16.04
+RT-0491,London,Manchester,302.6,Express,6.9,16.47
+RT-0492,Newcastle,Cardiff,352.8,Express,8.1,11.84
+RT-0493,Liverpool,Cardiff,141.5,Express,3.2,7.86
+RT-0494,Liverpool,Newcastle,144.6,Express,3.3,8.52
+RT-0495,Manchester,Liverpool,70.9,Standard,1.6,2.27
+RT-0496,Liverpool,London,42.7,Express,1.0,0.86
+RT-0497,Nottingham,Liverpool,124.5,Economy,2.9,4.84
+RT-0498,Birmingham,Edinburgh,435.1,Standard,10.0,17.78
+RT-0499,Edinburgh,Leeds,442.7,Economy,10.1,26.47
+RT-0500,Newcastle,London,300.7,Express,6.9,10.25
