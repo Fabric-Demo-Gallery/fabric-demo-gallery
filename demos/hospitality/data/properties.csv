@@ -1,51 +1,51 @@
 property_id,property_name,city,country,property_type,star_rating,room_count
-PROP-001,London Hotel 1,London,UK,Hotel,5,120
-PROP-002,Dubai Resort 2,Dubai,AE,Resort,5,350
-PROP-003,Miami Hotel 3,Miami,US,Hotel,4,80
-PROP-004,New York Hotel 4,New York,US,Hotel,4,250
-PROP-005,Las Vegas Hotel 5,Las Vegas,US,Hotel,4,350
-PROP-006,Miami Airport 6,Miami,US,Airport,4,250
-PROP-007,Singapore Hotel 7,Singapore,SG,Hotel,5,120
-PROP-008,Sydney Boutique 8,Sydney,AU,Boutique,4,120
-PROP-009,Tokyo Hotel 9,Tokyo,JP,Hotel,3,80
-PROP-010,Tokyo Boutique 10,Tokyo,JP,Boutique,4,500
-PROP-011,New York Airport 11,New York,US,Airport,4,200
-PROP-012,London Business 12,London,UK,Business,4,350
-PROP-013,Las Vegas Boutique 13,Las Vegas,US,Boutique,4,350
-PROP-014,London Hotel 14,London,UK,Hotel,4,500
-PROP-015,Singapore Hotel 15,Singapore,SG,Hotel,5,500
-PROP-016,London Airport 16,London,UK,Airport,4,350
-PROP-017,Tokyo Resort 17,Tokyo,JP,Resort,4,120
-PROP-018,Singapore Hotel 18,Singapore,SG,Hotel,4,120
-PROP-019,Miami Resort 19,Miami,US,Resort,3,200
-PROP-020,Singapore Business 20,Singapore,SG,Business,4,150
-PROP-021,New York Resort 21,New York,US,Resort,5,500
-PROP-022,Tokyo Airport 22,Tokyo,JP,Airport,4,120
-PROP-023,Las Vegas Boutique 23,Las Vegas,US,Boutique,4,200
-PROP-024,Sydney Airport 24,Sydney,AU,Airport,3,120
-PROP-025,Dubai Business 25,Dubai,AE,Business,4,350
-PROP-026,Las Vegas Airport 26,Las Vegas,US,Airport,5,200
-PROP-027,Tokyo Resort 27,Tokyo,JP,Resort,5,120
-PROP-028,Miami Airport 28,Miami,US,Airport,3,80
-PROP-029,London Resort 29,London,UK,Resort,4,500
-PROP-030,Sydney Business 30,Sydney,AU,Business,3,200
-PROP-031,Las Vegas Airport 31,Las Vegas,US,Airport,4,250
-PROP-032,New York Hotel 32,New York,US,Hotel,4,250
-PROP-033,Singapore Boutique 33,Singapore,SG,Boutique,3,200
-PROP-034,Paris Airport 34,Paris,FR,Airport,3,350
-PROP-035,Singapore Business 35,Singapore,SG,Business,5,250
-PROP-036,London Boutique 36,London,UK,Boutique,5,250
-PROP-037,Las Vegas Resort 37,Las Vegas,US,Resort,3,500
-PROP-038,Paris Business 38,Paris,FR,Business,5,250
-PROP-039,New York Business 39,New York,US,Business,4,80
-PROP-040,London Boutique 40,London,UK,Boutique,5,500
-PROP-041,Singapore Resort 41,Singapore,SG,Resort,3,250
-PROP-042,London Hotel 42,London,UK,Hotel,5,500
-PROP-043,London Business 43,London,UK,Business,5,120
-PROP-044,Barcelona Business 44,Barcelona,ES,Business,3,250
-PROP-045,Las Vegas Airport 45,Las Vegas,US,Airport,5,250
-PROP-046,Dubai Boutique 46,Dubai,AE,Boutique,4,350
-PROP-047,Tokyo Airport 47,Tokyo,JP,Airport,5,200
-PROP-048,London Resort 48,London,UK,Resort,4,150
-PROP-049,New York Business 49,New York,US,Business,4,250
-PROP-050,Dubai Hotel 50,Dubai,AE,Hotel,3,350
+PROP-001,Manchester Resort 1,Manchester,UK,Hotel,5,210
+PROP-002,Edinburgh Boutique 2,Edinburgh,UK,Resort,4,263
+PROP-003,Paris Apartment 3,Paris,France,Hotel,5,92
+PROP-004,Amsterdam Hotel 4,Amsterdam,Netherlands,Hotel,4,293
+PROP-005,Barcelona Resort 5,Barcelona,Spain,Boutique,5,226
+PROP-006,Rome Boutique 6,Rome,Italy,Apartment,4,73
+PROP-007,Berlin Apartment 7,Berlin,Germany,Apartment,4,170
+PROP-008,London Hotel 8,London,UK,Resort,3,280
+PROP-009,Manchester Resort 9,Manchester,UK,Apartment,4,144
+PROP-010,Edinburgh Boutique 10,Edinburgh,UK,Apartment,4,155
+PROP-011,Paris Apartment 11,Paris,France,Resort,3,63
+PROP-012,Amsterdam Hotel 12,Amsterdam,Netherlands,Boutique,5,56
+PROP-013,Barcelona Resort 13,Barcelona,Spain,Apartment,5,111
+PROP-014,Rome Boutique 14,Rome,Italy,Boutique,3,237
+PROP-015,Berlin Apartment 15,Berlin,Germany,Boutique,4,57
+PROP-016,London Hotel 16,London,UK,Apartment,4,272
+PROP-017,Manchester Resort 17,Manchester,UK,Boutique,5,237
+PROP-018,Edinburgh Boutique 18,Edinburgh,UK,Hotel,4,161
+PROP-019,Paris Apartment 19,Paris,France,Resort,3,182
+PROP-020,Amsterdam Hotel 20,Amsterdam,Netherlands,Hotel,5,217
+PROP-021,Barcelona Resort 21,Barcelona,Spain,Apartment,5,135
+PROP-022,Rome Boutique 22,Rome,Italy,Apartment,4,124
+PROP-023,Berlin Apartment 23,Berlin,Germany,Apartment,4,59
+PROP-024,London Hotel 24,London,UK,Resort,5,89
+PROP-025,Manchester Resort 25,Manchester,UK,Resort,3,218
+PROP-026,Edinburgh Boutique 26,Edinburgh,UK,Resort,3,98
+PROP-027,Paris Apartment 27,Paris,France,Boutique,5,284
+PROP-028,Amsterdam Hotel 28,Amsterdam,Netherlands,Resort,3,256
+PROP-029,Barcelona Resort 29,Barcelona,Spain,Boutique,5,65
+PROP-030,Rome Boutique 30,Rome,Italy,Resort,5,256
+PROP-031,Berlin Apartment 31,Berlin,Germany,Resort,5,258
+PROP-032,London Hotel 32,London,UK,Resort,5,114
+PROP-033,Manchester Resort 33,Manchester,UK,Hotel,5,205
+PROP-034,Edinburgh Boutique 34,Edinburgh,UK,Hotel,5,91
+PROP-035,Paris Apartment 35,Paris,France,Apartment,3,247
+PROP-036,Amsterdam Hotel 36,Amsterdam,Netherlands,Apartment,5,212
+PROP-037,Barcelona Resort 37,Barcelona,Spain,Resort,5,112
+PROP-038,Rome Boutique 38,Rome,Italy,Apartment,4,159
+PROP-039,Berlin Apartment 39,Berlin,Germany,Boutique,4,49
+PROP-040,London Hotel 40,London,UK,Hotel,3,69
+PROP-041,Manchester Resort 41,Manchester,UK,Resort,5,210
+PROP-042,Edinburgh Boutique 42,Edinburgh,UK,Resort,5,186
+PROP-043,Paris Apartment 43,Paris,France,Hotel,5,189
+PROP-044,Amsterdam Hotel 44,Amsterdam,Netherlands,Boutique,4,183
+PROP-045,Barcelona Resort 45,Barcelona,Spain,Hotel,4,246
+PROP-046,Rome Boutique 46,Rome,Italy,Resort,4,48
+PROP-047,Berlin Apartment 47,Berlin,Germany,Resort,4,295
+PROP-048,London Hotel 48,London,UK,Hotel,3,146
+PROP-049,Manchester Resort 49,Manchester,UK,Apartment,5,49
+PROP-050,Edinburgh Boutique 50,Edinburgh,UK,Hotel,5,55
