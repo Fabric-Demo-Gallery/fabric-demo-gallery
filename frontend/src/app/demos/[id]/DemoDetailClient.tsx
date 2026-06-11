@@ -48,8 +48,18 @@ import {
   OpenRegular,
   DatabaseRegular,
   TableRegular,
+  DatabaseLink24Regular,
+  Pulse24Regular,
+  AlertUrgent24Regular,
+  BrainCircuit24Regular,
+  Database24Regular,
+  DatabaseArrowRight24Regular,
+  Sparkle24Regular,
 } from "@fluentui/react-icons";
+import type { FluentIcon } from "@fluentui/react-icons";
 import { DEMOS } from "@/lib/demoCatalog";
+import { PRESENTER } from "@/lib/presenterContent";
+import { explainError } from "@/lib/errorHelp";
 
 // Universal scenarios — identical across all industries (IDs match backend _scenarios/)
 const ALL_SCENARIOS: ScenarioInfo[] = [
@@ -57,7 +67,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     id: "data-virtualization-batch",
     title: "Data Virtualization & Batch Analytics",
     description: "Provision ADLS Gen2, connect external data in-place via Fabric Shortcuts, then process through Bronze→Silver→Gold medallion layers orchestrated with Data Factory pipelines.",
-    icon: "🔗",
     estimatedTime: "20–30 min",
     tags: ["shortcut", "adls", "medallion", "pipeline"],
     enabled: true,
@@ -69,7 +78,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     id: "real-time-monitoring",
     title: "Real-Time Monitoring",
     description: "Eventhouse + KQL Database for streaming ingestion, real-time analytics, and live dashboards.",
-    icon: "⚡",
     estimatedTime: "12–18 min",
     tags: ["eventhouse", "kql", "streaming", "real-time"],
     enabled: false,
@@ -81,7 +89,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     id: "anomaly-detection-alerts",
     title: "Anomaly Detection & Alerts",
     description: "ML-based anomaly detection on historical data with alert pipeline and drill-through report.",
-    icon: "🔔",
     estimatedTime: "15–20 min",
     tags: ["ml", "anomaly", "alerts", "lakehouse"],
     enabled: false,
@@ -93,7 +100,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     id: "ai-ml",
     title: "AI & Machine Learning",
     description: "End-to-end ML lifecycle: feature engineering, SynapseML LightGBM model training, evaluation, and batch scoring with risk rankings.",
-    icon: "🤖",
     estimatedTime: "15–25 min",
     tags: ["ml", "lightgbm", "experiment", "lakehouse"],
     enabled: true,
@@ -105,7 +111,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     id: "data-warehouse",
     title: "Data Warehouse",
     description: "Fabric Warehouse with SQL-native ingestion, T-SQL transformations, semantic model, and Power BI.",
-    icon: "🗄️",
     estimatedTime: "12–18 min",
     tags: ["warehouse", "sql", "power-bi"],
     enabled: false,
@@ -117,7 +122,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     id: "external-data-integration",
     title: "External Database Integration (Mirroring)",
     description: "Mirror an Azure SQL Database or Databricks catalog into Fabric OneLake for near-real-time analytics.",
-    icon: "🪞",
     estimatedTime: "10–15 min",
     tags: ["mirroring", "azure-sql", "databricks", "external"],
     enabled: false,
@@ -128,8 +132,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "genai-applications",
     title: "GenAI Applications",
-    description: "AI Skills (Data Agent) + RAG pattern — build a natural-language Q&A interface on your industry dataset.",
-    icon: "✨",
+    description: "AI Skills (Data Agent) and a RAG pattern for a natural-language Q&A interface on your industry dataset.",
     estimatedTime: "15–20 min",
     tags: ["genai", "data-agent", "rag", "lakehouse"],
     enabled: false,
@@ -138,6 +141,17 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     feature: "Fabric Data Agents",
   },
 ];
+
+// Professional Fluent System icons per scenario (replaces emoji).
+const SCENARIO_ICON: Record<string, FluentIcon> = {
+  "data-virtualization-batch": DatabaseLink24Regular,
+  "real-time-monitoring": Pulse24Regular,
+  "anomaly-detection-alerts": AlertUrgent24Regular,
+  "ai-ml": BrainCircuit24Regular,
+  "data-warehouse": Database24Regular,
+  "external-data-integration": DatabaseArrowRight24Regular,
+  "genai-applications": Sparkle24Regular,
+};
 
 const SCENARIO_FEATURES = [
   "RTI",
@@ -272,6 +286,128 @@ const useStyles = makeStyles({
   },
   sectionBody: {
     padding: "0",
+  },
+  /* ---- Presenter section ---- */
+  presenterBody: {
+    padding: "18px 20px",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "18px",
+  },
+  presenterValue: {
+    fontSize: "14px",
+    lineHeight: "21px",
+    color: "#c9d1d9",
+  },
+  insightGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: "10px",
+  },
+  insightCard: {
+    backgroundColor: "#0d1117",
+    border: "1px solid #21262d",
+    borderRadius: "8px",
+    padding: "12px 14px",
+    display: "flex",
+    flexDirection: "column" as const,
+    justifyContent: "space-between",
+    gap: "8px",
+  },
+  insightValue: {
+    fontSize: "15px",
+    fontWeight: 600,
+    color: "#3fb68b",
+    lineHeight: "20px",
+  },
+  insightLabel: {
+    fontSize: "11px",
+    color: "#8b949e",
+  },
+  presenterSubhead: {
+    fontSize: "11px",
+    fontWeight: 600,
+    color: "#8b949e",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+    marginBottom: "8px",
+  },
+  pointList: {
+    margin: "0",
+    paddingLeft: "18px",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "6px",
+  },
+  pointItem: {
+    fontSize: "13px",
+    lineHeight: "19px",
+    color: "#c9d1d9",
+  },
+  flowList: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "8px",
+  },
+  flowStep: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "flex-start",
+  },
+  flowStepNum: {
+    flexShrink: 0,
+    width: "20px",
+    height: "20px",
+    borderRadius: "50%",
+    backgroundColor: "#132f27",
+    color: "#3fb68b",
+    fontSize: "11px",
+    fontWeight: 700,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: "1px",
+  },
+  flowStepText: {
+    fontSize: "13px",
+    lineHeight: "19px",
+    color: "#c9d1d9",
+  },
+  /* ---- Post-deploy guidance ---- */
+  nextList: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "8px",
+    marginBottom: "12px",
+  },
+  nextItem: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "flex-start",
+    backgroundColor: "#0d1117",
+    border: "1px solid #21262d",
+    borderRadius: "8px",
+    padding: "10px 12px",
+  },
+  nextDot: {
+    flexShrink: 0,
+    width: "6px",
+    height: "6px",
+    borderRadius: "50%",
+    backgroundColor: "#3fb68b",
+    marginTop: "6px",
+  },
+  nextLabel: {
+    fontSize: "13px",
+    fontWeight: 600,
+    color: "#e6edf3",
+    lineHeight: "18px",
+  },
+  nextDetail: {
+    fontSize: "12px",
+    color: "#8b949e",
+    lineHeight: "17px",
+    marginTop: "1px",
   },
   flowRow: {
     display: "flex",
@@ -1125,7 +1261,7 @@ export default function DemoDetailPage() {
                       ].join(" ")}
                     >
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                        <span style={{ fontSize: 28, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{sc.icon}</span>
+                        {(() => { const Icon = SCENARIO_ICON[sc.id] ?? Sparkle24Regular; return <Icon fontSize={26} color={sc.enabled ? "#3fb68b" : "#484f58"} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden />; })()}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 14, fontWeight: 700, color: sc.enabled ? "#e6edf3" : "#484f58", marginBottom: 4 }}>{sc.title}</div>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>
@@ -1271,6 +1407,50 @@ export default function DemoDetailPage() {
             {/* === STANDARD MODE: Original demo overview === */}
             {!isCustomMode && (
               <>
+                {/* Presenter — talking track for solution engineers */}
+                {PRESENTER[id] && (
+                  <div className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                      <CheckmarkCircleFilled fontSize={16} /> Presenter Guide
+                    </div>
+                    <div className={styles.presenterBody}>
+                      <div className={styles.presenterValue}>{PRESENTER[id].businessValue}</div>
+
+                      <div className={styles.insightGrid}>
+                        {PRESENTER[id].sampleInsights.map((ins, i) => (
+                          <div key={i} className={styles.insightCard}>
+                            <div className={styles.insightValue}>{ins.value}</div>
+                            <div className={styles.insightLabel}>{ins.label}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div>
+                        <div className={styles.presenterSubhead}>Talking points</div>
+                        <ul className={styles.pointList}>
+                          {PRESENTER[id].talkingPoints.map((pt, i) => (
+                            <li key={i} className={styles.pointItem}>{pt}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <div className={styles.presenterSubhead}>Suggested demo flow</div>
+                        <div className={styles.flowList}>
+                          {PRESENTER[id].demoFlow.map((f, i) => (
+                            <div key={i} className={styles.flowStep}>
+                              <span className={styles.flowStepNum}>{i + 1}</span>
+                              <div className={styles.flowStepText}>
+                                <strong style={{ color: "#e6edf3" }}>{f.step}</strong>: {f.detail}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Architecture / Data Flow */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
@@ -1445,15 +1625,15 @@ export default function DemoDetailPage() {
                       <>
                         <div style={{ padding: "8px 0" }}>
                           <Text weight="medium" size={300}>Target Variable</Text>
-                          <div><Caption1>needs_maintenance — binary flag (1 = daily downtime &gt; 60 min, indicating maintenance required)</Caption1></div>
+                          <div><Caption1>needs_maintenance: binary flag (1 = daily downtime &gt; 60 min, indicating maintenance required)</Caption1></div>
                         </div>
                         <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                           <Text weight="medium" size={300}>Features (25 total)</Text>
-                          <div><Caption1>Sensor stats (temp, pressure, vibration, humidity — mean/std/max/range), anomaly ratios, production metrics (units, defects, yield), equipment age, production line, machine type</Caption1></div>
+                          <div><Caption1>Sensor stats (temp, pressure, vibration, humidity: mean/std/max/range), anomaly ratios, production metrics (units, defects, yield), equipment age, production line, machine type</Caption1></div>
                         </div>
                         <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                           <Text weight="medium" size={300}>Model</Text>
-                          <div><Caption1>SynapseML LightGBM Classifier — 200 iterations, 0.05 learning rate, class imbalance handling. Outputs probability + risk level (critical/high/medium/low).</Caption1></div>
+                          <div><Caption1>SynapseML LightGBM Classifier: 200 iterations, 0.05 learning rate, class imbalance handling. Outputs probability and risk level (critical/high/medium/low).</Caption1></div>
                         </div>
                       </>
                     )}
@@ -1461,7 +1641,7 @@ export default function DemoDetailPage() {
                       <>
                         <div style={{ padding: "8px 0" }}>
                           <Text weight="medium" size={300}>Target Variable</Text>
-                          <div><Caption1>daily_quantity — continuous (units sold per store-product per day)</Caption1></div>
+                          <div><Caption1>daily_quantity: continuous (units sold per store-product per day)</Caption1></div>
                         </div>
                         <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                           <Text weight="medium" size={300}>Features (18 total)</Text>
@@ -1469,7 +1649,7 @@ export default function DemoDetailPage() {
                         </div>
                         <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                           <Text weight="medium" size={300}>Model</Text>
-                          <div><Caption1>SynapseML LightGBM Regressor — 200 iterations, 0.05 learning rate. Outputs predicted demand + demand signal (high/stable/low).</Caption1></div>
+                          <div><Caption1>SynapseML LightGBM Regressor: 200 iterations, 0.05 learning rate. Outputs predicted demand and a demand signal (high/stable/low).</Caption1></div>
                         </div>
                       </>
                     )}
@@ -1477,7 +1657,7 @@ export default function DemoDetailPage() {
                       <>
                         <div style={{ padding: "8px 0" }}>
                           <Text weight="medium" size={300}>Target Variable</Text>
-                          <div><Caption1>had_outage — binary flag (1 = outage/surge/sag event at substation that day)</Caption1></div>
+                          <div><Caption1>had_outage: binary flag (1 = outage/surge/sag event at substation that day)</Caption1></div>
                         </div>
                         <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                           <Text weight="medium" size={300}>Features (19 total)</Text>
@@ -1485,7 +1665,7 @@ export default function DemoDetailPage() {
                         </div>
                         <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
                           <Text weight="medium" size={300}>Model</Text>
-                          <div><Caption1>SynapseML LightGBM Classifier — 200 iterations, 0.05 learning rate, class imbalance handling. Outputs outage probability + risk level (critical/high/medium/low).</Caption1></div>
+                          <div><Caption1>SynapseML LightGBM Classifier: 200 iterations, 0.05 learning rate, class imbalance handling. Outputs outage probability and risk level (critical/high/medium/low).</Caption1></div>
                         </div>
                       </>
                     )}
@@ -1509,7 +1689,7 @@ export default function DemoDetailPage() {
                 <div>
                   <div style={{ marginBottom: 16 }}>
                     {demo.prerequisites.map((p, i) => (
-                      <div key={i} className={styles.prereq}>— {p}</div>
+                      <div key={i} className={styles.prereq}>• {p}</div>
                     ))}
                   </div>
                   {account ? (
@@ -1569,7 +1749,7 @@ export default function DemoDetailPage() {
                   {/* Selected scenario chip */}
                   {selectedScenario && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 6, marginBottom: 16, border: "1px solid #238636", backgroundColor: "#0d2310" }}>
-                      <span style={{ fontSize: 18 }}>{selectedScenario.icon}</span>
+                      {(() => { const Icon = SCENARIO_ICON[selectedScenario.id] ?? Sparkle24Regular; return <Icon fontSize={18} color="#3fb68b" aria-hidden />; })()}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 600, color: "#3fb68b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedScenario.title}</div>
                         <Caption1 style={{ color: "#238636" }}>{selectedScenario.estimatedTime}</Caption1>
@@ -1608,7 +1788,7 @@ export default function DemoDetailPage() {
                       >
                         {capacities.map((cap) => (
                           <option key={cap.id} value={cap.id}>
-                            {cap.displayName} ({cap.sku}){cap.isTrial ? " — Trial" : ""}
+                            {cap.displayName} ({cap.sku}){cap.isTrial ? " · Trial" : ""}
                           </option>
                         ))}
                       </Select>
@@ -1631,7 +1811,7 @@ export default function DemoDetailPage() {
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading…</Caption1></div>
                         ) : azureSubs.length > 0 ? (
                           <Select value={selectedSub} onChange={(_, data) => setSelectedSub(data.value)} style={{ width: "100%" }}>
-                            <option value="">— select —</option>
+                            <option value="">Select…</option>
                             {azureSubs.map((s) => (
                               <option key={s.id} value={s.id}>{s.displayName}</option>
                             ))}
@@ -1649,7 +1829,7 @@ export default function DemoDetailPage() {
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading…</Caption1></div>
                           ) : (
                             <Select value={selectedRG} onChange={(_, data) => setSelectedRG(data.value)} style={{ width: "100%", marginBottom: 4 }}>
-                              <option value="">— select or type name —</option>
+                              <option value="">Select or type a name…</option>
                               {azureRGs.map((rg) => (
                                 <option key={rg.name} value={rg.name}>{rg.name} ({rg.location})</option>
                               ))}
@@ -1675,7 +1855,7 @@ export default function DemoDetailPage() {
                       {/* Storage Account Name */}
                       <div style={{ marginBottom: 10 }}>
                         <label className={styles.formLabel}>
-                          Storage Account <Caption1 style={{ color: "#484f58" }}>(optional — auto-generated if blank)</Caption1>
+                          Storage Account <Caption1 style={{ color: "#484f58" }}>(optional, auto-generated if blank)</Caption1>
                         </label>
                         <Input
                           value={storAcctName}
@@ -1777,6 +1957,23 @@ export default function DemoDetailPage() {
                           </FluentLink>
                         </MessageBarBody>
                       </MessageBar>
+                      {/* Post-deploy guidance — what to show the customer next */}
+                      {PRESENTER[id]?.postDeploy && PRESENTER[id].postDeploy.length > 0 && (
+                        <div style={{ marginBottom: 12 }}>
+                          <div className={styles.presenterSubhead}>What to show next</div>
+                          <div className={styles.nextList}>
+                            {PRESENTER[id].postDeploy.map((n, i) => (
+                              <div key={i} className={styles.nextItem}>
+                                <span className={styles.nextDot} />
+                                <div>
+                                  <div className={styles.nextLabel}>{n.label}</div>
+                                  <div className={styles.nextDetail}>{n.detail}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {deployedWorkspaceId && !cleaned && (
                         <Button
                           appearance="outline"
@@ -1801,33 +1998,48 @@ export default function DemoDetailPage() {
                     </div>
                   )}
 
-                  {error && (
-                    <div style={{ marginTop: 16 }}>
-                      <Divider style={{ marginBottom: 16 }} />
-                      <MessageBar intent="error" style={{ marginBottom: 12 }}>
-                        <MessageBarBody>{error}</MessageBarBody>
-                      </MessageBar>
-                      {deployedWorkspaceId && !cleaned && (
+                  {error && (() => {
+                    const friendly = explainError(error);
+                    return (
+                      <div style={{ marginTop: 16 }}>
+                        <Divider style={{ marginBottom: 16 }} />
+                        <MessageBar intent="error" style={{ marginBottom: 12 }}>
+                          <MessageBarBody>
+                            <MessageBarTitle>{friendly.title}</MessageBarTitle>
+                            {friendly.guidance}
+                          </MessageBarBody>
+                        </MessageBar>
+                        {deployedWorkspaceId && !cleaned && (
+                          <Button
+                            appearance="outline"
+                            icon={<DeleteRegular />}
+                            onClick={handlePartialCleanup}
+                            disabled={cleaning}
+                            style={{ width: "100%", marginBottom: 8 }}
+                          >
+                            {cleaning ? "Cleaning up..." : "Delete partial workspace"}
+                          </Button>
+                        )}
+                        {cleaned && <Caption1>Workspace deleted.</Caption1>}
+                        {friendly.retryable && !deployedWorkspaceId && (
+                          <Button
+                            appearance="primary"
+                            onClick={handleDeploy}
+                            style={{ width: "100%", marginBottom: 8 }}
+                          >
+                            Retry deployment
+                          </Button>
+                        )}
                         <Button
-                          appearance="outline"
-                          icon={<DeleteRegular />}
-                          onClick={handlePartialCleanup}
-                          disabled={cleaning}
-                          style={{ width: "100%", marginBottom: 8 }}
+                          appearance="subtle"
+                          onClick={resetState}
+                          style={{ width: "100%" }}
                         >
-                          {cleaning ? "Cleaning up..." : "Delete partial workspace"}
+                          Start over
                         </Button>
-                      )}
-                      {cleaned && <Caption1>Workspace deleted.</Caption1>}
-                      <Button
-                        appearance="subtle"
-                        onClick={resetState}
-                        style={{ width: "100%" }}
-                      >
-                        Try again
-                      </Button>
-                    </div>
-                  )}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
               </div>

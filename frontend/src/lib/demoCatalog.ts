@@ -14,6 +14,18 @@ export interface DemoDetail {
   architecture: { pattern: string; layers: string[] };
   sampleData: { fileName: string; description: string; format: string; rows: number }[];
   fabricItems: { type: string; name: string; description: string; order?: number }[];
+
+  // ---- Presenter content (optional; powers the "Presenter" view + post-deploy guidance) ----
+  /** One- or two-sentence "why this matters" framing for a customer conversation. */
+  businessValue?: string;
+  /** Short bullet narrative an SE can speak to while presenting the demo. */
+  talkingPoints?: string[];
+  /** Headline metrics/results to call out (e.g. model AUC, rows scored). */
+  sampleInsights?: { label: string; value: string }[];
+  /** Suggested live walk-through order once the workspace is deployed. */
+  demoFlow?: { step: string; detail: string }[];
+  /** "What to show next" links/pointers shown after a successful deploy. */
+  postDeploy?: { label: string; detail: string }[];
 }
 
 export const DEMOS: Record<string, DemoDetail> = {
@@ -22,9 +34,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Manufacturing",
     title: "Quality Control Analytics",
     description:
-      "Monitor production quality with IoT sensor data, track OEE, defect rates, and yield across production lines.",
+      "Track OEE, defect rate, and yield from production-line sensor data.",
     longDescription:
-      "This demo deploys a complete manufacturing quality control analytics environment. It ingests synthetic IoT sensor data (temperature, pressure, vibration) from production lines along with batch production records. The data flows through a Bronze-Silver-Gold medallion architecture, producing KPIs like Overall Equipment Effectiveness (OEE), defect rates, yield percentages, and Mean Time Between Failures (MTBF). A Power BI semantic model with Direct Lake connectivity powers real-time dashboards with control charts and trend analysis.",
+      "Ingests production-line sensor data and batch records through a medallion pipeline to track OEE, defect rate, yield, and MTBF. A Direct Lake semantic model feeds a Power BI dashboard with control charts and trend analysis.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -61,9 +73,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Retail",
     title: "Sales & Inventory Analytics",
     description:
-      "Analyze POS transactions, track sales trends, monitor inventory turnover, and identify top products.",
+      "Analyse sales, margin, and inventory turnover from POS data.",
     longDescription:
-      "This demo deploys a retail analytics environment built on the medallion architecture. It ingests synthetic point-of-sale transaction data along with product catalog, store location, and inventory snapshot dimensions. The pipeline produces daily and weekly sales aggregations, basket analysis metrics, inventory turnover rates, and demand indicators. A star-schema semantic model powers dashboards showing revenue trends, top products, store-level comparisons, and inventory health alerts.",
+      "Combines POS transactions with product, store, and inventory data through a medallion pipeline to produce sales, basket, and inventory-turnover metrics. A star-schema semantic model drives dashboards for revenue trends, top products, and stock alerts.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -99,9 +111,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Energy & Utilities",
     title: "Smart Grid Monitoring",
     description:
-      "Monitor power grid health with real-time sensor data, detect voltage anomalies, track outages, and analyze renewable energy generation.",
+      "Monitor grid health, detect outages, and track renewable output in real time.",
     longDescription:
-      "This demo deploys a real-time intelligence environment for smart grid monitoring. It provisions an Eventhouse with a KQL Database, then ingests synthetic grid sensor readings (voltage, frequency, power factor, load), outage events, and renewable generation data. PySpark notebooks load the data into a Lakehouse staging area, then batch-ingest into the KQL Database for high-performance time-series analytics. A Power BI dashboard provides grid health overview, outage analysis, and renewable performance tracking.",
+      "Streams grid sensor readings, outage events, and renewable output into an Eventhouse and KQL Database for time-series analytics. A KQL dashboard tracks live grid health while Power BI covers outage analysis and renewable performance.",
     estimatedTime: "10-15 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -126,7 +138,7 @@ export const DEMOS: Record<string, DemoDetail> = {
       { type: "KQLDatabase", name: "grid_telemetry_db", description: "KQL database for sensor readings, events, and renewable generation" },
       { type: "Notebook", name: "01_ingest_to_kql", description: "Create KQL tables and ingest CSV data from Lakehouse", order: 1 },
       { type: "Notebook", name: "02_kql_analytics", description: "KQL queries for anomaly detection, time-series analysis, Gold table creation", order: 2 },
-      { type: "Notebook", name: "03_simulate_realtime", description: "Real-time simulator — generates live sensor readings with current timestamps. Schedule via pipeline for continuous data.", order: 3 },
+      { type: "Notebook", name: "03_simulate_realtime", description: "Real-time simulator that generates live sensor readings with current timestamps. Schedule via pipeline for continuous data.", order: 3 },
       { type: "SemanticModel", name: "grid_analytics_model", description: "Direct Lake model with grid health, outage, and renewable measures" },
       { type: "Report", name: "Smart Grid Dashboard", description: "3-page Power BI dashboard: Grid Health, Outage Analysis, Renewable Performance" },
       { type: "KQLDashboard", name: "Grid Real-Time Dashboard", description: "Real-time KQL dashboard with live grid sensor queries and outage tracking" },
@@ -139,9 +151,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Healthcare & Life Sciences",
     title: "Patient & Care Quality Analytics",
     description:
-      "Analyze patient admissions, track readmission rates, monitor clinical outcomes, and measure operational efficiency across departments.",
+      "Track readmission rates, length of stay, and department efficiency.",
     longDescription:
-      "This demo deploys a healthcare analytics environment using a medallion architecture. It ingests synthetic patient admission records, clinical vital-sign readings, and staff roster data. The pipeline produces KPIs including readmission rates, average length of stay, bed occupancy, department throughput, and staff-to-patient ratios. A Direct Lake semantic model powers dashboards showing patient flow, outcome trends, and department performance.",
+      "Combines admissions, vital-sign readings, and staffing data through a medallion pipeline to track readmission rate, length of stay, bed occupancy, and department throughput. A Direct Lake semantic model drives patient-flow and outcome dashboards.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -157,8 +169,8 @@ export const DEMOS: Record<string, DemoDetail> = {
     },
     sampleData: [
       { fileName: "patient_admissions.csv", description: "20,000 patient admission records with department, admission/discharge dates, diagnosis code, insurance type, and readmission flag", format: "csv", rows: 20000 },
-      { fileName: "clinical_records.csv", description: "80,000 vital-sign readings per patient — blood pressure, heart rate, temperature, O2 saturation", format: "csv", rows: 80000 },
-      { fileName: "staff_catalog.csv", description: "200 staff records — ID, role (doctor/nurse/technician), department, shift", format: "csv", rows: 200 },
+    { fileName: "clinical_records.csv", description: "80,000 vital-sign readings per patient: blood pressure, heart rate, temperature, O2 saturation", format: "csv", rows: 80000 },
+    { fileName: "staff_catalog.csv", description: "200 staff records: ID, role (doctor/nurse/technician), department, shift", format: "csv", rows: 200 },
     ],
     fabricItems: [
       { type: "Lakehouse", name: "healthcare_lakehouse", description: "Central lakehouse for all healthcare analytics data" },
@@ -178,9 +190,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Financial Services",
     title: "Risk & Transaction Analytics",
     description:
-      "Detect fraud patterns, score credit risk, monitor portfolio performance, and track transaction volumes across accounts and customer segments.",
+      "Detect fraud, score credit risk, and monitor portfolio performance.",
     longDescription:
-      "This demo deploys a financial services analytics environment on the medallion architecture. It ingests synthetic transaction records, account master data, and customer profiles. The pipeline produces fraud-flag rates, credit risk distributions, daily transaction volumes, and segment-level portfolio KPIs. A Direct Lake semantic model powers dashboards with real-time fraud alerts, risk heat-maps, and revenue contribution by customer segment.",
+      "Combines transactions, accounts, and customer profiles through a medallion pipeline to surface fraud rates, credit-risk distribution, and portfolio KPIs by segment. A Direct Lake semantic model drives fraud-alert and risk dashboards.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -196,8 +208,8 @@ export const DEMOS: Record<string, DemoDetail> = {
     },
     sampleData: [
       { fileName: "transactions.csv", description: "100,000 financial transactions with account, amount, merchant category, timestamp, and fraud flag", format: "csv", rows: 100000 },
-      { fileName: "accounts.csv", description: "5,000 account records — account type, balance, credit limit, open date, status", format: "csv", rows: 5000 },
-      { fileName: "customers.csv", description: "2,000 customer profiles — age group, region, segment (Retail/SME/Corporate), risk tier", format: "csv", rows: 2000 },
+    { fileName: "accounts.csv", description: "5,000 account records: account type, balance, credit limit, open date, status", format: "csv", rows: 5000 },
+    { fileName: "customers.csv", description: "2,000 customer profiles: age group, region, segment (Retail/SME/Corporate), risk tier", format: "csv", rows: 2000 },
     ],
     fabricItems: [
       { type: "Lakehouse", name: "financial_lakehouse", description: "Central lakehouse for all financial analytics data" },
@@ -217,9 +229,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Hospitality & Travel",
     title: "Guest Experience & Revenue Analytics",
     description:
-      "Monitor RevPAR, occupancy rates, guest satisfaction scores, and loyalty programme performance across properties.",
+      "Track RevPAR, occupancy, and guest satisfaction across properties.",
     longDescription:
-      "This demo deploys a hospitality analytics environment on the medallion architecture. It ingests synthetic booking records, guest profiles, property master data, and guest review scores. The pipeline produces KPIs including Revenue Per Available Room (RevPAR), Average Daily Rate (ADR), occupancy rate, guest satisfaction score, Net Promoter indicators, and loyalty tier distributions. A Direct Lake semantic model powers dashboards with revenue heat-maps, property comparisons, and loyalty cohort analysis.",
+      "Combines bookings, guest profiles, property data, and reviews through a medallion pipeline to track RevPAR, ADR, occupancy, and guest satisfaction. A Direct Lake semantic model drives revenue, property-comparison, and loyalty dashboards.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -257,9 +269,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Media, Telecommunications & Entertainment",
     title: "Subscriber & Content Analytics",
     description:
-      "Track subscriber churn, content performance, ad revenue, and audience engagement across streaming plans and content genres.",
+      "Track subscriber churn, content performance, and ad revenue.",
     longDescription:
-      "This demo deploys a media and telecom analytics environment using the medallion architecture. It ingests synthetic subscriber records, a content catalog, viewing history, and ad impression data. The pipeline produces subscriber churn rates, ARPU (Average Revenue Per User), content completion rates, top-performing genres, and ad revenue by type. A Direct Lake semantic model powers dashboards with churn cohort analysis, content performance rankings, and ad revenue trends.",
+      "Combines subscribers, content catalog, viewing history, and ad impressions through a medallion pipeline to track churn, ARPU, completion rate, and ad revenue. A Direct Lake semantic model drives churn, content-performance, and ad-revenue dashboards.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -297,9 +309,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Construction & Real Estate",
     title: "Project Cost & Portfolio Analytics",
     description:
-      "Track project schedule variance, cost overruns, subcontractor performance, and property portfolio health across active developments.",
+      "Track schedule variance, cost overruns, and subcontractor performance.",
     longDescription:
-      "This demo deploys a construction and real estate analytics environment using the medallion architecture. It ingests synthetic project records, task schedules, a detailed cost ledger, and subcontractor profiles. The pipeline produces schedule risk bands, cost variance analysis by category and supplier, subcontractor performance scorecards, and weekly spend trends. A Direct Lake semantic model powers portfolio dashboards showing on-time delivery rates, budget utilisation, and overrun alerts across regions and project types.",
+      "Combines projects, task schedules, cost ledger, and subcontractor data through a medallion pipeline to track schedule risk, cost variance, and supplier performance. A Direct Lake semantic model drives portfolio dashboards for on-time delivery and budget overruns.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -337,9 +349,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Education",
     title: "Student Outcomes & Institutional Analytics",
     description:
-      "Monitor student pass rates, cohort retention, at-risk identification, course performance, and faculty workload across departments.",
+      "Track pass rates, retention, and at-risk students across departments.",
     longDescription:
-      "This demo deploys a higher-education analytics environment using the medallion architecture. It ingests synthetic student records, enrolment data, assessment submissions, and faculty profiles. The pipeline produces cohort-level pass rates, GPA proxies, retention risk scores, course-level performance rankings, resit rates, and faculty load bands. A Direct Lake semantic model powers dashboards for institutional effectiveness teams showing at-risk students, low-performing courses, and department benchmarks.",
+      "Combines student records, enrolments, assessments, and faculty data through a medallion pipeline to track pass rates, retention risk, and course performance. A Direct Lake semantic model drives dashboards for at-risk students and department benchmarks.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -377,9 +389,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Transportation & Logistics",
     title: "Fleet & Route Performance Analytics",
     description:
-      "Track fleet utilisation, on-time delivery rates, route efficiency, fuel costs, and depot scorecards across a logistics network.",
+      "Track on-time delivery, route efficiency, and fuel cost across the fleet.",
     longDescription:
-      "This demo deploys a transportation analytics environment using the medallion architecture. It ingests synthetic vehicle registrations, route definitions, delivery records, and fuel logs. The pipeline derives delay bands, load utilisation percentages, and fuel efficiency metrics. Six Gold tables power analysis of fleet performance, delivery on-time rates, route profitability, weekly trends, late-delivery alerts, and depot scorecards. A Direct Lake semantic model connects to a three-page Power BI dashboard for operations, route planning, and fuel management teams.",
+      "Combines vehicle, route, delivery, and fuel data through a medallion pipeline to track on-time rate, route profitability, fuel efficiency, and depot scorecards. A Direct Lake semantic model drives a three-page Power BI dashboard for operations, route planning, and fuel teams.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -417,9 +429,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Technology & Software",
     title: "SaaS Product & Customer Analytics",
     description:
-      "Monitor account health, MRR, churn risk, feature adoption, and support SLA performance across a SaaS customer base.",
+      "Track account health, MRR, churn risk, and feature adoption.",
     longDescription:
-      "This demo deploys a SaaS analytics environment using the medallion architecture. It ingests synthetic account records, user profiles, product events, and support tickets. The pipeline derives churn risk flags, engagement bands, feature categories, and SLA margin metrics. Six Gold tables power analysis of account health, feature adoption, churn patterns, support performance, weekly engagement trends, and multi-signal account scorecards. A Direct Lake semantic model connects to a three-page Power BI dashboard for customer success, product, and support operations teams.",
+      "Combines accounts, user activity, product events, and support tickets through a medallion pipeline to track account health, feature adoption, churn, and SLA performance. A Direct Lake semantic model drives a three-page Power BI dashboard for customer success, product, and support teams.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
@@ -457,9 +469,9 @@ export const DEMOS: Record<string, DemoDetail> = {
     industry: "Professional Services",
     title: "Project Profitability & Utilisation Analytics",
     description:
-      "Track consultant utilisation, project margin, client revenue concentration, and delivery health across a professional services portfolio.",
+      "Track utilisation, project margin, and delivery health.",
     longDescription:
-      "This demo deploys a professional services analytics environment using the medallion architecture. It ingests synthetic consultant profiles, client accounts, engagement records, and weekly timesheets. The pipeline derives grade bands, NPS sentiment, margin bands, delivery health flags, and billable utilisation rates. Six Gold tables power analysis of consultant utilisation, project profitability, client revenue, delivery health, weekly billing trends, and practice-level portfolio scorecards. A Direct Lake semantic model connects to a three-page Power BI dashboard for practice leads, account managers, and finance teams.",
+      "Combines consultants, clients, engagements, and timesheets through a medallion pipeline to track utilisation, project margin, client revenue, and delivery health. A Direct Lake semantic model drives a three-page Power BI dashboard for practice leads, account managers, and finance.",
     estimatedTime: "8-12 min",
     prerequisites: [
       "Microsoft Fabric capacity (F2+ or Trial)",
