@@ -198,7 +198,6 @@ export interface ScenarioInfo {
   id: string;
   title: string;
   description: string;
-  icon: string;
   estimatedTime: string;
   tags: string[];
   enabled: boolean;

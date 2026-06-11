@@ -2,8 +2,41 @@
 
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { makeStyles } from "@fluentui/react-components";
+import {
+  BuildingFactory24Regular,
+  BuildingRetail24Regular,
+  Flash24Regular,
+  BuildingBank24Regular,
+  Briefcase24Regular,
+  HeartPulse24Regular,
+  Laptop24Regular,
+  VehicleTruck24Regular,
+  BuildingMultiple24Regular,
+  Video24Regular,
+  HatGraduation24Regular,
+  Bed24Regular,
+} from "@fluentui/react-icons";
+import type { FluentIcon } from "@fluentui/react-icons";
 import { industries } from "@/lib/industryCatalog";
+import { DEMOS } from "@/lib/demoCatalog";
+
+// Professional Fluent System icons per industry (replaces hand-drawn SVGs).
+const INDUSTRY_ICON: Record<string, FluentIcon> = {
+  manufacturing: BuildingFactory24Regular,
+  retail: BuildingRetail24Regular,
+  energy: Flash24Regular,
+  "financial-services": BuildingBank24Regular,
+  "professional-services": Briefcase24Regular,
+  healthcare: HeartPulse24Regular,
+  technology: Laptop24Regular,
+  transportation: VehicleTruck24Regular,
+  construction: BuildingMultiple24Regular,
+  media: Video24Regular,
+  education: HatGraduation24Regular,
+  hospitality: Bed24Regular,
+};
 
 const useStyles = makeStyles({
   /* ---- Hero ---- */
@@ -90,6 +123,116 @@ const useStyles = makeStyles({
   filterBar: {
     display: "flex",
     gap: "4px",
+  },
+
+  /* ---- Search + filters ---- */
+  controls: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "14px",
+    marginBottom: "24px",
+  },
+  searchRow: {
+    position: "relative" as const,
+    maxWidth: "520px",
+  },
+  searchInput: {
+    width: "100%",
+    boxSizing: "border-box" as const,
+    backgroundColor: "#0d1117",
+    border: "1px solid #30363d",
+    borderRadius: "8px",
+    color: "#e6edf3",
+    fontSize: "14px",
+    padding: "10px 14px 10px 38px",
+    outline: "none",
+    ":focus": {
+      borderTopColor: "#3fb68b",
+      borderRightColor: "#3fb68b",
+      borderBottomColor: "#3fb68b",
+      borderLeftColor: "#3fb68b",
+    },
+    "::placeholder": { color: "#484f58" },
+  },
+  searchIcon: {
+    position: "absolute" as const,
+    left: "12px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: "#484f58",
+    pointerEvents: "none" as const,
+  },
+  filterGroup: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    alignItems: "center",
+    gap: "6px",
+  },
+  filterGroupLabel: {
+    fontSize: "11px",
+    fontWeight: 600,
+    color: "#484f58",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+    marginRight: "4px",
+  },
+  chip: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    cursor: "pointer",
+    backgroundColor: "#161b22",
+    border: "1px solid #30363d",
+    borderRadius: "16px",
+    color: "#8b949e",
+    fontSize: "12px",
+    fontWeight: 500,
+    padding: "5px 12px",
+    transitionProperty: "all",
+    transitionDuration: "0.12s",
+    ":hover": {
+      borderTopColor: "#3fb68b",
+      borderRightColor: "#3fb68b",
+      borderBottomColor: "#3fb68b",
+      borderLeftColor: "#3fb68b",
+      color: "#e6edf3",
+    },
+  },
+  chipActive: {
+    backgroundColor: "#132f27",
+    borderTopColor: "#3fb68b",
+    borderRightColor: "#3fb68b",
+    borderBottomColor: "#3fb68b",
+    borderLeftColor: "#3fb68b",
+    color: "#3fb68b",
+  },
+  resultCount: {
+    fontSize: "13px",
+    color: "#8b949e",
+    marginBottom: "12px",
+  },
+  noResults: {
+    textAlign: "center" as const,
+    padding: "48px 0",
+    color: "#8b949e",
+  },
+  cardMetaRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap" as const,
+    marginTop: "4px",
+  },
+  patternPill: {
+    display: "inline-flex",
+    alignItems: "center",
+    fontSize: "11px",
+    fontWeight: 600,
+    color: "#3fb68b",
+    backgroundColor: "#132f27",
+    borderRadius: "4px",
+    padding: "2px 8px",
+    textTransform: "capitalize" as const,
   },
 
   /* ---- Cards ---- */
@@ -295,6 +438,57 @@ const ITEM_TYPES = ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPip
 
 export default function Home() {
   const styles = useStyles();
+  const [query, setQuery] = useState("");
+  const [pattern, setPattern] = useState<string | null>(null);
+  const [itemType, setItemType] = useState<string | null>(null);
+
+  // Join each enabled industry with its mapped demo metadata.
+  const cards = useMemo(
+    () =>
+      industries
+        .filter((ind) => ind.enabled)
+        .map((ind) => ({ ind, demo: ind.demoId ? DEMOS[ind.demoId] : undefined })),
+    []
+  );
+
+  const patterns = useMemo(
+    () =>
+      Array.from(
+        new Set(cards.map((c) => c.demo?.architecture.pattern).filter(Boolean))
+      ) as string[],
+    [cards]
+  );
+
+  const itemTypes = useMemo(
+    () =>
+      Array.from(
+        new Set(cards.flatMap((c) => c.demo?.fabricItems.map((i) => i.type) ?? []))
+      ).filter((t) => ITEM_TYPES.includes(t)).sort(),
+    [cards]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return cards.filter(({ ind, demo }) => {
+      if (pattern && demo?.architecture.pattern !== pattern) return false;
+      if (itemType && !demo?.fabricItems.some((i) => i.type === itemType)) return false;
+      if (q) {
+        const hay = [ind.title, ind.description, demo?.title, demo?.description, demo?.industry]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [cards, query, pattern, itemType]);
+
+  const hasFilters = query.trim() !== "" || pattern !== null || itemType !== null;
+  const clearAll = () => {
+    setQuery("");
+    setPattern(null);
+    setItemType(null);
+  };
 
   return (
     <>
@@ -304,39 +498,173 @@ export default function Home() {
           <div className={styles.heroEyebrow}>Microsoft Fabric</div>
           <div className={styles.heroTitle}>Industry Demo Gallery</div>
           <div className={styles.heroDesc}>
-            Explore and deploy analytics solutions for your industry. Start by choosing an industry below, then select a use case and deployment type. Easily extendable for future industries and scenarios.
+            Browse production-ready Fabric demos by industry. Filter by architecture or
+            workload, then deploy a complete environment in minutes.
           </div>
         </div>
       </div>
 
-      {/* Content: Industry Tiles */}
+      {/* Content */}
       <div className={styles.content}>
-        <div className={styles.cardGrid}>
-          {industries.filter((ind) => ind.enabled).map((industry) => (
-            <Link
-              key={industry.slug}
-              href={`/industries/${industry.slug}`}
-              style={{ textDecoration: "none" }}
+        {/* Search + filters */}
+        <div className={styles.controls}>
+          <div className={styles.searchRow}>
+            <span className={styles.searchIcon}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M11.5 11.5L14 14M7 12.5a5.5 5.5 0 100-11 5.5 5.5 0 000 11z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+            <input
+              className={styles.searchInput}
+              type="text"
+              placeholder="Search demos by industry, use case, or keyword…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search demos"
+            />
+          </div>
+
+          <div className={styles.filterGroup}>
+            <span className={styles.filterGroupLabel}>Architecture</span>
+            <button
+              className={`${styles.chip} ${pattern === null ? styles.chipActive : ""}`}
+              onClick={() => setPattern(null)}
             >
-              <div className={styles.card}>
-                <div className={styles.cardAccent} />
-                <div className={styles.cardBody}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.cardHeaderLeft}>
-                      <div className={styles.cardIcon}>
-                        <img src={industry.icon.startsWith("/") ? industry.icon : `/icons/${industry.icon}`} alt="" width={32} height={32} style={{ objectFit: "contain" }} />
+              All
+            </button>
+            {patterns.map((p) => (
+              <button
+                key={p}
+                className={`${styles.chip} ${pattern === p ? styles.chipActive : ""}`}
+                onClick={() => setPattern(pattern === p ? null : p)}
+                style={{ textTransform: "capitalize" }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.filterGroup}>
+            <span className={styles.filterGroupLabel}>Fabric item</span>
+            <button
+              className={`${styles.chip} ${itemType === null ? styles.chipActive : ""}`}
+              onClick={() => setItemType(null)}
+            >
+              All
+            </button>
+            {itemTypes.map((t) => (
+              <button
+                key={t}
+                className={`${styles.chip} ${itemType === t ? styles.chipActive : ""}`}
+                onClick={() => setItemType(itemType === t ? null : t)}
+              >
+                <FabricItemIcon type={t} size={14} />
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Result count */}
+        <div className={styles.resultCount}>
+          {filtered.length} {filtered.length === 1 ? "demo" : "demos"}
+          {hasFilters && (
+            <>
+              {" · "}
+              <button
+                onClick={clearAll}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#3fb68b",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  padding: 0,
+                }}
+              >
+                Clear filters
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Cards */}
+        {filtered.length === 0 ? (
+          <div className={styles.noResults}>
+            No demos match your search. <br />
+            <button
+              onClick={clearAll}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#3fb68b",
+                cursor: "pointer",
+                fontSize: "14px",
+                marginTop: "8px",
+              }}
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className={styles.cardGrid}>
+            {filtered.map(({ ind, demo }) => {
+              const items = demo?.fabricItems ?? [];
+              const uniqueTypes = Array.from(new Set(items.map((i) => i.type)));
+              return (
+                <Link
+                  key={ind.slug}
+                  href={`/industries/${ind.slug}`}
+                  style={{ textDecoration: "none" }}
+                >
+                  <div className={styles.card}>
+                    <div className={styles.cardAccent} />
+                    <div className={styles.cardBody}>
+                      <div className={styles.cardHeader}>
+                        <div className={styles.cardHeaderLeft}>
+                          <div className={styles.cardIcon}>
+                            {(() => {
+                              const Icon = INDUSTRY_ICON[ind.slug] ?? BuildingMultiple24Regular;
+                              return <Icon fontSize={24} color="#3fb68b" aria-hidden />;
+                            })()}
+                          </div>
+                          <div className={styles.cardTitleGroup}>
+                            <div className={styles.cardTitle}>{ind.title}</div>
+                            {demo && <div className={styles.cardIndustry}>{demo.title}</div>}
+                          </div>
+                        </div>
                       </div>
-                      <div className={styles.cardTitleGroup}>
-                        <div className={styles.cardTitle}>{industry.title}</div>
-                      </div>
+                      <div className={styles.cardDesc}>{demo?.description ?? ind.description}</div>
+
+                      {demo && (
+                        <div className={styles.cardMetaRow}>
+                          <span className={styles.patternPill}>{demo.architecture.pattern}</span>
+                          <span className={styles.metaItem}>{demo.estimatedTime}</span>
+                        </div>
+                      )}
+
+                      {uniqueTypes.length > 0 && (
+                        <div className={styles.itemStrip}>
+                          <span className={styles.itemStripLabel}>Includes</span>
+                          {uniqueTypes.map((t) => (
+                            <span key={t} className={styles.itemStripIcon} title={t}>
+                              <FabricItemIcon type={t} size={16} />
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className={styles.cardDesc}>{industry.description}</div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </>
   );
