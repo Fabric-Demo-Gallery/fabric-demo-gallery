@@ -2,7 +2,7 @@
 
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { makeStyles } from "@fluentui/react-components";
 import {
   BuildingFactory24Regular,
@@ -125,97 +125,7 @@ const useStyles = makeStyles({
     gap: "4px",
   },
 
-  /* ---- Search + filters ---- */
-  controls: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "14px",
-    marginBottom: "24px",
-  },
-  searchRow: {
-    position: "relative" as const,
-    maxWidth: "520px",
-  },
-  searchInput: {
-    width: "100%",
-    boxSizing: "border-box" as const,
-    backgroundColor: "#0d1117",
-    border: "1px solid #30363d",
-    borderRadius: "8px",
-    color: "#e6edf3",
-    fontSize: "14px",
-    padding: "10px 14px 10px 38px",
-    outline: "none",
-    ":focus": {
-      borderTopColor: "#3fb68b",
-      borderRightColor: "#3fb68b",
-      borderBottomColor: "#3fb68b",
-      borderLeftColor: "#3fb68b",
-    },
-    "::placeholder": { color: "#484f58" },
-  },
-  searchIcon: {
-    position: "absolute" as const,
-    left: "12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: "#484f58",
-    pointerEvents: "none" as const,
-  },
-  filterGroup: {
-    display: "flex",
-    flexWrap: "wrap" as const,
-    alignItems: "center",
-    gap: "6px",
-  },
-  filterGroupLabel: {
-    fontSize: "11px",
-    fontWeight: 600,
-    color: "#484f58",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.5px",
-    marginRight: "4px",
-  },
-  chip: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    cursor: "pointer",
-    backgroundColor: "#161b22",
-    border: "1px solid #30363d",
-    borderRadius: "16px",
-    color: "#8b949e",
-    fontSize: "12px",
-    fontWeight: 500,
-    padding: "5px 12px",
-    transitionProperty: "all",
-    transitionDuration: "0.12s",
-    ":hover": {
-      borderTopColor: "#3fb68b",
-      borderRightColor: "#3fb68b",
-      borderBottomColor: "#3fb68b",
-      borderLeftColor: "#3fb68b",
-      color: "#e6edf3",
-    },
-  },
-  chipActive: {
-    backgroundColor: "#132f27",
-    borderTopColor: "#3fb68b",
-    borderRightColor: "#3fb68b",
-    borderBottomColor: "#3fb68b",
-    borderLeftColor: "#3fb68b",
-    color: "#3fb68b",
-  },
-  resultCount: {
-    fontSize: "13px",
-    color: "#8b949e",
-    marginBottom: "12px",
-  },
-  noResults: {
-    textAlign: "center" as const,
-    padding: "48px 0",
-    color: "#8b949e",
-  },
+  /* ---- Misc ---- */
   cardMetaRow: {
     display: "flex",
     alignItems: "center",
@@ -434,13 +344,8 @@ function FabricItemIcon({ type, size = 14 }: { type: string; size?: number }) {
   return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
 }
 
-const ITEM_TYPES = ["Lakehouse", "Notebook", "SemanticModel", "Report", "DataPipeline", "Eventhouse", "KQLDatabase", "KQLDashboard"];
-
 export default function Home() {
   const styles = useStyles();
-  const [query, setQuery] = useState("");
-  const [pattern, setPattern] = useState<string | null>(null);
-  const [itemType, setItemType] = useState<string | null>(null);
 
   // Join each enabled industry with its mapped demo metadata.
   const cards = useMemo(
@@ -451,45 +356,6 @@ export default function Home() {
     []
   );
 
-  const patterns = useMemo(
-    () =>
-      Array.from(
-        new Set(cards.map((c) => c.demo?.architecture.pattern).filter(Boolean))
-      ) as string[],
-    [cards]
-  );
-
-  const itemTypes = useMemo(
-    () =>
-      Array.from(
-        new Set(cards.flatMap((c) => c.demo?.fabricItems.map((i) => i.type) ?? []))
-      ).filter((t) => ITEM_TYPES.includes(t)).sort(),
-    [cards]
-  );
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return cards.filter(({ ind, demo }) => {
-      if (pattern && demo?.architecture.pattern !== pattern) return false;
-      if (itemType && !demo?.fabricItems.some((i) => i.type === itemType)) return false;
-      if (q) {
-        const hay = [ind.title, ind.description, demo?.title, demo?.description, demo?.industry]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [cards, query, pattern, itemType]);
-
-  const hasFilters = query.trim() !== "" || pattern !== null || itemType !== null;
-  const clearAll = () => {
-    setQuery("");
-    setPattern(null);
-    setItemType(null);
-  };
-
   return (
     <>
       {/* Hero */}
@@ -498,122 +364,17 @@ export default function Home() {
           <div className={styles.heroEyebrow}>Microsoft Fabric</div>
           <div className={styles.heroTitle}>Industry Demo Gallery</div>
           <div className={styles.heroDesc}>
-            Browse production-ready Fabric demos by industry. Filter by architecture or
-            workload, then deploy a complete environment in minutes.
+            Browse production-ready Fabric demos by industry, then deploy a complete
+            environment in minutes.
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className={styles.content}>
-        {/* Search + filters */}
-        <div className={styles.controls}>
-          <div className={styles.searchRow}>
-            <span className={styles.searchIcon}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M11.5 11.5L14 14M7 12.5a5.5 5.5 0 100-11 5.5 5.5 0 000 11z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-            <input
-              className={styles.searchInput}
-              type="text"
-              placeholder="Search demos by industry, use case, or keyword…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="Search demos"
-            />
-          </div>
-
-          <div className={styles.filterGroup}>
-            <span className={styles.filterGroupLabel}>Architecture</span>
-            <button
-              className={`${styles.chip} ${pattern === null ? styles.chipActive : ""}`}
-              onClick={() => setPattern(null)}
-            >
-              All
-            </button>
-            {patterns.map((p) => (
-              <button
-                key={p}
-                className={`${styles.chip} ${pattern === p ? styles.chipActive : ""}`}
-                onClick={() => setPattern(pattern === p ? null : p)}
-                style={{ textTransform: "capitalize" }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.filterGroup}>
-            <span className={styles.filterGroupLabel}>Fabric item</span>
-            <button
-              className={`${styles.chip} ${itemType === null ? styles.chipActive : ""}`}
-              onClick={() => setItemType(null)}
-            >
-              All
-            </button>
-            {itemTypes.map((t) => (
-              <button
-                key={t}
-                className={`${styles.chip} ${itemType === t ? styles.chipActive : ""}`}
-                onClick={() => setItemType(itemType === t ? null : t)}
-              >
-                <FabricItemIcon type={t} size={14} />
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Result count */}
-        <div className={styles.resultCount}>
-          {filtered.length} {filtered.length === 1 ? "demo" : "demos"}
-          {hasFilters && (
-            <>
-              {" · "}
-              <button
-                onClick={clearAll}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#3fb68b",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  padding: 0,
-                }}
-              >
-                Clear filters
-              </button>
-            </>
-          )}
-        </div>
-
         {/* Cards */}
-        {filtered.length === 0 ? (
-          <div className={styles.noResults}>
-            No demos match your search. <br />
-            <button
-              onClick={clearAll}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#3fb68b",
-                cursor: "pointer",
-                fontSize: "14px",
-                marginTop: "8px",
-              }}
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className={styles.cardGrid}>
-            {filtered.map(({ ind, demo }) => {
+        <div className={styles.cardGrid}>
+            {cards.map(({ ind, demo }) => {
               const items = demo?.fabricItems ?? [];
               const uniqueTypes = Array.from(new Set(items.map((i) => i.type)));
               return (
@@ -663,8 +424,7 @@ export default function Home() {
                 </Link>
               );
             })}
-          </div>
-        )}
+        </div>
       </div>
     </>
   );
