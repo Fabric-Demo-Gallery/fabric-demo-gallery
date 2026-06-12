@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g2F" gradientUnits="userSpaceOnUse" x1="18" y1="13" x2="22" y2="51">
+      <stop offset="0" stop-color="#2AAC94"/>
+      <stop offset="1" stop-color="#0B5C50"/>
+    </linearGradient>
+    <linearGradient id="g2P" gradientUnits="userSpaceOnUse" x1="28" y1="27" x2="44" y2="40">
+      <stop offset="0" stop-color="#77E9B3"/>
+      <stop offset="0.6" stop-color="#6CE9BC"/>
+      <stop offset="1" stop-color="#34BD9E"/>
+    </linearGradient>
+    <linearGradient id="g2U" gradientUnits="userSpaceOnUse" x1="28" y1="36" x2="44" y2="44">
+      <stop offset="0" stop-color="#1E8F7D"/>
+      <stop offset="1" stop-color="#0B5C50"/>
+    </linearGradient>
+  </defs>
+
+  <!-- dark app tile -->
+  <rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="#0d1117" stroke="#2c343d" stroke-width="3"/>
+
+  <!-- F: stem + top arm, Fabric teal -->
+  <rect x="18" y="13" width="7.5" height="38" rx="3.75" fill="url(#g2F)"/>
+  <rect x="18" y="13" width="27" height="7.5" rx="3.75" fill="url(#g2F)"/>
+
+  <!-- play sheet underside: darker layer (Fabric fold shading) -->
+  <path d="M30 31 Q28 30.2 28 32.2 L28 42.5 Q28 44.8 30 43.7 L43 37.4 Q45 36.4 43 35.5 Z" fill="url(#g2U)"/>
+
+  <!-- play sheet top: mint, lifted up-left like a fabric layer -->
+  <path d="M29.4 27.6 Q27.4 26.6 27.4 28.8 L27.4 40 Q27.4 42.2 29.4 41.2 L41.8 35.3 Q43.8 34.3 41.8 33.4 Z" fill="url(#g2P)"/>
+</svg>
