@@ -1618,7 +1618,7 @@ export default function DemoDetailPage() {
                 {/* ML Pipeline Details */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
-                    🤖 ML Pipeline
+                    <BrainCircuit24Regular fontSize={16} /> ML Pipeline
                   </div>
                   <div className={styles.sectionBody}>
                     {id === "manufacturing-qc" && (
