@@ -1231,7 +1231,7 @@ export default function DemoDetailPage() {
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ fontSize: 17, fontWeight: 700, color: "#e6edf3", marginBottom: 6 }}>Choose a deployment scenario</div>
                   <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 16, lineHeight: "20px" }}>
-                    Select how you want to deploy the {demo.title} demo. Only <strong style={{ color: "#e6edf3" }}>External Data Integration</strong> is available today.
+                    Select how you want to deploy the {demo.title} demo. Scenarios marked <strong style={{ color: "#e6edf3" }}>Active</strong> are available today.
                   </div>
                 </div>
                 {/* Feature filters */}
@@ -1254,10 +1254,10 @@ export default function DemoDetailPage() {
                     .map((sc) => (
                     <div
                       key={sc.id}
-                      onClick={sc.enabled && account ? () => handleSelectScenario(sc) : undefined}
+                      onClick={sc.enabled ? () => handleSelectScenario(sc) : undefined}
                       className={[
                         styles.scenarioCard,
-                        sc.enabled && account ? styles.scenarioCardActive : styles.scenarioCardDisabled,
+                        sc.enabled ? styles.scenarioCardActive : styles.scenarioCardDisabled,
                       ].join(" ")}
                     >
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -1275,9 +1275,6 @@ export default function DemoDetailPage() {
                         </div>
                       </div>
                       <div style={{ fontSize: 12, color: sc.enabled ? "#8b949e" : "#3d444d", lineHeight: "18px" }}>{sc.description}</div>
-                      {!account && sc.enabled && (
-                        <Caption1 style={{ color: "#f0883e", marginTop: 2 }}>Sign in first to select</Caption1>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -1775,7 +1772,11 @@ export default function DemoDetailPage() {
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Capacity</label>
-                    {loadingCapacities ? (
+                    {!account ? (
+                      <Caption1 style={{ display: "block", color: "#8b949e", padding: "6px 0" }}>
+                        Sign in to choose a capacity.
+                      </Caption1>
+                    ) : loadingCapacities ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}>
                         <Spinner size="tiny" />
                         <Caption1>Loading capacities...</Caption1>
@@ -1879,9 +1880,15 @@ export default function DemoDetailPage() {
                   )}
 
                   <div className={styles.buttonRow}>
-                    <Button appearance="primary" onClick={handleDeploy} style={{ flex: 1 }}>
-                      Deploy
-                    </Button>
+                    {account ? (
+                      <Button appearance="primary" onClick={handleDeploy} style={{ flex: 1 }}>
+                        Deploy
+                      </Button>
+                    ) : (
+                      <Button appearance="primary" onClick={login} style={{ flex: 1 }}>
+                        Sign in to deploy
+                      </Button>
+                    )}
                     <Button
                       appearance="outline"
                       onClick={() => { if (isCustomMode) router.replace(`/demos/${id}?mode=custom`); else setShowDeploy(false); }}
