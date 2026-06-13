@@ -128,6 +128,11 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     requiresAzure: true,
     azureParams: [],
     feature: "Shortcuts & Mirroring",
+    postDeploy: [
+      { label: "02_live_change notebook", detail: "The wow moment: change a row in Azure SQL and watch it replicate into Fabric in seconds — no pipeline, no refresh." },
+      { label: "mirrored_retail_db", detail: "Open the mirrored database and select Monitor replication to see all tables syncing live." },
+      { label: "01_explore_mirrored notebook", detail: "Query the replicated tables directly from OneLake with Spark — no copy, always current." },
+    ],
   },
   {
     id: "genai-applications",
@@ -2003,23 +2008,27 @@ export default function DemoDetailPage() {
                           </FluentLink>
                         </MessageBarBody>
                       </MessageBar>
-                      {/* Post-deploy guidance — what to show the customer next */}
-                      {PRESENTER[id]?.postDeploy && PRESENTER[id].postDeploy.length > 0 && (
-                        <div style={{ marginBottom: 12 }}>
-                          <div className={styles.presenterSubhead}>What to show next</div>
-                          <div className={styles.nextList}>
-                            {PRESENTER[id].postDeploy.map((n, i) => (
-                              <div key={i} className={styles.nextItem}>
-                                <span className={styles.nextDot} />
-                                <div>
-                                  <div className={styles.nextLabel}>{n.label}</div>
-                                  <div className={styles.nextDetail}>{n.detail}</div>
+                      {/* Post-deploy guidance — what to show the customer next.
+                          A selected scenario's own postDeploy overrides the demo default. */}
+                      {(() => {
+                        const nextItems = selectedScenario?.postDeploy ?? PRESENTER[id]?.postDeploy;
+                        return nextItems && nextItems.length > 0 ? (
+                          <div style={{ marginBottom: 12 }}>
+                            <div className={styles.presenterSubhead}>What to show next</div>
+                            <div className={styles.nextList}>
+                              {nextItems.map((n, i) => (
+                                <div key={i} className={styles.nextItem}>
+                                  <span className={styles.nextDot} />
+                                  <div>
+                                    <div className={styles.nextLabel}>{n.label}</div>
+                                    <div className={styles.nextDetail}>{n.detail}</div>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ) : null;
+                      })()}
                       {deployedWorkspaceId && !cleaned && (
                         <Button
                           appearance="outline"
