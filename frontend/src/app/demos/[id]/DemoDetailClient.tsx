@@ -1443,6 +1443,56 @@ export default function DemoDetailPage() {
             {/* === EXTERNAL DATABASE INTEGRATION (Mirroring) === */}
             {isCustomMode && selectedScenario?.id === "external-data-integration" && (
               <>
+                {/* Presenter Guide — talking track for solution engineers */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <CheckmarkCircleFilled fontSize={16} /> Presenter Guide
+                  </div>
+                  <div className={styles.presenterBody}>
+                    <div className={styles.presenterValue}>
+                      Show zero-ETL: an operational Azure SQL database mirrored into Fabric OneLake — live and continuous, with no pipeline, no schedule, and no code. The deploy already provisioned and seeded the database, created the mirrored database, and started replication. Your job is to <strong style={{ color: "#e6edf3" }}>show it</strong>.
+                    </div>
+
+                    <div>
+                      <div className={styles.presenterSubhead}>Talking points</div>
+                      <ul className={styles.pointList}>
+                        <li className={styles.pointItem}>The Azure SQL database is a stand-in for an operational POS/ERP system — the data lives outside Fabric.</li>
+                        <li className={styles.pointItem}>Mirroring replicates it into OneLake as Delta tables automatically — no pipeline, no refresh, no copy job to build or maintain.</li>
+                        <li className={styles.pointItem}>Replicated tables are queryable instantly with Spark, T-SQL, and Direct Lake — analytics on operational data with zero ETL.</li>
+                        <li className={styles.pointItem}>Authentication is Microsoft Entra-only (no SQL passwords) via the Fabric workspace identity — enterprise-ready and policy-compliant.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className={styles.presenterSubhead}>Suggested demo flow</div>
+                      <div className={styles.flowList}>
+                        {[
+                          { step: "Show replication is live", detail: "Open the mirrored_retail_db item → Monitor replication. All 4 tables show Replicating with row counts and a recent timestamp — it populated itself." },
+                          { step: "Query with zero ETL", detail: "Open 01_explore_mirrored and Run all. It reads the replicated tables straight from OneLake and runs a cross-table revenue join — no copy, no transform." },
+                          { step: "The wow moment — live change", detail: "Open 02_live_change. Read a price from the Fabric copy, UPDATE it in Azure SQL, then watch the mirrored copy catch up in seconds. Then insert a new sale and watch the new row appear." },
+                          { step: "Land the message", detail: "Nothing moved that data except Fabric Mirroring itself — no pipeline, no schedule, no refresh, no code." },
+                        ].map((f, i) => (
+                          <div key={i} className={styles.flowStep}>
+                            <span className={styles.flowStepNum}>{i + 1}</span>
+                            <div className={styles.flowStepText}>
+                              <strong style={{ color: "#e6edf3" }}>{f.step}</strong>: {f.detail}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className={styles.presenterSubhead}>Before you start</div>
+                      <ul className={styles.pointList}>
+                        <li className={styles.pointItem}>Make sure the Fabric capacity is running (not paused) — replication stalls on a paused capacity.</li>
+                        <li className={styles.pointItem}>If a table shows 0 rows right after deploy, wait 2–3 minutes for the initial snapshot to finish seeding.</li>
+                        <li className={styles.pointItem}>00_seed_sql already ran during deploy; 01 and 02 are created but not auto-run so you can run them live.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Mirroring-specific data flow — 2-row labeled pipeline */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
