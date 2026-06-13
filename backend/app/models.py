@@ -14,6 +14,7 @@ _SAFE_RG = re.compile(r"^[a-zA-Z0-9._\-()]{1,90}$")
 _SAFE_STORAGE_ACCT = re.compile(r"^[a-z0-9]{3,24}$")
 _SAFE_LOCATION = re.compile(r"^[a-z0-9]{3,40}$")
 _SAFE_SCENARIO = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
+_SAFE_SQL_SERVER = re.compile(r"^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$")
 
 
 class DeployRequest(BaseModel):
@@ -28,6 +29,8 @@ class DeployRequest(BaseModel):
     storage_account_name: str | None = None
     azure_location: str | None = "eastus"
     create_resource_group: bool = False
+    # Mirroring scenario (Azure SQL) — optional; server name auto-generated if blank
+    sql_server_name: str | None = None
 
     @field_validator("demo_id")
     @classmethod
@@ -76,4 +79,13 @@ class DeployRequest(BaseModel):
     def validate_scenario_id(cls, v: str | None) -> str | None:
         if v is not None and not _SAFE_SCENARIO.match(v):
             raise ValueError("Invalid scenario_id")
+        return v
+
+    @field_validator("sql_server_name")
+    @classmethod
+    def validate_sql_server_name(cls, v: str | None) -> str | None:
+        if v is not None and not _SAFE_SQL_SERVER.match(v):
+            raise ValueError(
+                "SQL server name must be 1-63 lowercase alphanumeric/hyphen characters"
+            )
         return v

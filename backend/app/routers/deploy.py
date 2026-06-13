@@ -213,20 +213,54 @@ async def teardown_deployment(
     request: Request,
     token: str = Depends(get_user_token),
 ):
-    """Delete a workspace and all its items (teardown a deployed demo)."""
+    """Delete a workspace and all its items (teardown a deployed demo).
+
+    If the deployment also provisioned an Azure SQL server (mirroring scenario)
+    and the request carries an x-management-token header, the server is
+    deleted too — the job store is searched by workspace_id for the metadata.
+    """
     if not UUID_RE.match(workspace_id):
         raise HTTPException(status_code=400, detail="Invalid workspace_id")
     client = FabricClient(token)
     try:
         await client.delete_workspace(workspace_id)
-        return {"status": "deleted", "workspaceId": workspace_id}
+        result: dict = {"status": "deleted", "workspaceId": workspace_id}
     except Exception as e:
         from app.fabric_client import FabricError
         if isinstance(e, FabricError):
             if e.status == 404:
-                return {"status": "already_deleted", "workspaceId": workspace_id, "message": "Workspace was already deleted or not found."}
+                result = {"status": "already_deleted", "workspaceId": workspace_id, "message": "Workspace was already deleted or not found."}
             elif e.status == 403:
                 raise HTTPException(status_code=403, detail="Cannot delete workspace: you need Owner permissions on this workspace.")
-        raise HTTPException(status_code=500, detail=f"Failed to delete workspace: {str(e)[:200]}")
+            else:
+                raise HTTPException(status_code=500, detail=f"Failed to delete workspace: {str(e)[:200]}")
+        else:
+            raise HTTPException(status_code=500, detail=f"Failed to delete workspace: {str(e)[:200]}")
     finally:
         await client.close()
+
+    # Mirroring deployments: also remove the provisioned Azure SQL server.
+    from app.job_store import job_store
+    az = None
+    for job in job_store._jobs.values():
+        if job.workspace_id == workspace_id and job.azure_resources:
+            az = job.azure_resources
+            break
+    if az and az.get("sqlServer") and az.get("subscriptionId") and az.get("resourceGroup"):
+        mgmt_token = request.headers.get("x-management-token", "")
+        if mgmt_token:
+            from app.azure_client import AzureClient, AzureError
+            az_client = AzureClient(mgmt_token)
+            try:
+                deleted = await az_client.delete_sql_server(
+                    az["subscriptionId"], az["resourceGroup"], az["sqlServer"]
+                )
+                result["sqlServer"] = "deleted" if deleted else "already_deleted"
+            except AzureError as e:
+                result["sqlServer"] = f"delete_failed: {e.detail[:150]}"
+            finally:
+                await az_client.close()
+        else:
+            result["sqlServer"] = "skipped_no_management_token"
+
+    return result

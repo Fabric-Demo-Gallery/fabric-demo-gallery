@@ -26,6 +26,7 @@ class JobState:
     error: str | None = None
     workspace_id: str | None = None
     scenario_id: str | None = None
+    azure_resources: dict | None = None  # e.g. {subscriptionId, resourceGroup, sqlServer}
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     _events: list[dict] = field(default_factory=list, repr=False)
@@ -46,6 +47,7 @@ class JobState:
             "updated_at": self.updated_at.isoformat(),
             "workspace_id": self.workspace_id,
             "scenario_id": self.scenario_id,
+            "azure_resources": self.azure_resources,
             "error": self.error,
             "step_summary": {
                 "total": total,
@@ -119,6 +121,8 @@ class JobStore:
                     detail = json.loads(data.get("detail", "{}"))
                     if detail.get("workspaceId"):
                         job.workspace_id = detail["workspaceId"]
+                    if detail.get("azure"):
+                        job.azure_resources = detail["azure"]
                 except (json.JSONDecodeError, TypeError):
                     pass
             # Extract workspace_id from "workspace" step
@@ -128,6 +132,8 @@ class JobStore:
             job.error = data.get("message", "Deployment failed")
             if data.get("workspaceId"):
                 job.workspace_id = data["workspaceId"]
+            if data.get("azure"):
+                job.azure_resources = data["azure"]
 
         # Notify all subscribers (non-blocking)
         for queue in list(job._subscribers):

@@ -1,35 +1,42 @@
 {
   "id": "external-data-integration",
   "title": "External Database Integration (Mirroring)",
-  "description": "Mirror an Azure SQL Database or Databricks catalog into Fabric OneLake for near-real-time analytics without moving data.",
-  "icon": "🪞",
-  "estimatedTime": "10-15 min",
-  "tags": ["mirroring", "azure-sql", "databricks", "external"],
+  "description": "Provision an Azure SQL Database, seed it with operational data, then mirror it into Fabric OneLake - live, zero-ETL replication you can watch happen.",
+  "estimatedTime": "15-25 min",
+  "tags": ["mirroring", "azure-sql", "zero-etl", "replication"],
   "prerequisites": [
     "Fabric capacity (F2+, Trial, or PPU)",
-    "Azure SQL Database or Databricks workspace (existing)"
+    "Azure subscription (an Azure SQL DB is provisioned for you)"
   ],
   "azureParams": [
     {
-      "name": "source_type",
-      "label": "Source Type",
-      "type": "select",
-      "options": ["AzureSqlDatabase", "Databricks"],
+      "name": "subscription_id",
+      "label": "Subscription",
+      "type": "subscription",
       "required": true,
-      "description": "The external database type to mirror."
+      "description": "Azure subscription that will host the SQL server."
     },
     {
-      "name": "connection_string",
-      "label": "Connection String / Server",
-      "type": "string",
+      "name": "resource_group",
+      "label": "Resource Group",
+      "type": "resource_group",
       "required": true,
-      "description": "Server name (Azure SQL) or workspace URL (Databricks)."
+      "description": "Resource group for the SQL server (created if missing)."
+    },
+    {
+      "name": "azure_location",
+      "label": "Azure Region",
+      "type": "string",
+      "required": false,
+      "default": "eastus",
+      "description": "Region for the SQL server."
     }
   ],
   "fabricItemTemplate": [
-    { "type": "MirroredDatabase", "name": "mirrored_source" },
-    { "type": "Notebook",         "name": "01_explore_mirrored",  "definitionPath": "notebooks/mirroring/01_explore_mirrored.ipynb",  "order": 1 },
-    { "type": "SemanticModel",    "name": "mirrored_model",       "definitionPath": "tmdl" },
-    { "type": "Report",           "name": "mirrored_report" }
+    { "type": "Lakehouse",        "name": "staging_lakehouse" },
+    { "type": "Notebook",         "name": "00_seed_sql",          "definitionPath": "notebooks/mirroring/00_seed_sql.ipynb", "order": 1 },
+    { "type": "MirroredDatabase", "name": "mirrored_retail_db" },
+    { "type": "Notebook",         "name": "01_explore_mirrored",  "definitionPath": "notebooks/mirroring/01_explore_mirrored.ipynb" },
+    { "type": "Notebook",         "name": "02_live_change",       "definitionPath": "notebooks/mirroring/02_live_change.ipynb" }
   ]
 }

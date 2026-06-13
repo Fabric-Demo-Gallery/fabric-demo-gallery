@@ -155,6 +155,77 @@ class FabricClient:
     async def delete_workspace(self, workspace_id: str) -> None:
         await self._request("DELETE", f"{FABRIC_API}/workspaces/{workspace_id}")
 
+    async def provision_workspace_identity(self, workspace_id: str) -> None:
+        """Provision a Fabric workspace identity (a managed Entra service
+        principal owned by the workspace). Required so the Mirrored Database
+        connection can authenticate to the source Azure SQL Database with
+        WorkspaceIdentity credentials — secret-less and non-interactive.
+
+        The workspace must already be assigned to a Fabric capacity. The
+        identity's service-principal display name equals the workspace name,
+        which is what the seed notebook uses in CREATE LOGIN ... FROM EXTERNAL
+        PROVIDER.
+
+        Robust against the known first-time-in-tenant flakiness: Fabric's
+        long-running provisioning operation can report 'failed' even though the
+        identity was actually created. So when the LRO fails we don't give up —
+        we re-issue the request, and a 'WorkspaceIdentityAlreadyExists' response
+        confirms the identity exists (idempotent success).
+        """
+
+        async def _attempt() -> str:
+            """One provision call. Returns 'ok' | 'exists' | 'pending'."""
+            resp = await self._client.post(
+                f"{FABRIC_API}/workspaces/{workspace_id}/provisionIdentity"
+            )
+            if resp.status_code in (200, 201):
+                return "ok"
+            if resp.status_code == 202:
+                location = resp.headers.get("Location")
+                if not location:
+                    return "ok"
+                try:
+                    await self._poll_lro(location, timeout=300)
+                    return "ok"
+                except FabricError as e:
+                    # LRO false-negative is common here — verify via re-POST.
+                    logger.warning("[ws-identity] provisioning LRO reported failure (%s); will verify", e.detail[:120])
+                    return "pending"
+            detail = resp.text[:400]
+            try:
+                err = resp.json()
+                detail = (err.get("error", {}).get("message") or err.get("message") or detail)[:400]
+                code = (err.get("errorCode") or err.get("error", {}).get("code") or "")
+            except Exception:
+                code = ""
+            if resp.status_code in (400, 409) and (
+                code == "WorkspaceIdentityAlreadyExists"
+                or "already" in detail.lower()
+                or "exist" in detail.lower()
+            ):
+                return "exists"
+            raise FabricError(resp.status_code, detail)
+
+        result = await _attempt()
+        if result in ("ok", "exists"):
+            logger.info("[ws-identity] provisioned for workspace %s (%s)", workspace_id, result)
+            return
+
+        # LRO reported failure — re-check whether the identity actually exists.
+        for _ in range(4):
+            await asyncio.sleep(10)
+            result = await _attempt()
+            if result in ("ok", "exists"):
+                logger.info("[ws-identity] confirmed for workspace %s (%s)", workspace_id, result)
+                return
+
+        raise FabricError(
+            500,
+            "Failed to provision the workspace identity. This can happen the first "
+            "time an identity is created in a tenant — wait a few minutes and retry "
+            "the deployment.",
+        )
+
     # ── items (generic) ──────────────────────────────────────────────────
 
     async def create_item(
@@ -973,3 +1044,244 @@ class FabricClient:
         # The onelake_token (OneLake.ReadWrite.All only) is for OneLake DFS file uploads, not REST.
         resp = await self._request("POST", url, json=body)
         return resp.json()
+
+    # ── mirroring (Azure SQL → Fabric Mirrored Database) ────────────────
+
+    async def create_sql_connection(
+        self,
+        display_name: str,
+        server: str,
+        database: str,
+    ) -> dict:
+        """Create a ShareableCloud SQL connection authenticated with the Fabric
+        **workspace identity** (Microsoft Entra ID, no secret, no interactive
+        sign-in). This is the only secret-less Entra credential the Connections
+        API accepts programmatically (OAuth2 'Organization account' requires an
+        interactive sign-in and has no API payload).
+
+        Prerequisites: the workspace identity must already be provisioned and
+        mapped to a database user with ALTER ANY EXTERNAL MIRROR on the source
+        database (done by the seed notebook). The connection is test-validated on
+        creation (the SQL connector doesn't allow skipping the test) — which also
+        confirms the workspace-identity grant landed before mirroring starts.
+
+        Reused (409-dedup) if a connection with the same display name exists."""
+        body = {
+            "connectivityType": "ShareableCloud",
+            "displayName": display_name,
+            "connectionDetails": {
+                "type": "SQL",
+                "creationMethod": "SQL",
+                "parameters": [
+                    {"dataType": "Text", "name": "server", "value": server},
+                    {"dataType": "Text", "name": "database", "value": database},
+                ],
+            },
+            "credentialDetails": {
+                "singleSignOnType": "None",
+                "connectionEncryption": "Encrypted",
+                "skipTestConnection": False,
+                "credentials": {
+                    "credentialType": "WorkspaceIdentity",
+                },
+            },
+        }
+        resp = await self._client.post(f"{FABRIC_API}/connections", json=body)
+        if resp.status_code == 409:
+            logger.info("[sql-connection] 409 duplicate name — reusing '%s'", display_name)
+            list_resp = await self._request("GET", f"{FABRIC_API}/connections")
+            for conn in list_resp.json().get("value", []):
+                if conn.get("displayName") == display_name:
+                    return conn
+            raise FabricError(409, resp.text[:400])
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                err = resp.json()
+                detail = (err.get("error", {}).get("message") or err.get("message") or detail)[:500]
+            except Exception:
+                pass
+            raise FabricError(resp.status_code, detail)
+        return resp.json()
+
+    async def add_workspace_role_assignment(
+        self,
+        workspace_id: str,
+        principal_id: str,
+        principal_type: str = "ServicePrincipal",
+        role: str = "Contributor",
+    ) -> None:
+        """Grant a principal (e.g. the SQL server's SAMI) a workspace role.
+        Required so the mirroring service can write replicated data.
+        Tolerates 'already assigned' conflicts."""
+        body = {
+            "principal": {"id": principal_id, "type": principal_type},
+            "role": role,
+        }
+        resp = await self._client.post(
+            f"{FABRIC_API}/workspaces/{workspace_id}/roleAssignments", json=body
+        )
+        if resp.status_code in (200, 201):
+            return
+        if resp.status_code == 409:
+            logger.info("[role] principal %s already has a role on workspace", principal_id)
+            return
+        detail = resp.text[:400]
+        raise FabricError(resp.status_code, detail)
+
+    async def create_mirrored_database(
+        self,
+        workspace_id: str,
+        name: str,
+        connection_id: str,
+        tables: list[tuple[str, str]] | None = None,
+    ) -> dict:
+        """Create a MirroredDatabase item replicating an Azure SQL Database.
+
+        Args:
+            connection_id: Fabric SQL connection ID (Basic/SQL auth).
+            tables: optional list of (schema, table) to mirror; None = whole DB.
+        """
+        mirroring: dict[str, Any] = {
+            "properties": {
+                "source": {
+                    "type": "AzureSqlDatabase",
+                    "typeProperties": {"connection": connection_id},
+                },
+                "target": {
+                    "type": "MountedRelationalDatabase",
+                    "typeProperties": {"defaultSchema": "dbo", "format": "Delta"},
+                },
+            }
+        }
+        if tables:
+            mirroring["properties"]["mountedTables"] = [
+                {
+                    "source": {
+                        "typeProperties": {"schemaName": s, "tableName": t}
+                    }
+                }
+                for s, t in tables
+            ]
+        payload = base64.b64encode(json.dumps(mirroring).encode()).decode()
+        body = {
+            "displayName": name,
+            "description": "Mirrored Azure SQL Database (demo)",
+            "definition": {
+                "parts": [
+                    {
+                        "path": "mirroring.json",
+                        "payload": payload,
+                        "payloadType": "InlineBase64",
+                    }
+                ]
+            },
+        }
+        resp = await self._request(
+            "POST", f"{FABRIC_API}/workspaces/{workspace_id}/mirroredDatabases", json=body
+        )
+        if resp.status_code == 202:
+            location = resp.headers.get("Location")
+            if location:
+                await self._poll_lro(location, timeout=600)
+            # Find the created item
+            list_resp = await self._request(
+                "GET", f"{FABRIC_API}/workspaces/{workspace_id}/mirroredDatabases"
+            )
+            for md in list_resp.json().get("value", []):
+                if md.get("displayName") == name:
+                    return md
+            raise FabricError(500, "Mirrored database created but not found in listing")
+        return resp.json()
+
+    async def start_mirroring(self, workspace_id: str, mirrored_db_id: str) -> None:
+        """Start replication and confirm it actually transitions to Running.
+
+        A freshly-created mirrored database goes through an 'Initializing' phase
+        during which startMirroring is rejected with
+        OperationNotAllowedInCurrentStatus. We therefore retry — waiting out the
+        init phase — and only consider the job done once getMirroringStatus
+        reports Running/Starting. ('Initializing'/'Initialized' are NOT success:
+        the database settles back to 'Initialized' if start never takes.)
+        """
+        started_states = ("running", "starting")
+        deadline = time.time() + 240  # up to ~4 min to leave the init phase
+        while time.time() < deadline:
+            resp = await self._client.post(
+                f"{FABRIC_API}/workspaces/{workspace_id}/mirroredDatabases/{mirrored_db_id}/startMirroring"
+            )
+            if resp.status_code not in (200, 202):
+                detail = resp.text[:300]
+                if resp.status_code == 400 and ("already" in detail.lower() or "running" in detail.lower()):
+                    logger.info("[mirroring] already running")
+                    return
+                logger.info("[mirroring] startMirroring not accepted yet (%s): %s", resp.status_code, detail[:160])
+
+            try:
+                status = (await self.get_mirroring_status(workspace_id, mirrored_db_id)).lower()
+            except FabricError:
+                status = ""
+            logger.info("[mirroring] status after start attempt: %s", status or "unknown")
+            if status in started_states:
+                return
+            await asyncio.sleep(15)
+        # Don't hard-fail: the snapshot wait step will surface a real problem if
+        # mirroring never produces tables.
+        logger.warning("[mirroring] could not confirm Running state after retries")
+
+    async def get_mirroring_status(self, workspace_id: str, mirrored_db_id: str) -> str:
+        resp = await self._request(
+            "POST",
+            f"{FABRIC_API}/workspaces/{workspace_id}/mirroredDatabases/{mirrored_db_id}/getMirroringStatus",
+        )
+        return resp.json().get("status", "")
+
+    async def get_tables_mirroring_status(
+        self, workspace_id: str, mirrored_db_id: str
+    ) -> list[dict]:
+        resp = await self._request(
+            "POST",
+            f"{FABRIC_API}/workspaces/{workspace_id}/mirroredDatabases/{mirrored_db_id}/getTablesMirroringStatus",
+        )
+        return resp.json().get("data", [])
+
+    async def wait_for_mirrored_tables(
+        self,
+        workspace_id: str,
+        mirrored_db_id: str,
+        expected_tables: int,
+        timeout: int = 900,
+    ) -> list[dict]:
+        """Poll until at least `expected_tables` tables are replicating
+        (or have replicated rows). Returns the final table status list.
+
+        Tolerant of transient network errors (DNS hiccups, dropped connections):
+        the initial mirroring snapshot can take minutes, and a single failed poll
+        shouldn't abort an otherwise-successful deployment."""
+        start = time.time()
+        last: list[dict] = []
+        transient_failures = 0
+        while time.time() - start < timeout:
+            try:
+                last = await self.get_tables_mirroring_status(workspace_id, mirrored_db_id)
+                transient_failures = 0
+            except FabricError as e:
+                logger.debug("[mirroring] table status not ready: %s", e.detail[:120])
+                last = []
+            except (httpx.ConnectError, httpx.ReadError, httpx.ConnectTimeout,
+                    httpx.ReadTimeout, httpx.RemoteProtocolError, httpx.WriteError) as e:
+                # Transient network blip (DNS hiccup, dropped connection) — keep polling.
+                transient_failures += 1
+                logger.warning("[mirroring] transient network error polling table status (%s): %s",
+                               transient_failures, e)
+                await asyncio.sleep(15)
+                continue
+            replicating = [
+                t for t in last
+                if (t.get("status") or "").lower() in ("replicating", "replicated")
+                or (t.get("metrics") or {}).get("processedRows", 0) > 0
+            ]
+            if len(replicating) >= expected_tables:
+                return last
+            await asyncio.sleep(15)
+        return last  # let the caller decide whether partial is acceptable
