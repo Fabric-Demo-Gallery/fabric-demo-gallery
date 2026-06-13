@@ -1,0 +1,63 @@
+{
+  "mirroredDbName": "mirrored_health_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "staff_catalog",
+      "sourceCsv": "staff_catalog.csv",
+      "primaryKey": ["staff_id"],
+      "columnTypes": {
+        "staff_id": "VARCHAR(20)",
+        "hire_date": "DATE"
+      }
+    },
+    {
+      "name": "patient_admissions",
+      "sourceCsv": "patient_admissions.csv",
+      "primaryKey": ["admission_id"],
+      "columnTypes": {
+        "admission_id": "VARCHAR(20)",
+        "patient_id": "VARCHAR(20)",
+        "department": "NVARCHAR(60)",
+        "admission_type": "NVARCHAR(40)",
+        "admission_date": "DATETIME2(3)",
+        "discharge_date": "DATETIME2(3)",
+        "length_of_stay_days": "INT",
+        "primary_dx_code": "VARCHAR(20)",
+        "insurance_type": "NVARCHAR(40)",
+        "is_readmission": "BIT",
+        "age_group": "VARCHAR(20)",
+        "prior_admissions": "INT",
+        "assigned_staff_id": "VARCHAR(20)"
+      }
+    },
+    {
+      "name": "clinical_records",
+      "sourceCsv": "clinical_records.csv",
+      "primaryKey": ["record_id"],
+      "columnTypes": {
+        "record_id": "VARCHAR(20)",
+        "admission_id": "VARCHAR(20)",
+        "patient_id": "VARCHAR(20)",
+        "department": "NVARCHAR(60)",
+        "recorded_at": "DATETIME2(3)",
+        "vital_type": "NVARCHAR(60)",
+        "value": "DECIMAL(10,2)",
+        "recorded_by": "VARCHAR(20)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Average length of stay and admission volume by department",
+    "sql": "SELECT a.department, COUNT(*) AS admissions, ROUND(AVG(CAST(a.length_of_stay_days AS FLOAT)), 1) AS avg_los_days, SUM(CASE WHEN a.is_readmission = 1 THEN 1 ELSE 0 END) AS readmissions FROM m_patient_admissions a GROUP BY a.department ORDER BY admissions DESC"
+  },
+  "liveChange": {
+    "table": "clinical_records",
+    "keyColumn": "record_id",
+    "displayColumn": "vital_type",
+    "mutateColumn": "value",
+    "mutateKind": "number",
+    "numberFactor": 1.2,
+    "story": "A clinician records an updated vital sign for a patient in the source EHR system. Watch the new reading replicate into Fabric in seconds, with no pipeline or refresh."
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "mirroredDbName": "mirrored_finance_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "customers",
+      "sourceCsv": "customers.csv",
+      "primaryKey": ["customer_id"],
+      "columnTypes": {
+        "customer_id": "VARCHAR(20)",
+        "age_group": "VARCHAR(20)",
+        "segment": "NVARCHAR(40)",
+        "region": "NVARCHAR(40)",
+        "risk_tier": "NVARCHAR(20)",
+        "since_year": "INT"
+      }
+    },
+    {
+      "name": "accounts",
+      "sourceCsv": "accounts.csv",
+      "primaryKey": ["account_id"],
+      "columnTypes": {
+        "account_id": "VARCHAR(20)",
+        "customer_id": "VARCHAR(20)",
+        "account_type": "NVARCHAR(40)",
+        "balance": "DECIMAL(14,2)",
+        "credit_limit": "DECIMAL(14,2)",
+        "credit_utilisation_pct": "DECIMAL(6,2)",
+        "open_date": "DATE",
+        "status": "NVARCHAR(20)"
+      }
+    },
+    {
+      "name": "transactions",
+      "sourceCsv": "transactions.csv",
+      "primaryKey": ["transaction_id"],
+      "columnTypes": {
+        "transaction_id": "VARCHAR(20)",
+        "account_id": "VARCHAR(20)",
+        "customer_id": "VARCHAR(20)",
+        "transaction_date": "DATETIME2(3)",
+        "transaction_type": "NVARCHAR(40)",
+        "merchant_category": "NVARCHAR(60)",
+        "amount": "DECIMAL(14,2)",
+        "is_flagged_fraud": "BIT",
+        "channel": "NVARCHAR(30)",
+        "country": "NVARCHAR(30)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Transaction value and flagged-fraud rate by merchant category",
+    "sql": "SELECT t.merchant_category, COUNT(*) AS transactions, ROUND(SUM(t.amount), 0) AS total_amount, SUM(CASE WHEN t.is_flagged_fraud = 1 THEN 1 ELSE 0 END) AS flagged_fraud FROM m_transactions t GROUP BY t.merchant_category ORDER BY total_amount DESC"
+  },
+  "liveChange": {
+    "table": "transactions",
+    "keyColumn": "transaction_id",
+    "displayColumn": "merchant_category",
+    "mutateColumn": "is_flagged_fraud",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A fraud analyst flags a suspicious transaction in the source banking system. Watch the fraud flag replicate into Fabric in seconds, ready for downstream risk analytics, with no pipeline or refresh."
+  }
+}

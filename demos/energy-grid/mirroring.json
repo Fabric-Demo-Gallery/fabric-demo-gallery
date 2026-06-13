@@ -1,0 +1,66 @@
+{
+  "mirroredDbName": "mirrored_grid_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "grid_sensors",
+      "sourceCsv": "grid_sensors.csv",
+      "primaryKey": ["reading_id"],
+      "columnTypes": {
+        "reading_id": "VARCHAR(20)",
+        "timestamp": "DATETIME2(3)",
+        "substation_id": "VARCHAR(20)",
+        "region": "NVARCHAR(30)",
+        "voltage_v": "DECIMAL(8,2)",
+        "frequency_hz": "DECIMAL(8,3)",
+        "power_factor": "DECIMAL(5,3)",
+        "load_mw": "DECIMAL(8,2)",
+        "temperature_c": "DECIMAL(6,2)"
+      }
+    },
+    {
+      "name": "power_events",
+      "sourceCsv": "power_events.csv",
+      "primaryKey": ["event_id"],
+      "columnTypes": {
+        "event_id": "VARCHAR(20)",
+        "timestamp": "DATETIME2(3)",
+        "substation_id": "VARCHAR(20)",
+        "region": "NVARCHAR(30)",
+        "event_type": "NVARCHAR(40)",
+        "severity": "NVARCHAR(20)",
+        "duration_sec": "INT",
+        "affected_customers": "INT",
+        "resolved": "BIT"
+      }
+    },
+    {
+      "name": "renewable_generation",
+      "sourceCsv": "renewable_generation.csv",
+      "primaryKey": ["reading_id"],
+      "columnTypes": {
+        "reading_id": "VARCHAR(20)",
+        "timestamp": "DATETIME2(3)",
+        "plant_id": "VARCHAR(20)",
+        "plant_type": "NVARCHAR(30)",
+        "generation_mw": "DECIMAL(8,2)",
+        "capacity_mw": "DECIMAL(8,2)",
+        "capacity_factor": "DECIMAL(5,3)",
+        "weather": "NVARCHAR(30)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Power events and customers affected by region and severity",
+    "sql": "SELECT e.region, e.severity, COUNT(*) AS events, SUM(e.affected_customers) AS customers_affected, SUM(CASE WHEN e.resolved = 1 THEN 1 ELSE 0 END) AS resolved_events FROM m_power_events e GROUP BY e.region, e.severity ORDER BY customers_affected DESC"
+  },
+  "liveChange": {
+    "table": "power_events",
+    "keyColumn": "event_id",
+    "displayColumn": "event_type",
+    "mutateColumn": "resolved",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A grid operator marks an outage as resolved in the source SCADA system. Watch the status replicate into Fabric in seconds, keeping the operations dashboard current, with no pipeline or refresh."
+  }
+}
