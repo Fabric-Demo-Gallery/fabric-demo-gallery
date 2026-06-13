@@ -1438,6 +1438,125 @@ export default function DemoDetailPage() {
               </>
             )}
 
+            {/* === EXTERNAL DATABASE INTEGRATION (Mirroring) === */}
+            {isCustomMode && selectedScenario?.id === "external-data-integration" && (
+              <>
+                {/* Mirroring-specific data flow — 2-row labeled pipeline */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <ArrowRightRegular fontSize={16} /> Data Flow
+                  </div>
+                  <div style={{ padding: "16px 20px" }}>
+                    {/* Row 1: Replicate layer */}
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Replicate (zero-ETL)</div>
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 16, flexWrap: "nowrap" }}>
+                      {[
+                        { label: "Source", value: "CSV Files", color: "#1f3a5c" },
+                        { label: "Azure SQL", value: "Operational DB", color: "#1c4a82" },
+                        { label: "Mirroring", value: "Live Replication", color: "#1a5272" },
+                        { label: "OneLake", value: "Delta Tables", color: "#1a5c4a" },
+                      ].map((step, i, arr) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
+                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
+                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          </div>
+                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Row 2: Explore + Prove layer */}
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Explore &amp; Prove</div>
+                    <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap" }}>
+                      {[
+                        { label: "Notebooks", value: "Spark on OneLake", color: "#2d6a1a" },
+                        { label: "Live Change", value: "Watch It Sync", color: "#4a5219" },
+                      ].map((step, i, arr) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
+                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
+                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          </div>
+                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* What Gets Created — mirroring scenario items */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <DatabaseRegular fontSize={16} /> What Gets Created
+                  </div>
+                  <div className={styles.sectionBody}>
+                    <div className={styles.groupLabel}>Azure Resources</div>
+                    {[
+                      { type: "SQLDatabase", name: "Azure SQL Database", description: "Auto-provisioned logical server + database with Microsoft Entra-only auth, seeded with operational tables", badge: "Azure" },
+                    ].map((item, i) => (
+                      <div key={i} className={styles.itemRow}>
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="warning">{item.badge}</Badge>
+                      </div>
+                    ))}
+                    <div className={styles.groupLabel}>Fabric Resources</div>
+                    {[
+                      { type: "Workspace", name: "New Fabric Workspace", description: "Dedicated workspace for this deployment" },
+                      { type: "WorkspaceIdentity", name: "Workspace Identity", description: "Secret-less Microsoft Entra identity that authenticates the mirroring connection" },
+                      { type: "Lakehouse", name: "staging_lakehouse", description: "Staging area that holds the seed CSVs the notebook loads into Azure SQL" },
+                      { type: "Connection", name: "Azure SQL Connection", description: "Workspace-identity authenticated connection to the source database" },
+                      { type: "MirroredDatabase", name: "mirrored_retail_db", description: "Live, continuously replicated copy of the Azure SQL database in OneLake" },
+                      { type: "Notebook", name: "00_seed_sql", description: "Seeds Azure SQL with primary-key tables and loads the sample data" },
+                      { type: "Notebook", name: "01_explore_mirrored", description: "Query the replicated tables directly from OneLake with Spark" },
+                      { type: "Notebook", name: "02_live_change", description: "Change a row in Azure SQL and watch it replicate into Fabric in seconds" },
+                    ].map((item, i, arr) => (
+                      <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sample Data — industry-specific */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <TableRegular fontSize={16} /> Sample Data
+                  </div>
+                  <div className={styles.sectionBody}>
+                    {demo.sampleData.map((d, i) => (
+                      <div key={i} className={styles.dataRow} style={i === demo.sampleData.length - 1 ? { borderBottom: "none" } : undefined}>
+                        <div className={styles.dataLeft}>
+                          <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
+                          <div>
+                            <Text weight="medium" size={200}>{d.fileName}</Text>
+                            <div><Caption1>{d.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>{d.rows.toLocaleString()} rows</Caption1>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* === STANDARD MODE: Original demo overview === */}
             {!isCustomMode && (
               <>
