@@ -89,7 +89,12 @@ def list_demos() -> list[dict]:
 # ── Scenario helpers ────────────────────────────────────────────────────────
 
 # Only these scenario IDs are currently enabled for deployment.
-ENABLED_SCENARIOS: set[str] = {"data-virtualization-batch", "ai-ml", "anomaly-detection-alerts"}
+ENABLED_SCENARIOS: set[str] = {
+    "data-virtualization-batch",
+    "ai-ml",
+    "anomaly-detection-alerts",
+    "external-data-integration",
+}
 
 
 def load_scenario(scenario_id: str) -> dict:
@@ -153,6 +158,7 @@ async def deploy_demo(
     storage_account_name: str | None = None,
     azure_location: str = "eastus",
     create_resource_group: bool = False,
+    sql_server_name: str | None = None,
 ) -> AsyncIterator[dict]:
     """
     Deploy a demo end-to-end, yielding progress events as SSE-compatible dicts.
@@ -172,6 +178,26 @@ async def deploy_demo(
     demo_dir = DEMOS_DIR / demo_id
     items = manifest["fabricItems"]
     scenario_id = scenario_id if scenario_id is not None else manifest.get("id")
+
+    # Mirroring scenario has a fundamentally different flow — delegate.
+    if any(i["type"] == "MirroredDatabase" for i in items):
+        async for ev in _deploy_mirroring(
+            client=client,
+            demo_id=demo_id,
+            demo_dir=demo_dir,
+            items=items,
+            workspace_name=workspace_name,
+            workspace_id=workspace_id,
+            capacity_id=capacity_id,
+            azure_client=azure_client,
+            subscription_id=subscription_id,
+            resource_group=resource_group,
+            azure_location=azure_location,
+            create_resource_group=create_resource_group,
+            sql_server_name=sql_server_name,
+        ):
+            yield ev
+        return
 
     steps: list[DeploymentStep] = []
     created_ids: dict[str, str] = {}  # logical name → Fabric item ID
@@ -930,3 +956,376 @@ def _build_pipeline_definition(
             }
         ]
     }
+
+
+# ── Mirroring scenario (Azure SQL → Fabric Mirrored Database) ──────────────
+
+
+async def _deploy_mirroring(
+    client: FabricClient,
+    demo_id: str,
+    demo_dir: Path,
+    items: list[dict],
+    workspace_name: str | None,
+    workspace_id: str | None,
+    capacity_id: str | None,
+    azure_client: AzureClient | None,
+    subscription_id: str | None,
+    resource_group: str | None,
+    azure_location: str,
+    create_resource_group: bool,
+    sql_server_name: str | None,
+) -> AsyncIterator[dict]:
+    """Deploy the mirroring scenario:
+
+    workspace → workspace identity → lakehouse (staging) → upload CSVs →
+    provision Azure SQL (Entra-only server w/ SAMI + firewall + database) →
+    seed notebook (Entra-token JDBC: tables + data + workspace-identity grants) →
+    Fabric SQL connection (workspace identity) → SAMI workspace role →
+    MirroredDatabase item → start replication → wait for tables →
+    exploration notebooks (not run).
+    """
+    import random
+    import string as _string
+
+    lakehouses = [i for i in items if i["type"] == "Lakehouse"]
+    mirrored_items = [i for i in items if i["type"] == "MirroredDatabase"]
+    notebooks = [i for i in items if i["type"] == "Notebook"]
+    seed_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
+    explore_notebooks = [nb for nb in notebooks if nb.get("order") is None]
+    mirrored_name = mirrored_items[0]["name"] if mirrored_items else "mirrored_db"
+
+    data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
+
+    # ── Plan ─────────────────────────────────────────────────────────────
+    steps: list[DeploymentStep] = []
+    if not workspace_id:
+        steps.append(DeploymentStep("workspace", f"Create workspace '{workspace_name}'"))
+    steps.append(DeploymentStep("ws-identity", "Provision workspace identity (secure mirroring auth)"))
+    for lh in lakehouses:
+        steps.append(DeploymentStep(f"lakehouse:{lh['name']}", f"Create lakehouse '{lh['name']}'"))
+    if data_files:
+        steps.append(DeploymentStep("upload-data", f"Upload {len(data_files)} sample data file(s)"))
+    steps.append(DeploymentStep("sql-server", "Provision Azure SQL server + database"))
+    for nb in seed_notebooks:
+        steps.append(DeploymentStep(f"notebook:{nb['name']}", f"Create notebook '{nb['name']}'"))
+    for nb in seed_notebooks:
+        steps.append(DeploymentStep(f"run:{nb['name']}", f"Execute notebook '{nb['name']}' (seed SQL tables)"))
+    steps.append(DeploymentStep("sql-connection", "Create Fabric connection to Azure SQL"))
+    steps.append(DeploymentStep(f"mirrored-db:{mirrored_name}", f"Create mirrored database '{mirrored_name}'"))
+    steps.append(DeploymentStep("mirror-sync", "Wait for initial replication"))
+    for nb in explore_notebooks:
+        steps.append(DeploymentStep(f"notebook:{nb['name']}", f"Create notebook '{nb['name']}'"))
+    steps.append(DeploymentStep("done", "Deployment complete"))
+
+    yield {"event": "plan", "data": [s.to_dict() for s in steps]}
+
+    ws_id = workspace_id
+    created_ids: dict[str, str] = {}
+    sql_server = ""
+
+    try:
+        if not azure_client or not subscription_id or not resource_group:
+            raise FabricError(
+                400,
+                "Mirroring deployment requires an Azure subscription, resource group, "
+                "and management token (sign in and select them in the Azure section).",
+            )
+
+        # The deploying user becomes the Azure SQL Microsoft Entra ID administrator.
+        # The server is created with Entra-only auth (no SQL login/password ever),
+        # which is mandatory in MCAPS/MSIT-governed tenants.
+        entra_login, entra_oid, entra_tenant = azure_client.get_caller_entra_admin()
+        if not entra_oid or not entra_tenant:
+            raise FabricError(
+                400,
+                "Could not determine your Microsoft Entra identity from the management "
+                "token. Sign out, sign back in, and retry.",
+            )
+
+        # 1. Workspace
+        if not ws_id:
+            step = _find_step(steps, "workspace")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                ws = await client.create_workspace(workspace_name or demo_id, capacity_id)
+                ws_id = ws["id"]
+                step.status = "completed"
+                step.item_id = ws_id
+            except FabricError as e:
+                step.status = "failed"
+                if e.status == 409:
+                    step.detail = f"A workspace named '{workspace_name}' already exists. Please choose a different name."
+                else:
+                    step.detail = f"Failed to create workspace: {e.detail[:200]}"
+                yield {"event": "step", "data": step.to_dict()}
+                yield {"event": "error", "data": {"message": step.detail, "workspaceId": ""}}
+                return
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 1b. Workspace identity — the secret-less Microsoft Entra principal the
+        # Mirrored Database connection authenticates with (no service principal
+        # to register, no interactive sign-in). Its SP name == the workspace name.
+        step = _find_step(steps, "ws-identity")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        await client.provision_workspace_identity(ws_id)
+        ws_info = await client.get_workspace(ws_id)
+        ws_identity_name = ws_info.get("displayName") or (workspace_name or demo_id)
+        # Co-locate the Azure SQL server with the Fabric capacity's region. Many
+        # governed subscriptions (e.g. MCAPS) restrict SQL provisioning to certain
+        # regions; the capacity's region is always one where the user has quota.
+        # Azure region codes are the display name lowercased with spaces removed
+        # ("West US 3" -> "westus3").
+        cap_region = (ws_info.get("capacityRegion") or "").strip()
+        sql_location = cap_region.lower().replace(" ", "") if cap_region else azure_location
+        step.status = "completed"
+        step.detail = f"Workspace identity '{ws_identity_name}' ready"
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 2. Lakehouse (staging area for the CSVs the seed notebook reads)
+        lakehouse_id = None
+        lakehouse_name = None
+        for lh in lakehouses:
+            step = _find_step(steps, f"lakehouse:{lh['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            result = await client.create_lakehouse(ws_id, lh["name"])
+            lh_id = result["id"]
+            created_ids[lh["name"]] = lh_id
+            if lakehouse_id is None:
+                lakehouse_id = lh_id
+                lakehouse_name = lh["name"]
+            step.status = "completed"
+            step.item_id = lh_id
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 3. Upload data files
+        if data_files and lakehouse_id:
+            step = _find_step(steps, "upload-data")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            for f in data_files:
+                await client.upload_file_to_lakehouse(ws_id, lakehouse_id, f"landing/{f.name}", f)
+            step.status = "completed"
+            step.detail = f"Uploaded {len(data_files)} files"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 4. Provision Azure SQL (server with SAMI + firewall + database)
+        step = _find_step(steps, "sql-server")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+
+        sql_server = sql_server_name or (
+            f"fdg-{demo_id.replace('-', '')[:8]}-"
+            + "".join(random.choices(_string.ascii_lowercase + _string.digits, k=6))
+        )
+        sql_database = f"{demo_id.replace('-', '')[:12]}ops"
+        sami_principal_id = ""
+        try:
+            if create_resource_group:
+                await azure_client.create_resource_group(subscription_id, resource_group, sql_location)
+            srv = await azure_client.create_sql_server(
+                subscription_id, resource_group, sql_server, sql_location,
+                entra_login, entra_oid, entra_tenant,
+            )
+            sami_principal_id = (srv.get("identity") or {}).get("principalId", "")
+            # 'Allow Azure services' — required by both Fabric Spark and the mirroring service
+            await azure_client.create_sql_firewall_rule(
+                subscription_id, resource_group, sql_server,
+                "AllowAllWindowsAzureIps", "0.0.0.0", "0.0.0.0",
+            )
+            await azure_client.create_sql_database(
+                subscription_id, resource_group, sql_server, sql_database, sql_location
+            )
+        except AzureError as e:
+            raise FabricError(e.status, f"Azure SQL provisioning failed: {e.detail}")
+        step.status = "completed"
+        step.detail = f"{sql_server}.database.windows.net / {sql_database} (S3 tier, {sql_location})"
+        yield {"event": "step", "data": step.to_dict()}
+
+        sql_fqdn = f"{sql_server}.database.windows.net"
+        nb_variables = {
+            "SQL_SERVER": sql_fqdn,
+            "SQL_DATABASE": sql_database,
+            "WORKSPACE_IDENTITY_NAME": ws_identity_name,
+            "DATA_SOURCE_PATH": "Files/landing",
+            "WORKSPACE_ID": ws_id,
+        }
+
+        # 5. Seed notebook — create and run (writes tables with PKs via JDBC)
+        notebook_ids: dict[str, str] = {}
+        for nb in seed_notebooks:
+            step = _find_step(steps, f"notebook:{nb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            ipynb_path = demo_dir / nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            result = await client.create_notebook(
+                ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
+                variables=nb_variables,
+            )
+            notebook_ids[nb["name"]] = result["id"]
+            created_ids[nb["name"]] = result["id"]
+            step.status = "completed"
+            step.item_id = result["id"]
+            yield {"event": "step", "data": step.to_dict()}
+
+        for nb in seed_notebooks:
+            step = _find_step(steps, f"run:{nb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                result = await client.run_notebook(
+                    ws_id, notebook_ids[nb["name"]], lakehouse_id, lakehouse_name, timeout=1800
+                )
+                job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
+                if job_status == "failed":
+                    failure = result.get("failureReason", {})
+                    raise FabricError(500, f"Seed notebook failed: {failure.get('message', '')[:200]}")
+            except FabricError as e:
+                if "Livy" in e.detail:
+                    step.detail = "Spark cold-start — retrying in 60s..."
+                    yield {"event": "step", "data": step.to_dict()}
+                    await asyncio.sleep(60)
+                    await client.run_notebook(
+                        ws_id, notebook_ids[nb["name"]], lakehouse_id, lakehouse_name, timeout=1800
+                    )
+                else:
+                    raise
+            step.status = "completed"
+            step.detail = "SQL tables created and loaded"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 6. Fabric connection to the SQL database (workspace identity / Entra auth)
+        step = _find_step(steps, "sql-connection")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        conn = await client.create_sql_connection(
+            display_name=f"{demo_id}-{sql_server}-conn",
+            server=sql_fqdn,
+            database=sql_database,
+        )
+        connection_id = conn.get("id") or conn.get("connectionId") or ""
+        if not connection_id:
+            raise FabricError(500, "SQL connection created but no ID returned")
+        step.status = "completed"
+        step.detail = f"Connection ID: {connection_id}"
+        yield {"event": "step", "data": step.to_dict()}
+
+        # Grant the SQL server's SAMI a workspace role so the mirroring
+        # service can write replicated data (documented prerequisite).
+        if sami_principal_id:
+            try:
+                await client.add_workspace_role_assignment(
+                    ws_id, sami_principal_id, "ServicePrincipal", "Contributor"
+                )
+                logger.info("[mirroring] SAMI %s granted Contributor", sami_principal_id)
+            except FabricError as e:
+                logger.warning("[mirroring] SAMI role assignment failed: %s", e.detail[:200])
+
+        # 7. Mirrored database item + start replication
+        step = _find_step(steps, f"mirrored-db:{mirrored_name}")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        md = await client.create_mirrored_database(ws_id, mirrored_name, connection_id)
+        md_id = md["id"]
+        created_ids[mirrored_name] = md_id
+        # start_mirroring self-verifies (retries until Running) — a fresh mirrored
+        # DB often ignores the first startMirroring call.
+        try:
+            await client.start_mirroring(ws_id, md_id)
+        except FabricError as e:
+            logger.warning("[mirroring] startMirroring: %s", e.detail[:200])
+        step.status = "completed"
+        step.item_id = md_id
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 8. Wait for the initial snapshot to replicate
+        step = _find_step(steps, "mirror-sync")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        expected = max(1, len(data_files))
+        table_status = await client.wait_for_mirrored_tables(ws_id, md_id, expected, timeout=900)
+        replicating = [
+            t for t in table_status
+            if (t.get("status") or "").lower() in ("replicating", "replicated")
+            or (t.get("metrics") or {}).get("processedRows", 0) > 0
+        ]
+        step.status = "completed"
+        if len(replicating) >= expected:
+            step.detail = f"{len(replicating)} tables replicating"
+        else:
+            step.detail = (
+                f"{len(replicating)}/{expected} tables replicating so far — initial sync "
+                "can take a few more minutes; check the mirrored database item."
+            )
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 9. Exploration notebooks (created with mirror context, not auto-run)
+        nb_variables["MIRRORED_DB_ID"] = md_id
+        for nb in explore_notebooks:
+            step = _find_step(steps, f"notebook:{nb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            ipynb_path = demo_dir / nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            result = await client.create_notebook(
+                ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
+                variables=nb_variables,
+            )
+            created_ids[nb["name"]] = result["id"]
+            step.status = "completed"
+            step.item_id = result["id"]
+            yield {"event": "step", "data": step.to_dict()}
+
+        # Done — include Azure metadata so teardown can delete the SQL server
+        step = _find_step(steps, "done")
+        step.status = "completed"
+        step.detail = json.dumps({
+            "workspaceId": ws_id,
+            "items": created_ids,
+            "azure": {
+                "subscriptionId": subscription_id,
+                "resourceGroup": resource_group,
+                "sqlServer": sql_server,
+            },
+        })
+        yield {"event": "step", "data": step.to_dict()}
+
+    except FabricError as e:
+        for s in steps:
+            if s.status == "running":
+                s.status = "failed"
+                s.detail = e.detail[:300]
+                yield {"event": "step", "data": s.to_dict()}
+                break
+        error_msg = str(e)
+        if ws_id:
+            error_msg += (
+                f"\n\nWorkspace '{workspace_name}' was partially created."
+                + (f" An Azure SQL server '{sql_server}' may also exist — deleting the workspace from the gallery will remove it." if sql_server else "")
+            )
+        yield {"event": "error", "data": {
+            "message": error_msg,
+            "workspaceId": ws_id or "",
+            **({"azure": {"subscriptionId": subscription_id, "resourceGroup": resource_group, "sqlServer": sql_server}} if sql_server else {}),
+        }}
+
+    except AzureError as e:
+        for s in steps:
+            if s.status == "running":
+                s.status = "failed"
+                s.detail = e.detail[:300]
+                yield {"event": "step", "data": s.to_dict()}
+                break
+        yield {"event": "error", "data": {"message": f"Azure error: {e.detail}", "workspaceId": ws_id or ""}}
+
+    except Exception as e:
+        logger.exception("Mirroring deployment failed")
+        for s in steps:
+            if s.status == "running":
+                s.status = "failed"
+                s.detail = str(e)[:300]
+                yield {"event": "step", "data": s.to_dict()}
+                break
+        yield {"event": "error", "data": {"message": f"Unexpected error: {str(e)[:300]}", "workspaceId": ws_id or ""}}

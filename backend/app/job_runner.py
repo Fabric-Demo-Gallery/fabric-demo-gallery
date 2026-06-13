@@ -28,6 +28,7 @@ async def run_job(
     storage_account_name: str | None = None,
     azure_location: str = "eastus",
     create_resource_group: bool = False,
+    sql_server_name: str | None = None,
 ) -> None:
     """Run a deployment job in the background, updating the job store with events."""
     try:
@@ -84,6 +85,7 @@ async def run_job(
             storage_account_name=storage_account_name,
             azure_location=azure_location,
             create_resource_group=create_resource_group,
+            sql_server_name=sql_server_name,
         ):
             job_store.emit_event(job_id, event)
 

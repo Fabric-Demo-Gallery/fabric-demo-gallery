@@ -23,6 +23,7 @@ STORAGE_API_VERSION = "2023-01-01"
 ARM_API_VERSION = "2022-12-01"
 RG_API_VERSION = "2021-04-01"
 RBAC_API_VERSION = "2022-04-01"
+SQL_API_VERSION = "2021-11-01"
 # Built-in role: Storage Blob Data Contributor
 STORAGE_BLOB_DATA_CONTRIBUTOR = "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
 
@@ -32,6 +33,21 @@ class AzureError(Exception):
         self.status = status
         self.detail = detail
         super().__init__(f"Azure API {status}: {detail}")
+
+
+def _extract_arm_error(body: dict) -> str:
+    """Pull the most actionable message out of an ARM operation-status failure
+    body. The useful reason is usually nested in error.details[]; fall back to
+    error.message, then the raw body."""
+    err = body.get("error") or {}
+    details = err.get("details") or []
+    msgs = [d.get("message") for d in details if isinstance(d, dict) and d.get("message")]
+    if msgs:
+        return " ".join(msgs)[:500]
+    if err.get("message"):
+        return err["message"][:500]
+    return json.dumps(body)[:500]
+
 
 
 class AzureClient:
@@ -122,6 +138,32 @@ class AzureClient:
             return claims.get("oid") or claims.get("sub", "")
         except Exception:
             return ""
+
+    def get_caller_entra_admin(self) -> tuple[str, str, str]:
+        """Extract (login, object_id, tenant_id) of the caller from the
+        management token (JWT), for use as the Azure SQL Entra ID administrator.
+
+        login is the user principal name; falls back across the usual claim
+        names. Returns empty strings on failure (caller validates).
+        """
+        try:
+            parts = self._management_token.split(".")
+            if len(parts) < 2:
+                return "", "", ""
+            padding = 4 - len(parts[1]) % 4
+            claims = json.loads(base64.urlsafe_b64decode(parts[1] + "=" * padding))
+            oid = claims.get("oid") or claims.get("sub", "")
+            tid = claims.get("tid", "")
+            login = (
+                claims.get("upn")
+                or claims.get("preferred_username")
+                or claims.get("unique_name")
+                or claims.get("email")
+                or oid
+            )
+            return login, oid, tid
+        except Exception:
+            return "", "", ""
 
     async def assign_blob_data_contributor(
         self,
@@ -389,3 +431,206 @@ class AzureClient:
             resp = await client.put(url, content=data, headers=headers)
         if resp.status_code not in (200, 201):
             raise AzureError(resp.status_code, f"Blob upload failed: {resp.text[:300]}")
+
+    # ── Azure SQL (for Fabric Mirroring) ─────────────────────────────────
+
+    async def create_sql_server(
+        self,
+        subscription_id: str,
+        resource_group: str,
+        server_name: str,
+        location: str,
+        entra_admin_login: str,
+        entra_admin_object_id: str,
+        entra_admin_tenant_id: str,
+    ) -> dict:
+        """Create a logical Azure SQL server with a system-assigned managed
+        identity (SAMI) — a hard prerequisite for Fabric Database Mirroring —
+        configured for **Microsoft Entra-only authentication** (no SQL login/
+        password). The deploying user is set as the Entra ID administrator.
+
+        Entra-only auth is mandatory in MCAPS/MSIT-governed tenants (the
+        AzureSQL_WithoutAzureADOnlyAuthentication_Deny policy blocks any server
+        that permits SQL authentication).
+
+        Idempotent: if the server already exists the PUT updates it in place.
+        Polls until the server state is 'Ready'.
+        """
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Sql/servers/{server_name}"
+            f"?api-version={SQL_API_VERSION}"
+        )
+        body = {
+            "location": location,
+            "identity": {"type": "SystemAssigned"},  # SAMI required by mirroring
+            "properties": {
+                # Microsoft Entra-only authentication — no administratorLogin/password.
+                "administrators": {
+                    "administratorType": "ActiveDirectory",
+                    "principalType": "User",
+                    "login": entra_admin_login,
+                    "sid": entra_admin_object_id,
+                    "tenantId": entra_admin_tenant_id,
+                    "azureADOnlyAuthentication": True,
+                },
+                "version": "12.0",
+                "minimalTlsVersion": "1.2",
+                "publicNetworkAccess": "Enabled",
+            },
+        }
+        resp = await self._arm_client.put(url, json=body)
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                msg = resp.json().get("error", {}).get("message", detail)
+                detail = msg[:500]
+            except Exception:
+                pass
+            if resp.status_code == 409 and "already" in detail.lower():
+                raise AzureError(
+                    409,
+                    f"SQL server name '{server_name}' is already taken globally. "
+                    "Choose a different name.",
+                )
+            raise AzureError(resp.status_code, detail)
+
+        # Follow the async operation (Azure-AsyncOperation header) so that async
+        # provisioning failures — e.g. 'ProvisioningDisabled: region restricted' in
+        # governed subscriptions — surface immediately with the real message,
+        # instead of silently 404ing the resource GET until the 600s timeout.
+        async_url = resp.headers.get("Azure-AsyncOperation") or resp.headers.get("Location")
+        if async_url:
+            start = time.time()
+            timeout = 600
+            while time.time() - start < timeout:
+                await asyncio.sleep(6)
+                op = await self._arm_client.get(async_url)
+                if op.status_code >= 400:
+                    continue  # operation status not queryable yet
+                ob = op.json()
+                status = (ob.get("status") or "").lower()
+                if status in ("succeeded", "completed"):
+                    return await self.get_sql_server(subscription_id, resource_group, server_name)
+                if status in ("failed", "canceled", "cancelled"):
+                    raise AzureError(500, f"SQL server provisioning failed: {_extract_arm_error(ob)}")
+                # InProgress / Accepted / Running — keep polling
+            raise AzureError(504, f"SQL server provisioning timed out after {timeout}s")
+
+        # Fallback: no async header — poll the resource's own provisioningState.
+        start = time.time()
+        timeout = 600
+        while time.time() - start < timeout:
+            await asyncio.sleep(8)
+            try:
+                srv = await self.get_sql_server(subscription_id, resource_group, server_name)
+                state = (srv.get("properties", {}).get("state") or "").lower()
+                logger.debug("SQL server %s state: %s", server_name, state)
+                if state == "ready":
+                    return srv
+                if state in ("disabled",):
+                    raise AzureError(500, f"SQL server provisioning ended in state '{state}'")
+            except AzureError as e:
+                if e.status == 404:
+                    continue  # not yet visible in ARM
+                raise
+        raise AzureError(504, f"SQL server provisioning timed out after {timeout}s")
+
+    async def get_sql_server(
+        self, subscription_id: str, resource_group: str, server_name: str
+    ) -> dict:
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Sql/servers/{server_name}"
+            f"?api-version={SQL_API_VERSION}"
+        )
+        resp = await self._arm_request("GET", url)
+        return resp.json()
+
+    async def create_sql_firewall_rule(
+        self,
+        subscription_id: str,
+        resource_group: str,
+        server_name: str,
+        rule_name: str,
+        start_ip: str,
+        end_ip: str,
+    ) -> None:
+        """Create/update a server firewall rule. 0.0.0.0–0.0.0.0 is the special
+        'Allow Azure services and resources to access this server' rule, which
+        both Fabric Spark (seeding) and the mirroring service require."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Sql/servers/{server_name}/firewallRules/{rule_name}"
+            f"?api-version={SQL_API_VERSION}"
+        )
+        body = {"properties": {"startIpAddress": start_ip, "endIpAddress": end_ip}}
+        await self._arm_request("PUT", url, json=body)
+
+    async def create_sql_database(
+        self,
+        subscription_id: str,
+        resource_group: str,
+        server_name: str,
+        database_name: str,
+        location: str,
+    ) -> dict:
+        """Create a Standard S3 database (100 DTU — the minimum DTU tier that
+        Fabric Mirroring supports; Free/Basic/<100 DTU tiers are rejected).
+        Handles the 202 LRO by polling the database status."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Sql/servers/{server_name}/databases/{database_name}"
+            f"?api-version={SQL_API_VERSION}"
+        )
+        body = {
+            "location": location,
+            "sku": {"name": "S3", "tier": "Standard"},
+            "properties": {"maxSizeBytes": 2147483648},  # 2 GB
+        }
+        resp = await self._arm_client.put(url, json=body)
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                msg = resp.json().get("error", {}).get("message", detail)
+                detail = msg[:500]
+            except Exception:
+                pass
+            raise AzureError(resp.status_code, detail)
+
+        start = time.time()
+        timeout = 600
+        while time.time() - start < timeout:
+            await asyncio.sleep(8)
+            try:
+                gurl = url
+                gresp = await self._arm_request("GET", gurl)
+                db = gresp.json()
+                status = (db.get("properties", {}).get("status") or "").lower()
+                logger.debug("SQL database %s status: %s", database_name, status)
+                if status == "online":
+                    return db
+                if status in ("failed", "disabled"):
+                    raise AzureError(500, f"SQL database creation ended in status '{status}'")
+            except AzureError as e:
+                if e.status == 404:
+                    continue
+                raise
+        raise AzureError(504, f"SQL database creation timed out after {timeout}s")
+
+    async def delete_sql_server(
+        self, subscription_id: str, resource_group: str, server_name: str
+    ) -> bool:
+        """Delete the logical SQL server (cascades all databases).
+        404-tolerant: returns False if the server was already gone."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Sql/servers/{server_name}"
+            f"?api-version={SQL_API_VERSION}"
+        )
+        resp = await self._arm_client.delete(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, resp.text[:300])
+        return True

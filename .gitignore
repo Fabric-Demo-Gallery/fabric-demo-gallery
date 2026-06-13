@@ -7,6 +7,9 @@ dist/
 venv/
 backend-deploy.zip
 
+# Deploy staging copy (build artifact)
+_deploy_stage/
+
 # Logs
 backend-logs/
 backend-logs.zip

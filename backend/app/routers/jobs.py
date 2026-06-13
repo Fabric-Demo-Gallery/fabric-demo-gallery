@@ -87,6 +87,7 @@ async def create_job(
             storage_account_name=body.storage_account_name,
             azure_location=body.azure_location or "eastus",
             create_resource_group=body.create_resource_group,
+            sql_server_name=body.sql_server_name,
         )
     )
     job_store.set_task(job.job_id, task)
@@ -229,14 +230,38 @@ async def delete_job_workspace(
     client = FabricClient(token)
     try:
         await client.delete_workspace(job.workspace_id)
-        return {"status": "deleted", "workspaceId": job.workspace_id}
+        result: dict = {"status": "deleted", "workspaceId": job.workspace_id}
     except Exception as e:
         from app.fabric_client import FabricError
         if isinstance(e, FabricError):
             if e.status == 404:
-                return {"status": "already_deleted", "workspaceId": job.workspace_id}
+                result = {"status": "already_deleted", "workspaceId": job.workspace_id}
             elif e.status == 403:
                 raise HTTPException(status_code=403, detail="Cannot delete workspace: you need Owner permissions.")
-        raise HTTPException(status_code=500, detail=f"Failed to delete workspace: {str(e)[:200]}")
+            else:
+                raise HTTPException(status_code=500, detail=f"Failed to delete workspace: {str(e)[:200]}")
+        else:
+            raise HTTPException(status_code=500, detail=f"Failed to delete workspace: {str(e)[:200]}")
     finally:
         await client.close()
+
+    # Mirroring jobs also provisioned an Azure SQL server — clean it up too.
+    az = job.azure_resources or {}
+    if az.get("sqlServer") and az.get("subscriptionId") and az.get("resourceGroup"):
+        mgmt_token = request.headers.get("x-management-token", "")
+        if mgmt_token:
+            from app.azure_client import AzureClient, AzureError
+            az_client = AzureClient(mgmt_token)
+            try:
+                deleted = await az_client.delete_sql_server(
+                    az["subscriptionId"], az["resourceGroup"], az["sqlServer"]
+                )
+                result["sqlServer"] = "deleted" if deleted else "already_deleted"
+            except AzureError as e:
+                result["sqlServer"] = f"delete_failed: {e.detail[:150]}"
+            finally:
+                await az_client.close()
+        else:
+            result["sqlServer"] = "skipped_no_management_token"
+
+    return result
