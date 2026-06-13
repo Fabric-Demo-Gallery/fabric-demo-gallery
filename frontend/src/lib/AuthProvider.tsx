@@ -23,7 +23,7 @@ interface AuthState {
   logout: () => void;
   getFabricToken: () => Promise<string>;
   getStorageToken: () => Promise<string>;
-  getManagementToken: () => Promise<string>;
+  getManagementToken: (options?: { interactive?: boolean }) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -88,7 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const getToken = useCallback(
-    async (scopes: string[]): Promise<string> => {
+    async (scopes: string[], options?: { interactive?: boolean }): Promise<string> => {
+      const interactive = options?.interactive !== false;
       if (!account) throw new Error("Not signed in");
       try {
         const result = await msalInstance.acquireTokenSilent({
@@ -97,6 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return result.accessToken;
       } catch (e) {
+        if (!interactive) {
+          throw e;
+        }
         // Any failure (interaction required, timeout, etc.) → use popup
         try {
           const result = await msalInstance.acquireTokenPopup({ scopes });
@@ -123,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const getManagementToken = useCallback(
-    () => getToken(managementScopes),
+    (options?: { interactive?: boolean }) => getToken(managementScopes, options),
     [getToken]
   );
 

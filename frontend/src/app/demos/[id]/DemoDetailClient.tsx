@@ -121,11 +121,11 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "external-data-integration",
     title: "External Database Integration (Mirroring)",
-    description: "Mirror an Azure SQL Database or Databricks catalog into Fabric OneLake for near-real-time analytics.",
-    estimatedTime: "10–15 min",
-    tags: ["mirroring", "azure-sql", "databricks", "external"],
-    enabled: false,
-    requiresAzure: false,
+    description: "Provision an Azure SQL Database, seed it with operational data, then mirror it into Fabric — live, zero-ETL replication you can watch happen.",
+    estimatedTime: "15–25 min",
+    tags: ["mirroring", "azure-sql", "zero-etl", "replication"],
+    enabled: true,
+    requiresAzure: true,
     azureParams: [],
     feature: "Shortcuts & Mirroring",
   },
@@ -698,6 +698,7 @@ export default function DemoDetailPage() {
   const [azureRegion, setAzureRegion] = useState("eastus");
   const [createRG, setCreateRG] = useState(false);
   const [loadingSubs, setLoadingSubs] = useState(false);
+  const [subscriptionsError, setSubscriptionsError] = useState<string | null>(null);
   const [loadingRGs, setLoadingRGs] = useState(false);
 
   // Auto-open deploy panel when arriving via ?mode=custom
@@ -744,15 +745,38 @@ export default function DemoDetailPage() {
 
   // Fetch Azure subscriptions once a scenario requiring Azure is selected
   const stableGetManagementToken = useCallback(getManagementToken, [getManagementToken]);
-  useEffect(() => {
+  const loadAzureSubscriptions = useCallback(async (interactive: boolean) => {
     if (!selectedScenario?.requiresAzure || !account) return;
     setLoadingSubs(true);
-    stableGetManagementToken()
-      .then((tok) => fetchSubscriptions(tok))
-      .then(setAzureSubs)
-      .catch(() => {})
-      .finally(() => setLoadingSubs(false));
-  }, [selectedScenario, account, stableGetManagementToken]);
+    setSubscriptionsError(null);
+    setAzureSubs([]);
+    try {
+      const tok = await Promise.race<string>([
+        stableGetManagementToken({ interactive }),
+        new Promise<string>((_, reject) => {
+          setTimeout(() => reject(new Error("Timed out while acquiring Azure access token.")), 10000);
+        }),
+      ]);
+      const subs = await fetchSubscriptions(tok);
+      setAzureSubs(subs);
+      if (!subs.length) {
+        setSubscriptionsError("No subscriptions found for this account.");
+      }
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e);
+      const msg = /interaction_required|consent_required|login_required/i.test(raw)
+        ? "Azure access needs consent. Click retry to sign in for Azure resources."
+        : raw || "Could not load Azure subscriptions.";
+      setSubscriptionsError(msg);
+    } finally {
+      setLoadingSubs(false);
+    }
+  }, [selectedScenario?.requiresAzure, account, stableGetManagementToken]);
+
+  useEffect(() => {
+    if (!selectedScenario?.requiresAzure || !account) return;
+    void loadAzureSubscriptions(false);
+  }, [selectedScenario, account, loadAzureSubscriptions]);
 
   // Fetch resource groups when subscription changes
   useEffect(() => {
@@ -760,7 +784,7 @@ export default function DemoDetailPage() {
     setAzureRGs([]);
     setSelectedRG("");
     setLoadingRGs(true);
-    stableGetManagementToken()
+    stableGetManagementToken({ interactive: false })
       .then((tok) => fetchResourceGroups(tok, selectedSub))
       .then(setAzureRGs)
       .catch(() => {})
@@ -1103,6 +1127,14 @@ export default function DemoDetailPage() {
       if (!headers["Authorization"]) {
         alert("Could not get a Fabric sign-in token. Please sign in again, then retry the delete.");
         return;
+      }
+      // Mirroring deployments also created an Azure SQL server — the backend
+      // deletes it too when the request carries a management token.
+      if (selectedScenario?.id === "external-data-integration") {
+        try {
+          const mgmt = await getManagementToken();
+          if (mgmt) headers["X-Management-Token"] = mgmt;
+        } catch { /* non-fatal — workspace still gets deleted */ }
       }
       const res = await fetch(`${API}/api/deploy/${deployedWorkspaceId}`, { method: "DELETE", headers });
       if (res.ok) {
@@ -1803,7 +1835,7 @@ export default function DemoDetailPage() {
                   {/* Azure params — only for shortcut scenarios */}
                   {selectedScenario?.requiresAzure && (
                     <div className={styles.azureSection}>
-                      <div className={styles.azureSectionTitle}>Azure Resources (ADLS Gen2)</div>
+                      <div className={styles.azureSectionTitle}>{selectedScenario?.id === "external-data-integration" ? "Azure Resources (SQL Database)" : "Azure Resources (ADLS Gen2)"}</div>
 
                       {/* Subscription */}
                       <div style={{ marginBottom: 10 }}>
@@ -1818,7 +1850,12 @@ export default function DemoDetailPage() {
                             ))}
                           </Select>
                         ) : (
-                          <Caption1 style={{ color: "#f85149" }}>No subscriptions found. Check sign-in.</Caption1>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            <Caption1 style={{ color: "#f85149" }}>{subscriptionsError || "No subscriptions found. Check sign-in."}</Caption1>
+                            <Button size="small" appearance="subtle" onClick={() => { void loadAzureSubscriptions(true); }}>
+                              Retry Azure sign-in
+                            </Button>
+                          </div>
                         )}
                       </div>
 
@@ -1853,7 +1890,8 @@ export default function DemoDetailPage() {
                         </div>
                       )}
 
-                      {/* Storage Account Name */}
+                      {/* Storage Account Name (not used by the mirroring scenario) */}
+                      {selectedScenario?.id !== "external-data-integration" && (
                       <div style={{ marginBottom: 10 }}>
                         <label className={styles.formLabel}>
                           Storage Account <Caption1 style={{ color: "#484f58" }}>(optional, auto-generated if blank)</Caption1>
@@ -1865,6 +1903,7 @@ export default function DemoDetailPage() {
                           style={{ width: "100%" }}
                         />
                       </div>
+                      )}
 
                       {/* Azure Region */}
                       <div>
@@ -1991,6 +2030,11 @@ export default function DemoDetailPage() {
                         >
                           {cleaning ? "Deleting..." : "Delete workspace"}
                         </Button>
+                      )}
+                      {deployedWorkspaceId && !cleaned && selectedScenario?.id === "external-data-integration" && (
+                        <Caption1 style={{ display: "block", color: "#8b949e", marginBottom: 8 }}>
+                          Deleting the workspace also removes the provisioned Azure SQL server.
+                        </Caption1>
                       )}
                       {cleaned && <Caption1>Workspace deleted.</Caption1>}
                       {!cleaned && (
