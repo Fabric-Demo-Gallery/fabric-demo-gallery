@@ -1245,7 +1245,9 @@ async def _deploy_mirroring(
         step = _find_step(steps, "mirror-sync")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
-        expected = max(1, len(data_files))
+        # One mirrored table per CSV — exclude helper files (e.g. _generate_data.py,
+        # .gitkeep) that are staged in the data folder but never become tables.
+        expected = max(1, len([f for f in data_files if f.suffix.lower() == ".csv"]))
         table_status = await client.wait_for_mirrored_tables(ws_id, md_id, expected, timeout=900)
         replicating = [
             t for t in table_status
