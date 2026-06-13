@@ -204,6 +204,9 @@ export interface ScenarioInfo {
   requiresAzure: boolean;
   azureParams: ScenarioAzureParam[];
   feature?: string;
+  /** Scenario-specific "What to show next" pointers shown after a successful
+   *  deploy. When set, these override the demo-level post-deploy guidance. */
+  postDeploy?: { label: string; detail: string }[];
 }
 
 export async function fetchScenarios(demoId: string): Promise<ScenarioInfo[]> {
