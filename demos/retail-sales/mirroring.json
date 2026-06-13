@@ -1,0 +1,63 @@
+{
+  "mirroredDbName": "mirrored_retail_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "products",
+      "sourceCsv": "products.csv",
+      "primaryKey": ["sku"],
+      "columnTypes": {
+        "sku": "VARCHAR(20)",
+        "unit_cost": "DECIMAL(10,2)"
+      }
+    },
+    {
+      "name": "stores",
+      "sourceCsv": "stores.csv",
+      "primaryKey": ["store_id"],
+      "columnTypes": {
+        "store_id": "VARCHAR(20)"
+      }
+    },
+    {
+      "name": "pos_transactions",
+      "sourceCsv": "pos_transactions.csv",
+      "primaryKey": ["transaction_id"],
+      "columnTypes": {
+        "transaction_id": "VARCHAR(30)",
+        "store_id": "VARCHAR(20)",
+        "product_id": "VARCHAR(20)",
+        "transaction_timestamp": "DATETIME2(3)",
+        "quantity": "INT",
+        "unit_price": "DECIMAL(10,2)",
+        "discount_pct": "DECIMAL(5,2)"
+      }
+    },
+    {
+      "name": "inventory_snapshots",
+      "sourceCsv": "inventory_snapshots.csv",
+      "primaryKey": ["snapshot_date", "store_id", "product_id"],
+      "columnTypes": {
+        "snapshot_date": "DATE",
+        "store_id": "VARCHAR(20)",
+        "product_id": "VARCHAR(20)",
+        "quantity_on_hand": "INT",
+        "quantity_on_order": "INT",
+        "reorder_point": "INT"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Revenue by product category and store region",
+    "sql": "SELECT p.category, s.region, COUNT(*) AS transactions, ROUND(SUM(t.quantity * t.unit_price * (1 - t.discount_pct/100)), 0) AS revenue FROM m_pos_transactions t JOIN m_products p ON t.product_id = p.sku JOIN m_stores s ON t.store_id = s.store_id GROUP BY p.category, s.region ORDER BY revenue DESC"
+  },
+  "liveChange": {
+    "table": "products",
+    "keyColumn": "sku",
+    "displayColumn": "product_name",
+    "mutateColumn": "unit_cost",
+    "mutateKind": "number",
+    "numberFactor": 1.15,
+    "story": "A retail manager raises a product's price in the source POS system. Watch the new price replicate into Fabric in seconds, with no pipeline or refresh."
+  }
+}

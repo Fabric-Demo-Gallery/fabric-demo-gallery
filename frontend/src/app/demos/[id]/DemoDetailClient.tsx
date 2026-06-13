@@ -130,7 +130,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     feature: "Shortcuts & Mirroring",
     postDeploy: [
       { label: "02_live_change notebook", detail: "The wow moment: change a row in Azure SQL and watch it replicate into Fabric in seconds, with no pipeline or refresh." },
-      { label: "mirrored_retail_db", detail: "Open the mirrored database and select Monitor replication to see all tables syncing live." },
+      { label: "The mirrored database", detail: "Open it and select Monitor replication to see all tables syncing live." },
       { label: "01_explore_mirrored notebook", detail: "Query the replicated tables directly from OneLake with Spark. No copy, always current." },
     ],
   },
@@ -1467,7 +1467,7 @@ export default function DemoDetailPage() {
                       <div className={styles.presenterSubhead}>Suggested demo flow</div>
                       <div className={styles.flowList}>
                         {[
-                          { step: "Show replication is live", detail: "Open mirrored_retail_db, then Monitor replication. All 4 tables show Replicating with row counts." },
+                          { step: "Show replication is live", detail: "Open the mirrored database, then Monitor replication. Its tables show Replicating with row counts." },
                           { step: "Query with zero ETL", detail: "Run 01_explore_mirrored. It reads the replicated tables from OneLake and joins them. No copy, no transform." },
                           { step: "The wow moment", detail: "In 02_live_change, UPDATE a price in Azure SQL and watch the Fabric copy catch up in seconds. Then insert a new sale and watch it land." },
                           { step: "Land the message", detail: "Nothing moved that data except Fabric Mirroring itself. No pipeline, no refresh, no code." },
@@ -1565,7 +1565,7 @@ export default function DemoDetailPage() {
                       { type: "WorkspaceIdentity", name: "Workspace Identity", description: "Secret-less Microsoft Entra identity that authenticates the mirroring connection" },
                       { type: "Lakehouse", name: "staging_lakehouse", description: "Staging area that holds the seed CSVs the notebook loads into Azure SQL" },
                       { type: "Connection", name: "Azure SQL Connection", description: "Workspace-identity authenticated connection to the source database" },
-                      { type: "MirroredDatabase", name: "mirrored_retail_db", description: "Live, continuously replicated copy of the Azure SQL database in OneLake" },
+                      { type: "MirroredDatabase", name: "Mirrored database", description: "Live, continuously replicated copy of the Azure SQL database in OneLake" },
                       { type: "Notebook", name: "00_seed_sql", description: "Seeds Azure SQL with primary-key tables and loads the sample data" },
                       { type: "Notebook", name: "01_explore_mirrored", description: "Query the replicated tables directly from OneLake with Spark" },
                       { type: "Notebook", name: "02_live_change", description: "Change a row in Azure SQL and watch it replicate into Fabric in seconds" },

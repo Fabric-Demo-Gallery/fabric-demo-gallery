@@ -35,7 +35,7 @@
   "fabricItemTemplate": [
     { "type": "Lakehouse",        "name": "staging_lakehouse" },
     { "type": "Notebook",         "name": "00_seed_sql",          "definitionPath": "notebooks/mirroring/00_seed_sql.ipynb", "order": 1 },
-    { "type": "MirroredDatabase", "name": "mirrored_retail_db" },
+    { "type": "MirroredDatabase", "name": "mirrored_db" },
     { "type": "Notebook",         "name": "01_explore_mirrored",  "definitionPath": "notebooks/mirroring/01_explore_mirrored.ipynb" },
     { "type": "Notebook",         "name": "02_live_change",       "definitionPath": "notebooks/mirroring/02_live_change.ipynb" }
   ]
