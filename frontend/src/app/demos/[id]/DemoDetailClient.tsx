@@ -1247,11 +1247,13 @@ export default function DemoDetailPage() {
                 <Badge appearance="filled" color="brand" size="small">
                   {demo.industry}
                 </Badge>
-                <Caption1>{demo.estimatedTime}</Caption1>
-                <Caption1>{demo.fabricItems.length} Fabric items</Caption1>
+                <Caption1>{isCustomMode && selectedScenario ? selectedScenario.estimatedTime : demo.estimatedTime}</Caption1>
+                {isCustomMode && selectedScenario
+                  ? (selectedScenario.feature ? <Caption1>{selectedScenario.feature}</Caption1> : null)
+                  : <Caption1>{demo.fabricItems.length} Fabric items</Caption1>}
               </div>
-              <div className={styles.title}>{demo.title}</div>
-              <div className={styles.longDesc}>{demo.longDescription}</div>
+              <div className={styles.title}>{isCustomMode && selectedScenario ? selectedScenario.title : demo.title}</div>
+              <div className={styles.longDesc}>{isCustomMode && selectedScenario ? selectedScenario.description : demo.longDescription}</div>
             </div>
           </div>
         </div>
