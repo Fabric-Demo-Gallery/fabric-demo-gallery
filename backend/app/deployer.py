@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import logging
 from pathlib import Path
@@ -993,7 +994,24 @@ async def _deploy_mirroring(
     notebooks = [i for i in items if i["type"] == "Notebook"]
     seed_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
     explore_notebooks = [nb for nb in notebooks if nb.get("order") is None]
-    mirrored_name = mirrored_items[0]["name"] if mirrored_items else "mirrored_db"
+
+    # Per-sector mirroring spec: tables, primary keys, explore query, live-change.
+    # The seed/explore/live-change notebooks are SHARED and generic; everything
+    # sector-specific comes from demos/<demo>/mirroring.json.
+    spec_path = demo_dir / "mirroring.json"
+    mirroring_spec = None
+    if spec_path.exists():
+        try:
+            mirroring_spec = json.loads(spec_path.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            mirroring_spec = None
+    mirrored_name = (
+        (mirroring_spec or {}).get("mirroredDbName")
+        or (mirrored_items[0]["name"] if mirrored_items else "mirrored_db")
+    )
+    row_cap = int((mirroring_spec or {}).get("rowCap") or 200000)
+    # Shared mirroring notebooks live under demos/_scenarios/, not the demo folder.
+    scenarios_dir = demo_dir.parent / "_scenarios"
 
     data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
 
@@ -1042,6 +1060,16 @@ async def _deploy_mirroring(
                 "Could not determine your Microsoft Entra identity from the management "
                 "token. Sign out, sign back in, and retry.",
             )
+
+        if not mirroring_spec or not mirroring_spec.get("tables"):
+            raise FabricError(
+                500,
+                "This demo is missing a valid mirroring.json spec (tables, primary keys, "
+                "explore query, and live-change). Cannot run the mirroring scenario.",
+            )
+        spec_b64 = base64.b64encode(
+            json.dumps(mirroring_spec).encode("utf-8")
+        ).decode("ascii")
 
         # 1. Workspace
         if not ws_id:
@@ -1152,6 +1180,8 @@ async def _deploy_mirroring(
             "WORKSPACE_IDENTITY_NAME": ws_identity_name,
             "DATA_SOURCE_PATH": "Files/landing",
             "WORKSPACE_ID": ws_id,
+            "MIRRORING_SPEC_B64": spec_b64,
+            "ROW_CAP": str(row_cap),
         }
 
         # 5. Seed notebook — create and run (writes tables with PKs via JDBC)
@@ -1160,7 +1190,7 @@ async def _deploy_mirroring(
             step = _find_step(steps, f"notebook:{nb['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
-            ipynb_path = demo_dir / nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            ipynb_path = scenarios_dir / nb.get("definitionPath", f"notebooks/mirroring/{nb['name']}.ipynb")
             result = await client.create_notebook(
                 ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
                 variables=nb_variables,
@@ -1270,7 +1300,7 @@ async def _deploy_mirroring(
             step = _find_step(steps, f"notebook:{nb['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
-            ipynb_path = demo_dir / nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            ipynb_path = scenarios_dir / nb.get("definitionPath", f"notebooks/mirroring/{nb['name']}.ipynb")
             result = await client.create_notebook(
                 ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
                 variables=nb_variables,
