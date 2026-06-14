@@ -136,6 +136,32 @@ def validate_spec(demo: str) -> list[str]:
     return errors
 
 
+def check_scenario_wiring() -> list[str]:
+    """Cross-check mirroring wiring across every demo so a misconfiguration is
+    caught here instead of mid-deploy:
+      - a demo that OFFERS the external-data-integration scenario must ship a mirroring.json
+      - a demo that ships a mirroring.json must OFFER the scenario (else it's unreachable)
+    """
+    scenario_id = "external-data-integration"
+    errors: list[str] = []
+    for demo_dir in sorted(p for p in DEMOS.iterdir() if p.is_dir() and p.name != "_scenarios"):
+        custom = demo_dir / "manifest.custom.json"
+        offers = False
+        if custom.exists():
+            try:
+                data = json.loads(custom.read_text(encoding="utf-8"))
+                offers = any(s.get("id") == scenario_id for s in data.get("scenarios", []))
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"{demo_dir.name}: cannot parse manifest.custom.json: {e}")
+                continue
+        has_spec = (demo_dir / "mirroring.json").exists()
+        if offers and not has_spec:
+            errors.append(f"{demo_dir.name}: offers '{scenario_id}' but has no mirroring.json")
+        if has_spec and not offers:
+            errors.append(f"{demo_dir.name}: has mirroring.json but does not offer '{scenario_id}'")
+    return errors
+
+
 def main() -> int:
     requested = sys.argv[1:]
     demos = requested or sorted(
@@ -159,6 +185,18 @@ def main() -> int:
         else:
             print(f"OK   {demo}")
     print(f"\n{len(demos) - failed}/{len(demos)} specs valid")
+
+    # Global wiring check (only when validating the full set, not a subset).
+    if not requested:
+        wiring_errs = check_scenario_wiring()
+        if wiring_errs:
+            failed += 1
+            print("\nScenario wiring problems:")
+            for e in wiring_errs:
+                print(f"  - {e}")
+        else:
+            print("Scenario wiring OK (specs match offered scenarios)")
+
     return 1 if failed else 0
 
 

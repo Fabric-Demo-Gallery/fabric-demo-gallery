@@ -29,6 +29,34 @@ async def create_job(
     if not SAFE_ID.match(body.demo_id):
         raise HTTPException(status_code=400, detail="Invalid demo_id")
 
+    # Validate the demo + scenario actually exist (and that a mirroring scenario
+    # ships its spec) BEFORE creating a job, so a typo or missing file returns a
+    # clear 4xx now instead of a cryptic failure partway through the deploy.
+    from app.deployer import load_manifest, load_scenario, DEMOS_DIR
+    try:
+        manifest = load_manifest(body.demo_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Demo '{body.demo_id}' not found.")
+
+    resolved_items = manifest.get("fabricItems", [])
+    if body.scenario_id:
+        try:
+            scenario = load_scenario(body.scenario_id)
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"Scenario '{body.scenario_id}' not found.")
+        scenario_items = scenario.get("fabricItemTemplate", [])
+        if scenario_items:
+            resolved_items = scenario_items
+
+    # The mirroring path is selected when the resolved manifest has a
+    # MirroredDatabase item — it requires a per-sector mirroring.json spec.
+    if any(i.get("type") == "MirroredDatabase" for i in resolved_items):
+        if not (DEMOS_DIR / body.demo_id / "mirroring.json").exists():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Demo '{body.demo_id}' is missing the mirroring.json spec required for this scenario.",
+            )
+
     storage_tok = request.headers.get("x-storage-token", "")
     if not storage_tok:
         storage_tok = await get_storage_token(request)

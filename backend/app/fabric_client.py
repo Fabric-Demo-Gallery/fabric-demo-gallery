@@ -51,13 +51,34 @@ class FabricClient:
 
     # ── helpers ──────────────────────────────────────────────────────────
 
+    # Transient network errors worth retrying (DNS hiccup, dropped connection).
+    _TRANSIENT_ERRORS = (
+        httpx.ConnectError, httpx.ReadError, httpx.ConnectTimeout,
+        httpx.ReadTimeout, httpx.RemoteProtocolError, httpx.WriteError,
+    )
+
+    async def _send(self, method: str, url: str, **kwargs) -> httpx.Response:
+        """Issue a request, retrying transient network errors for idempotent GETs
+        only. POST/PUT/DELETE are never auto-retried — a lost response after the
+        server already acted would otherwise create duplicate resources."""
+        attempts = 0
+        while True:
+            try:
+                return await self._client.request(method, url, **kwargs)
+            except self._TRANSIENT_ERRORS as e:
+                attempts += 1
+                if method.upper() != "GET" or attempts > 4:
+                    raise FabricError(503, f"Network error contacting Fabric API: {e}")
+                logger.warning("Transient network error on GET (%s/4), retrying: %s", attempts, e)
+                await asyncio.sleep(min(2 ** attempts, 10))
+
     async def _request(self, method: str, url: str, **kwargs) -> httpx.Response:
-        resp = await self._client.request(method, url, **kwargs)
+        resp = await self._send(method, url, **kwargs)
         if resp.status_code == 429:
             retry_after = int(resp.headers.get("Retry-After", "10"))
             logger.warning("Rate limited, retrying after %ds", retry_after)
             await asyncio.sleep(retry_after)
-            resp = await self._client.request(method, url, **kwargs)
+            resp = await self._send(method, url, **kwargs)
             if resp.status_code == 429:
                 raise FabricError(429, "Fabric API rate-limited after retry. Wait a minute and try again.")
         if resp.status_code >= 400:
@@ -334,7 +355,16 @@ class FabricClient:
         """Wait until the SQL endpoint is provisioned and return the connection string."""
         start = time.time()
         while time.time() - start < timeout:
-            lh = await self.get_lakehouse(workspace_id, lakehouse_id)
+            try:
+                lh = await self.get_lakehouse(workspace_id, lakehouse_id)
+            except FabricError as e:
+                # Tolerate transient network / 5xx blips — keep polling to timeout
+                # rather than failing the whole deploy on one hiccup.
+                if e.status in (502, 503, 504):
+                    logger.warning("Transient error waiting for SQL endpoint, retrying: %s", e.detail[:120])
+                    await asyncio.sleep(5)
+                    continue
+                raise
             props = lh.get("properties", {}).get("sqlEndpointProperties", {})
             if props.get("provisioningStatus", "").lower() == "success":
                 return props["connectionString"]

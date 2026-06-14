@@ -644,3 +644,20 @@ class AzureClient:
         if resp.status_code >= 400:
             raise AzureError(resp.status_code, resp.text[:300])
         return True
+
+    async def delete_storage_account(
+        self, subscription_id: str, resource_group: str, name: str
+    ) -> bool:
+        """Delete a storage account (and its containers/blobs).
+        404-tolerant: returns False if the account was already gone."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Storage/storageAccounts/{name}"
+            f"?api-version={STORAGE_API_VERSION}"
+        )
+        resp = await self._arm_client.delete(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, resp.text[:300])
+        return True
