@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/AuthProvider";
 import { getJobs, deleteJobWorkspace } from "@/lib/api";
 import type { JobSummary } from "@/lib/api";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
+import { explainError } from "@/lib/errorHelp";
 import {
   Button,
   Badge,
@@ -249,11 +250,15 @@ export default function MonitoringClient() {
         </div>
       )}
 
-      {!loading && error && (
-        <div style={{ color: "#f85149", textAlign: "center", padding: "32px 0" }}>
-          {error}
-        </div>
-      )}
+      {!loading && error && (() => {
+        const friendly = explainError(error);
+        return (
+          <div style={{ color: "#f85149", textAlign: "center", padding: "32px 0" }}>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>{friendly.title}</div>
+            <Caption1 style={{ color: "#8b949e" }}>{friendly.guidance}</Caption1>
+          </div>
+        );
+      })()}
 
       {!loading && !error && jobs.length === 0 && (
         <div className={styles.empty}>

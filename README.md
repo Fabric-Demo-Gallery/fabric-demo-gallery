@@ -94,7 +94,11 @@ az webapp deploy --name YOUR_APP_NAME --resource-group YOUR_RG \
 
 ### Frontend (Static Web Apps)
 ```bash
-cd frontend && npx next build
+cd frontend
+# The backend URL is baked into the static export at build time — set it explicitly
+# so the deployed site points at the production API (not localhost). The build will
+# fail fast if this is missing or points at localhost.
+NEXT_PUBLIC_BACKEND_URL=https://fabric-demo-gallery-api.azurewebsites.net npx next build
 swa deploy out --deployment-token YOUR_TOKEN --env production
 ```
 

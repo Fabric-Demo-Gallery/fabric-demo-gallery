@@ -269,6 +269,16 @@ async def deploy_demo(
     # ── Execute steps ────────────────────────────────────────────────────
     try:
         ws_id = workspace_id
+        # Track an Azure storage account we auto-provision so a failed deploy can
+        # tear it down. Only set when WE generate the name (never delete a
+        # user-supplied, pre-existing account).
+        created_storage_account: str | None = None
+
+        # Pre-flight: fail fast on a paused/inactive capacity.
+        cap_err = await _capacity_inactive_error(client, capacity_id, workspace_id)
+        if cap_err:
+            yield {"event": "error", "data": {"message": cap_err, "workspaceId": ""}}
+            return
 
         # 1. Workspace
         if not ws_id:
@@ -383,6 +393,10 @@ async def deploy_demo(
                 await azure_client.create_storage_account(
                     subscription_id, resource_group, acct_name, azure_location
                 )
+                # Remember it for teardown ONLY if we generated the name — never
+                # auto-delete a storage account the user already owned.
+                if not storage_account_name:
+                    created_storage_account = acct_name
                 # Grant Storage Blob Data Contributor so OAuth uploads work.
                 # Non-fatal — user may already have access via a group or higher role.
                 caller_oid = azure_client.get_caller_oid()
@@ -734,8 +748,8 @@ async def deploy_demo(
                 step.detail = "10 tiles across 3 pages"
             except (FabricError, Exception) as e:
                 logger.warning("KQL Dashboard creation failed: %s", str(e)[:300])
-                step.status = "completed"
-                step.detail = f"⚠ Dashboard failed: {str(e)[:150]}. Create manually."
+                step.status = "skipped"
+                step.detail = f"Dashboard not created: {str(e)[:150]}. You can add it manually in Fabric."
             yield {"event": "step", "data": step.to_dict()}
 
         # 9. Pipelines (with notebook orchestration activities)
@@ -753,8 +767,8 @@ async def deploy_demo(
                 step.item_id = result.get("id")
             except FabricError as e:
                 logger.warning("Pipeline creation failed: %s", e.detail)
-                step.status = "completed"
-                step.detail = f"⚠ Pipeline failed: {e.detail[:150]}. Create manually in Fabric."
+                step.status = "skipped"
+                step.detail = f"Pipeline not created: {e.detail[:150]}. You can add it manually in Fabric."
             yield {"event": "step", "data": step.to_dict()}
 
         # 10. Auto-schedule pipeline for real-time demos (energy-grid)
@@ -787,11 +801,15 @@ async def deploy_demo(
                 yield {"event": "step", "data": s.to_dict()}
                 break
 
-        # Offer cleanup option
+        # Best-effort teardown so a failed deploy leaves nothing orphaned.
+        cleanup_note, ws_remaining = await _best_effort_teardown(
+            client, azure_client, ws_id, subscription_id, resource_group,
+            storage_account=created_storage_account,
+        )
         error_msg = str(e)
-        if ws_id:
-            error_msg += f"\n\nWorkspace '{workspace_name}' was partially created. You can delete it from the Fabric portal or use the cleanup button."
-        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id or ""}}
+        if cleanup_note:
+            error_msg += "\n\n" + cleanup_note
+        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}}
 
     except AzureError as e:
         for s in steps:
@@ -800,10 +818,14 @@ async def deploy_demo(
                 s.detail = e.detail[:300]
                 yield {"event": "step", "data": s.to_dict()}
                 break
+        cleanup_note, ws_remaining = await _best_effort_teardown(
+            client, azure_client, ws_id, subscription_id, resource_group,
+            storage_account=created_storage_account,
+        )
         error_msg = f"Azure provisioning error: {e.detail}"
-        if ws_id:
-            error_msg += f"\n\nFabric workspace was partially created (ID: {ws_id})."
-        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id or ""}}
+        if cleanup_note:
+            error_msg += "\n\n" + cleanup_note
+        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}}
 
     except Exception as e:
         logger.exception("Unexpected deployment error")
@@ -814,10 +836,98 @@ async def deploy_demo(
                 yield {"event": "step", "data": s.to_dict()}
                 break
 
+        cleanup_note, ws_remaining = await _best_effort_teardown(
+            client, azure_client, ws_id, subscription_id, resource_group,
+            storage_account=created_storage_account,
+        )
         error_msg = f"Unexpected error: {type(e).__name__}: {e}"
-        if ws_id:
-            error_msg += f"\n\nWorkspace was partially created (ID: {ws_id})."
-        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id or ""}}
+        if cleanup_note:
+            error_msg += "\n\n" + cleanup_note
+        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}}
+
+
+async def _capacity_inactive_error(
+    client: FabricClient, capacity_id: str | None, workspace_id: str | None
+) -> str | None:
+    """Pre-flight: when a NEW workspace is requested on a specific capacity,
+    return a user-facing error if that capacity isn't active — so we fail fast
+    with a clear message instead of dying mid-deploy with Fabric's cryptic
+    "Target capacity is not in active state".
+
+    Returns None when the check passes OR can't be performed (a transient
+    listing failure must never block an otherwise-valid deploy).
+    """
+    if not capacity_id or workspace_id:
+        return None
+    try:
+        active = await client.list_capacities()  # already filtered to state == active
+    except Exception as e:  # noqa: BLE001 — pre-flight is advisory, never fatal
+        logger.warning("Capacity pre-flight skipped (list_capacities failed): %s", e)
+        return None
+    if any((c.get("id") or "").lower() == capacity_id.lower() for c in active):
+        return None
+    return (
+        "The selected Fabric capacity is paused or not active. Resume it in the "
+        "Azure portal (or choose an active capacity), then retry."
+    )
+
+
+async def _best_effort_teardown(
+    client: FabricClient,
+    azure_client: "AzureClient | None",
+    ws_id: str | None,
+    subscription_id: str | None = None,
+    resource_group: str | None = None,
+    sql_server: str | None = None,
+    storage_account: str | None = None,
+) -> tuple[str, bool]:
+    """Best-effort removal of resources a failed deploy created, so nothing is
+    left orphaned (and an Azure SQL server doesn't keep billing).
+
+    Never raises. Returns ``(note, ws_still_exists)`` where ``note`` is a short
+    human-readable summary to append to the error message, and
+    ``ws_still_exists`` is True only when a workspace was created but could NOT
+    be deleted (so the caller keeps the workspace id for a manual cleanup).
+    """
+    cleaned: list[str] = []
+    failed: list[str] = []
+    ws_still_exists = False
+
+    # SQL server first — it's the resource that keeps billing if left behind.
+    if azure_client and subscription_id and resource_group and sql_server:
+        try:
+            await azure_client.delete_sql_server(subscription_id, resource_group, sql_server)
+            cleaned.append("Azure SQL server")
+        except Exception as te:  # noqa: BLE001 — teardown must never mask the real error
+            logger.warning("[teardown] SQL server '%s' delete failed: %s", sql_server, te)
+            failed.append(f"Azure SQL server '{sql_server}'")
+
+    if azure_client and subscription_id and resource_group and storage_account:
+        try:
+            await azure_client.delete_storage_account(subscription_id, resource_group, storage_account)
+            cleaned.append("storage account")
+        except Exception as te:  # noqa: BLE001
+            logger.warning("[teardown] storage account '%s' delete failed: %s", storage_account, te)
+            failed.append(f"storage account '{storage_account}'")
+
+    if ws_id:
+        try:
+            await client.delete_workspace(ws_id)
+            cleaned.append("Fabric workspace")
+        except Exception as te:  # noqa: BLE001
+            logger.warning("[teardown] workspace '%s' delete failed: %s", ws_id, te)
+            failed.append("Fabric workspace")
+            ws_still_exists = True
+
+    parts: list[str] = []
+    if cleaned:
+        parts.append("Cleaned up partially-created resources (" + ", ".join(cleaned) + ").")
+    if failed:
+        parts.append(
+            "Could not auto-remove " + ", ".join(failed)
+            + " — please delete manually to avoid charges."
+        )
+    return " ".join(parts), ws_still_exists
 
 
 def _find_step(steps: list[DeploymentStep], name: str) -> DeploymentStep:
@@ -1043,6 +1153,12 @@ async def _deploy_mirroring(
     sql_server = ""
 
     try:
+        # Pre-flight: fail fast on a paused/inactive capacity.
+        cap_err = await _capacity_inactive_error(client, capacity_id, workspace_id)
+        if cap_err:
+            yield {"event": "error", "data": {"message": cap_err, "workspaceId": ""}}
+            return
+
         if not azure_client or not subscription_id or not resource_group:
             raise FabricError(
                 400,
@@ -1294,20 +1410,29 @@ async def _deploy_mirroring(
             )
         yield {"event": "step", "data": step.to_dict()}
 
-        # 9. Exploration notebooks (created with mirror context, not auto-run)
+        # 9. Exploration notebooks (created with mirror context, not auto-run).
+        # These are conveniences added AFTER replication is already live, so a
+        # transient failure here must NOT fail (and tear down) a working mirror —
+        # mark the step skipped and carry on to "done".
         nb_variables["MIRRORED_DB_ID"] = md_id
         for nb in explore_notebooks:
             step = _find_step(steps, f"notebook:{nb['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
             ipynb_path = scenarios_dir / nb.get("definitionPath", f"notebooks/mirroring/{nb['name']}.ipynb")
-            result = await client.create_notebook(
-                ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
-                variables=nb_variables,
-            )
-            created_ids[nb["name"]] = result["id"]
-            step.status = "completed"
-            step.item_id = result["id"]
+            try:
+                result = await client.create_notebook(
+                    ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
+                    variables=nb_variables,
+                )
+                created_ids[nb["name"]] = result["id"]
+                step.status = "completed"
+                step.item_id = result["id"]
+            except (FabricError, Exception) as e:  # noqa: BLE001 — non-critical step
+                logger.warning("[mirroring] explore notebook '%s' creation skipped: %s", nb["name"], e)
+                step.status = "skipped"
+                detail = e.detail if isinstance(e, FabricError) else str(e)
+                step.detail = f"Optional notebook skipped (mirroring is live): {detail[:160]}"
             yield {"event": "step", "data": step.to_dict()}
 
         # Done — include Azure metadata so teardown can delete the SQL server
@@ -1331,17 +1456,19 @@ async def _deploy_mirroring(
                 s.detail = e.detail[:300]
                 yield {"event": "step", "data": s.to_dict()}
                 break
+        cleanup_note, ws_remaining = await _best_effort_teardown(
+            client, azure_client, ws_id, subscription_id, resource_group,
+            sql_server=sql_server or None,
+        )
         error_msg = str(e)
-        if ws_id:
-            error_msg += (
-                f"\n\nWorkspace '{workspace_name}' was partially created."
-                + (f" An Azure SQL server '{sql_server}' may also exist — deleting the workspace from the gallery will remove it." if sql_server else "")
-            )
-        yield {"event": "error", "data": {
-            "message": error_msg,
-            "workspaceId": ws_id or "",
-            **({"azure": {"subscriptionId": subscription_id, "resourceGroup": resource_group, "sqlServer": sql_server}} if sql_server else {}),
-        }}
+        if cleanup_note:
+            error_msg += "\n\n" + cleanup_note
+        data: dict = {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}
+        # Keep Azure cleanup info only if the workspace couldn't be torn down
+        # (so the gallery's cleanup button can still remove both).
+        if ws_remaining and sql_server:
+            data["azure"] = {"subscriptionId": subscription_id, "resourceGroup": resource_group, "sqlServer": sql_server}
+        yield {"event": "error", "data": data}
 
     except AzureError as e:
         for s in steps:
@@ -1350,7 +1477,17 @@ async def _deploy_mirroring(
                 s.detail = e.detail[:300]
                 yield {"event": "step", "data": s.to_dict()}
                 break
-        yield {"event": "error", "data": {"message": f"Azure error: {e.detail}", "workspaceId": ws_id or ""}}
+        cleanup_note, ws_remaining = await _best_effort_teardown(
+            client, azure_client, ws_id, subscription_id, resource_group,
+            sql_server=sql_server or None,
+        )
+        error_msg = f"Azure error: {e.detail}"
+        if cleanup_note:
+            error_msg += "\n\n" + cleanup_note
+        data = {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}
+        if ws_remaining and sql_server:
+            data["azure"] = {"subscriptionId": subscription_id, "resourceGroup": resource_group, "sqlServer": sql_server}
+        yield {"event": "error", "data": data}
 
     except Exception as e:
         logger.exception("Mirroring deployment failed")
@@ -1360,4 +1497,14 @@ async def _deploy_mirroring(
                 s.detail = str(e)[:300]
                 yield {"event": "step", "data": s.to_dict()}
                 break
-        yield {"event": "error", "data": {"message": f"Unexpected error: {str(e)[:300]}", "workspaceId": ws_id or ""}}
+        cleanup_note, ws_remaining = await _best_effort_teardown(
+            client, azure_client, ws_id, subscription_id, resource_group,
+            sql_server=sql_server or None,
+        )
+        error_msg = f"Unexpected error: {str(e)[:300]}"
+        if cleanup_note:
+            error_msg += "\n\n" + cleanup_note
+        data = {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}
+        if ws_remaining and sql_server:
+            data["azure"] = {"subscriptionId": subscription_id, "resourceGroup": resource_group, "sqlServer": sql_server}
+        yield {"event": "error", "data": data}

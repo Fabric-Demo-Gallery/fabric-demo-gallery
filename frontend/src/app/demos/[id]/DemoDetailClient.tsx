@@ -914,6 +914,17 @@ export default function DemoDetailPage() {
   };
 
   const handleDeploy = async () => {
+    // Guard: never POST a deploy with required fields missing (would send an
+    // undefined capacity/subscription to the backend). The Deploy button is
+    // also disabled in these cases — this is defense in depth.
+    if (!selectedCapacity) {
+      setError("Select a Fabric capacity before deploying.");
+      return;
+    }
+    if (selectedScenario?.requiresAzure && (!selectedSub || !selectedRG)) {
+      setError("Select an Azure subscription and resource group for this scenario before deploying.");
+      return;
+    }
     setDeploying(true);
     setError(null);
     setCompleted(false);
@@ -2096,7 +2107,16 @@ export default function DemoDetailPage() {
 
                   <div className={styles.buttonRow}>
                     {account ? (
-                      <Button appearance="primary" onClick={handleDeploy} style={{ flex: 1 }}>
+                      <Button
+                        appearance="primary"
+                        onClick={handleDeploy}
+                        disabled={
+                          loadingCapacities ||
+                          !selectedCapacity ||
+                          (!!selectedScenario?.requiresAzure && (loadingSubs || !selectedSub || !selectedRG))
+                        }
+                        style={{ flex: 1 }}
+                      >
                         Deploy
                       </Button>
                     ) : (
@@ -2111,6 +2131,15 @@ export default function DemoDetailPage() {
                       {isCustomMode ? "← Back" : "Cancel"}
                     </Button>
                   </div>
+                  {account && (loadingCapacities || !selectedCapacity || (!!selectedScenario?.requiresAzure && (!selectedSub || !selectedRG))) && (
+                    <Caption1 style={{ display: "block", marginTop: 8, color: "#8b949e" }}>
+                      {loadingCapacities
+                        ? "Loading capacities…"
+                        : !selectedCapacity
+                        ? "Select a Fabric capacity to deploy."
+                        : "Select an Azure subscription and resource group to deploy."}
+                    </Caption1>
+                  )}
                 </div>
               )}
 
