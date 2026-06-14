@@ -1,0 +1,87 @@
+{
+  "mirroredDbName": "mirrored_education_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "faculty",
+      "sourceCsv": "faculty.csv",
+      "primaryKey": ["faculty_id"],
+      "columnTypes": {
+        "faculty_id": "VARCHAR(20)",
+        "department": "NVARCHAR(60)",
+        "role": "NVARCHAR(40)",
+        "years_at_institution": "INT",
+        "courses_assigned": "INT",
+        "research_active": "BIT",
+        "hire_date": "DATE"
+      }
+    },
+    {
+      "name": "students",
+      "sourceCsv": "students.csv",
+      "primaryKey": ["student_id"],
+      "columnTypes": {
+        "student_id": "VARCHAR(20)",
+        "programme": "NVARCHAR(80)",
+        "department": "NVARCHAR(60)",
+        "level": "NVARCHAR(30)",
+        "cohort_year": "INT",
+        "enrolment_date": "DATE",
+        "status": "NVARCHAR(30)",
+        "gender": "NVARCHAR(20)",
+        "region": "NVARCHAR(40)",
+        "age_at_enrolment": "INT"
+      }
+    },
+    {
+      "name": "enrolments",
+      "sourceCsv": "enrolments.csv",
+      "primaryKey": ["enrolment_id"],
+      "columnTypes": {
+        "enrolment_id": "VARCHAR(20)",
+        "student_id": "VARCHAR(20)",
+        "course_id": "VARCHAR(20)",
+        "department": "NVARCHAR(60)",
+        "level": "NVARCHAR(30)",
+        "credits": "INT",
+        "enrolment_date": "DATE",
+        "status": "NVARCHAR(30)",
+        "is_completed": "BIT",
+        "is_withdrawn": "BIT",
+        "age_at_enrolment": "INT"
+      }
+    },
+    {
+      "name": "assessments",
+      "sourceCsv": "assessments.csv",
+      "primaryKey": ["assessment_id"],
+      "columnTypes": {
+        "assessment_id": "VARCHAR(20)",
+        "enrolment_id": "VARCHAR(20)",
+        "student_id": "VARCHAR(20)",
+        "course_id": "VARCHAR(20)",
+        "department": "NVARCHAR(60)",
+        "assessment_type": "NVARCHAR(40)",
+        "attempt_number": "INT",
+        "submitted_date": "DATE",
+        "score": "DECIMAL(6,2)",
+        "grade": "NVARCHAR(10)",
+        "is_pass": "BIT",
+        "word_count": "INT"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Completion and withdrawal rates by department",
+    "sql": "SELECT e.department, COUNT(*) AS enrolments, SUM(CASE WHEN e.is_completed = 1 THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN e.is_withdrawn = 1 THEN 1 ELSE 0 END) AS withdrawn, ROUND(100.0 * SUM(CASE WHEN e.is_withdrawn = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 2) AS withdrawal_rate_pct FROM m_enrolments e GROUP BY e.department ORDER BY withdrawal_rate_pct DESC"
+  },
+  "liveChange": {
+    "table": "enrolments",
+    "keyColumn": "enrolment_id",
+    "displayColumn": "department",
+    "mutateColumn": "is_withdrawn",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A registrar records a student withdrawal in the source student-information system. Watch the change replicate into Fabric in seconds, updating retention analytics, with no pipeline or refresh."
+  }
+}

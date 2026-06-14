@@ -1,0 +1,64 @@
+{
+  "mirroredDbName": "mirrored_mfg_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "equipment_catalog",
+      "sourceCsv": "equipment_catalog.csv",
+      "primaryKey": ["machine_id"],
+      "columnTypes": {
+        "machine_id": "VARCHAR(20)",
+        "machine_name": "NVARCHAR(100)",
+        "machine_type": "NVARCHAR(40)",
+        "production_line": "NVARCHAR(40)",
+        "install_date": "DATE"
+      }
+    },
+    {
+      "name": "production_batches",
+      "sourceCsv": "production_batches.csv",
+      "primaryKey": ["batch_id"],
+      "columnTypes": {
+        "batch_id": "VARCHAR(20)",
+        "production_line": "NVARCHAR(40)",
+        "product": "NVARCHAR(60)",
+        "batch_start": "DATETIME2(3)",
+        "batch_end": "DATETIME2(3)",
+        "planned_units": "INT",
+        "units_produced": "INT",
+        "defect_count": "INT",
+        "downtime_minutes": "INT",
+        "machine_id": "VARCHAR(20)",
+        "failure_event": "BIT"
+      }
+    },
+    {
+      "name": "sensor_readings",
+      "sourceCsv": "sensor_readings.csv",
+      "primaryKey": ["reading_id"],
+      "columnTypes": {
+        "reading_id": "VARCHAR(20)",
+        "machine_id": "VARCHAR(20)",
+        "production_line": "NVARCHAR(40)",
+        "reading_timestamp": "DATETIME2(3)",
+        "temperature": "DECIMAL(8,2)",
+        "pressure": "DECIMAL(8,2)",
+        "vibration": "DECIMAL(8,3)",
+        "humidity": "DECIMAL(6,2)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Defect rate and downtime by production line",
+    "sql": "SELECT b.production_line, COUNT(*) AS batches, SUM(b.units_produced) AS units, SUM(b.defect_count) AS defects, ROUND(100.0 * SUM(b.defect_count) / NULLIF(SUM(b.units_produced), 0), 2) AS defect_rate_pct, SUM(b.downtime_minutes) AS downtime_min FROM m_production_batches b GROUP BY b.production_line ORDER BY defect_rate_pct DESC"
+  },
+  "liveChange": {
+    "table": "production_batches",
+    "keyColumn": "batch_id",
+    "displayColumn": "product",
+    "mutateColumn": "failure_event",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A line supervisor flags a production batch as a quality failure in the source MES. Watch the flag replicate into Fabric in seconds, ready for OEE and defect analytics, with no pipeline or refresh."
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "mirroredDbName": "mirrored_saas_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "accounts",
+      "sourceCsv": "accounts.csv",
+      "primaryKey": ["account_id"],
+      "columnTypes": {
+        "account_id": "VARCHAR(20)",
+        "plan": "NVARCHAR(30)",
+        "mrr_usd": "DECIMAL(12,2)",
+        "industry": "NVARCHAR(60)",
+        "region": "NVARCHAR(40)",
+        "signup_date": "DATE",
+        "churn_date": "DATE",
+        "is_churned": "BIT",
+        "seat_count": "INT",
+        "health_score": "DECIMAL(6,2)"
+      }
+    },
+    {
+      "name": "users",
+      "sourceCsv": "users.csv",
+      "primaryKey": ["user_id"],
+      "columnTypes": {
+        "user_id": "VARCHAR(20)",
+        "account_id": "VARCHAR(20)",
+        "role": "NVARCHAR(40)",
+        "is_active": "BIT",
+        "last_login_date": "DATE",
+        "signup_date": "DATE",
+        "logins_last_30_days": "INT"
+      }
+    },
+    {
+      "name": "events",
+      "sourceCsv": "events.csv",
+      "primaryKey": ["event_id"],
+      "columnTypes": {
+        "event_id": "VARCHAR(20)",
+        "user_id": "VARCHAR(20)",
+        "account_id": "VARCHAR(20)",
+        "event_date": "DATE",
+        "feature": "NVARCHAR(60)",
+        "action": "NVARCHAR(40)",
+        "session_id": "VARCHAR(40)",
+        "duration_secs": "INT"
+      }
+    },
+    {
+      "name": "support_tickets",
+      "sourceCsv": "support_tickets.csv",
+      "primaryKey": ["ticket_id"],
+      "columnTypes": {
+        "ticket_id": "VARCHAR(20)",
+        "account_id": "VARCHAR(20)",
+        "created_at": "DATETIME2(3)",
+        "resolved_at": "DATETIME2(3)",
+        "category": "NVARCHAR(50)",
+        "priority": "NVARCHAR(20)",
+        "resolution_hrs": "DECIMAL(8,2)",
+        "sla_target_hrs": "DECIMAL(8,2)",
+        "is_sla_breached": "BIT",
+        "csat_score": "INT"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Support load and SLA breaches by priority",
+    "sql": "SELECT s.priority, COUNT(*) AS tickets, ROUND(AVG(s.resolution_hrs), 1) AS avg_resolution_hrs, SUM(CASE WHEN s.is_sla_breached = 1 THEN 1 ELSE 0 END) AS sla_breaches, ROUND(AVG(CAST(s.csat_score AS FLOAT)), 2) AS avg_csat FROM m_support_tickets s GROUP BY s.priority ORDER BY sla_breaches DESC"
+  },
+  "liveChange": {
+    "table": "accounts",
+    "keyColumn": "account_id",
+    "displayColumn": "plan",
+    "mutateColumn": "is_churned",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "An account churns in the source SaaS billing system. Watch the churn flag replicate into Fabric in seconds, feeding the account-health and revenue dashboards, with no pipeline or refresh."
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "mirroredDbName": "mirrored_construction_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "subcontractors",
+      "sourceCsv": "subcontractors.csv",
+      "primaryKey": ["subcontractor_id"],
+      "columnTypes": {
+        "subcontractor_id": "VARCHAR(20)",
+        "company_name": "NVARCHAR(100)",
+        "trade": "NVARCHAR(50)",
+        "region": "NVARCHAR(40)",
+        "rating": "DECIMAL(4,2)",
+        "years_active": "INT",
+        "accredited": "BIT"
+      }
+    },
+    {
+      "name": "projects",
+      "sourceCsv": "projects.csv",
+      "primaryKey": ["project_id"],
+      "columnTypes": {
+        "project_id": "VARCHAR(20)",
+        "project_name": "NVARCHAR(120)",
+        "project_type": "NVARCHAR(50)",
+        "region": "NVARCHAR(40)",
+        "status": "NVARCHAR(30)",
+        "budget": "DECIMAL(16,2)",
+        "planned_start_date": "DATE",
+        "planned_end_date": "DATE",
+        "lead_subcontractor_id": "VARCHAR(20)"
+      }
+    },
+    {
+      "name": "tasks",
+      "sourceCsv": "tasks.csv",
+      "primaryKey": ["task_id"],
+      "columnTypes": {
+        "task_id": "VARCHAR(20)",
+        "project_id": "VARCHAR(20)",
+        "task_name": "NVARCHAR(120)",
+        "assigned_subcontractor_id": "VARCHAR(20)",
+        "planned_start_date": "DATE",
+        "planned_end_date": "DATE",
+        "actual_start_date": "DATE",
+        "forecast_end_date": "DATE",
+        "schedule_variance_days": "INT",
+        "status": "NVARCHAR(30)",
+        "pct_complete": "DECIMAL(5,2)",
+        "planned_duration_days": "INT",
+        "is_delayed": "BIT"
+      }
+    },
+    {
+      "name": "cost_ledger",
+      "sourceCsv": "cost_ledger.csv",
+      "primaryKey": ["cost_id"],
+      "columnTypes": {
+        "cost_id": "VARCHAR(20)",
+        "project_id": "VARCHAR(20)",
+        "entry_date": "DATE",
+        "cost_category": "NVARCHAR(50)",
+        "supplier": "NVARCHAR(100)",
+        "planned_cost": "DECIMAL(16,2)",
+        "actual_cost": "DECIMAL(16,2)",
+        "cost_variance": "DECIMAL(16,2)",
+        "cost_variance_pct": "DECIMAL(8,2)",
+        "approved": "BIT"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Schedule and cost variance by project type",
+    "sql": "SELECT p.project_type, COUNT(DISTINCT p.project_id) AS projects, COUNT(*) AS tasks, SUM(CASE WHEN t.is_delayed = 1 THEN 1 ELSE 0 END) AS delayed_tasks, ROUND(AVG(CAST(t.schedule_variance_days AS FLOAT)), 1) AS avg_schedule_var_days FROM m_projects p JOIN m_tasks t ON t.project_id = p.project_id GROUP BY p.project_type ORDER BY delayed_tasks DESC"
+  },
+  "liveChange": {
+    "table": "tasks",
+    "keyColumn": "task_id",
+    "displayColumn": "task_name",
+    "mutateColumn": "is_delayed",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A site manager marks a task as delayed in the source project system. Watch the status replicate into Fabric in seconds, keeping the portfolio schedule view current, with no pipeline or refresh."
+  }
+}

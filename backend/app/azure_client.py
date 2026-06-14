@@ -505,7 +505,13 @@ class AzureClient:
             timeout = 600
             while time.time() - start < timeout:
                 await asyncio.sleep(6)
-                op = await self._arm_client.get(async_url)
+                try:
+                    op = await self._arm_client.get(async_url)
+                except httpx.TransportError as e:
+                    # Transient network blip (ConnectTimeout/ConnectError/ReadTimeout)
+                    # while polling — keep waiting rather than failing the deploy.
+                    logger.debug("SQL provisioning poll network error (retrying): %s", e)
+                    continue
                 if op.status_code >= 400:
                     continue  # operation status not queryable yet
                 ob = op.json()
@@ -530,6 +536,10 @@ class AzureClient:
                     return srv
                 if state in ("disabled",):
                     raise AzureError(500, f"SQL server provisioning ended in state '{state}'")
+            except httpx.TransportError as e:
+                # Transient network blip while polling — keep waiting.
+                logger.debug("SQL provisioning poll network error (retrying): %s", e)
+                continue
             except AzureError as e:
                 if e.status == 404:
                     continue  # not yet visible in ARM
