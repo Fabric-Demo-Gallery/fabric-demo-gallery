@@ -106,7 +106,9 @@ def validate_spec(demo: str) -> list[str]:
     if not explore.get("sql"):
         errors.append("missing 'explore.sql'")
     else:
-        for view in re.findall(r"m_([a-zA-Z0-9_]+)", explore["sql"]):
+        # Match m_<table> temp views, but only at an identifier boundary so column
+        # names like room_nights don't masquerade as a view "m_nights".
+        for view in re.findall(r"(?<![A-Za-z0-9_])m_([a-zA-Z0-9_]+)", explore["sql"]):
             if view not in table_names:
                 errors.append(f"explore.sql references m_{view} but '{view}' is not a table in the spec")
 

@@ -1,0 +1,82 @@
+{
+  "mirroredDbName": "mirrored_fleet_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "vehicles",
+      "sourceCsv": "vehicles.csv",
+      "primaryKey": ["vehicle_id"],
+      "columnTypes": {
+        "vehicle_id": "VARCHAR(20)",
+        "vehicle_type": "NVARCHAR(40)",
+        "depot": "NVARCHAR(50)",
+        "capacity_tonnes": "DECIMAL(8,2)",
+        "year_registered": "INT",
+        "status": "NVARCHAR(30)",
+        "driver_id": "VARCHAR(20)"
+      }
+    },
+    {
+      "name": "routes",
+      "sourceCsv": "routes.csv",
+      "primaryKey": ["route_id"],
+      "columnTypes": {
+        "route_id": "VARCHAR(20)",
+        "origin": "NVARCHAR(60)",
+        "destination": "NVARCHAR(60)",
+        "distance_km": "DECIMAL(10,2)",
+        "route_type": "NVARCHAR(30)",
+        "sla_hours": "DECIMAL(8,2)",
+        "toll_cost_gbp": "DECIMAL(10,2)"
+      }
+    },
+    {
+      "name": "deliveries",
+      "sourceCsv": "deliveries.csv",
+      "primaryKey": ["delivery_id"],
+      "columnTypes": {
+        "delivery_id": "VARCHAR(20)",
+        "vehicle_id": "VARCHAR(20)",
+        "route_id": "VARCHAR(20)",
+        "planned_departure": "DATETIME2(3)",
+        "actual_arrival": "DATETIME2(3)",
+        "planned_duration_hrs": "DECIMAL(8,2)",
+        "actual_duration_hrs": "DECIMAL(8,2)",
+        "delay_hrs": "DECIMAL(8,2)",
+        "distance_km": "DECIMAL(10,2)",
+        "load_tonnes": "DECIMAL(8,2)",
+        "status": "NVARCHAR(30)",
+        "is_late": "BIT"
+      }
+    },
+    {
+      "name": "fuel_logs",
+      "sourceCsv": "fuel_logs.csv",
+      "primaryKey": ["log_id"],
+      "columnTypes": {
+        "log_id": "VARCHAR(20)",
+        "vehicle_id": "VARCHAR(20)",
+        "log_date": "DATE",
+        "depot": "NVARCHAR(50)",
+        "odometer_km": "DECIMAL(12,2)",
+        "litres_filled": "DECIMAL(10,2)",
+        "cost_per_litre": "DECIMAL(8,3)",
+        "total_cost_gbp": "DECIMAL(12,2)",
+        "fuel_type": "NVARCHAR(30)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "On-time performance and delay by route",
+    "sql": "SELECT r.origin, r.destination, COUNT(*) AS deliveries, SUM(CASE WHEN d.is_late = 1 THEN 1 ELSE 0 END) AS late_deliveries, ROUND(AVG(d.delay_hrs), 2) AS avg_delay_hrs FROM m_deliveries d JOIN m_routes r ON d.route_id = r.route_id GROUP BY r.origin, r.destination ORDER BY late_deliveries DESC"
+  },
+  "liveChange": {
+    "table": "deliveries",
+    "keyColumn": "delivery_id",
+    "displayColumn": "status",
+    "mutateColumn": "is_late",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A dispatcher flags a delivery as late in the source transport-management system. Watch the flag replicate into Fabric in seconds, updating the on-time-performance dashboard, with no pipeline or refresh."
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "mirroredDbName": "mirrored_media_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "content_catalog",
+      "sourceCsv": "content_catalog.csv",
+      "primaryKey": ["content_id"],
+      "columnTypes": {
+        "content_id": "VARCHAR(20)",
+        "title": "NVARCHAR(160)",
+        "genre": "NVARCHAR(40)",
+        "content_type": "NVARCHAR(30)",
+        "release_year": "INT",
+        "duration_mins": "INT",
+        "production_cost_bucket": "NVARCHAR(30)",
+        "language": "NVARCHAR(30)"
+      }
+    },
+    {
+      "name": "subscribers",
+      "sourceCsv": "subscribers.csv",
+      "primaryKey": ["subscriber_id"],
+      "columnTypes": {
+        "subscriber_id": "VARCHAR(20)",
+        "plan_type": "NVARCHAR(30)",
+        "region": "NVARCHAR(40)",
+        "age_group": "VARCHAR(20)",
+        "payment_method": "NVARCHAR(40)",
+        "monthly_fee": "DECIMAL(10,2)",
+        "signup_date": "DATE",
+        "churn_date": "DATE",
+        "is_churned": "BIT"
+      }
+    },
+    {
+      "name": "viewing_history",
+      "sourceCsv": "viewing_history.csv",
+      "primaryKey": ["view_id"],
+      "columnTypes": {
+        "view_id": "VARCHAR(20)",
+        "subscriber_id": "VARCHAR(20)",
+        "content_id": "VARCHAR(20)",
+        "view_date": "DATE",
+        "view_hour": "INT",
+        "watch_duration_mins": "INT",
+        "is_completed": "BIT",
+        "device_type": "NVARCHAR(30)",
+        "rating": "INT"
+      }
+    },
+    {
+      "name": "ad_impressions",
+      "sourceCsv": "ad_impressions.csv",
+      "primaryKey": ["impression_id"],
+      "columnTypes": {
+        "impression_id": "VARCHAR(20)",
+        "content_id": "VARCHAR(20)",
+        "ad_date": "DATE",
+        "ad_type": "NVARCHAR(30)",
+        "impressions": "INT",
+        "clicks": "INT",
+        "revenue_usd": "DECIMAL(12,2)",
+        "cpm": "DECIMAL(8,2)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Watch time and completion by content genre",
+    "sql": "SELECT c.genre, COUNT(*) AS views, SUM(v.watch_duration_mins) AS watch_minutes, ROUND(100.0 * SUM(CASE WHEN v.is_completed = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 1) AS completion_rate_pct FROM m_viewing_history v JOIN m_content_catalog c ON v.content_id = c.content_id GROUP BY c.genre ORDER BY watch_minutes DESC"
+  },
+  "liveChange": {
+    "table": "subscribers",
+    "keyColumn": "subscriber_id",
+    "displayColumn": "plan_type",
+    "mutateColumn": "is_churned",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A subscriber cancels their plan in the source billing system. Watch the churn flag replicate into Fabric in seconds, feeding churn and retention analytics, with no pipeline or refresh."
+  }
+}

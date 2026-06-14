@@ -1,0 +1,85 @@
+{
+  "mirroredDbName": "mirrored_proserv_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "clients",
+      "sourceCsv": "clients.csv",
+      "primaryKey": ["client_id"],
+      "columnTypes": {
+        "client_id": "VARCHAR(20)",
+        "client_name": "NVARCHAR(120)",
+        "industry": "NVARCHAR(60)",
+        "region": "NVARCHAR(40)",
+        "tier": "NVARCHAR(20)",
+        "contract_value_gbp": "DECIMAL(16,2)",
+        "relationship_years": "INT",
+        "nps_score": "INT"
+      }
+    },
+    {
+      "name": "consultants",
+      "sourceCsv": "consultants.csv",
+      "primaryKey": ["consultant_id"],
+      "columnTypes": {
+        "consultant_id": "VARCHAR(20)",
+        "grade": "NVARCHAR(40)",
+        "practice": "NVARCHAR(60)",
+        "region": "NVARCHAR(40)",
+        "daily_rate_gbp": "DECIMAL(12,2)",
+        "years_experience": "INT",
+        "is_billable": "BIT",
+        "hire_date": "DATE"
+      }
+    },
+    {
+      "name": "engagements",
+      "sourceCsv": "engagements.csv",
+      "primaryKey": ["engagement_id"],
+      "columnTypes": {
+        "engagement_id": "VARCHAR(20)",
+        "client_id": "VARCHAR(20)",
+        "lead_consultant_id": "VARCHAR(20)",
+        "practice": "NVARCHAR(60)",
+        "start_date": "DATE",
+        "planned_end_date": "DATE",
+        "budget_gbp": "DECIMAL(16,2)",
+        "actual_spend_gbp": "DECIMAL(16,2)",
+        "margin_pct": "DECIMAL(8,2)",
+        "status": "NVARCHAR(30)",
+        "headcount": "INT",
+        "planned_duration_days": "INT",
+        "is_over_budget": "BIT"
+      }
+    },
+    {
+      "name": "timesheets",
+      "sourceCsv": "timesheets.csv",
+      "primaryKey": ["timesheet_id"],
+      "columnTypes": {
+        "timesheet_id": "VARCHAR(20)",
+        "consultant_id": "VARCHAR(20)",
+        "engagement_id": "VARCHAR(20)",
+        "week_starting": "DATE",
+        "task_type": "NVARCHAR(50)",
+        "hours_logged": "DECIMAL(6,2)",
+        "is_billable": "BIT",
+        "daily_rate_gbp": "DECIMAL(12,2)",
+        "billed_value_gbp": "DECIMAL(14,2)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Engagement margin and budget health by practice",
+    "sql": "SELECT e.practice, COUNT(*) AS engagements, ROUND(AVG(e.margin_pct), 1) AS avg_margin_pct, SUM(CASE WHEN e.is_over_budget = 1 THEN 1 ELSE 0 END) AS over_budget, ROUND(SUM(e.actual_spend_gbp), 0) AS total_spend FROM m_engagements e GROUP BY e.practice ORDER BY avg_margin_pct DESC"
+  },
+  "liveChange": {
+    "table": "engagements",
+    "keyColumn": "engagement_id",
+    "displayColumn": "practice",
+    "mutateColumn": "is_over_budget",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A project lead flags an engagement as over budget in the source delivery system. Watch the flag replicate into Fabric in seconds, surfacing it on the margin dashboard, with no pipeline or refresh."
+  }
+}

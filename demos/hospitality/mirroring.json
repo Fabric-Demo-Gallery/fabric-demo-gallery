@@ -1,0 +1,91 @@
+{
+  "mirroredDbName": "mirrored_hospitality_db",
+  "rowCap": 50000,
+  "tables": [
+    {
+      "name": "properties",
+      "sourceCsv": "properties.csv",
+      "primaryKey": ["property_id"],
+      "columnTypes": {
+        "property_id": "VARCHAR(20)",
+        "property_name": "NVARCHAR(120)",
+        "city": "NVARCHAR(60)",
+        "country": "NVARCHAR(60)",
+        "property_type": "NVARCHAR(40)",
+        "star_rating": "INT",
+        "room_count": "INT"
+      }
+    },
+    {
+      "name": "guests",
+      "sourceCsv": "guests.csv",
+      "primaryKey": ["guest_id"],
+      "columnTypes": {
+        "guest_id": "VARCHAR(20)",
+        "loyalty_tier": "NVARCHAR(30)",
+        "region": "NVARCHAR(40)",
+        "age_group": "VARCHAR(20)",
+        "nationality": "NVARCHAR(50)",
+        "total_stays": "INT",
+        "total_spend": "DECIMAL(14,2)",
+        "preferred_channel": "NVARCHAR(40)",
+        "signup_date": "DATE"
+      }
+    },
+    {
+      "name": "bookings",
+      "sourceCsv": "bookings.csv",
+      "primaryKey": ["booking_id"],
+      "columnTypes": {
+        "booking_id": "VARCHAR(20)",
+        "property_id": "VARCHAR(20)",
+        "guest_id": "VARCHAR(20)",
+        "check_in_date": "DATE",
+        "check_out_date": "DATE",
+        "nights": "INT",
+        "room_type": "NVARCHAR(40)",
+        "channel": "NVARCHAR(40)",
+        "meal_plan": "NVARCHAR(40)",
+        "room_rate": "DECIMAL(12,2)",
+        "total_amount": "DECIMAL(14,2)",
+        "status": "NVARCHAR(30)",
+        "lead_time_days": "INT",
+        "is_refundable": "BIT",
+        "is_cancelled": "BIT",
+        "loyalty_tier": "NVARCHAR(30)"
+      }
+    },
+    {
+      "name": "reviews",
+      "sourceCsv": "reviews.csv",
+      "primaryKey": ["review_id"],
+      "columnTypes": {
+        "review_id": "VARCHAR(20)",
+        "booking_id": "VARCHAR(20)",
+        "property_id": "VARCHAR(20)",
+        "guest_id": "VARCHAR(20)",
+        "review_date": "DATE",
+        "overall_score": "DECIMAL(4,2)",
+        "cleanliness_score": "DECIMAL(4,2)",
+        "service_score": "DECIMAL(4,2)",
+        "value_score": "DECIMAL(4,2)",
+        "food_score": "DECIMAL(4,2)",
+        "sentiment": "NVARCHAR(20)",
+        "platform": "NVARCHAR(40)"
+      }
+    }
+  ],
+  "explore": {
+    "title": "Revenue and occupancy by property",
+    "sql": "SELECT pr.property_name, pr.city, COUNT(*) AS bookings, SUM(b.nights) AS room_nights, ROUND(SUM(b.total_amount), 0) AS revenue, SUM(CASE WHEN b.is_cancelled = 1 THEN 1 ELSE 0 END) AS cancellations FROM m_bookings b JOIN m_properties pr ON b.property_id = pr.property_id GROUP BY pr.property_name, pr.city ORDER BY revenue DESC"
+  },
+  "liveChange": {
+    "table": "bookings",
+    "keyColumn": "booking_id",
+    "displayColumn": "room_type",
+    "mutateColumn": "is_cancelled",
+    "mutateKind": "flag",
+    "flagTo": 1,
+    "story": "A guest cancels a reservation in the source property-management system. Watch the cancellation replicate into Fabric in seconds, updating revenue and occupancy views, with no pipeline or refresh."
+  }
+}
