@@ -385,12 +385,22 @@ function HeroVideo() {
   const hasVideo = videoId.length > 0;
 
   if (hasVideo && playing) {
+    // Pass the embedding origin explicitly. The site sends Referrer-Policy:
+    // same-origin, so the YouTube player would otherwise receive no referrer and
+    // fail to validate the embed (Error 153). The iframe's own referrerPolicy
+    // also forces the origin to be sent as referrer.
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const src =
+      `https://www.youtube-nocookie.com/embed/${videoId}` +
+      `?autoplay=1&rel=0&modestbranding=1&playsinline=1` +
+      (origin ? `&origin=${encodeURIComponent(origin)}` : "");
     return (
       <div className={styles.heroVideoFrame}>
         <iframe
           className={styles.heroVideoIframe}
-          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+          src={src}
           title="Fabric Demo Gallery product demo"
+          referrerPolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
         />
