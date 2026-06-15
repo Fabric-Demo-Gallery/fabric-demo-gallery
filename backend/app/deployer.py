@@ -1072,6 +1072,31 @@ def _build_pipeline_definition(
 # ── Mirroring scenario (Azure SQL → Fabric Mirrored Database) ──────────────
 
 
+def _is_transient_run_error(detail: str) -> bool:
+    """True when a notebook-run failure is a transient Spark/capacity hiccup
+    that's worth retrying (cold-start, a platform-cancelled session, first-run
+    flakiness, throttling) rather than a real error in the notebook code.
+
+    Covers System_Cancelled_Session_State — the Spark session being cancelled by
+    the platform before the notebook ran, which a single retry almost always
+    clears. Without this, one transient cancellation killed the whole deploy.
+    """
+    d = (detail or "").lower()
+    signatures = (
+        "livy",
+        "failed to create livy session",
+        "system_cancelled_session_state",
+        "cancelled_session",
+        "session_statements_failed",
+        "sessiontimeout",
+        "session timed out",
+        "toomanyrequests",
+        "430",
+        "throttl",
+    )
+    return any(s in d for s in signatures)
+
+
 async def _deploy_mirroring(
     client: FabricClient,
     demo_id: str,
@@ -1321,24 +1346,38 @@ async def _deploy_mirroring(
             step = _find_step(steps, f"run:{nb['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
-            try:
-                result = await client.run_notebook(
+
+            async def _run_seed() -> dict:
+                res = await client.run_notebook(
                     ws_id, notebook_ids[nb["name"]], lakehouse_id, lakehouse_name, timeout=1800
                 )
-                job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
+                job_status = res.get("status", "").lower() if isinstance(res, dict) else ""
                 if job_status == "failed":
-                    failure = result.get("failureReason", {})
+                    failure = res.get("failureReason", {})
                     raise FabricError(500, f"Seed notebook failed: {failure.get('message', '')[:200]}")
-            except FabricError as e:
-                if "Livy" in e.detail:
-                    step.detail = "Spark cold-start — retrying in 60s..."
-                    yield {"event": "step", "data": step.to_dict()}
-                    await asyncio.sleep(60)
-                    await client.run_notebook(
-                        ws_id, notebook_ids[nb["name"]], lakehouse_id, lakehouse_name, timeout=1800
-                    )
-                else:
+                return res or {}
+
+            # Run with bounded retries on transient Spark/capacity hiccups
+            # (cold-start, platform-cancelled session, throttling). A real code
+            # error in the notebook is not transient and fails immediately.
+            max_attempts = 4
+            last_err: FabricError | None = None
+            for attempt in range(max_attempts):
+                try:
+                    await _run_seed()
+                    last_err = None
+                    break
+                except FabricError as e:
+                    last_err = e
+                    if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
+                        step.detail = f"Spark session interrupted — retrying ({attempt + 1}/{max_attempts - 1}) in 60s..."
+                        yield {"event": "step", "data": step.to_dict()}
+                        await asyncio.sleep(60)
+                        continue
                     raise
+            if last_err is not None:
+                raise last_err
+
             step.status = "completed"
             step.detail = "SQL tables created and loaded"
             yield {"event": "step", "data": step.to_dict()}
