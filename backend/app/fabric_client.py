@@ -116,10 +116,16 @@ class FabricClient:
                 if status in ("succeeded", "completed"):
                     return body
                 if status in ("failed", "cancelled", "deduped"):
-                    # Extract human-readable error from LRO result
-                    err = body.get("error", {})
-                    err_msg = err.get("message", json.dumps(body)[:300])
-                    raise FabricError(500, f"Operation {status}: {err_msg}")
+                    # Surface the most specific error available. For RunNotebook
+                    # jobs the cause lives in failureReason.errorCode (e.g.
+                    # System_Cancelled_Session_State) — put it at the FRONT so it
+                    # survives downstream truncation and transient-retry detection.
+                    err = body.get("error") or {}
+                    fr = body.get("failureReason") or {}
+                    err_code = fr.get("errorCode") or ""
+                    err_msg = err.get("message") or fr.get("message") or ""
+                    detail = " ".join(p for p in (err_code, err_msg) if p) or json.dumps(body)[:300]
+                    raise FabricError(500, f"Operation {status}: {detail}")
                 logger.debug("LRO status: %s", status)
             elif resp.status_code == 401:
                 raise FabricError(401, "Authentication expired during operation. Sign out, sign back in, and retry.")
