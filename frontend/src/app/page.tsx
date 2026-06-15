@@ -2,8 +2,8 @@
 
 
 import Link from "next/link";
-import { useMemo } from "react";
-import { makeStyles } from "@fluentui/react-components";
+import { useMemo, useState } from "react";
+import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import {
   BuildingFactory24Regular,
   BuildingRetail24Regular,
@@ -17,10 +17,16 @@ import {
   Video24Regular,
   HatGraduation24Regular,
   Bed24Regular,
+  PlayCircle48Filled,
 } from "@fluentui/react-icons";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { industries } from "@/lib/industryCatalog";
 import { DEMOS } from "@/lib/demoCatalog";
+
+// Paste the YouTube video ID of the product demo here once it's uploaded — the
+// part after "v=" in the watch URL (e.g. "dQw4w9WgXcQ"). Leave it empty to show
+// a "coming soon" placeholder in the hero. Nothing else needs to change.
+const DEMO_VIDEO_ID = "";
 
 // Professional Fluent System icons per industry (replaces hand-drawn SVGs).
 const INDUSTRY_ICON: Record<string, FluentIcon> = {
@@ -97,6 +103,95 @@ const useStyles = makeStyles({
     marginTop: "4px",
     textTransform: "uppercase" as const,
     letterSpacing: "0.5px",
+  },
+
+  /* ---- Hero video ---- */
+  heroGrid: {
+    display: "flex",
+    alignItems: "center",
+    gap: "48px",
+    flexWrap: "wrap" as const,
+  },
+  heroCopy: {
+    flex: "1 1 360px",
+    minWidth: "280px",
+  },
+  heroVideoCol: {
+    flex: "1 1 480px",
+    minWidth: "280px",
+  },
+  heroVideoFrame: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    aspectRatio: "16 / 9",
+    borderRadius: "10px",
+    overflow: "hidden",
+    border: "1px solid #30363d",
+    backgroundColor: "#161b22",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    marginTop: 0,
+    marginBottom: 0,
+    appearance: "none",
+    fontFamily: "inherit",
+    color: "inherit",
+    textAlign: "center" as const,
+  },
+  heroVideoButton: {
+    cursor: "pointer",
+    transitionProperty: "box-shadow",
+    transitionDuration: "0.15s",
+    ":hover": {
+      boxShadow: "0 0 0 1px #3fb68b, 0 6px 18px rgba(0,0,0,0.4)",
+    },
+    ":hover [data-hero-play]": {
+      transform: "scale(1.08)",
+    },
+  },
+  heroVideoIframe: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    border: "none",
+  },
+  heroVideoOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: "linear-gradient(180deg, rgba(13,17,23,0.15), rgba(13,17,23,0.6))",
+  },
+  heroVideoPlay: {
+    position: "relative",
+    display: "flex",
+    color: "#ffffff",
+    filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.55))",
+    transitionProperty: "transform",
+    transitionDuration: "0.15s",
+  },
+  heroVideoCaption: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: "12px",
+    textAlign: "center" as const,
+    fontSize: "12px",
+    fontWeight: 600,
+    letterSpacing: "0.3px",
+    color: "rgba(255,255,255,0.92)",
+    textShadow: "0 1px 4px rgba(0,0,0,0.6)",
   },
 
   /* ---- Content ---- */
@@ -344,6 +439,52 @@ function FabricItemIcon({ type, size = 14 }: { type: string; size?: number }) {
   return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
 }
 
+// Hero product-demo video. Uses a click-to-load facade: until the visitor hits
+// play, no YouTube scripts load (faster first paint, privacy-friendly). When
+// DEMO_VIDEO_ID is empty it shows a tasteful "coming soon" placeholder so the
+// hero never looks broken before the video exists.
+function HeroVideo() {
+  const styles = useStyles();
+  const [playing, setPlaying] = useState(false);
+  const videoId = DEMO_VIDEO_ID.trim();
+  const hasVideo = videoId.length > 0;
+
+  if (hasVideo && playing) {
+    return (
+      <div className={styles.heroVideoFrame}>
+        <iframe
+          className={styles.heroVideoIframe}
+          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+          title="Fabric Demo Gallery product demo"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  const poster = hasVideo ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : undefined;
+
+  return (
+    <button
+      type="button"
+      className={mergeClasses(styles.heroVideoFrame, hasVideo ? styles.heroVideoButton : undefined)}
+      style={poster ? { backgroundImage: `url(${poster})` } : undefined}
+      onClick={() => { if (hasVideo) setPlaying(true); }}
+      disabled={!hasVideo}
+      aria-label={hasVideo ? "Play the product demo" : "Product demo video coming soon"}
+    >
+      <span className={styles.heroVideoOverlay} />
+      <span data-hero-play className={styles.heroVideoPlay}>
+        <PlayCircle48Filled fontSize={64} color={hasVideo ? "#ffffff" : "#484f58"} />
+      </span>
+      <span className={styles.heroVideoCaption}>
+        {hasVideo ? "Watch the demo" : "Demo video coming soon"}
+      </span>
+    </button>
+  );
+}
+
 export default function Home() {
   const styles = useStyles();
 
@@ -361,11 +502,18 @@ export default function Home() {
       {/* Hero */}
       <div className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.heroEyebrow}>Microsoft Fabric</div>
-          <div className={styles.heroTitle}>Industry Demo Gallery</div>
-          <div className={styles.heroDesc}>
-            Browse production-ready Fabric demos by industry, then deploy a complete
-            environment in minutes.
+          <div className={styles.heroGrid}>
+            <div className={styles.heroCopy}>
+              <div className={styles.heroEyebrow}>Microsoft Fabric</div>
+              <div className={styles.heroTitle}>Industry Demo Gallery</div>
+              <div className={styles.heroDesc}>
+                Browse production-ready Fabric demos by industry, then deploy a complete
+                environment in minutes.
+              </div>
+            </div>
+            <div className={styles.heroVideoCol}>
+              <HeroVideo />
+            </div>
           </div>
         </div>
       </div>
