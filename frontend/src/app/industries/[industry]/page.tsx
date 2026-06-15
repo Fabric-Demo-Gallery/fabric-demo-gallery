@@ -1,7 +1,28 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { industries } from "@/lib/industryCatalog";
+import { DEMOS } from "@/lib/demoCatalog";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
+
+// Mirror of the gallery's item-symbol renderer so the "Includes" strip looks
+// identical on the industry page.
+function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
+  const FILE_MAP: Record<string, string> = {
+    Lakehouse: "lakehouse_24_item.svg",
+    Notebook: "notebook_24_item.svg",
+    SemanticModel: "semantic_model_24_item.svg",
+    Report: "report_24_item.svg",
+    DataPipeline: "pipeline_24_item.svg",
+    Dashboard: "dashboard_24_item.svg",
+    Eventhouse: "eventhouse_24_item.svg",
+    KQLDatabase: "kql_database_24_item.svg",
+    KQLDashboard: "kql_dashboard_24_item.svg",
+  };
+  const file = FILE_MAP[type];
+  if (!file) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
+}
 
 const styles = {
   page: {
@@ -53,6 +74,34 @@ const styles = {
     flexGrow: 1,
     marginBottom: "8px",
   },
+  itemStrip: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flexWrap: "wrap" as const,
+    paddingTop: "14px",
+    marginTop: "14px",
+    borderTop: "1px solid #21262d",
+    width: "100%",
+  },
+  itemStripLabel: {
+    fontSize: "11px",
+    color: "#484f58",
+    fontWeight: 500,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+    marginRight: "4px",
+  },
+  itemStripIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "26px",
+    height: "26px",
+    borderRadius: "6px",
+    backgroundColor: "#21262d",
+    border: "1px solid #30363d",
+  },
 } as const;
 
 export function generateStaticParams() {
@@ -63,6 +112,11 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
   const { industry: industrySlug } = await params;
   const industry = industries.find((i) => i.slug === industrySlug && i.enabled);
   if (!industry) return notFound();
+
+  const demo = industry.demoId ? DEMOS[industry.demoId] : undefined;
+  const uniqueTypes = demo
+    ? Array.from(new Set(demo.fabricItems.map((i) => i.type)))
+    : [];
 
   return (
     <div style={styles.page}>
@@ -75,6 +129,16 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
             <div style={styles.card}>
               <div style={styles.cardTitle}>Standard Deployment</div>
               <div style={styles.cardDesc}>Preconfigured, ready-to-deploy solution for this industry.</div>
+              {uniqueTypes.length > 0 && (
+                <div style={styles.itemStrip}>
+                  <span style={styles.itemStripLabel}>Includes</span>
+                  {uniqueTypes.map((t) => (
+                    <span key={t} style={styles.itemStripIcon} title={t}>
+                      <FabricItemIcon type={t} size={16} />
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </Link>
           <Link
