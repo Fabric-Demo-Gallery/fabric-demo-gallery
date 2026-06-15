@@ -127,7 +127,7 @@ function Navbar() {
           <NextLink href="/monitoring" className={styles.navLink}>Monitoring</NextLink>
         )}
         <a
-          href="https://github.com/microsoft/skills-for-fabric"
+          href="https://github.com/omerizm47/fabric-demo-gallery"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.navLink}

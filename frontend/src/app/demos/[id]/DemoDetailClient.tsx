@@ -65,7 +65,7 @@ import { explainError } from "@/lib/errorHelp";
 const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "data-virtualization-batch",
-    title: "Data Virtualization & Batch Analytics",
+    title: "Data Virtualization & Batch Analytics (Shortcuts)",
     description: "Provision ADLS Gen2, connect external data in-place via Fabric Shortcuts, then process through Bronze→Silver→Gold medallion layers orchestrated with Data Factory pipelines.",
     estimatedTime: "20–30 min",
     tags: ["shortcut", "adls", "medallion", "pipeline"],
@@ -445,6 +445,20 @@ const useStyles = makeStyles({
     marginLeft: "6px",
     marginRight: "6px",
     color: "#30363d",
+  },
+  flowGroupLabel: {
+    fontSize: "10px",
+    fontWeight: 700,
+    color: "#8b949e",
+    letterSpacing: "0.8px",
+    textTransform: "uppercase" as const,
+    marginBottom: "8px",
+  },
+  flowSubRow: {
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap" as const,
+    rowGap: "8px",
   },
   itemRow: {
     display: "flex",
@@ -1339,39 +1353,39 @@ export default function DemoDetailPage() {
                   <div className={styles.sectionHeader}>
                     <ArrowRightRegular fontSize={16} /> Data Flow
                   </div>
-                  <div style={{ padding: "16px 20px" }}>
+                  <div style={{ padding: "20px" }}>
                     {/* Row 1: Ingest layer */}
-                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Ingest</div>
-                    <div style={{ display: "flex", alignItems: "center", marginBottom: 16, flexWrap: "nowrap" }}>
+                    <div className={styles.flowGroupLabel}>Ingest</div>
+                    <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
                       {[
-                        { label: "Source", value: "CSV Files", color: "#1f3a5c" },
-                        { label: "Azure", value: "ADLS Gen2", color: "#1c4a82" },
-                        { label: "Shortcut", value: "Virtual Link", color: "#1a5272" },
-                        { label: "Lakehouse", value: "Delta Tables", color: "#1a5c4a" },
+                        { label: "Source", value: "CSV Files", color: "#1f6feb" },
+                        { label: "Azure", value: "ADLS Gen2", color: "#1f6feb" },
+                        { label: "Shortcut", value: "Virtual Link", color: "#8957e5" },
+                        { label: "Lakehouse", value: "Delta Tables", color: "#3fb68b" },
                       ].map((step, i, arr) => (
                         <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
-                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
-                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+                            <div className={styles.flowValue}>{step.value}</div>
                           </div>
-                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
                         </div>
                       ))}
                     </div>
                     {/* Row 2: Analyze + Serve layer */}
-                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Analyze &amp; Serve</div>
-                    <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap" }}>
+                    <div className={styles.flowGroupLabel}>Analyze &amp; Serve</div>
+                    <div className={styles.flowSubRow}>
                       {[
-                        { label: "Notebooks", value: "Bronze→Gold", color: "#2d6a1a" },
-                        { label: "Semantic Model", value: "Direct Lake", color: "#4a5219" },
-                        { label: "Power BI", value: "Reports", color: "#5c3a19" },
+                        { label: "Notebooks", value: "Bronze→Gold", color: "#238636" },
+                        { label: "Semantic Model", value: "Direct Lake", color: "#bb8009" },
+                        { label: "Power BI", value: "Reports", color: "#da3633" },
                       ].map((step, i, arr) => (
                         <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
-                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
-                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+                            <div className={styles.flowValue}>{step.value}</div>
                           </div>
-                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
                         </div>
                       ))}
                     </div>
@@ -1509,38 +1523,38 @@ export default function DemoDetailPage() {
                   <div className={styles.sectionHeader}>
                     <ArrowRightRegular fontSize={16} /> Data Flow
                   </div>
-                  <div style={{ padding: "16px 20px" }}>
+                  <div style={{ padding: "20px" }}>
                     {/* Row 1: Replicate layer */}
-                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Replicate (zero-ETL)</div>
-                    <div style={{ display: "flex", alignItems: "center", marginBottom: 16, flexWrap: "nowrap" }}>
+                    <div className={styles.flowGroupLabel}>Replicate (zero-ETL)</div>
+                    <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
                       {[
-                        { label: "Source", value: "CSV Files", color: "#1f3a5c" },
-                        { label: "Azure SQL", value: "Operational DB", color: "#1c4a82" },
-                        { label: "Mirroring", value: "Live Replication", color: "#1a5272" },
-                        { label: "OneLake", value: "Delta Tables", color: "#1a5c4a" },
+                        { label: "Source", value: "CSV Files", color: "#1f6feb" },
+                        { label: "Azure SQL", value: "Operational DB", color: "#1f6feb" },
+                        { label: "Mirroring", value: "Live Replication", color: "#8957e5" },
+                        { label: "OneLake", value: "Delta Tables", color: "#3fb68b" },
                       ].map((step, i, arr) => (
                         <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
-                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
-                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+                            <div className={styles.flowValue}>{step.value}</div>
                           </div>
-                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
                         </div>
                       ))}
                     </div>
                     {/* Row 2: Explore + Prove layer */}
-                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Explore &amp; Prove</div>
-                    <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap" }}>
+                    <div className={styles.flowGroupLabel}>Explore &amp; Prove</div>
+                    <div className={styles.flowSubRow}>
                       {[
-                        { label: "Notebooks", value: "Spark on OneLake", color: "#2d6a1a" },
-                        { label: "Live Change", value: "Watch It Sync", color: "#4a5219" },
+                        { label: "Notebooks", value: "Spark on OneLake", color: "#238636" },
+                        { label: "Live Change", value: "Watch It Sync", color: "#bb8009" },
                       ].map((step, i, arr) => (
                         <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
-                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
-                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+                            <div className={styles.flowValue}>{step.value}</div>
                           </div>
-                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
                         </div>
                       ))}
                     </div>
