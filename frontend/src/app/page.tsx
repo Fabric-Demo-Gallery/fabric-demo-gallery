@@ -133,17 +133,6 @@ const useStyles = makeStyles({
     flexWrap: "wrap" as const,
     marginTop: "4px",
   },
-  patternPill: {
-    display: "inline-flex",
-    alignItems: "center",
-    fontSize: "11px",
-    fontWeight: 600,
-    color: "#3fb68b",
-    backgroundColor: "#132f27",
-    borderRadius: "4px",
-    padding: "2px 8px",
-    textTransform: "capitalize" as const,
-  },
 
   /* ---- Cards ---- */
   cardGrid: {
@@ -239,34 +228,6 @@ const useStyles = makeStyles({
     gap: "4px",
   },
 
-  /* ---- Items strip ---- */
-  itemStrip: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    paddingTop: "12px",
-    marginTop: "12px",
-    borderTop: "1px solid #21262d",
-  },
-  itemStripLabel: {
-    fontSize: "11px",
-    color: "#484f58",
-    fontWeight: 500,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.5px",
-    marginRight: "4px",
-  },
-  itemStripIcon: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "26px",
-    height: "26px",
-    borderRadius: "6px",
-    backgroundColor: "#21262d",
-    border: "1px solid #30363d",
-  },
-
   /* ---- How it works ---- */
   howSection: {
     marginBottom: "40px",
@@ -325,25 +286,6 @@ const STEPS = [
   { n: 4, t: "Deploy", d: "Watch real-time provisioning" },
 ];
 
-/* Fabric workload icons — official SVGs from Microsoft */
-function FabricItemIcon({ type, size = 14 }: { type: string; size?: number }) {
-  const FILE_MAP: Record<string, string> = {
-    Lakehouse: "lakehouse_24_item.svg",
-    Notebook: "notebook_24_item.svg",
-    SemanticModel: "semantic_model_24_item.svg",
-    Report: "report_24_item.svg",
-    DataPipeline: "pipeline_24_item.svg",
-    Dashboard: "dashboard_24_item.svg",
-    Eventhouse: "eventhouse_24_item.svg",
-    KQLDatabase: "kql_database_24_item.svg",
-    KQLDashboard: "kql_dashboard_24_item.svg",
-  };
-  const file = FILE_MAP[type];
-  if (!file) return null;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
-}
-
 export default function Home() {
   const styles = useStyles();
 
@@ -375,8 +317,6 @@ export default function Home() {
         {/* Cards */}
         <div className={styles.cardGrid}>
             {cards.map(({ ind, demo }) => {
-              const items = demo?.fabricItems ?? [];
-              const uniqueTypes = Array.from(new Set(items.map((i) => i.type)));
               return (
                 <Link
                   key={ind.slug}
@@ -404,19 +344,7 @@ export default function Home() {
 
                       {demo && (
                         <div className={styles.cardMetaRow}>
-                          <span className={styles.patternPill}>{demo.architecture.pattern}</span>
                           <span className={styles.metaItem}>{demo.estimatedTime}</span>
-                        </div>
-                      )}
-
-                      {uniqueTypes.length > 0 && (
-                        <div className={styles.itemStrip}>
-                          <span className={styles.itemStripLabel}>Includes</span>
-                          {uniqueTypes.map((t) => (
-                            <span key={t} className={styles.itemStripIcon} title={t}>
-                              <FabricItemIcon type={t} size={16} />
-                            </span>
-                          ))}
                         </div>
                       )}
                     </div>
