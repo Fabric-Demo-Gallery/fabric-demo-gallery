@@ -498,7 +498,10 @@ const useStyles = makeStyles({
     alignItems: "center",
     padding: "20px",
     gap: "0",
-    flexWrap: "wrap" as const,
+    // Single continuous pipeline: never wrap (a wrapped box leaves a connector
+    // arrow dangling at a row edge). Scroll horizontally on narrow widths instead.
+    flexWrap: "nowrap" as const,
+    overflowX: "auto" as const,
   },
   flowBox: {
     borderRadius: "6px",
@@ -506,7 +509,8 @@ const useStyles = makeStyles({
     paddingRight: "16px",
     paddingTop: "12px",
     paddingBottom: "12px",
-    minWidth: "140px",
+    minWidth: "132px",
+    flexShrink: 0,
   },
   flowLabel: {
     fontSize: "10px",
@@ -524,6 +528,7 @@ const useStyles = makeStyles({
     marginLeft: "6px",
     marginRight: "6px",
     color: "#30363d",
+    flexShrink: 0,
   },
   flowGroupLabel: {
     fontSize: "10px",
@@ -536,8 +541,10 @@ const useStyles = makeStyles({
   flowSubRow: {
     display: "flex",
     alignItems: "center",
-    flexWrap: "wrap" as const,
-    rowGap: "8px",
+    // Single continuous pipeline row — scroll instead of wrapping so connector
+    // arrows never dangle at a row edge.
+    flexWrap: "nowrap" as const,
+    overflowX: "auto" as const,
   },
   itemRow: {
     display: "flex",
@@ -768,7 +775,7 @@ function FlowSteps({ steps }: { steps: { label?: string; value: string; color: s
   return (
     <>
       {steps.map((step, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center" }}>
+        <div key={i} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
           {i > 0 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
           <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
             {step.label && (
