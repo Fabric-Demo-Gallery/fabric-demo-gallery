@@ -2,8 +2,8 @@
 
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { makeStyles, mergeClasses } from "@fluentui/react-components";
+import { useMemo } from "react";
+import { makeStyles } from "@fluentui/react-components";
 import {
   BuildingFactory24Regular,
   BuildingRetail24Regular,
@@ -17,15 +17,15 @@ import {
   Video24Regular,
   HatGraduation24Regular,
   Bed24Regular,
-  PlayCircle48Filled,
 } from "@fluentui/react-icons";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { industries } from "@/lib/industryCatalog";
 import { DEMOS } from "@/lib/demoCatalog";
 
-// YouTube video ID of the product demo (the part after "v=" / after youtu.be/).
-// Leave empty to show a "coming soon" placeholder in the hero.
-const DEMO_VIDEO_ID = "GjaR8hhw7SA";
+// Self-hosted product demo video, served from /public (same-origin). This avoids
+// YouTube's embed referrer/bot-check gates entirely — it just plays for everyone.
+// Set to "" to hide the player and show a "coming soon" placeholder.
+const DEMO_VIDEO_SRC = "/demo.mp4";
 
 // Professional Fluent System icons per industry (replaces hand-drawn SVGs).
 const INDUSTRY_ICON: Record<string, FluentIcon> = {
@@ -160,6 +160,15 @@ const useStyles = makeStyles({
     borderRight: "none",
     borderBottom: "none",
     borderLeft: "none",
+  },
+  heroVideoEl: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover" as const,
+    backgroundColor: "#000000",
   },
   heroVideoOverlay: {
     position: "absolute",
@@ -375,58 +384,33 @@ const STEPS = [
   { n: 4, t: "Deploy", d: "Watch real-time provisioning" },
 ];
 
-// Hero product-demo video. Click-to-load facade: no YouTube scripts load until
-// the visitor hits play (faster first paint, privacy-friendly). Falls back to a
-// "coming soon" placeholder when DEMO_VIDEO_ID is empty.
+// Hero product-demo video. Self-hosted native <video> — no third-party player,
+// no embed/referrer/bot-check issues. preload="metadata" + the #t fragment shows
+// a first-frame poster without downloading the whole file until the user plays.
 function HeroVideo() {
   const styles = useStyles();
-  const [playing, setPlaying] = useState(false);
-  const videoId = DEMO_VIDEO_ID.trim();
-  const hasVideo = videoId.length > 0;
+  const src = DEMO_VIDEO_SRC.trim();
 
-  if (hasVideo && playing) {
-    // Pass the embedding origin explicitly. The site sends Referrer-Policy:
-    // same-origin, so the YouTube player would otherwise receive no referrer and
-    // fail to validate the embed (Error 153). The iframe's own referrerPolicy
-    // also forces the origin to be sent as referrer.
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const src =
-      `https://www.youtube-nocookie.com/embed/${videoId}` +
-      `?autoplay=1&rel=0&modestbranding=1&playsinline=1` +
-      (origin ? `&origin=${encodeURIComponent(origin)}` : "");
+  if (!src) {
     return (
       <div className={styles.heroVideoFrame}>
-        <iframe
-          className={styles.heroVideoIframe}
-          src={src}
-          title="Fabric Demo Gallery product demo"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+        <span className={styles.heroVideoOverlay} />
+        <span className={styles.heroVideoCaption}>Demo video coming soon</span>
       </div>
     );
   }
 
-  const poster = hasVideo ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : undefined;
-
   return (
-    <button
-      type="button"
-      className={mergeClasses(styles.heroVideoFrame, hasVideo ? styles.heroVideoButton : undefined)}
-      style={poster ? { backgroundImage: `url(${poster})` } : undefined}
-      onClick={() => { if (hasVideo) setPlaying(true); }}
-      disabled={!hasVideo}
-      aria-label={hasVideo ? "Play the product demo" : "Product demo video coming soon"}
-    >
-      <span className={styles.heroVideoOverlay} />
-      <span className={styles.heroVideoPlay}>
-        <PlayCircle48Filled fontSize={64} color={hasVideo ? "#ffffff" : "#484f58"} />
-      </span>
-      <span className={styles.heroVideoCaption}>
-        {hasVideo ? "Watch the demo" : "Demo video coming soon"}
-      </span>
-    </button>
+    <div className={styles.heroVideoFrame}>
+      <video
+        className={styles.heroVideoEl}
+        src={`${src}#t=0.1`}
+        controls
+        preload="metadata"
+        playsInline
+        title="Fabric Demo Gallery product demo"
+      />
+    </div>
   );
 }
 
