@@ -198,6 +198,85 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
 
 const LAYER_COLORS = ["#3fb68b", "#238636", "#196c2e"];
 
+// Per-sector AI/ML pipeline details, shown in the "ML Pipeline" section of the
+// AI & Machine Learning scenario. Target variables and feature counts are taken
+// from each sector's actual ML notebooks (notebooks/ml/02_model_training), so
+// every industry shows consistent, accurate detail instead of a sparse section.
+const ML_DETAILS: Record<string, { target: string; featureCount: string; features: string; model: string }> = {
+  "manufacturing-qc": {
+    target: "needs_maintenance: binary flag (1 = daily downtime > 60 min, indicating maintenance required)",
+    featureCount: "(25 total)",
+    features: "Sensor stats (temp, pressure, vibration, humidity: mean/std/max/range), anomaly ratios, production metrics (units, defects, yield), equipment age, production line, machine type",
+    model: "SynapseML LightGBM Classifier: 200 iterations, 0.05 learning rate, class imbalance handling. Outputs probability and risk level (critical/high/medium/low).",
+  },
+  "retail-sales": {
+    target: "daily_quantity: continuous (units sold per store-product per day)",
+    featureCount: "(18 total)",
+    features: "Transaction count, avg price/discount, calendar (day of week, month, weekend), lag features (1-day, 7-day demand), product category/subcategory, store region/format, margin",
+    model: "SynapseML LightGBM Regressor: 200 iterations, 0.05 learning rate. Outputs predicted demand and a demand signal (high/stable/low).",
+  },
+  "energy-grid": {
+    target: "had_outage: binary flag (1 = outage/surge/sag event at substation that day)",
+    featureCount: "(19 total)",
+    features: "Voltage stats (avg/std/min/max/range/deviation from 230V), frequency (avg/std/deviation from 50Hz), power factor, load, temperature, reading count, calendar (day of week, month), region",
+    model: "SynapseML LightGBM Classifier: 200 iterations, 0.05 learning rate, class imbalance handling. Outputs outage probability and risk level (critical/high/medium/low).",
+  },
+  healthcare: {
+    target: "is_readmission: binary flag (1 = patient readmitted)",
+    featureCount: "(12 total)",
+    features: "Length of stay, prior admissions, admission hour, vital-sign counts/ratios/averages, department, admission type, insurance type, age group, diagnosis chapter",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a readmission probability and risk level (high/medium/low).",
+  },
+  "financial-services": {
+    target: "is_flagged_fraud: binary flag (1 = transaction flagged as fraud)",
+    featureCount: "(18 total)",
+    features: "Amount (+log), transaction hour, night/international/high-value flags, balance, credit limit & utilisation, transaction type, merchant category, channel, country, account type, age group, segment, region, risk tier",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a fraud probability and risk level (high/medium/low).",
+  },
+  technology: {
+    target: "is_churned: binary flag (1 = account churned)",
+    featureCount: "(17 total)",
+    features: "MRR, seat count, tenure, health score, user & active-user counts, avg logins (30d), event count, distinct features used, avg session duration, support ticket & SLA-breach counts, avg CSAT & resolution hours, plan, industry, region",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a churn probability and risk level (high/medium/low).",
+  },
+  transportation: {
+    target: "is_late: binary flag (1 = delivery arrived late)",
+    featureCount: "(15 total)",
+    features: "Planned duration, distance, load tonnes & utilisation, SLA hours, toll cost, vehicle capacity & age, departure hour/day, weekend/rush flags, vehicle type, depot, route type",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a late-delivery probability and risk level (high/medium/low).",
+  },
+  hospitality: {
+    target: "is_cancelled: binary flag (1 = booking cancelled)",
+    featureCount: "(15 total)",
+    features: "Nights, room rate, lead time, refundable flag, total stays & spend, star rating, room count, room type, channel, meal plan, loyalty tier, region, age group, property type",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a cancellation probability and risk level (high/medium/low).",
+  },
+  media: {
+    target: "is_completed: binary flag (1 = content watched to completion)",
+    featureCount: "(14 total)",
+    features: "Duration, release year, monthly fee, view hour/day, weekend flag, genre, content type, production-cost bucket, language, plan type, region, age group, device type",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a completion probability and engagement signal (high/medium/low).",
+  },
+  "professional-services": {
+    target: "is_over_budget: binary flag (1 = engagement over budget)",
+    featureCount: "(13 total)",
+    features: "Budget, headcount, planned duration, contract value, relationship years, NPS, lead consultant experience & daily rate, practice, industry, tier, region, lead grade",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs an over-budget probability and risk level (high/medium/low).",
+  },
+  construction: {
+    target: "is_delayed: binary flag (1 = task delayed)",
+    featureCount: "(9 total)",
+    features: "Planned duration, budget, subcontractor rating/years/accreditation, task name, project type, project region, subcontractor trade",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a delay probability and risk level (high/medium/low).",
+  },
+  education: {
+    target: "is_withdrawn: binary flag (1 = student withdrew)",
+    featureCount: "(11 total)",
+    features: "Credits, age at enrolment, average score, pass rate, assessment count, cohort year, department, level, programme, gender, region",
+    model: "LightGBM + RandomForest classifiers (MLflow-tracked). Outputs a withdrawal probability and risk level (high/medium/low).",
+  },
+};
+
 const useStyles = makeStyles({
   page: {
     minHeight: "100vh",
@@ -679,6 +758,29 @@ const useStyles = makeStyles({
     borderBottom: "1px solid #21262d",
   },
 });
+
+// Renders a horizontal pipeline of labeled boxes connected by arrows. The arrow
+// LEADS each box (rendered before it) and is grouped with that box, so when the
+// row wraps to a new line the arrow wraps with its box — never left dangling at
+// the end of a row (the old trailing-arrow layout broke on wrap).
+function FlowSteps({ steps }: { steps: { label?: string; value: string; color: string }[] }) {
+  const styles = useStyles();
+  return (
+    <>
+      {steps.map((step, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center" }}>
+          {i > 0 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
+          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+            {step.label && (
+              <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+            )}
+            <div className={styles.flowValue}>{step.value}</div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
 
 export default function DemoDetailPage() {
   const params = useParams();
@@ -1357,37 +1459,21 @@ export default function DemoDetailPage() {
                     {/* Row 1: Ingest layer */}
                     <div className={styles.flowGroupLabel}>Ingest</div>
                     <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
-                      {[
+                      <FlowSteps steps={[
                         { label: "Source", value: "CSV Files", color: "#1f6feb" },
                         { label: "Azure", value: "ADLS Gen2", color: "#1f6feb" },
                         { label: "Shortcut", value: "Virtual Link", color: "#8957e5" },
                         { label: "Lakehouse", value: "Delta Tables", color: "#3fb68b" },
-                      ].map((step, i, arr) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
-                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
-                            <div className={styles.flowValue}>{step.value}</div>
-                          </div>
-                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
-                        </div>
-                      ))}
+                      ]} />
                     </div>
                     {/* Row 2: Analyze + Serve layer */}
                     <div className={styles.flowGroupLabel}>Analyze &amp; Serve</div>
                     <div className={styles.flowSubRow}>
-                      {[
+                      <FlowSteps steps={[
                         { label: "Notebooks", value: "Bronze→Gold", color: "#238636" },
                         { label: "Semantic Model", value: "Direct Lake", color: "#bb8009" },
                         { label: "Power BI", value: "Reports", color: "#da3633" },
-                      ].map((step, i, arr) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
-                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
-                            <div className={styles.flowValue}>{step.value}</div>
-                          </div>
-                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
-                        </div>
-                      ))}
+                      ]} />
                     </div>
                   </div>
                 </div>
@@ -1527,36 +1613,20 @@ export default function DemoDetailPage() {
                     {/* Row 1: Replicate layer */}
                     <div className={styles.flowGroupLabel}>Replicate (zero-ETL)</div>
                     <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
-                      {[
+                      <FlowSteps steps={[
                         { label: "Source", value: "CSV Files", color: "#1f6feb" },
                         { label: "Azure SQL", value: "Operational DB", color: "#1f6feb" },
                         { label: "Mirroring", value: "Live Replication", color: "#8957e5" },
                         { label: "OneLake", value: "Delta Tables", color: "#3fb68b" },
-                      ].map((step, i, arr) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
-                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
-                            <div className={styles.flowValue}>{step.value}</div>
-                          </div>
-                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
-                        </div>
-                      ))}
+                      ]} />
                     </div>
                     {/* Row 2: Explore + Prove layer */}
                     <div className={styles.flowGroupLabel}>Explore &amp; Prove</div>
                     <div className={styles.flowSubRow}>
-                      {[
+                      <FlowSteps steps={[
                         { label: "Notebooks", value: "Spark on OneLake", color: "#238636" },
                         { label: "Live Change", value: "Watch It Sync", color: "#bb8009" },
-                      ].map((step, i, arr) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
-                            <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
-                            <div className={styles.flowValue}>{step.value}</div>
-                          </div>
-                          {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
-                        </div>
-                      ))}
+                      ]} />
                     </div>
                   </div>
                 </div>
@@ -1687,27 +1757,15 @@ export default function DemoDetailPage() {
                     <ArrowRightRegular fontSize={16} /> Data Flow
                   </div>
                   <div className={styles.flowRow}>
-                    {demo.architecture.layers.map((layer, i) => {
+                    <FlowSteps steps={demo.architecture.layers.map((layer, i) => {
                       const medalLabels = ["Bronze", "Silver", "Gold"];
                       const isMedallion = /^(Bronze|Silver|Gold)\s*\(/.test(layer);
                       const label = isMedallion ? medalLabels[i] : "";
                       const value = isMedallion
                         ? layer.replace(/^(Bronze|Silver|Gold)\s*\(/, "").replace(/\)$/, "")
                         : layer;
-                      return (
-                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div className={styles.flowBox} style={{ backgroundColor: LAYER_COLORS[i] }}>
-                            {label && (
-                              <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{label}</div>
-                            )}
-                            <div className={styles.flowValue}>{value}</div>
-                          </div>
-                          {i < demo.architecture.layers.length - 1 && (
-                            <ArrowRightRegular className={styles.flowArrow} fontSize={18} />
-                          )}
-                        </div>
-                      );
-                    })}
+                      return { label, value, color: LAYER_COLORS[i] ?? "#3fb68b" };
+                    })} />
                   </div>
                 </div>
 
@@ -1771,21 +1829,13 @@ export default function DemoDetailPage() {
                     End-to-end ML pipeline: Bronze/Silver data → Feature engineering → LightGBM training → Batch scoring
                   </div>
                   <div className={styles.flowRow}>
-                    {[
+                    <FlowSteps steps={[
                       { label: "Bronze", value: "Raw Ingest", color: "#3fb68b" },
                       { label: "Silver", value: "Clean & Enrich", color: "#238636" },
                       { label: "Features", value: "ML Feature Table", color: "#1f6feb" },
-                      { label: "Train", value: "SynapseML LightGBM", color: "#8957e5" },
+                      { label: "Train", value: "LightGBM", color: "#8957e5" },
                       { label: "Score", value: "Predictions & Risk", color: "#da3633" },
-                    ].map((step, i, arr) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                        <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
-                          <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
-                          <div className={styles.flowValue}>{step.value}</div>
-                        </div>
-                        {i < arr.length - 1 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
-                      </div>
-                    ))}
+                    ]} />
                   </div>
                 </div>
 
@@ -1851,58 +1901,33 @@ export default function DemoDetailPage() {
                     <BrainCircuit24Regular fontSize={16} /> ML Pipeline
                   </div>
                   <div className={styles.sectionBody}>
-                    {id === "manufacturing-qc" && (
-                      <>
-                        <div style={{ padding: "8px 0" }}>
-                          <Text weight="medium" size={300}>Target Variable</Text>
-                          <div><Caption1>needs_maintenance: binary flag (1 = daily downtime &gt; 60 min, indicating maintenance required)</Caption1></div>
-                        </div>
-                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                          <Text weight="medium" size={300}>Features (25 total)</Text>
-                          <div><Caption1>Sensor stats (temp, pressure, vibration, humidity: mean/std/max/range), anomaly ratios, production metrics (units, defects, yield), equipment age, production line, machine type</Caption1></div>
-                        </div>
-                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                          <Text weight="medium" size={300}>Model</Text>
-                          <div><Caption1>SynapseML LightGBM Classifier: 200 iterations, 0.05 learning rate, class imbalance handling. Outputs probability and risk level (critical/high/medium/low).</Caption1></div>
-                        </div>
-                      </>
-                    )}
-                    {id === "retail-sales" && (
-                      <>
-                        <div style={{ padding: "8px 0" }}>
-                          <Text weight="medium" size={300}>Target Variable</Text>
-                          <div><Caption1>daily_quantity: continuous (units sold per store-product per day)</Caption1></div>
-                        </div>
-                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                          <Text weight="medium" size={300}>Features (18 total)</Text>
-                          <div><Caption1>Transaction count, avg price/discount, calendar (day of week, month, weekend), lag features (1-day, 7-day demand), product category/subcategory, store region/format, margin</Caption1></div>
-                        </div>
-                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                          <Text weight="medium" size={300}>Model</Text>
-                          <div><Caption1>SynapseML LightGBM Regressor: 200 iterations, 0.05 learning rate. Outputs predicted demand and a demand signal (high/stable/low).</Caption1></div>
-                        </div>
-                      </>
-                    )}
-                    {id === "energy-grid" && (
-                      <>
-                        <div style={{ padding: "8px 0" }}>
-                          <Text weight="medium" size={300}>Target Variable</Text>
-                          <div><Caption1>had_outage: binary flag (1 = outage/surge/sag event at substation that day)</Caption1></div>
-                        </div>
-                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                          <Text weight="medium" size={300}>Features (19 total)</Text>
-                          <div><Caption1>Voltage stats (avg/std/min/max/range/deviation from 230V), frequency (avg/std/deviation from 50Hz), power factor, load, temperature, reading count, calendar (day of week, month), region</Caption1></div>
-                        </div>
-                        <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                          <Text weight="medium" size={300}>Model</Text>
-                          <div><Caption1>SynapseML LightGBM Classifier: 200 iterations, 0.05 learning rate, class imbalance handling. Outputs outage probability and risk level (critical/high/medium/low).</Caption1></div>
-                        </div>
-                      </>
-                    )}
-                    <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
-                      <Text weight="medium" size={300}>Gold Tables</Text>
-                      <div><Caption1>gold_ml_features, gold_ml_model_metrics, gold_ml_feature_importance, gold_ml_predictions, gold_ml_summary</Caption1></div>
-                    </div>
+                    {(() => {
+                      const ml = ML_DETAILS[id];
+                      return (
+                        <>
+                          {ml && (
+                            <>
+                              <div style={{ padding: "8px 0" }}>
+                                <Text weight="medium" size={300}>Target Variable</Text>
+                                <div><Caption1>{ml.target}</Caption1></div>
+                              </div>
+                              <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                                <Text weight="medium" size={300}>Features {ml.featureCount}</Text>
+                                <div><Caption1>{ml.features}</Caption1></div>
+                              </div>
+                              <div style={{ padding: "8px 0", borderTop: "1px solid #21262d" }}>
+                                <Text weight="medium" size={300}>Model</Text>
+                                <div><Caption1>{ml.model}</Caption1></div>
+                              </div>
+                            </>
+                          )}
+                          <div style={{ padding: "8px 0", borderTop: ml ? "1px solid #21262d" : undefined }}>
+                            <Text weight="medium" size={300}>Gold Tables</Text>
+                            <div><Caption1>gold_ml_features, gold_ml_model_metrics, gold_ml_feature_importance, gold_ml_predictions, gold_ml_summary</Caption1></div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </>
