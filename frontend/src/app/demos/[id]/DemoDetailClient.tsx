@@ -1,15 +1,15 @@
 "use client";
 
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { Fragment, useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { oneLakeScopes } from "@/lib/msal";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 import {
-  fetchSubscriptions, fetchResourceGroups,
+  fetchSubscriptions, fetchResourceGroups, fetchDatasetPreview,
 } from "@/lib/api";
-import type { ScenarioInfo, AzureSubscription, AzureResourceGroup } from "@/lib/api";
+import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, DatasetPreview } from "@/lib/api";
 import NextLink from "next/link";
 import { useDeployment } from "@/lib/DeploymentContext";
 // import type { DeployStep } from "@/lib/DeploymentContext";
@@ -173,6 +173,13 @@ type DeployStep = {
   status: "pending" | "running" | "completed" | "failed" | "skipped";
   detail?: string | null;
   itemId?: string;
+};
+
+type SampleDataItem = {
+  fileName: string;
+  description: string;
+  format: string;
+  rows: number;
 };
 
 /* Fabric workload icons — official SVGs from Microsoft */
@@ -601,6 +608,176 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: "12px",
+    flex: 1,
+    minWidth: 0,
+  },
+  dataRight: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: "12px",
+    flexShrink: 0,
+  },
+  previewPanel: {
+    paddingLeft: "20px",
+    paddingRight: "20px",
+    paddingBottom: "18px",
+    backgroundColor: "#0d1117",
+  },
+  previewStatus: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    paddingTop: "14px",
+    color: "#8b949e",
+  },
+  previewMeta: {
+    paddingTop: "12px",
+    paddingBottom: "8px",
+    color: "#8b949e",
+  },
+  previewTableWrap: {
+    maxHeight: "360px",
+    overflow: "auto",
+    border: "1px solid #30363d",
+    borderRadius: "6px",
+    backgroundColor: "#161b22",
+  },
+  previewTable: {
+    width: "100%",
+    minWidth: "640px",
+    borderCollapse: "collapse" as const,
+    fontSize: "12px",
+  },
+  previewTh: {
+    position: "sticky" as const,
+    top: 0,
+    backgroundColor: "#21262d",
+    color: "#e6edf3",
+    fontWeight: 600,
+    textAlign: "left" as const,
+    padding: "8px 10px",
+    borderBottom: "1px solid #30363d",
+    whiteSpace: "nowrap" as const,
+  },
+  previewTd: {
+    color: "#c9d1d9",
+    padding: "8px 10px",
+    borderBottom: "1px solid #21262d",
+    maxWidth: "260px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap" as const,
+  },
+  previewEmpty: {
+    padding: "14px 0 0",
+    color: "#8b949e",
+  },
+  // ── Fullscreen preview modal ──────────────────────────────────────────────
+  modalBackdrop: {
+    position: "fixed" as const,
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    zIndex: 9000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalPanel: {
+    width: "92vw",
+    height: "88vh",
+    maxWidth: "1400px",
+    backgroundColor: "#0d1117",
+    border: "1px solid #30363d",
+    borderRadius: "10px",
+    display: "flex",
+    flexDirection: "column" as const,
+    overflow: "hidden",
+  },
+  modalHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "14px 20px",
+    borderBottom: "1px solid #30363d",
+    backgroundColor: "#161b22",
+    flexShrink: 0,
+  },
+  modalHeaderLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    minWidth: 0,
+  },
+  modalBody: {
+    display: "flex",
+    flex: 1,
+    overflow: "hidden",
+  },
+  modalSidebar: {
+    width: "220px",
+    flexShrink: 0,
+    borderRight: "1px solid #30363d",
+    overflowY: "auto" as const,
+    backgroundColor: "#0d1117",
+    padding: "8px 0",
+  },
+  modalSidebarItem: {
+    padding: "8px 16px",
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "2px",
+    ":hover": { backgroundColor: "#161b22" },
+  },
+  modalSidebarItemActive: {
+    backgroundColor: "#1c2128",
+    borderLeft: "3px solid #388bfd",
+    paddingLeft: "13px",
+  },
+  modalMain: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column" as const,
+    overflow: "hidden",
+  },
+  modalMeta: {
+    padding: "10px 20px",
+    borderBottom: "1px solid #21262d",
+    color: "#8b949e",
+    flexShrink: 0,
+  },
+  modalTableWrap: {
+    flex: 1,
+    overflow: "auto",
+    backgroundColor: "#161b22",
+  },
+  modalTable: {
+    width: "100%",
+    minWidth: "640px",
+    borderCollapse: "collapse" as const,
+    fontSize: "12px",
+  },
+  modalTh: {
+    position: "sticky" as const,
+    top: 0,
+    backgroundColor: "#21262d",
+    color: "#e6edf3",
+    fontWeight: 600,
+    textAlign: "left" as const,
+    padding: "10px 12px",
+    borderBottom: "1px solid #30363d",
+    whiteSpace: "nowrap" as const,
+    zIndex: 1,
+  },
+  modalTd: {
+    color: "#c9d1d9",
+    padding: "8px 12px",
+    borderBottom: "1px solid #21262d",
+    maxWidth: "300px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap" as const,
   },
   sidebar: {
     position: "sticky" as const,
@@ -828,6 +1005,10 @@ export default function DemoDetailPage() {
   const [loadingSubs, setLoadingSubs] = useState(false);
   const [subscriptionsError, setSubscriptionsError] = useState<string | null>(null);
   const [loadingRGs, setLoadingRGs] = useState(false);
+  const [previewFileName, setPreviewFileName] = useState<string | null>(null);
+  const [datasetPreviews, setDatasetPreviews] = useState<Record<string, DatasetPreview>>({});
+  const [previewLoadingFile, setPreviewLoadingFile] = useState<string | null>(null);
+  const [previewErrors, setPreviewErrors] = useState<Record<string, string>>({});
 
   // Auto-open deploy panel when arriving via ?mode=custom
   useEffect(() => {
@@ -1368,7 +1549,84 @@ export default function DemoDetailPage() {
     }
   };
 
+  const handlePreviewDataset = async (fileName: string) => {
+    if (previewFileName === fileName) {
+      setPreviewFileName(null);
+      return;
+    }
+
+    setPreviewFileName(fileName);
+    if (datasetPreviews[fileName]) return;
+
+    setPreviewLoadingFile(fileName);
+    setPreviewErrors((prev) => {
+      const next = { ...prev };
+      delete next[fileName];
+      return next;
+    });
+
+    try {
+      const preview = await fetchDatasetPreview(id, fileName);
+      setDatasetPreviews((prev) => ({ ...prev, [fileName]: preview }));
+    } catch (e) {
+      setPreviewErrors((prev) => ({
+        ...prev,
+        [fileName]: e instanceof Error ? e.message : "Could not load preview",
+      }));
+    } finally {
+      setPreviewLoadingFile((current) => (current === fileName ? null : current));
+    }
+  };
+
+  // Close preview modal on ESC
+  useEffect(() => {
+    if (!previewFileName) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPreviewFileName(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [previewFileName]);
+
+  const renderSampleDataSection = (items: SampleDataItem[] = demo.sampleData) => (
+    <div className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <TableRegular fontSize={16} /> Sample Data
+      </div>
+      <div className={styles.sectionBody}>
+        {items.map((dataset, index) => {
+          const loading = previewLoadingFile === dataset.fileName;
+          return (
+            <div
+              key={dataset.fileName}
+              className={styles.dataRow}
+              style={index === items.length - 1 ? { borderBottom: "none" } : undefined}
+            >
+              <div className={styles.dataLeft}>
+                <Badge appearance="tint" color="severe" size="small">{dataset.format}</Badge>
+                <div style={{ minWidth: 0 }}>
+                  <Text weight="medium" size={200}>{dataset.fileName}</Text>
+                  <div><Caption1>{dataset.description}</Caption1></div>
+                </div>
+              </div>
+              <div className={styles.dataRight}>
+                <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>{dataset.rows.toLocaleString()} rows</Caption1>
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={loading ? <Spinner size="extra-tiny" /> : <TableRegular />}
+                  onClick={() => void handlePreviewDataset(dataset.fileName)}
+                >
+                  Preview
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
+    <>
     <div className={styles.page}>
       {/* Breadcrumb — rendered client-side so it can read ?mode from URL */}
       {(() => { const ind = industries.find(i => i.demoId === id); return ind ? <Breadcrumbs industrySlug={ind.slug} deploymentType={isCustomMode ? "custom" : "standard"} scenarioTitle={isCustomMode && selectedScenario ? selectedScenario.title : undefined} demoId={id} /> : null; })()}
@@ -1536,25 +1794,7 @@ export default function DemoDetailPage() {
                 </div>
 
                 {/* Sample Data — industry-specific */}
-                <div className={styles.section}>
-                  <div className={styles.sectionHeader}>
-                    <TableRegular fontSize={16} /> Sample Data
-                  </div>
-                  <div className={styles.sectionBody}>
-                    {demo.sampleData.map((d, i) => (
-                      <div key={i} className={styles.dataRow} style={i === demo.sampleData.length - 1 ? { borderBottom: "none" } : undefined}>
-                        <div className={styles.dataLeft}>
-                          <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
-                          <div>
-                            <Text weight="medium" size={200}>{d.fileName}</Text>
-                            <div><Caption1>{d.description}</Caption1></div>
-                          </div>
-                        </div>
-                        <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>{d.rows.toLocaleString()} rows</Caption1>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {renderSampleDataSection()}
               </>
             )}
 
@@ -1689,25 +1929,7 @@ export default function DemoDetailPage() {
                 </div>
 
                 {/* Sample Data — industry-specific */}
-                <div className={styles.section}>
-                  <div className={styles.sectionHeader}>
-                    <TableRegular fontSize={16} /> Sample Data
-                  </div>
-                  <div className={styles.sectionBody}>
-                    {demo.sampleData.map((d, i) => (
-                      <div key={i} className={styles.dataRow} style={i === demo.sampleData.length - 1 ? { borderBottom: "none" } : undefined}>
-                        <div className={styles.dataLeft}>
-                          <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
-                          <div>
-                            <Text weight="medium" size={200}>{d.fileName}</Text>
-                            <div><Caption1>{d.description}</Caption1></div>
-                          </div>
-                        </div>
-                        <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>{d.rows.toLocaleString()} rows</Caption1>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {renderSampleDataSection()}
               </>
             )}
 
@@ -1800,27 +2022,7 @@ export default function DemoDetailPage() {
                 </div>
 
                 {/* Sample Data */}
-                <div className={styles.section}>
-                  <div className={styles.sectionHeader}>
-                    <TableRegular fontSize={16} /> Sample Data
-                  </div>
-                  <div className={styles.sectionBody}>
-                    {demo.sampleData.map((d, i) => (
-                      <div key={i} className={styles.dataRow} style={i === demo.sampleData.length - 1 ? { borderBottom: "none" } : undefined}>
-                        <div className={styles.dataLeft}>
-                          <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
-                          <div>
-                            <Text weight="medium" size={200}>{d.fileName}</Text>
-                            <div><Caption1>{d.description}</Caption1></div>
-                          </div>
-                        </div>
-                        <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>
-                          {d.rows.toLocaleString()} rows
-                        </Caption1>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {renderSampleDataSection()}
               </>
             )}
 
@@ -1880,27 +2082,7 @@ export default function DemoDetailPage() {
                 </div>
 
                 {/* Sample Data — uses demo's actual data */}
-                <div className={styles.section}>
-                  <div className={styles.sectionHeader}>
-                    <TableRegular fontSize={16} /> Sample Data
-                  </div>
-                  <div className={styles.sectionBody}>
-                    {demo.sampleData.map((d, i) => (
-                      <div key={i} className={styles.dataRow} style={i === demo.sampleData.length - 1 ? { borderBottom: "none" } : undefined}>
-                        <div className={styles.dataLeft}>
-                          <Badge appearance="tint" color="severe" size="small">{d.format}</Badge>
-                          <div>
-                            <Text weight="medium" size={200}>{d.fileName}</Text>
-                            <div><Caption1>{d.description}</Caption1></div>
-                          </div>
-                        </div>
-                        <Caption1 style={{ fontVariantNumeric: "tabular-nums" }}>
-                          {d.rows.toLocaleString()} rows
-                        </Caption1>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {renderSampleDataSection()}
 
                 {/* ML Pipeline Details */}
                 <div className={styles.section}>
@@ -2354,5 +2536,121 @@ export default function DemoDetailPage() {
         </div>
       </div>
     </div>
+
+    {/* ── Fullscreen data preview modal ───────────────────────────────── */}
+    {previewFileName && (
+      <div
+        className={styles.modalBackdrop}
+        onClick={(e) => { if (e.target === e.currentTarget) setPreviewFileName(null); }}
+      >
+        <div className={styles.modalPanel}>
+          {/* Header */}
+          <div className={styles.modalHeader}>
+            <div className={styles.modalHeaderLeft}>
+              <TableRegular fontSize={20} style={{ color: "#8b949e", flexShrink: 0 }} />
+              <Text weight="semibold" size={400} style={{ color: "#e6edf3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {previewFileName}
+              </Text>
+              {demo.sampleData.find(d => d.fileName === previewFileName) && (
+                <Caption1 style={{ color: "#8b949e", whiteSpace: "nowrap" }}>
+                  · {demo.sampleData.find(d => d.fileName === previewFileName)!.rows.toLocaleString()} rows
+                </Caption1>
+              )}
+            </div>
+            <Button
+              appearance="subtle"
+              size="small"
+              icon={<span style={{ fontSize: 16 }}>✕</span>}
+              onClick={() => setPreviewFileName(null)}
+              aria-label="Close preview"
+            />
+          </div>
+
+          {/* Body */}
+          <div className={styles.modalBody}>
+            {/* Sidebar — file list */}
+            <div className={styles.modalSidebar}>
+              {demo.sampleData.map((dataset) => {
+                const isActive = previewFileName === dataset.fileName;
+                return (
+                  <div
+                    key={dataset.fileName}
+                    className={`${styles.modalSidebarItem}${isActive ? ` ${styles.modalSidebarItemActive}` : ""}`}
+                    onClick={() => void handlePreviewDataset(dataset.fileName)}
+                  >
+                    <Text weight={isActive ? "semibold" : "regular"} size={200} style={{ color: isActive ? "#e6edf3" : "#8b949e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {dataset.fileName}
+                    </Text>
+                    <Caption1 style={{ color: "#484f58" }}>{dataset.rows.toLocaleString()} rows</Caption1>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Main — table */}
+            <div className={styles.modalMain}>
+              {(() => {
+                const loading = previewLoadingFile === previewFileName;
+                const preview = datasetPreviews[previewFileName];
+                const previewError = previewErrors[previewFileName];
+                const dataset = demo.sampleData.find(d => d.fileName === previewFileName);
+
+                if (loading) return (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "20px 24px", color: "#8b949e" }}>
+                    <Spinner size="tiny" /><Caption1>Loading preview…</Caption1>
+                  </div>
+                );
+                if (previewError) return (
+                  <div style={{ padding: "16px 24px" }}>
+                    <MessageBar intent="error"><MessageBarBody>{previewError}</MessageBarBody></MessageBar>
+                  </div>
+                );
+                if (!preview) return (
+                  <div style={{ padding: "20px 24px", color: "#8b949e" }}>
+                    <Caption1>No data loaded yet.</Caption1>
+                  </div>
+                );
+                if (preview.columns.length === 0 || preview.rows.length === 0) return (
+                  <div style={{ padding: "20px 24px", color: "#8b949e" }}>
+                    <Caption1>No preview rows available for this dataset.</Caption1>
+                  </div>
+                );
+                return (
+                  <>
+                    <div className={styles.modalMeta}>
+                      <Caption1>
+                        Showing {preview.shownRows.toLocaleString()} of {(preview.totalRows ?? dataset?.rows ?? 0).toLocaleString()} rows · {preview.columns.length} columns
+                      </Caption1>
+                    </div>
+                    <div className={styles.modalTableWrap}>
+                      <table className={styles.modalTable}>
+                        <thead>
+                          <tr>
+                            {preview.columns.map((col) => (
+                              <th key={col} className={styles.modalTh} title={col}>{col}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.rows.map((row, i) => (
+                            <tr key={i}>
+                              {preview.columns.map((col) => {
+                                const val = row[col] ?? "";
+                                return <td key={col} className={styles.modalTd} title={val}>{val}</td>;
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
