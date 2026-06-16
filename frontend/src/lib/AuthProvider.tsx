@@ -13,7 +13,7 @@ import {
   BrowserUtils,
   type AccountInfo,
 } from "@azure/msal-browser";
-import { msalInstance, fabricScopes, storageScopes, managementScopes } from "@/lib/msal";
+import { msalInstance, fabricScopes, storageScopes, managementScopes, kustoScopes } from "@/lib/msal";
 
 // Local dev mode: when no AZURE_CLIENT_ID is configured, skip MSAL entirely.
 // The backend falls back to `az login` (az CLI) tokens automatically.
@@ -37,6 +37,7 @@ interface AuthState {
   getFabricToken: () => Promise<string>;
   getStorageToken: () => Promise<string>;
   getManagementToken: (options?: { interactive?: boolean }) => Promise<string>;
+  getKustoToken: () => Promise<string>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -48,6 +49,7 @@ const AuthContext = createContext<AuthState>({
   getFabricToken: async () => "",
   getStorageToken: async () => "",
   getManagementToken: async () => "",
+  getKustoToken: async () => "",
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -149,9 +151,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [getToken]
   );
 
+  const getKustoToken = useCallback(
+    () => getToken(kustoScopes),
+    [getToken]
+  );
+
   return (
     <AuthContext.Provider
-      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken }}
+      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getKustoToken }}
     >
       {children}
     </AuthContext.Provider>

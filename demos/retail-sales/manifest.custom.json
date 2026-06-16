@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Store Operations Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Fraud & Anomaly Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Store Operations Intelligence",
+      "kqlConfig": {
+        "tableName": "POSTransactions",
+        "signalColumn": "unit_price",
+        "groupByColumn": "store_id",
+        "timestampColumn": "transaction_timestamp"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Demand Forecasting" },
     { "id": "data-virtualization-batch", "titleOverride": "Supplier Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Retail Data Warehouse" },

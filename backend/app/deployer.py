@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import csv as _csv
+import io
 import json
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import AsyncIterator
 
@@ -35,6 +38,165 @@ logger = logging.getLogger(__name__)
 # On Azure: /home/site/wwwroot/app/deployer.py → ../demos (demos/ is sibling of app/)
 _APP_DIR = Path(__file__).resolve().parent.parent  # backend/ or wwwroot/
 DEMOS_DIR = _APP_DIR.parent / "demos" if (_APP_DIR.parent / "demos").exists() else _APP_DIR / "demos"
+
+# ── Real-Time Intelligence: build a KQL schema script that creates the table
+#    and seeds a sample of CSV rows via `.ingest inline` (runs under the Fabric
+#    token during KQL database provisioning — no Spark, no Kusto token needed).
+_RTI_MAX_SEED_ROWS = 5000
+_RTI_MAX_SEED_BYTES = 2 * 1024 * 1024  # ~2 MB of inline data keeps the definition payload small
+_DT_FORMATS = (
+    "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ",
+    "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d",
+)
+
+
+def _looks_datetime(v: str) -> bool:
+    for fmt in _DT_FORMATS:
+        try:
+            datetime.strptime(v, fmt)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def _sanitize_column_name(name: str) -> str:
+    """Make a CSV header a valid Kusto column identifier."""
+    cleaned = "".join(c if (c.isalnum() or c == "_") else "_" for c in name.strip())
+    if not cleaned:
+        cleaned = "col"
+    if not (cleaned[0].isalpha() or cleaned[0] == "_"):
+        cleaned = "_" + cleaned
+    return cleaned
+
+
+def _infer_kusto_type(values: list[str], col_name: str, timestamp_col: str) -> str:
+    """Infer a Kusto column type from a sample of string values."""
+    if timestamp_col and col_name == timestamp_col:
+        return "datetime"
+    seen = False
+    is_long = is_real = is_bool = is_datetime = True
+    for raw in values:
+        v = (raw or "").strip()
+        if v == "":
+            continue
+        seen = True
+        if is_long:
+            try:
+                int(v)
+            except ValueError:
+                is_long = False
+        if is_real:
+            try:
+                float(v)
+            except ValueError:
+                is_real = False
+        if is_bool and v.lower() not in ("true", "false"):
+            is_bool = False
+        if is_datetime and not _looks_datetime(v):
+            is_datetime = False
+    if not seen:
+        return "string"
+    if is_bool:
+        return "bool"
+    if is_long:
+        return "long"
+    if is_real:
+        return "real"
+    if is_datetime:
+        return "datetime"
+    return "string"
+
+
+def _build_rti_seed(csv_path: Path, table_name: str, timestamp_col: str = "") -> tuple[str, str]:
+    """Build the table DDL and a CSV data sample for a Real-Time Intelligence seed.
+
+    Returns ``(schema_ddl, csv_data)`` where:
+      * ``schema_ddl`` is a ``.create-merge table`` command (the only data-definition
+        command supported inside a KQL database ``DatabaseSchema.kql`` part), and
+      * ``csv_data`` is a header-less block of well-formed CSV rows ready to be pushed
+        with ``.ingest inline`` via the Kusto management REST endpoint.
+
+    Schema is inferred from the CSV header plus a capped sample of rows.
+    """
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = _csv.reader(f)
+        try:
+            header = next(reader)
+        except StopIteration:
+            raise FabricError(400, f"CSV '{csv_path.name}' is empty")
+        sample_rows: list[list[str]] = []
+        total_bytes = 0
+        for row in reader:
+            if len(sample_rows) >= _RTI_MAX_SEED_ROWS or total_bytes >= _RTI_MAX_SEED_BYTES:
+                break
+            if len(row) != len(header):
+                continue  # skip malformed rows
+            sample_rows.append(row)
+            total_bytes += sum(len(c) for c in row) + len(row)
+
+    columns = [_sanitize_column_name(h) for h in header]
+    # Infer a type per column from the sampled values
+    col_types = []
+    for idx, col in enumerate(columns):
+        col_values = [r[idx] for r in sample_rows[:1000]]
+        col_types.append(_infer_kusto_type(col_values, col, timestamp_col))
+
+    schema_cols = ", ".join(f"{c}:{t}" for c, t in zip(columns, col_types))
+    schema_ddl = f".create-merge table {table_name} ({schema_cols})"
+
+    # Re-serialize the sampled rows to well-formed CSV for inline ingestion
+    csv_data = ""
+    if sample_rows:
+        buf = io.StringIO()
+        writer = _csv.writer(buf, lineterminator="\n")
+        for row in sample_rows:
+            writer.writerow(row)
+        csv_data = buf.getvalue().rstrip("\n")
+
+    return schema_ddl, csv_data
+
+
+def _build_rti_queries(
+    table: str, timestamp_col: str = "", signal_col: str = "", groupby_col: str = ""
+) -> list[tuple[str, str]]:
+    """Build a set of (title, KQL) saved queries for the Real-Time queryset.
+
+    Queries reference real columns from the kqlConfig when available, so the
+    queryset is immediately useful instead of the empty 'YOUR_TABLE_HERE' template.
+    """
+    t = table
+    queries: list[tuple[str, str]] = [
+        ("Recent records", f"{t} | sort by ingestion_time() desc | take 100"),
+        ("Total row count", f"{t} | count"),
+        (
+            "Ingestion over time",
+            f"{t} | summarize Records = count() by Timestamp = bin(ingestion_time(), 1m) | sort by Timestamp asc | render timechart",
+        ),
+    ]
+    if signal_col and groupby_col:
+        queries.append((
+            f"Avg {signal_col} by {groupby_col}",
+            f"{t} | summarize Avg_{signal_col} = avg({signal_col}), Max_{signal_col} = max({signal_col}) by {groupby_col} | sort by Avg_{signal_col} desc",
+        ))
+    if signal_col and timestamp_col:
+        queries.append((
+            f"{signal_col} trend",
+            f"{t} | summarize avg({signal_col}) by bin({timestamp_col}, 5m) | render timechart",
+        ))
+    if signal_col and groupby_col:
+        queries.append((
+            f"{signal_col} anomalies",
+            (
+                f"{t} | summarize avg_val = avg({signal_col}), stdev_val = stdev({signal_col}) by {groupby_col} "
+                f"| join kind=inner ({t}) on {groupby_col} "
+                f"| where {signal_col} > avg_val + 3 * stdev_val "
+                f"| project {groupby_col}, {signal_col}, avg_val, stdev_val | take 100"
+            ),
+        ))
+    return queries
 
 
 class DeploymentStep:
@@ -95,6 +257,7 @@ ENABLED_SCENARIOS: set[str] = {
     "ai-ml",
     "anomaly-detection-alerts",
     "external-data-integration",
+    "real-time-intelligence",
 }
 
 
@@ -160,6 +323,7 @@ async def deploy_demo(
     azure_location: str = "eastus",
     create_resource_group: bool = False,
     sql_server_name: str | None = None,
+    kusto_token: str | None = None,
 ) -> AsyncIterator[dict]:
     """
     Deploy a demo end-to-end, yielding progress events as SSE-compatible dicts.
@@ -203,6 +367,30 @@ async def deploy_demo(
     steps: list[DeploymentStep] = []
     created_ids: dict[str, str] = {}  # logical name → Fabric item ID
 
+    # ── Pre-flight: check for duplicate workspace name ────────────────────
+    if not workspace_id and workspace_name:
+        try:
+            existing = await client.list_workspaces()
+            conflict = next(
+                (w for w in existing if w.get("displayName", "").lower() == workspace_name.lower()),
+                None,
+            )
+            if conflict:
+                yield {
+                    "event": "error",
+                    "data": {
+                        "message": (
+                            f"A workspace named \"{workspace_name}\" already exists in your Fabric tenant. "
+                            "Please choose a different name, or delete the existing workspace "
+                            "from the Fabric portal before deploying."
+                        ),
+                        "workspaceId": "",
+                    },
+                }
+                return
+        except FabricError:
+            pass  # If the list call fails, let the create attempt handle it
+
     # Detect shortcut items — forks the data ingestion path
     shortcuts = [i for i in items if i["type"] == "Shortcut"]
     has_shortcut = len(shortcuts) > 0
@@ -219,6 +407,17 @@ async def deploy_demo(
     for kdb in kql_databases:
         steps.append(DeploymentStep(f"kqldb:{kdb['name']}", f"Create KQL database '{kdb['name']}'"))
 
+    # Real-Time Intelligence seed: the Eventhouse auto-creates a default KQL
+    # database (same display name as the eventhouse). When the scenario provides
+    # seed CSV info, create the table and ingest sample rows into that default DB.
+    _extra = manifest.get("extraNbVars", {})
+    _seed_table = _extra.get("RTI_TABLE_NAME", "")
+    _seed_csv = _extra.get("RTI_CSV_FILENAME", "")
+    _seed_ts = _extra.get("RTI_TIMESTAMP_COLUMN", "")
+    _do_seed = bool(_seed_table and _seed_csv and eventhouses)
+    if _do_seed:
+        steps.append(DeploymentStep("seed-kql", f"Create table '{_seed_table}' and load sample data"))
+
     lakehouses = [i for i in items if i["type"] == "Lakehouse"]
     for lh in lakehouses:
         steps.append(DeploymentStep(f"lakehouse:{lh['name']}", f"Create lakehouse '{lh['name']}'"))
@@ -231,7 +430,7 @@ async def deploy_demo(
         steps.append(DeploymentStep("fabric-connection", "Create Fabric connection to ADLS Gen2"))
         for sc in shortcuts:
             steps.append(DeploymentStep(f"shortcut:{sc['name']}", f"Create shortcut '{sc['name']}' → ADLS Gen2"))
-    elif data_files:
+    elif data_files and lakehouses:
         steps.append(DeploymentStep("upload-data", f"Upload {len(data_files)} sample data file(s)"))
 
     notebooks = [i for i in items if i["type"] == "Notebook"]
@@ -241,7 +440,9 @@ async def deploy_demo(
     for nb in notebooks_to_run:
         steps.append(DeploymentStep(f"run:{nb['name']}", f"Execute notebook '{nb['name']}'"))
 
-    steps.append(DeploymentStep("sql-endpoint", "Wait for SQL endpoint provisioning"))
+    # SQL endpoint only applies to lakehouse-based demos
+    if lakehouses:
+        steps.append(DeploymentStep("sql-endpoint", "Wait for SQL endpoint provisioning"))
 
     semantic_models = [i for i in items if i["type"] == "SemanticModel"]
     for sm in semantic_models:
@@ -254,8 +455,19 @@ async def deploy_demo(
         steps.append(DeploymentStep(f"report:{rp['name']}", f"Create report '{rp['name']}'"))
 
     kql_dashboards = [i for i in items if i["type"] == "KQLDashboard"]
+    eventstreams = [i for i in items if i["type"] == "Eventstream"]
+    kql_querysets = [i for i in items if i["type"] == "KQLQueryset"]
+    reflexes = [i for i in items if i["type"] == "Reflex"]
+
+    # Real-Time Intelligence flow order: Eventstream → Queryset → Dashboard → Activator
+    for es in eventstreams:
+        steps.append(DeploymentStep(f"eventstream:{es['name']}", f"Create eventstream '{es['name']}'"))
+    for qs in kql_querysets:
+        steps.append(DeploymentStep(f"kqlqueryset:{qs['name']}", f"Create KQL queryset '{qs['name']}'"))
     for kd in kql_dashboards:
         steps.append(DeploymentStep(f"kqldash:{kd['name']}", f"Create real-time dashboard '{kd['name']}'"))
+    for rx in reflexes:
+        steps.append(DeploymentStep(f"reflex:{rx['name']}", f"Create Activator (Reflex) '{rx['name']}'"))
 
     pipelines = [i for i in items if i["type"] == "DataPipeline"]
     for pl in pipelines:
@@ -325,7 +537,8 @@ async def deploy_demo(
             step.detail = eventhouse_uri or "Created"
             yield {"event": "step", "data": step.to_dict()}
 
-        # 2b. KQL Databases
+        # 2b. KQL Databases (explicit — only when a manifest defines them; RTI relies
+        #     on the Eventhouse's auto-created default database instead).
         kql_db_name = ""
         for kdb in kql_databases:
             step = _find_step(steps, f"kqldb:{kdb['name']}")
@@ -334,18 +547,97 @@ async def deploy_demo(
             parent_eh = kdb.get("parentEventhouse", "")
             parent_id = created_ids.get(parent_eh, "")
             if not parent_id:
-                # Fall back to first eventhouse
                 for eh in eventhouses:
                     parent_id = created_ids.get(eh["name"], "")
                     if parent_id:
                         break
             result = await client.create_kql_database(ws_id, kdb["name"], parent_id)
-            kdb_id = result["id"]
-            created_ids[kdb["name"]] = kdb_id
+            created_ids[kdb["name"]] = result["id"]
             kql_db_name = kdb["name"]
             step.status = "completed"
-            step.item_id = kdb_id
+            step.item_id = result["id"]
             yield {"event": "step", "data": step.to_dict()}
+
+        # When no explicit KQL Database is in the manifest, Fabric auto-creates one
+        # with the same display name as the Eventhouse — use that name.
+        if not kql_db_name and eventhouses:
+            kql_db_name = eventhouses[0]["name"]
+
+        # KQL database item id of the (default) database — resolved during the seed
+        # step and reused for the Eventstream's Eventhouse destination.
+        kql_db_item_id = ""
+
+        # 2c. Create the table (Fabric API — no Kusto token) and seed sample data
+        #     (best-effort, Kusto data plane) into the Eventhouse's default DB (RTI).
+        if _do_seed:
+            step = _find_step(steps, "seed-kql")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            seed_path = demo_dir / "data" / _seed_csv
+            eh_item_id = created_ids.get(eventhouses[0]["name"], "") if eventhouses else ""
+            if not seed_path.exists():
+                step.status = "failed"
+                step.detail = f"Sample file '{_seed_csv}' not found."
+            else:
+                schema_ddl, csv_data = _build_rti_seed(seed_path, _seed_table, _seed_ts)
+                table_created = False
+                # 1) Create the table via the Fabric definition API (reliable, no token).
+                #    The default database is provisioned asynchronously, so poll for it.
+                db_item_id = ""
+                try:
+                    for attempt in range(8):
+                        db = await client.find_database_by_name(ws_id, kql_db_name)
+                        if db:
+                            db_item_id = db["id"]
+                            kql_db_item_id = db_item_id
+                            break
+                        await asyncio.sleep(8)
+                    if db_item_id and eh_item_id:
+                        await client.add_table_schema_to_database(
+                            ws_id, db_item_id, eh_item_id, schema_ddl
+                        )
+                        table_created = True
+                except (FabricError, Exception) as e:
+                    logger.warning("Fabric-API table creation failed: %s", str(e)[:300])
+
+                # 1b) Fallback: create the table via the Kusto data plane (needs token).
+                if not table_created and eventhouse_uri and kusto_token:
+                    try:
+                        await client.kusto_mgmt(
+                            eventhouse_uri, kql_db_name, schema_ddl, kusto_token
+                        )
+                        table_created = True
+                    except (FabricError, Exception) as e:
+                        logger.warning("Kusto table creation failed: %s", str(e)[:300])
+
+                # 2) Seed sample rows via the Kusto data plane (best-effort, fail fast).
+                seeded_rows = 0
+                seed_err = ""
+                if table_created and csv_data and eventhouse_uri and kusto_token:
+                    try:
+                        await client.kusto_ingest_inline(
+                            eventhouse_uri, kql_db_name, _seed_table, csv_data, kusto_token
+                        )
+                        seeded_rows = csv_data.count("\n") + 1
+                    except (FabricError, Exception) as e:
+                        seed_err = str(e)[:120]
+                        logger.warning("Kusto seed ingest failed: %s", str(e)[:300])
+
+                if table_created and seeded_rows:
+                    step.status = "completed"
+                    step.detail = f"Table '{_seed_table}' created · seeded ~{seeded_rows} rows"
+                elif table_created:
+                    step.status = "completed"
+                    reason = f" ({seed_err})" if seed_err else ""
+                    step.detail = (
+                        f"Table '{_seed_table}' created. Historical seed skipped{reason} — "
+                        "the live Eventstream will populate data."
+                    )
+                else:
+                    step.status = "failed"
+                    step.detail = f"Could not create table '{_seed_table}'. Check permissions."
+            yield {"event": "step", "data": step.to_dict()}
+
 
         # 2c. Lakehouses
         lakehouse_id = None
@@ -371,6 +663,8 @@ async def deploy_demo(
             nb_variables["EVENTHOUSE_URI"] = eventhouse_uri
         if kql_db_name:
             nb_variables["KQL_DATABASE_NAME"] = kql_db_name
+        # Merge any extra per-scenario variables (e.g. RTI_TABLE_NAME, RTI_CSV_FILENAME)
+        nb_variables.update(manifest.get("extraNbVars", {}))
 
         if has_shortcut:
             # ── Shortcut path: provision ADLS Gen2 + upload + create connection + shortcut ──
@@ -537,7 +831,12 @@ async def deploy_demo(
             step = _find_step(steps, f"notebook:{nb['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
-            ipynb_path = demo_dir / nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            def_path = nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            if def_path.startswith("_scenarios/"):
+                # Notebook lives in the _scenarios folder, not the demo folder
+                ipynb_path = DEMOS_DIR / def_path
+            else:
+                ipynb_path = demo_dir / def_path
             result = await client.create_notebook(
                 ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
                 variables=nb_variables or None,
@@ -639,17 +938,18 @@ async def deploy_demo(
 
         # 6. Wait for SQL endpoint (only relevant for lakehouse-based demos)
         conn_string = ""
-        step = _find_step(steps, "sql-endpoint")
-        if lakehouse_id:
-            step.status = "running"
+        if lakehouses:
+            step = _find_step(steps, "sql-endpoint")
+            if lakehouse_id:
+                step.status = "running"
+                yield {"event": "step", "data": step.to_dict()}
+                conn_string = await client.wait_for_sql_endpoint(ws_id, lakehouse_id)
+                step.status = "completed"
+                step.detail = conn_string
+            else:
+                step.status = "completed"
+                step.detail = "Skipped — no lakehouse"
             yield {"event": "step", "data": step.to_dict()}
-            conn_string = await client.wait_for_sql_endpoint(ws_id, lakehouse_id)
-            step.status = "completed"
-            step.detail = conn_string
-        else:
-            step.status = "completed"
-            step.detail = "Skipped — no lakehouse"
-        yield {"event": "step", "data": step.to_dict()}
 
         # 7. Semantic models (with dynamic SQL endpoint injection)
         for sm in semantic_models:
@@ -732,29 +1032,125 @@ async def deploy_demo(
                 step.detail = "Skipped — no semantic model available"
             yield {"event": "step", "data": step.to_dict()}
 
-        # 8b. KQL Dashboards (Real-Time Dashboards)
+        # 8b. Eventstreams (Custom Endpoint source → Eventhouse destination for the live demo)
+        for es in eventstreams:
+            step = _find_step(steps, f"eventstream:{es['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                # The Eventhouse destination resolves the cluster URL from the KQL
+                # database item id (not the eventhouse id). Resolve it if not already.
+                if not kql_db_item_id and kql_db_name:
+                    db = await client.find_database_by_name(ws_id, kql_db_name)
+                    if db:
+                        kql_db_item_id = db["id"]
+                if kql_db_item_id and kql_db_name and _seed_table:
+                    result = await client.create_eventstream_with_topology(
+                        ws_id, es["name"], kql_db_item_id, kql_db_name, _seed_table
+                    )
+                    step.detail = (
+                        "Custom endpoint → Eventhouse. Copy the endpoint connection "
+                        "string from the Fabric portal to start live streaming."
+                    )
+                else:
+                    result = await client.create_item(ws_id, "Eventstream", es["name"])
+                    step.detail = "Eventstream created (configure source in Fabric portal)"
+                created_ids[es["name"]] = result.get("id", "")
+                step.status = "completed"
+                step.item_id = result.get("id")
+            except (FabricError, Exception) as e:
+                detail = e.detail if isinstance(e, FabricError) else str(e)
+                logger.warning("Eventstream creation failed: %s", str(detail)[:300])
+                step.status = "failed"
+                step.detail = f"Eventstream failed: {str(detail)[:180]}"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 8c. KQL Querysets (pre-populated with saved queries against the table)
+        for qs in kql_querysets:
+            step = _find_step(steps, f"kqlqueryset:{qs['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                if eventhouse_uri and kql_db_name and _seed_table:
+                    queries = _build_rti_queries(
+                        _seed_table, _seed_ts,
+                        _extra.get("RTI_SIGNAL_COLUMN", ""),
+                        _extra.get("RTI_GROUPBY_COLUMN", ""),
+                    )
+                    result = await client.create_kql_queryset_with_queries(
+                        ws_id, qs["name"], eventhouse_uri, kql_db_name, queries
+                    )
+                    step.detail = f"{len(queries)} saved queries"
+                else:
+                    result = await client.create_item(ws_id, "KQLQueryset", qs["name"])
+                created_ids[qs["name"]] = result.get("id", "")
+                step.status = "completed"
+                step.item_id = result.get("id")
+            except (FabricError, Exception) as e:
+                detail = e.detail if isinstance(e, FabricError) else str(e)
+                logger.warning("KQL Queryset creation failed: %s", str(detail)[:300])
+                step.status = "completed"
+                step.detail = f"⚠ Queryset basic create ({str(detail)[:120]})"
+                try:
+                    result = await client.create_item(ws_id, "KQLQueryset", qs["name"])
+                    created_ids[qs["name"]] = result.get("id", "")
+                    step.item_id = result.get("id")
+                except FabricError:
+                    step.status = "failed"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 8d. KQL Dashboards (Real-Time Dashboards)
         for kd in kql_dashboards:
             step = _find_step(steps, f"kqldash:{kd['name']}")
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
             try:
-                kdb_id = ""
-                kdb_name_resolved = kql_db_name
+                # Resolve the KQL database GUID (the dashboard dataSource 'database'
+                # field requires the database item id, not its name).
+                if not kql_db_item_id and kql_db_name:
+                    db = await client.find_database_by_name(ws_id, kql_db_name)
+                    if db:
+                        kql_db_item_id = db["id"]
+                kdb_id = kql_db_item_id
                 for kdb in kql_databases:
-                    kdb_id = created_ids.get(kdb["name"], "")
-                    if kdb_id:
+                    _id = created_ids.get(kdb["name"], "")
+                    if _id:
+                        kdb_id = _id
                         break
                 result = await client.create_kql_dashboard(
-                    ws_id, kd["name"], kdb_id, eventhouse_uri, kdb_name_resolved
+                    ws_id, kd["name"], kdb_id, eventhouse_uri, kql_db_name,
+                    table_name=_seed_table,
+                    signal_col=_extra.get("RTI_SIGNAL_COLUMN", ""),
+                    groupby_col=_extra.get("RTI_GROUPBY_COLUMN", ""),
+                    timestamp_col=_seed_ts,
                 )
                 created_ids[kd["name"]] = result.get("id", "")
                 step.item_id = result.get("id")
                 step.status = "completed"
-                step.detail = "10 tiles across 3 pages"
+                step.detail = "Real-time tiles for live data"
             except (FabricError, Exception) as e:
                 logger.warning("KQL Dashboard creation failed: %s", str(e)[:300])
                 step.status = "skipped"
                 step.detail = f"Dashboard not created: {str(e)[:150]}. You can add it manually in Fabric."
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 8e. Reflexes (Activator) — created empty. The Activator rule format
+        #     (ReflexEntities.json) is not reliably authorable via the API; the
+        #     supported path is the UI ('Set alert' on a dashboard tile/queryset),
+        #     so we create the item and let the user add the rule there.
+        for rx in reflexes:
+            step = _find_step(steps, f"reflex:{rx['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                result = await client.create_item(ws_id, "Reflex", rx["name"])
+                created_ids[rx["name"]] = result.get("id", "")
+                step.status = "completed"
+                step.item_id = result.get("id")
+                step.detail = "Add an alert via 'Set alert' on a dashboard tile or queryset"
+            except FabricError as e:
+                step.status = "completed"
+                step.detail = f"⚠ Activator failed: {e.detail[:150]}. Create manually."
             yield {"event": "step", "data": step.to_dict()}
 
         # 9. Pipelines (with notebook orchestration activities)

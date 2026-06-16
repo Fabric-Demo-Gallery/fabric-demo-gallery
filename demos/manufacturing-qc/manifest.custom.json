@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Production Line Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Defect Anomaly Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Production Line Intelligence",
+      "kqlConfig": {
+        "tableName": "SensorReadings",
+        "signalColumn": "temperature",
+        "groupByColumn": "machine_id",
+        "timestampColumn": "reading_timestamp"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Predictive Maintenance" },
     { "id": "data-virtualization-batch", "titleOverride": "Supplier Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Manufacturing Data Warehouse" },

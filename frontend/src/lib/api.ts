@@ -330,3 +330,61 @@ export async function deleteJobWorkspace(
     throw new Error(`Failed to delete workspace: ${text.slice(0, 200)}`);
   }
 }
+
+// ── Live Eventstream replay (Real-Time Intelligence demo) ────────────────────
+
+export interface StreamSession {
+  sessionId: string;
+  demoId: string;
+  tableName: string;
+  sent: number;
+  running: boolean;
+  error: string;
+  startedAt: string;
+}
+
+export async function startLiveStream(params: {
+  demoId: string;
+  scenarioId?: string;
+  connectionString: string;
+  interval?: number;
+  batchSize?: number;
+}): Promise<StreamSession> {
+  const res = await fetch(`${API_BASE}/api/stream/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      demoId: params.demoId,
+      scenarioId: params.scenarioId || "real-time-intelligence",
+      connectionString: params.connectionString,
+      interval: params.interval ?? 1.0,
+      batchSize: params.batchSize ?? 5,
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    let msg = text.slice(0, 300);
+    try {
+      msg = JSON.parse(text).detail || msg;
+    } catch {
+      /* keep raw text */
+    }
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function stopLiveStream(sessionId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/stream/stop`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+  });
+  if (!res.ok) throw new Error("Failed to stop live stream");
+}
+
+export async function getStreamStatus(sessionId: string): Promise<StreamSession> {
+  const res = await fetch(`${API_BASE}/api/stream/status/${encodeURIComponent(sessionId)}`);
+  if (!res.ok) throw new Error("Failed to get stream status");
+  return res.json();
+}

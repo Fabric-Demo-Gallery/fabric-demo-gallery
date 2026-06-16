@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Real-Time Grid Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Grid Fault Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Real-Time Grid Intelligence",
+      "kqlConfig": {
+        "tableName": "GridSensors",
+        "signalColumn": "voltage_v",
+        "groupByColumn": "substation_id",
+        "timestampColumn": "timestamp"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Renewable Output Forecasting" },
     { "id": "data-virtualization-batch", "titleOverride": "SCADA Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Energy Data Warehouse" },

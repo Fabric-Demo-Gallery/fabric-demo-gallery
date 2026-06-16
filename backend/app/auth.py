@@ -26,13 +26,20 @@ def _get_az_cli_token(resource: str) -> str:
         "https://api.fabric.microsoft.com",
         "https://storage.azure.com",
         "https://management.azure.com",
+        "https://kusto.fabric.microsoft.com",
     }
     if resource not in _ALLOWED_RESOURCES:
         raise HTTPException(status_code=400, detail="Invalid resource")
+    # The Kusto data plane requires the scope form (az has no static resource
+    # alias for it); other resources work with --resource.
+    if resource == "https://kusto.fabric.microsoft.com":
+        args = ["az", "account", "get-access-token", "--scope",
+                f"{resource}/.default", "--query", "accessToken", "-o", "tsv"]
+    else:
+        args = ["az", "account", "get-access-token", "--resource", resource,
+                "--query", "accessToken", "-o", "tsv"]
     result = subprocess.run(
-        ["az", "account", "get-access-token", "--resource", resource,
-         "--query", "accessToken", "-o", "tsv"],
-        capture_output=True, text=True, shell=False,
+        args, capture_output=True, text=True, shell=False,
     )
     if result.returncode != 0 or not result.stdout.strip():
         raise HTTPException(status_code=401, detail=f"az CLI token failed: {result.stderr[:200]}")
@@ -65,6 +72,22 @@ async def get_management_token(request: Request) -> str:
     if tok:
         return tok
     return _get_az_cli_token("https://management.azure.com")
+
+
+async def get_kusto_token(request: Request) -> str:
+    """Get a token for Eventhouse/KQL data-plane (Kusto) REST calls.
+
+    The Eventhouse query endpoint (``*.kusto.fabric.microsoft.com``) requires a
+    token whose audience is ``https://kusto.fabric.microsoft.com`` — the
+    api.fabric.microsoft.com token is rejected with 401. The frontend acquires
+    this with the ``https://kusto.fabric.microsoft.com/.default`` scope; in dev we
+    fall back to the az CLI (requires ``az login --scope
+    https://kusto.fabric.microsoft.com/.default`` once).
+    """
+    tok = request.headers.get("x-kusto-token", "")
+    if tok:
+        return tok
+    return _get_az_cli_token("https://kusto.fabric.microsoft.com")
 
 def get_user_id(token: str) -> str:
     """Extract user ID (oid or sub claim) from a JWT token without verification.
