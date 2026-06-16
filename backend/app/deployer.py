@@ -200,6 +200,26 @@ async def deploy_demo(
             yield ev
         return
 
+    # Fabric + Foundry AI agent scenario — standard Fabric deploy + a published
+    # data agent + a Microsoft Foundry agent grounded on it. Delegate.
+    if scenario_id == "fabric-foundry-agent":
+        async for ev in _deploy_fabric_foundry(
+            client=client,
+            demo_id=demo_id,
+            demo_dir=demo_dir,
+            items=items,
+            workspace_name=workspace_name,
+            workspace_id=workspace_id,
+            capacity_id=capacity_id,
+            azure_client=azure_client,
+            subscription_id=subscription_id,
+            resource_group=resource_group,
+            azure_location=azure_location,
+            create_resource_group=create_resource_group,
+        ):
+            yield ev
+        return
+
     steps: list[DeploymentStep] = []
     created_ids: dict[str, str] = {}  # logical name → Fabric item ID
 
@@ -885,6 +905,7 @@ async def _best_effort_teardown(
     resource_group: str | None = None,
     sql_server: str | None = None,
     storage_account: str | None = None,
+    foundry_account: str | None = None,
 ) -> tuple[str, bool]:
     """Best-effort removal of resources a failed deploy created, so nothing is
     left orphaned (and an Azure SQL server doesn't keep billing).
@@ -906,6 +927,15 @@ async def _best_effort_teardown(
         except Exception as te:  # noqa: BLE001 — teardown must never mask the real error
             logger.warning("[teardown] SQL server '%s' delete failed: %s", sql_server, te)
             failed.append(f"Azure SQL server '{sql_server}'")
+
+    # Foundry account next — it (and its model deployment) also bill if left behind.
+    if azure_client and subscription_id and resource_group and foundry_account:
+        try:
+            await azure_client.delete_foundry_account(subscription_id, resource_group, foundry_account)
+            cleaned.append("Foundry account")
+        except Exception as te:  # noqa: BLE001
+            logger.warning("[teardown] Foundry account '%s' delete failed: %s", foundry_account, te)
+            failed.append(f"Foundry account '{foundry_account}'")
 
     if azure_client and subscription_id and resource_group and storage_account:
         try:
@@ -1551,4 +1581,390 @@ async def _deploy_mirroring(
         data = {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}
         if ws_remaining and sql_server:
             data["azure"] = {"subscriptionId": subscription_id, "resourceGroup": resource_group, "sqlServer": sql_server}
+        yield {"event": "error", "data": data}
+
+
+# ── Fabric + Foundry AI agent scenario (preview) ─────────────────────────────
+
+
+async def _foundry_quota_warning(
+    azure_client: "AzureClient | None",
+    subscription_id: str | None,
+    location: str,
+    model_name: str,
+    model_version: str,
+) -> str | None:
+    """Advisory model-quota pre-flight (never fatal): return a human note if the
+    chosen model has no capacity in the requested region. Mirrors the spirit of
+    ``_capacity_inactive_error`` — a listing hiccup must not block the deploy."""
+    if not azure_client or not subscription_id:
+        return None
+    caps = await azure_client.check_model_capacity(subscription_id, model_name, model_version)
+    if not caps:
+        return None
+    loc = (location or "").lower().replace(" ", "")
+    here = next((c for c in caps if (c.get("location") or "").lower() == loc), None)
+    if here and here.get("availableCapacity", 0) > 0:
+        return None
+    available = sorted({c["location"] for c in caps if c.get("availableCapacity", 0) > 0})
+    if not available:
+        return (
+            f"No '{model_name}' quota is available in your subscription. Request quota "
+            "in the Microsoft Foundry portal, then retry."
+        )
+    return (
+        f"'{model_name}' has no quota in '{location}'. Regions with capacity: "
+        + ", ".join(list(available)[:6])
+        + "."
+    )
+
+
+async def _deploy_fabric_foundry(
+    client: FabricClient,
+    demo_id: str,
+    demo_dir: Path,
+    items: list[dict],
+    workspace_name: str | None,
+    workspace_id: str | None,
+    capacity_id: str | None,
+    azure_client: AzureClient | None,
+    subscription_id: str | None,
+    resource_group: str | None,
+    azure_location: str,
+    create_resource_group: bool,
+) -> AsyncIterator[dict]:
+    """Deploy the Fabric + Foundry AI agent scenario (preview):
+
+    workspace → lakehouse → upload CSVs → run batch notebooks (populate gold
+    tables) → create & publish a Fabric data agent over the lakehouse →
+    provision a Microsoft Foundry account + project + gpt-4o-mini deployment →
+    connect the data agent as a Foundry knowledge source.
+
+    The Fabric half is the load-bearing part. Every Foundry step is best-effort:
+    a preview-API failure degrades that step to "skipped" with portal guidance,
+    so the user still gets a working Fabric data foundation + data agent.
+    """
+    import random
+    import string as _string
+    from app.azure_client import AzureError
+
+    MODEL_NAME = "gpt-4o-mini"
+    MODEL_VERSION = "2024-07-18"
+    DEPLOYMENT_NAME = "gpt-4o-mini"
+
+    lakehouses = [i for i in items if i["type"] == "Lakehouse"]
+    notebooks = [i for i in items if i["type"] == "Notebook"]
+    run_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
+    data_agents = [i for i in items if i["type"] == "DataAgent"]
+    agent_name = data_agents[0]["name"] if data_agents else "analytics_data_agent"
+    scenarios_dir = demo_dir.parent / "_scenarios"
+    data_agent_nb = scenarios_dir / "notebooks/foundry/01_create_data_agent.ipynb"
+    data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
+
+    # ── Plan ─────────────────────────────────────────────────────────────
+    steps: list[DeploymentStep] = []
+    if not workspace_id:
+        steps.append(DeploymentStep("workspace", f"Create workspace '{workspace_name}'"))
+    for lh in lakehouses:
+        steps.append(DeploymentStep(f"lakehouse:{lh['name']}", f"Create lakehouse '{lh['name']}'"))
+    if data_files:
+        steps.append(DeploymentStep("upload-data", f"Upload {len(data_files)} sample data file(s)"))
+    for nb in run_notebooks:
+        steps.append(DeploymentStep(f"notebook:{nb['name']}", f"Create notebook '{nb['name']}'"))
+    for nb in run_notebooks:
+        steps.append(DeploymentStep(f"run:{nb['name']}", f"Execute notebook '{nb['name']}'"))
+    steps.append(DeploymentStep("data-agent", f"Create & publish Fabric data agent '{agent_name}'"))
+    steps.append(DeploymentStep("foundry-account", "Provision Microsoft Foundry account + project"))
+    steps.append(DeploymentStep("foundry-model", f"Deploy model '{MODEL_NAME}'"))
+    steps.append(DeploymentStep("foundry-connect", "Connect Fabric data agent to Foundry"))
+    steps.append(DeploymentStep("done", "Deployment complete"))
+    yield {"event": "plan", "data": [s.to_dict() for s in steps]}
+
+    ws_id = workspace_id
+    created_ids: dict[str, str] = {}
+    foundry_account = ""
+    foundry_project = ""
+    next_steps: list[str] = []  # manual follow-ups for any skipped Foundry steps
+
+    try:
+        # Pre-flight: fail fast on a paused/inactive capacity.
+        cap_err = await _capacity_inactive_error(client, capacity_id, workspace_id)
+        if cap_err:
+            yield {"event": "error", "data": {"message": cap_err, "workspaceId": ""}}
+            return
+
+        if not azure_client or not subscription_id or not resource_group:
+            raise FabricError(
+                400,
+                "The Fabric + Foundry scenario needs an Azure subscription and resource "
+                "group (sign in and select them in the Azure section).",
+            )
+
+        # 1. Workspace
+        if not ws_id:
+            step = _find_step(steps, "workspace")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                ws = await client.create_workspace(workspace_name or demo_id, capacity_id)
+                ws_id = ws["id"]
+                step.status = "completed"
+                step.item_id = ws_id
+            except FabricError as e:
+                step.status = "failed"
+                if e.status == 409:
+                    step.detail = f"A workspace named '{workspace_name}' already exists. Please choose a different name."
+                else:
+                    step.detail = f"Failed to create workspace: {e.detail[:200]}"
+                yield {"event": "step", "data": step.to_dict()}
+                yield {"event": "error", "data": {"message": step.detail, "workspaceId": ""}}
+                return
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 2. Lakehouse
+        lakehouse_id = None
+        lakehouse_name = None
+        for lh in lakehouses:
+            step = _find_step(steps, f"lakehouse:{lh['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            result = await client.create_lakehouse(ws_id, lh["name"])
+            lh_id = result["id"]
+            created_ids[lh["name"]] = lh_id
+            if lakehouse_id is None:
+                lakehouse_id = lh_id
+                lakehouse_name = lh["name"]
+            step.status = "completed"
+            step.item_id = lh_id
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 3. Upload data → Files/landing (same convention as the standard deploy)
+        nb_variables: dict[str, str] = {"DATA_SOURCE_PATH": "Files/landing"}
+        if data_files and lakehouse_id:
+            step = _find_step(steps, "upload-data")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            for f in data_files:
+                await client.upload_file_to_lakehouse(ws_id, lakehouse_id, f"landing/{f.name}", f)
+            step.status = "completed"
+            step.detail = f"Uploaded {len(data_files)} files"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 4. Create batch notebooks (bronze → silver → gold)
+        notebook_ids: dict[str, str] = {}
+        for nb in run_notebooks:
+            step = _find_step(steps, f"notebook:{nb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            ipynb_path = demo_dir / nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            result = await client.create_notebook(
+                ws_id, nb["name"], ipynb_path, lakehouse_id, lakehouse_name,
+                variables=nb_variables or None,
+            )
+            notebook_ids[nb["name"]] = result["id"]
+            created_ids[nb["name"]] = result["id"]
+            step.status = "completed"
+            step.item_id = result["id"]
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 5. Run batch notebooks sequentially (populate the gold tables the agent queries)
+        for i, nb in enumerate(run_notebooks):
+            step = _find_step(steps, f"run:{nb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            if i > 0:
+                await asyncio.sleep(45)  # avoid Spark throttling between runs
+            nb_id = notebook_ids[nb["name"]]
+            max_attempts = 4
+            last_err: FabricError | None = None
+            for attempt in range(max_attempts):
+                try:
+                    res = await client.run_notebook(ws_id, nb_id, lakehouse_id, lakehouse_name, timeout=1800)
+                    js = res.get("status", "").lower() if isinstance(res, dict) else ""
+                    if js == "failed":
+                        raise FabricError(500, f"Notebook '{nb['name']}' failed: {res.get('failureReason', {}).get('message', '')[:200]}")
+                    last_err = None
+                    break
+                except FabricError as e:
+                    last_err = e
+                    if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
+                        step.detail = f"Spark session interrupted — retrying ({attempt + 1}/{max_attempts - 1}) in 60s..."
+                        yield {"event": "step", "data": step.to_dict()}
+                        await asyncio.sleep(60)
+                        continue
+                    raise
+            if last_err is not None:
+                raise last_err
+            step.status = "completed"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 6. Create & publish the Fabric data agent (preview SDK, runs in a notebook)
+        step = _find_step(steps, "data-agent")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        artifact_id = ""
+        try:
+            da_vars = {
+                "DATA_AGENT_NAME": agent_name,
+                "LAKEHOUSE_NAME": lakehouse_name or "analytics_lakehouse",
+                "WORKSPACE_ID": ws_id,
+            }
+            da_nb = await client.create_notebook(
+                ws_id, "00_create_data_agent", data_agent_nb, lakehouse_id, lakehouse_name,
+                variables=da_vars,
+            )
+            created_ids["00_create_data_agent"] = da_nb["id"]
+            res = await client.run_notebook(ws_id, da_nb["id"], lakehouse_id, lakehouse_name, timeout=1800)
+            js = res.get("status", "").lower() if isinstance(res, dict) else ""
+            if js == "failed":
+                raise FabricError(500, f"Data agent notebook failed: {res.get('failureReason', {}).get('message', '')[:200]}")
+            # Resolve the published agent's artifact id by listing DataAgent items.
+            try:
+                agents = await client.list_items(ws_id, "DataAgent")
+                match = next((a for a in agents if a.get("displayName") == agent_name), None)
+                artifact_id = (match or {}).get("id", "")
+                if artifact_id:
+                    created_ids[agent_name] = artifact_id
+            except Exception as le:  # noqa: BLE001 — id lookup is best-effort
+                logger.warning("[foundry] data agent id lookup failed: %s", le)
+            step.status = "completed"
+            step.item_id = artifact_id or None
+            step.detail = f"Published '{agent_name}'" + (f" (id {artifact_id})" if artifact_id else "")
+        except (FabricError, Exception) as e:  # noqa: BLE001 — preview; degrade gracefully
+            logger.warning("[foundry] data agent step skipped: %s", e)
+            step.status = "skipped"
+            detail = e.detail if isinstance(e, FabricError) else str(e)
+            step.detail = f"Data agent step skipped (preview): {detail[:160]}"
+            next_steps.append("Create a Fabric data agent over the lakehouse and Publish it.")
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 7. Provision the Foundry account + project (best-effort)
+        step = _find_step(steps, "foundry-account")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        rand6 = "".join(random.choices(_string.ascii_lowercase + _string.digits, k=6))
+        foundry_account = f"fdg-foundry-{demo_id.replace('-', '')[:8]}-{rand6}"
+        foundry_project = f"{demo_id.replace('-', '')[:12]}proj"
+        qwarn = await _foundry_quota_warning(azure_client, subscription_id, azure_location, MODEL_NAME, MODEL_VERSION)
+        try:
+            if create_resource_group:
+                await azure_client.create_resource_group(subscription_id, resource_group, azure_location)
+            await azure_client.create_foundry_account(subscription_id, resource_group, foundry_account, azure_location)
+            await azure_client.create_foundry_project(
+                subscription_id, resource_group, foundry_account, foundry_project,
+                azure_location, display_name=f"{demo_id} Foundry",
+            )
+            step.status = "completed"
+            step.detail = f"{foundry_account} / {foundry_project}" + (f" — note: {qwarn}" if qwarn else "")
+        except (AzureError, Exception) as e:  # noqa: BLE001 — preview; degrade gracefully
+            logger.warning("[foundry] account/project provisioning skipped: %s", e)
+            step.status = "skipped"
+            detail = e.detail if isinstance(e, AzureError) else str(e)
+            step.detail = f"Foundry provisioning skipped (preview): {detail[:160]}"
+            next_steps.append("Create a Microsoft Foundry project (ai.azure.com).")
+            foundry_account = ""  # nothing to tear down / deploy onto
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 8. Deploy the model (best-effort, only if the account exists)
+        step = _find_step(steps, "foundry-model")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        if foundry_account:
+            try:
+                await azure_client.create_model_deployment(
+                    subscription_id, resource_group, foundry_account,
+                    DEPLOYMENT_NAME, MODEL_NAME, MODEL_VERSION,
+                )
+                step.status = "completed"
+                step.detail = f"{DEPLOYMENT_NAME} ({MODEL_NAME})"
+            except (AzureError, Exception) as e:  # noqa: BLE001
+                logger.warning("[foundry] model deployment skipped: %s", e)
+                step.status = "skipped"
+                detail = e.detail if isinstance(e, AzureError) else str(e)
+                step.detail = f"Model deployment skipped: {detail[:140]}" + (f" — {qwarn}" if qwarn else "")
+                next_steps.append(f"Deploy '{MODEL_NAME}' in the Foundry project.")
+        else:
+            step.status = "skipped"
+            step.detail = "Skipped — no Foundry account"
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 9. Connect the Fabric data agent as a Foundry knowledge source (best-effort)
+        step = _find_step(steps, "foundry-connect")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        if foundry_account and artifact_id:
+            try:
+                await azure_client.create_fabric_data_agent_connection(
+                    subscription_id, resource_group, foundry_account, foundry_project,
+                    f"{demo_id}-fabric-conn", ws_id, artifact_id,
+                )
+                step.status = "completed"
+                step.detail = "Fabric data agent connected as a knowledge source"
+            except (AzureError, Exception) as e:  # noqa: BLE001
+                logger.warning("[foundry] auto-connect skipped: %s", e)
+                step.status = "skipped"
+                detail = e.detail if isinstance(e, AzureError) else str(e)
+                step.detail = f"Auto-connect skipped — add it in the Foundry portal: {detail[:120]}"
+                next_steps.append("In Foundry: New Agent → Add knowledge → Microsoft Fabric (use the data agent workspace-id + artifact-id).")
+        else:
+            step.status = "skipped"
+            step.detail = "Skipped — connect the data agent in the Foundry portal"
+            next_steps.append("In Foundry: New Agent → Add knowledge → Microsoft Fabric.")
+        yield {"event": "step", "data": step.to_dict()}
+
+        # Done — include Foundry + Azure metadata so the UI can link out and
+        # teardown can delete the Foundry account.
+        step = _find_step(steps, "done")
+        step.status = "completed"
+        step.detail = json.dumps({
+            "workspaceId": ws_id,
+            "items": created_ids,
+            "foundry": {
+                "portalUrl": "https://ai.azure.com/",
+                "account": foundry_account,
+                "project": foundry_project,
+                "dataAgentEndpoint": (
+                    f"https://fabric.microsoft.com/groups/{ws_id}/aiskills/{artifact_id}"
+                    if artifact_id else ""
+                ),
+                "nextSteps": next_steps,
+            },
+            "azure": {
+                "subscriptionId": subscription_id,
+                "resourceGroup": resource_group,
+                "foundryAccount": foundry_account,
+            },
+        })
+        yield {"event": "step", "data": step.to_dict()}
+
+    except (FabricError, AzureError, Exception) as e:  # noqa: BLE001
+        is_fabric = isinstance(e, FabricError)
+        is_azure = isinstance(e, AzureError)
+        if not (is_fabric or is_azure):
+            logger.exception("Fabric+Foundry deployment failed")
+        for s in steps:
+            if s.status == "running":
+                s.status = "failed"
+                s.detail = (e.detail if (is_fabric or is_azure) else str(e))[:300]
+                yield {"event": "step", "data": s.to_dict()}
+                break
+        cleanup_note, ws_remaining = await _best_effort_teardown(
+            client, azure_client, ws_id, subscription_id, resource_group,
+            foundry_account=foundry_account or None,
+        )
+        if is_azure:
+            error_msg = f"Azure error: {e.detail}"
+        elif is_fabric:
+            error_msg = str(e)
+        else:
+            error_msg = f"Unexpected error: {str(e)[:300]}"
+        if cleanup_note:
+            error_msg += "\n\n" + cleanup_note
+        data: dict = {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}
+        if ws_remaining and foundry_account:
+            data["azure"] = {
+                "subscriptionId": subscription_id,
+                "resourceGroup": resource_group,
+                "foundryAccount": foundry_account,
+            }
         yield {"event": "error", "data": data}
