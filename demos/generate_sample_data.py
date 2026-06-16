@@ -6,9 +6,27 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
+try:
+    from rich.live import Live
+    from rich.table import Table
+    from rich.text import Text
+    from rich.console import Console
+    _RICH = True
+except ImportError:
+    _RICH = False
+
 random.seed(42)
 
 DEMOS_DIR = Path(__file__).parent
+
+# ── Progress hook ─────────────────────────────────────────────────────────────
+# Generators call _log(name, summary) when done.
+# In __main__ this is replaced with a rich live-table updater.
+_STATUS: dict[str, tuple[str, str]] = {}   # name → ("pending"|"running"|"done", detail)
+
+def _log(name: str, summary: str) -> None:
+    """Default handler: plain print (used when run as a module or rich unavailable)."""
+    print(f"{name}: {summary}")
 
 
 def generate_manufacturing_data():
@@ -74,7 +92,7 @@ def generate_manufacturing_data():
             "downtime_minutes": round(random.uniform(0, 60), 1),
         })
     _write_csv(out_dir / "production_batches.csv", batches)
-    print(f"Manufacturing data generated: {len(sensors)} sensor readings, {len(batches)} batches, {len(machines)} machines")
+    _log("Manufacturing", f"{len(sensors):,} sensor readings · {len(batches):,} batches · {len(machines):,} machines")
 
 
 def generate_retail_data():
@@ -172,7 +190,7 @@ def generate_retail_data():
                     "reorder_point": random.randint(10, 30),
                 })
     _write_csv(out_dir / "inventory_snapshots.csv", inventory)
-    print(f"Retail data generated: {len(transactions)} transactions, {len(products)} products, {len(stores)} stores, {len(inventory)} inventory snapshots")
+    _log("Retail", f"{len(transactions):,} transactions · {len(products):,} products · {len(stores):,} stores · {len(inventory):,} inventory snapshots")
 
 
 def _write_csv(path: Path, rows: list[dict]):
@@ -290,7 +308,7 @@ def generate_energy_data():
             "weather": weather,
         })
     _write_csv(out_dir / "renewable_generation.csv", gen_rows)
-    print(f"Energy data generated: {len(sensors)} sensor readings, {len(events)} events, {len(gen_rows)} renewable readings")
+    _log("Energy", f"{len(sensors):,} sensor readings · {len(events):,} events · {len(gen_rows):,} renewable readings")
 
 
 def generate_healthcare_data():
@@ -368,7 +386,7 @@ def generate_healthcare_data():
             "recorded_by":  random.choice(staff)["staff_id"],
         })
     _write_csv(out_dir / "clinical_records.csv", records)
-    print(f"Healthcare data generated: {len(admissions)} admissions, {len(records)} clinical records, {len(staff)} staff")
+    _log("Healthcare", f"{len(admissions):,} admissions · {len(records):,} clinical records · {len(staff):,} staff")
 
 
 def generate_financial_services_data():
@@ -437,7 +455,7 @@ def generate_financial_services_data():
             "country":          random.choice(countries),
         })
     _write_csv(out_dir / "transactions.csv", transactions)
-    print(f"Financial-services data generated: {len(customers)} customers, {len(accounts)} accounts, {len(transactions)} transactions")
+    _log("Financial Services", f"{len(customers):,} customers · {len(accounts):,} accounts · {len(transactions):,} transactions")
 
 
 def generate_hospitality_data():
@@ -547,7 +565,7 @@ def generate_hospitality_data():
             "platform": random.choice(platforms),
         })
     _write_csv(out_dir / "reviews.csv", reviews)
-    print(f"Hospitality data generated: {len(bookings)} bookings, {len(guests)} guests, {len(properties)} properties, {len(reviews)} reviews")
+    _log("Hospitality", f"{len(bookings):,} bookings · {len(guests):,} guests · {len(properties):,} properties · {len(reviews):,} reviews")
 
 
 def generate_media_data():
@@ -652,7 +670,7 @@ def generate_media_data():
             "cpm": cpm,
         })
     _write_csv(out_dir / "ad_impressions.csv", ad_rows)
-    print(f"Media data generated: {len(subscribers)} subscribers, {len(content)} content items, {len(views)} views, {len(ad_rows)} ad impressions")
+    _log("Media", f"{len(subscribers):,} subscribers · {len(content):,} content items · {len(views):,} views · {len(ad_rows):,} ad impressions")
 
 
 def generate_construction_data():
@@ -758,7 +776,7 @@ def generate_construction_data():
             "approved": random.choice(["Y", "Y", "Y", "N"]),
         })
     _write_csv(out_dir / "cost_ledger.csv", cost_rows)
-    print(f"Construction data generated: {len(projects)} projects, {len(tasks)} tasks, {len(cost_rows)} cost entries, {len(subcontractors)} subcontractors")
+    _log("Construction", f"{len(projects):,} projects · {len(tasks):,} tasks · {len(cost_rows):,} cost entries · {len(subcontractors):,} subcontractors")
 
 
 def generate_education_data():
@@ -877,7 +895,7 @@ def generate_education_data():
             "word_count": random.randint(500, 5000) if random.random() > 0.4 else None,
         })
     _write_csv(out_dir / "assessments.csv", assessments)
-    print(f"Education data generated: {len(students)} students, {len(enrolments)} enrolments, {len(assessments)} assessments, {len(faculty)} faculty")
+    _log("Education", f"{len(students):,} students · {len(enrolments):,} enrolments · {len(assessments):,} assessments · {len(faculty):,} faculty")
 
 
 def generate_transportation_data():
@@ -972,7 +990,7 @@ def generate_transportation_data():
             "fuel_type":        random.choices(["Diesel", "AdBlue", "HVO"], weights=[75, 20, 5])[0],
         })
     _write_csv(out_dir / "fuel_logs.csv", fuel_logs)
-    print(f"Transportation data generated: {len(vehicles)} vehicles, {len(routes)} routes, {len(deliveries)} deliveries, {len(fuel_logs)} fuel logs")
+    _log("Transportation", f"{len(vehicles):,} vehicles · {len(routes):,} routes · {len(deliveries):,} deliveries · {len(fuel_logs):,} fuel logs")
 
 
 def generate_technology_data():
@@ -1073,7 +1091,7 @@ def generate_technology_data():
             "csat_score":           random.choices([1, 2, 3, 4, 5], weights=[5, 8, 15, 37, 35])[0],
         })
     _write_csv(out_dir / "support_tickets.csv", tickets)
-    print(f"Technology data generated: {len(accounts)} accounts, {len(users)} users, {len(events)} events, {len(tickets)} support tickets")
+    _log("Technology", f"{len(accounts):,} accounts · {len(users):,} users · {len(events):,} events · {len(tickets):,} support tickets")
 
 
 def generate_professional_services_data():
@@ -1177,19 +1195,83 @@ def generate_professional_services_data():
             "billed_value_gbp": round(hours / 8 * con["daily_rate_gbp"], 2) if is_billable else 0,
         })
     _write_csv(out_dir / "timesheets.csv", timesheets)
-    print(f"Professional services data generated: {len(consultants)} consultants, {len(clients)} clients, {len(engagements)} engagements, {len(timesheets)} timesheets")
+    _log("Professional Services", f"{len(consultants):,} consultants · {len(clients):,} clients · {len(engagements):,} engagements · {len(timesheets):,} timesheets")
 
 
 if __name__ == "__main__":
-    generate_manufacturing_data()
-    generate_retail_data()
-    generate_energy_data()
-    generate_healthcare_data()
-    generate_financial_services_data()
-    generate_hospitality_data()
-    generate_media_data()
-    generate_construction_data()
-    generate_education_data()
-    generate_transportation_data()
-    generate_technology_data()
-    generate_professional_services_data()
+    GENERATORS = [
+        ("Manufacturing",         generate_manufacturing_data),
+        ("Retail",                generate_retail_data),
+        ("Energy",                generate_energy_data),
+        ("Healthcare",            generate_healthcare_data),
+        ("Financial Services",    generate_financial_services_data),
+        ("Hospitality",           generate_hospitality_data),
+        ("Media",                 generate_media_data),
+        ("Construction",          generate_construction_data),
+        ("Education",             generate_education_data),
+        ("Transportation",        generate_transportation_data),
+        ("Technology",            generate_technology_data),
+        ("Professional Services", generate_professional_services_data),
+    ]
+
+    if not _RICH:
+        # Plain-text fallback — just run sequentially
+        for name, fn in GENERATORS:
+            fn()
+    else:
+        console = Console()
+
+        # Pre-populate status table
+        for name, _ in GENERATORS:
+            _STATUS[name] = ("pending", "")
+
+        def _build_table() -> Table:
+            table = Table(
+                title="[bold cyan]Fabric Demo Gallery — Sample Data Generation[/bold cyan]",
+                title_justify="center",
+                show_header=True,
+                header_style="bold white",
+                border_style="bright_black",
+                expand=True,
+                padding=(0, 1),
+            )
+            table.add_column("Data Source", style="bold", min_width=22)
+            table.add_column("Status", min_width=12, justify="center")
+            table.add_column("Details", style="dim")
+
+            icons = {"pending": "⏳", "running": "⚙", "done": "✓"}
+            styles = {"pending": "dim", "running": "yellow", "done": "green"}
+
+            for name, _ in GENERATORS:
+                state, detail = _STATUS[name]
+                icon = icons[state]
+                label_text = {
+                    "pending": "Pending",
+                    "running": "Generating…",
+                    "done":    "Done",
+                }[state]
+                status_cell = Text(f"{icon}  {label_text}", style=styles[state])
+                table.add_row(name, status_cell, detail)
+
+            done = sum(1 for s, _ in _STATUS.values() if s == "done")
+            table.caption = f"[dim]{done} / {len(GENERATORS)} complete[/dim]"
+            return table
+
+        # Override _log to update the live display
+        import builtins as _builtins
+
+        with Live(_build_table(), console=console, refresh_per_second=8, screen=True) as live:
+            def _log(name: str, summary: str) -> None:  # type: ignore[misc]
+                _STATUS[name] = ("done", summary)
+                live.update(_build_table())
+
+            for ds_name, fn in GENERATORS:
+                _STATUS[ds_name] = ("running", "")
+                live.update(_build_table())
+                fn()
+
+        # Final summary after live display closes
+        console.print()
+        console.print(_build_table())
+        console.print(f"\n[bold green]All {len(GENERATORS)} data sources generated successfully.[/bold green]")
+

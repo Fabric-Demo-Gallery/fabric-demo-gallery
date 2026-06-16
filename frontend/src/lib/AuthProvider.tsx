@@ -15,6 +15,19 @@ import {
 } from "@azure/msal-browser";
 import { msalInstance, fabricScopes, storageScopes, managementScopes } from "@/lib/msal";
 
+// Local dev mode: when no AZURE_CLIENT_ID is configured, skip MSAL entirely.
+// The backend falls back to `az login` (az CLI) tokens automatically.
+const IS_DEV_MODE = !process.env.NEXT_PUBLIC_AZURE_CLIENT_ID;
+
+const DEV_ACCOUNT = {
+  homeAccountId: "dev-local",
+  environment: "local",
+  tenantId: "local",
+  username: "dev@local",
+  localAccountId: "dev-local",
+  name: "Dev Mode (az CLI)",
+} as AccountInfo;
+
 interface AuthState {
   initialized: boolean;
   account: AccountInfo | null;
@@ -38,11 +51,13 @@ const AuthContext = createContext<AuthState>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [initialized, setInitialized] = useState(false);
-  const [account, setAccount] = useState<AccountInfo | null>(null);
+  const [initialized, setInitialized] = useState(IS_DEV_MODE); // dev mode starts ready
+  const [account, setAccount] = useState<AccountInfo | null>(IS_DEV_MODE ? DEV_ACCOUNT : null);
   const [authError, setAuthError] = useState<string>("");
 
   useEffect(() => {
+    if (IS_DEV_MODE) return; // skip MSAL entirely in local dev mode
+
     msalInstance.initialize().then(async () => {
       // Handle redirect response (if coming back from login)
       try {
@@ -73,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async () => {
+    if (IS_DEV_MODE) return; // already "logged in" via az CLI in dev mode
     try {
       await msalInstance.loginRedirect({
         scopes: fabricScopes,
@@ -83,12 +99,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    if (IS_DEV_MODE) return;
     msalInstance.logoutRedirect();
     setAccount(null);
   }, []);
 
   const getToken = useCallback(
     async (scopes: string[], options?: { interactive?: boolean }): Promise<string> => {
+      if (IS_DEV_MODE) return ""; // backend uses az CLI token in dev mode
       const interactive = options?.interactive !== false;
       if (!account) throw new Error("Not signed in");
       try {

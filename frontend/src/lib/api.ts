@@ -30,6 +30,14 @@ export interface DemoDetail {
   }[];
 }
 
+export interface DatasetPreview {
+  fileName: string;
+  columns: string[];
+  rows: Record<string, string>[];
+  shownRows: number;
+  totalRows?: number;
+}
+
 export interface Workspace {
   id: string;
   displayName: string;
@@ -53,6 +61,26 @@ export async function fetchDemos(): Promise<Demo[]> {
 export async function fetchDemo(id: string): Promise<DemoDetail> {
   const res = await fetch(`${API_BASE}/api/demos/${id}`);
   if (!res.ok) throw new Error("Failed to fetch demo");
+  return res.json();
+}
+
+export async function fetchDatasetPreview(
+  demoId: string,
+  fileName: string
+): Promise<DatasetPreview> {
+  const res = await fetch(
+    `${API_BASE}/api/demos/${encodeURIComponent(demoId)}/data/${encodeURIComponent(fileName)}/preview`
+  );
+  if (!res.ok) {
+    let message = "Failed to fetch dataset preview";
+    try {
+      const body = await res.json();
+      if (body?.detail) message = body.detail;
+    } catch {
+      // Keep the generic message if the backend did not return JSON.
+    }
+    throw new Error(message);
+  }
   return res.json();
 }
 
