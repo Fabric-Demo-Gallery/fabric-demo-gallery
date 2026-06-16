@@ -1,26 +1,40 @@
 # Fabric Demo Gallery
 
-One-click deployable industry demos for Microsoft Fabric. Browse industry-specific scenarios, sign in with Microsoft Entra, and deploy a complete Fabric environment — workspace, lakehouse, eventhouse, notebooks, semantic models, Power BI reports, real-time dashboards, and pipelines — into your tenant in minutes.
+One-click deployable industry demos for Microsoft Fabric. Browse industry-specific scenarios, sign in with Microsoft Entra, and deploy a complete Fabric environment into your own tenant in minutes — workspace, lakehouse, notebooks, semantic models, Power BI reports, and more, depending on the scenario you pick.
 
 **Live site:** [https://www.fabricdemogallery.com](https://www.fabricdemogallery.com)
 
 ## Demos
 
-| Industry | Demo | Fabric Items | Time |
-|----------|------|-------------|------|
-| Manufacturing | Quality Control Analytics | Lakehouse, 5 Notebooks, Semantic Model (30+ measures), 4-page Power BI Report, Pipeline | 8–12 min |
-| Retail | Sales & Inventory Analytics | Lakehouse, 3 Notebooks, Star-Schema Semantic Model (6 tables, 37+ measures), 3-page Power BI Report, Pipeline | 8–12 min |
-| Energy & Utilities | Smart Grid Monitoring | Lakehouse, Eventhouse, KQL Database, 3 Notebooks, Real-Time Dashboard, Semantic Model, Power BI Report, Pipeline (auto-scheduled every 10 min) | 10–15 min |
+Twelve industries are available, each with a ready-to-deploy **Standard** demo plus a set of **Custom** deployment scenarios:
+
+| Industry group | Examples |
+|----------------|----------|
+| Manufacturing, Retail, Energy & Utilities | Quality control, sales & inventory, smart-grid monitoring |
+| Financial Services, Healthcare, Technology | Risk & fraud, patient & care quality, SaaS product analytics |
+| Transportation, Construction, Professional Services | Fleet & route, project cost, utilisation & margin |
+| Media, Education, Hospitality | Subscriber & content, student outcomes, guest experience |
+
+### Deployment scenarios
+
+Every industry can be deployed as a **Standard** medallion demo, or via a **Custom** scenario:
+
+- **AI & Machine Learning** — feature engineering, SynapseML LightGBM training, evaluation, and batch scoring with risk rankings
+- **External Database Integration (Mirroring)** — provisions an Azure SQL Database (Microsoft Entra-only auth), seeds it with operational data, and mirrors it live into Fabric OneLake (zero-ETL)
+- **Data Virtualization & Batch Analytics (Shortcuts)** — provisions ADLS Gen2, connects external data in place via Fabric Shortcuts, then processes Bronze → Silver → Gold
 
 ## Features
 
-- **One-click deployment** — Select a demo, pick your capacity, click Deploy
+- **One-click deployment** — Select an industry and scenario, pick your capacity, click Deploy
 - **Live progress streaming** — Real-time SSE updates as each Fabric item is provisioned
-- **Stop button** — Cancel deployment mid-flight and clean up partial workspaces
-- **Real-time data** — Energy demo includes a simulator notebook that generates live data every 10 minutes
-- **Multi-tenant auth** — Works across Azure AD tenants with MSAL redirect login
+- **12 industries + custom scenarios** — Standard medallion demos plus AI/ML, Mirroring, and Shortcuts
+- **Secure mirroring** — Azure SQL with Microsoft Entra-only auth and a secret-less Fabric Workspace Identity
+- **Auto-teardown on failure** — A failed deploy best-effort removes the workspace and any Azure SQL server it created, so nothing is left orphaned
+- **Capacity pre-flight** — Fails fast with a clear message if the target Fabric capacity is paused
+- **Stop button** — Cancel a deployment mid-flight
+- **Workspace cleanup** — One-click delete of a deployed workspace (and its Azure SQL server, for mirroring)
+- **Multi-tenant auth** — Works across Microsoft Entra tenants with MSAL redirect login
 - **Custom client ID support** — Users from restricted tenants can use `?clientId=THEIR_APP_ID` to bring their own app registration
-- **Workspace cleanup** — One-click delete of deployed workspaces
 
 ## Architecture
 
@@ -42,7 +56,7 @@ One-click deployable industry demos for Microsoft Fabric. Browse industry-specif
 │  - Rate limiting (slowapi)          │
 │  - Input validation                 │
 └──────────────┬──────────────────────┘
-               │ Fabric REST APIs + OneLake DFS
+               │ Fabric REST APIs + OneLake DFS + ARM
 ┌──────────────▼──────────────────────┐
 │  Microsoft Fabric Tenant            │
 │  - Workspace + Capacity             │
@@ -53,6 +67,14 @@ One-click deployable industry demos for Microsoft Fabric. Browse industry-specif
 │  - Power BI Report (PBIR-Legacy)    │
 │  - Real-Time Dashboard (KQL)        │
 │  - Data Pipeline (scheduled)        │
+│  - Mirrored Database (zero-ETL)     │
+└──────────────┬──────────────────────┘
+               │ (mirroring scenario)
+┌──────────────▼──────────────────────┐
+│  Azure (via ARM)                    │
+│  - Azure SQL Database (Entra-only)  │
+│  - Workspace Identity auth          │
+│  - ADLS Gen2 (shortcuts scenario)   │
 └─────────────────────────────────────┘
 ```
 
@@ -119,21 +141,26 @@ fabric-demo-gallery/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app, CORS, rate limiting
 │   │   ├── auth.py              # MSAL token handling
-│   │   ├── deployer.py          # Deployment orchestrator
+│   │   ├── deployer.py          # Deployment orchestrator (standard + mirroring)
 │   │   ├── fabric_client.py     # Fabric REST API wrapper
+│   │   ├── azure_client.py      # ARM client (Azure SQL, ADLS, storage)
 │   │   ├── report_builder.py    # Power BI report definitions
 │   │   └── routers/             # API endpoints
 │   └── requirements.txt
 ├── demos/
-│   ├── manufacturing-qc/        # Manufacturing demo
-│   ├── retail-sales/            # Retail demo
-│   ├── energy-grid/             # Energy RTI demo
-│   ├── schema.json              # Manifest schema
-│   └── generate_sample_data.py  # Data generator
+│   ├── <12 industry folders>/   # manufacturing-qc, retail-sales, healthcare, …
+│   │   ├── manifest.json        # Standard demo definition
+│   │   ├── manifest.custom.json # Offered custom scenarios
+│   │   ├── mirroring.json       # Per-sector mirroring spec
+│   │   ├── data/                # Sample CSVs
+│   │   └── notebooks/           # Per-scenario notebooks (incl. ml/)
+│   └── _scenarios/              # Shared scenario templates + mirroring notebooks
 ├── frontend/
-│   ├── src/app/                 # Next.js pages
-│   ├── src/lib/                 # MSAL, auth provider
-│   └── public/icons/            # Fabric workload icons
+│   ├── src/app/                 # Next.js pages (gallery, demo detail, monitoring)
+│   ├── src/lib/                 # MSAL, auth provider, error mapping
+│   └── public/                  # Fabric icons, demo video, SWA config
+├── tools/                       # validate_mirroring_specs.py and other helpers
+├── docs/                        # Pre-demo checklist and notes
 └── CONTRIBUTING.md              # Detailed contributor guide
 ```
 
