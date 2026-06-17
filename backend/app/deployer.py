@@ -255,7 +255,6 @@ def list_demos() -> list[dict]:
 ENABLED_SCENARIOS: set[str] = {
     "data-virtualization-batch",
     "ai-ml",
-    "anomaly-detection-alerts",
     "external-data-integration",
     "real-time-intelligence",
 }
@@ -736,8 +735,12 @@ async def deploy_demo(
             adls_dfs_url = f"https://{acct_name}.dfs.core.windows.net"
             connection_id = ""
             try:
+                # Unique connection name per deploy (include the workspace id) so we
+                # never reuse a stale connection — the embedded User Delegation SAS
+                # expires after a few hours, and a reused expired connection makes
+                # the shortcut creation fail with HTTP 400.
                 conn_result = await client.create_connection_oauth(
-                    display_name=f"{demo_id}-{acct_name}-conn",
+                    display_name=f"{demo_id}-{acct_name}-{ws_id[:8]}-conn",
                     adls_account_url=adls_dfs_url,
                     container=container,
                 )

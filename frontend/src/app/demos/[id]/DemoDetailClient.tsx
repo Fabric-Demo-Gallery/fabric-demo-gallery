@@ -51,7 +51,6 @@ import {
   TableRegular,
   DatabaseLink24Regular,
   Pulse24Regular,
-  AlertUrgent24Regular,
   BrainCircuit24Regular,
   Database24Regular,
   DatabaseArrowRight24Regular,
@@ -77,17 +76,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     feature: "Shortcuts & Mirroring",
   },
   {
-    id: "real-time-monitoring",
-    title: "Real-Time Monitoring",
-    description: "Eventhouse + KQL Database for streaming ingestion, real-time analytics, and live dashboards.",
-    estimatedTime: "12–18 min",
-    tags: ["eventhouse", "kql", "streaming", "real-time"],
-    enabled: false,
-    requiresAzure: false,
-    azureParams: [],
-    feature: "RTI",
-  },
-  {
     id: "real-time-intelligence",
     title: "Real-Time Intelligence",
     description: "Eventhouse + Eventstream for live data ingestion, KQL analytics, a Real-Time Dashboard, and an Activator for threshold-based alerts.",
@@ -97,17 +85,13 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     requiresAzure: false,
     azureParams: [],
     feature: "RTI",
-  },
-  {
-    id: "anomaly-detection-alerts",
-    title: "Anomaly Detection & Alerts",
-    description: "ML-based anomaly detection on historical data with alert pipeline and drill-through report.",
-    estimatedTime: "15–20 min",
-    tags: ["ml", "anomaly", "alerts", "lakehouse"],
-    enabled: false,
-    requiresAzure: false,
-    azureParams: [],
-    feature: "Machine Learning",
+    postDeploy: [
+      { label: "Start the live stream", detail: "Use the “Live Eventstream demo” box above: copy the Eventstream’s LiveCustomEndpoint connection string from the portal and paste it here to push real events into the Eventhouse." },
+      { label: "Watch the Real-Time Dashboard", detail: "Open the dashboard and turn on Auto refresh (1 min). As data streams in, the tiles update live — the wow moment for real-time analytics." },
+      { label: "Explore the KQL Queryset", detail: "Open the queryset and run the saved queries (recent records, count, trend, avg-by-group). Edit one or write your own KQL to answer ad-hoc questions instantly." },
+      { label: "Create an Activator alert", detail: "On a dashboard tile (or in the queryset) choose Set alert, pick a metric and threshold, and an action (email/Teams). The rule lands in the Activator and fires on live data." },
+      { label: "Inspect the Eventhouse", detail: "Open the Eventhouse → System overview to see ingestion rate and row counts climb in real time, and browse the auto-created KQL database and table." },
+    ],
   },
   {
     id: "ai-ml",
@@ -163,8 +147,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
 // Professional Fluent System icons per scenario (replaces emoji).
 const SCENARIO_ICON: Record<string, FluentIcon> = {
   "data-virtualization-batch": DatabaseLink24Regular,
-  "real-time-monitoring": Pulse24Regular,
-  "anomaly-detection-alerts": AlertUrgent24Regular,
+  "real-time-intelligence": Pulse24Regular,
   "ai-ml": BrainCircuit24Regular,
   "data-warehouse": Database24Regular,
   "external-data-integration": DatabaseArrowRight24Regular,
@@ -2106,30 +2089,8 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* Sample Data */}
-                {demo.sampleData && demo.sampleData.length > 0 && (
-                  <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                      <DatabaseRegular fontSize={16} /> Sample Data
-                    </div>
-                    <div className={styles.sectionBody}>
-                      {demo.sampleData.map((ds, i, arr) => (
-                        <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
-                          <div className={styles.itemLeft}>
-                            <span className={styles.itemIconWrap}>
-                              <span style={{ fontSize: 14 }}>📄</span>
-                            </span>
-                            <div>
-                              <Text weight="medium" size={300}>{ds.fileName}</Text>
-                              <div><Caption1>{ds.description}</Caption1></div>
-                            </div>
-                          </div>
-                          <Badge appearance="tint" size="small" color="subtle">{ds.rows.toLocaleString()} rows</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Sample Data — with preview support */}
+                {renderSampleDataSection()}
 
               </>
             )}
