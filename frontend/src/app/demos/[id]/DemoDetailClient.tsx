@@ -1218,6 +1218,39 @@ export default function DemoDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobIdParam, account]);
 
+  // These hooks must run unconditionally (before the `!demo` early return) to
+  // satisfy the rules of hooks. They only depend on top-level state/refs.
+  const handleStopStream = useCallback(async () => {
+    if (streamPollRef.current) {
+      clearInterval(streamPollRef.current);
+      streamPollRef.current = null;
+    }
+    const sid = streamSession?.sessionId;
+    if (sid) {
+      try {
+        await stopLiveStream(sid);
+      } catch {
+        /* best effort */
+      }
+      setStreamSession((prev) => (prev ? { ...prev, running: false } : prev));
+    }
+  }, [streamSession]);
+
+  // Clean up the poll timer on unmount
+  useEffect(() => {
+    return () => {
+      if (streamPollRef.current) clearInterval(streamPollRef.current);
+    };
+  }, []);
+
+  // Close preview modal on ESC
+  useEffect(() => {
+    if (!previewFileName) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPreviewFileName(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [previewFileName]);
+
   if (!demo) {
     return (
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 32px", textAlign: "center" }}>
@@ -1518,22 +1551,6 @@ export default function DemoDetailPage() {
     await deleteWorkspace(true);
   };
 
-  const handleStopStream = useCallback(async () => {
-    if (streamPollRef.current) {
-      clearInterval(streamPollRef.current);
-      streamPollRef.current = null;
-    }
-    const sid = streamSession?.sessionId;
-    if (sid) {
-      try {
-        await stopLiveStream(sid);
-      } catch {
-        /* best effort */
-      }
-      setStreamSession((prev) => (prev ? { ...prev, running: false } : prev));
-    }
-  }, [streamSession]);
-
   const handleStartStream = async () => {
     const conn = streamConnStr.trim();
     if (!conn) {
@@ -1570,13 +1587,6 @@ export default function DemoDetailPage() {
       setStreamStarting(false);
     }
   };
-
-  // Clean up the poll timer on unmount
-  useEffect(() => {
-    return () => {
-      if (streamPollRef.current) clearInterval(streamPollRef.current);
-    };
-  }, []);
 
   const resetState = () => {
     setShowDeploy(true);
@@ -1668,14 +1678,6 @@ export default function DemoDetailPage() {
       setPreviewLoadingFile((current) => (current === fileName ? null : current));
     }
   };
-
-  // Close preview modal on ESC
-  useEffect(() => {
-    if (!previewFileName) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPreviewFileName(null); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [previewFileName]);
 
   const renderSampleDataSection = (items: SampleDataItem[] = demo.sampleData) => (
     <div className={styles.section}>
