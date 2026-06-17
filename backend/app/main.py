@@ -11,7 +11,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
-from app.routers import azure, demos, deploy, jobs, workspaces
+from app.routers import azure, demos, deploy, jobs, stream, workspaces
 
 # ── File logging ─────────────────────────────────────────────────────────────
 _log_file = os.path.join(os.path.dirname(__file__), "..", "app.log")
@@ -63,7 +63,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Storage-Token", "X-Management-Token", "X-OneLake-Token"],
+    allow_headers=["Authorization", "Content-Type", "X-Storage-Token", "X-Management-Token", "X-OneLake-Token", "X-Kusto-Token"],
 )
 
 app.include_router(demos.router)
@@ -71,6 +71,7 @@ app.include_router(workspaces.router)
 app.include_router(deploy.router)
 app.include_router(azure.router)
 app.include_router(jobs.router)
+app.include_router(stream.router)
 
 
 @app.get("/api/health")

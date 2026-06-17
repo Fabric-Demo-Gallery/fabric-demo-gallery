@@ -47,6 +47,7 @@ export const fabricScopes = [
   "https://api.fabric.microsoft.com/Item.ReadWrite.All",
   "https://api.fabric.microsoft.com/Connection.ReadWrite.All",
   "https://api.fabric.microsoft.com/OneLake.ReadWrite.All",
+  "https://api.fabric.microsoft.com/KQLDatabase.ReadWrite.All",
 ];
 
 // Separate OneLake scope — needs its own token for shortcut creation (OneLake.ReadWrite.All)
@@ -57,5 +58,13 @@ export const storageScopes = ["https://storage.azure.com/.default"];
 
 // Scopes needed for Azure Resource Manager (ARM) — used for ADLS Gen2 provisioning
 export const managementScopes = ["https://management.azure.com/user_impersonation"];
+
+// Scope used to attempt the optional historical data seed via the Eventhouse/KQL
+// data-plane. NOTE: `kusto.fabric.microsoft.com` is not registered as a resource
+// principal in every tenant (causes AADSTS500011 at sign-in), so we request the
+// Fabric-audience KQLDatabase scope instead. The table itself is created via the
+// Fabric definition API (no data-plane token needed), and the live Eventstream is
+// the primary data source — so a failed/again-skipped seed is non-fatal.
+export const kustoScopes = ["https://api.fabric.microsoft.com/KQLDatabase.ReadWrite.All"];
 
 

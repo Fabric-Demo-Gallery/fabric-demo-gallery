@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Site Operations Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Cost Overrun Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Site Operations Intelligence",
+      "kqlConfig": {
+        "tableName": "SiteSensors",
+        "signalColumn": "temperature_c",
+        "groupByColumn": "equipment_id",
+        "timestampColumn": "timestamp"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Project Delay Prediction" },
     { "id": "data-virtualization-batch", "titleOverride": "BIM Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Construction Data Warehouse" },

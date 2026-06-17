@@ -1198,6 +1198,115 @@ def generate_professional_services_data():
     _log("Professional Services", f"{len(consultants):,} consultants · {len(clients):,} clients · {len(engagements):,} engagements · {len(timesheets):,} timesheets")
 
 
+# ── RTI supplement datasets ──────────────────────────────────────────────────
+# Construction: site IoT sensor stream (no sensor data existed previously)
+def generate_construction_rti_data():
+    out_dir = DEMOS_DIR / "construction" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    equipment_types = ["Excavator", "Crane", "Bulldozer", "Compactor", "Concrete Mixer"]
+    sites = [f"SITE-{i:03d}" for i in range(1, 21)]
+    equipment_ids = [f"EQ-{i:04d}" for i in range(1, 51)]
+
+    readings = []
+    base_date = datetime(2025, 1, 1)
+    for i in range(50000):
+        eq_id = random.choice(equipment_ids)
+        site = random.choice(sites)
+        ts = base_date + timedelta(
+            days=random.randint(0, 179),
+            hours=random.randint(6, 20),
+            minutes=random.randint(0, 59),
+            seconds=random.randint(0, 59),
+        )
+        # Occasional anomaly spike
+        anomaly = random.random() < 0.03
+        readings.append({
+            "reading_id":     f"SR-{i+1:07d}",
+            "equipment_id":   eq_id,
+            "site_id":        site,
+            "equipment_type": random.choice(equipment_types),
+            "timestamp":      ts.strftime("%Y-%m-%d %H:%M:%S"),
+            "temperature_c":  round(random.gauss(85, 10) + (30 if anomaly else 0), 2),
+            "vibration_ms2":  round(abs(random.gauss(4.5, 1.2) + (8 if anomaly else 0)), 3),
+            "noise_db":       round(random.gauss(78, 6) + (15 if anomaly else 0), 1),
+            "fuel_pct":       round(max(0, min(100, random.gauss(65, 20))), 1),
+            "is_anomaly":     anomaly,
+        })
+    _write_csv(out_dir / "site_sensors.csv", readings)
+    print(f"Construction RTI data generated: {len(readings)} site sensor readings")
+
+
+# Education: platform event stream (login/submit/view/error per student per session)
+def generate_education_rti_data():
+    out_dir = DEMOS_DIR / "education" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    student_ids = [f"STU-{i:05d}" for i in range(1, 5001)]
+    course_ids = [f"CRS-{i:04d}" for i in range(1, 101)]
+    event_types = ["login", "view_content", "submit_assessment", "watch_video", "download_resource", "error", "logout"]
+    platforms = ["Web", "Mobile iOS", "Mobile Android", "Desktop App"]
+
+    events = []
+    base_date = datetime(2025, 1, 1)
+    for i in range(100000):
+        ts = base_date + timedelta(
+            days=random.randint(0, 179),
+            hours=random.randint(6, 23),
+            minutes=random.randint(0, 59),
+            seconds=random.randint(0, 59),
+        )
+        ev_type = random.choice(event_types)
+        events.append({
+            "event_id":            f"EV-{i+1:07d}",
+            "student_id":          random.choice(student_ids),
+            "course_id":           random.choice(course_ids),
+            "timestamp":           ts.strftime("%Y-%m-%d %H:%M:%S"),
+            "event_type":          ev_type,
+            "session_duration_secs": random.randint(10, 3600) if ev_type != "error" else 0,
+            "platform":            random.choice(platforms),
+            "is_error":            ev_type == "error",
+        })
+    _write_csv(out_dir / "platform_events.csv", events)
+    print(f"Education RTI data generated: {len(events)} platform events")
+
+
+# Professional Services: project event stream (daily activity per engagement)
+def generate_proservices_rti_data():
+    out_dir = DEMOS_DIR / "professional-services" / "data"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    engagement_ids = [f"ENG-{i:05d}" for i in range(1, 1001)]
+    consultant_ids = [f"CON-{i:04d}" for i in range(1, 201)]
+    task_types = ["Analysis", "Workshop", "Delivery", "Review", "Stakeholder Meeting", "Documentation", "Travel"]
+
+    events = []
+    base_date = datetime(2025, 1, 1)
+    for i in range(30000):
+        eng_id = random.choice(engagement_ids)
+        ts = base_date + timedelta(
+            days=random.randint(0, 179),
+            hours=random.randint(8, 19),
+            minutes=random.randint(0, 59),
+        )
+        hours = round(random.uniform(0.5, 10.0), 1)
+        daily_rate = random.choice([800, 1000, 1200, 1500, 2000])
+        budget_rem = round(random.gauss(40, 30), 1)
+        events.append({
+            "event_id":             f"PE-{i+1:06d}",
+            "engagement_id":        eng_id,
+            "consultant_id":        random.choice(consultant_ids),
+            "event_date":           ts.strftime("%Y-%m-%d %H:%M:%S"),
+            "task_type":            random.choice(task_types),
+            "hours_logged":         hours,
+            "cost_gbp":             round(hours / 8 * daily_rate, 2),
+            "budget_remaining_pct": max(0.0, min(100.0, budget_rem)),
+            "is_overrun_alert":     budget_rem < 10,
+        })
+    _write_csv(out_dir / "project_events.csv", events)
+    print(f"Professional services RTI data generated: {len(events)} project events")
+
+
 if __name__ == "__main__":
     GENERATORS = [
         ("Manufacturing",         generate_manufacturing_data),
@@ -1212,6 +1321,9 @@ if __name__ == "__main__":
         ("Transportation",        generate_transportation_data),
         ("Technology",            generate_technology_data),
         ("Professional Services", generate_professional_services_data),
+        ("Construction (RTI)",        generate_construction_rti_data),
+        ("Education (RTI)",           generate_education_rti_data),
+        ("Professional Services (RTI)", generate_proservices_rti_data),
     ]
 
     if not _RICH:
@@ -1274,4 +1386,3 @@ if __name__ == "__main__":
         console.print()
         console.print(_build_table())
         console.print(f"\n[bold green]All {len(GENERATORS)} data sources generated successfully.[/bold green]")
-

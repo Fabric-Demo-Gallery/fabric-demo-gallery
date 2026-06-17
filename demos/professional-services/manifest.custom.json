@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Engagement Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Billing Anomaly Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Engagement Intelligence",
+      "kqlConfig": {
+        "tableName": "ProjectEvents",
+        "signalColumn": "hours_logged",
+        "groupByColumn": "engagement_id",
+        "timestampColumn": "event_date"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Project Outcome Prediction" },
     { "id": "data-virtualization-batch", "titleOverride": "Client Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Services Data Warehouse" },

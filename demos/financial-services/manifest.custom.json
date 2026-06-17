@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Transaction Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Fraud Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Transaction Intelligence",
+      "kqlConfig": {
+        "tableName": "Transactions",
+        "signalColumn": "amount",
+        "groupByColumn": "account_id",
+        "timestampColumn": "transaction_date"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Credit Risk Scoring" },
     { "id": "data-virtualization-batch", "titleOverride": "External Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Financial Data Warehouse" },
