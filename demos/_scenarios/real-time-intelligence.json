@@ -1,0 +1,17 @@
+{
+  "id": "real-time-intelligence",
+  "title": "Real-Time Intelligence",
+  "description": "Stream live events through Eventstream into an Eventhouse KQL Database, explore with KQL Querysets, monitor via Real-Time Dashboards, and trigger automated actions with Activator. Sample historical data is seeded into KQL automatically.",
+  "icon": "📡",
+  "estimatedTime": "3–5 min",
+  "tags": ["eventhouse", "kql", "streaming", "activator"],
+  "prerequisites": ["Fabric capacity (F2+, Trial, or PPU)"],
+  "azureParams": [],
+  "fabricItemTemplate": [
+    { "type": "Eventhouse",   "name": "{industry}" },
+    { "type": "Eventstream",  "name": "{industry}_eventstream" },
+    { "type": "KQLQueryset",  "name": "{industry}_kql_queries" },
+    { "type": "KQLDashboard", "name": "{industry}_realtime_dashboard" },
+    { "type": "Reflex",       "name": "{industry}_activator" }
+  ]
+}

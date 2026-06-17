@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Live Viewership Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Churn Anomaly Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Viewership Intelligence",
+      "kqlConfig": {
+        "tableName": "ViewingHistory",
+        "signalColumn": "watch_duration_mins",
+        "groupByColumn": "content_id",
+        "timestampColumn": "view_date"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Content Recommendation" },
     { "id": "data-virtualization-batch", "titleOverride": "Ad Platform Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Media Data Warehouse" },

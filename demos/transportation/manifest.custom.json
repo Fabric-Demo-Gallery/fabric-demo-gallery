@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Live Fleet Tracking" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Route Anomaly Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Fleet Intelligence",
+      "kqlConfig": {
+        "tableName": "Deliveries",
+        "signalColumn": "delay_hrs",
+        "groupByColumn": "vehicle_id",
+        "timestampColumn": "actual_arrival"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Delivery Time Prediction" },
     { "id": "data-virtualization-batch", "titleOverride": "Telematics Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Logistics Data Warehouse" },

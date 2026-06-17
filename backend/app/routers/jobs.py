@@ -8,7 +8,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sse_starlette.sse import EventSourceResponse
 
-from app.auth import get_user_token, get_storage_token, get_user_id
+from app.auth import get_user_token, get_storage_token, get_user_id, get_kusto_token
 from app.fabric_client import FabricClient
 from app.job_runner import run_job
 from app.job_store import job_store
@@ -110,6 +110,15 @@ async def create_job(
     search_tok = request.headers.get("x-search-token", "")
     agent_tok = request.headers.get("x-agent-token", "")
 
+    # Kusto token is only needed for Real-Time Intelligence seed ingestion.
+    # Use the header when present; in dev fall back to az CLI, ignoring failures.
+    kusto_tok = request.headers.get("x-kusto-token", "")
+    if not kusto_tok:
+        try:
+            kusto_tok = await get_kusto_token(request)
+        except Exception:
+            kusto_tok = ""
+
     task = asyncio.create_task(
         run_job(
             job_id=job.job_id,
@@ -129,6 +138,7 @@ async def create_job(
             sql_server_name=body.sql_server_name,
             search_token=search_tok or None,
             agent_token=agent_tok or None,
+            kusto_token=kusto_tok or None,
         )
     )
     job_store.set_task(job.job_id, task)

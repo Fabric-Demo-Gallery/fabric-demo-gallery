@@ -8,8 +8,9 @@ import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 import {
   fetchSubscriptions, fetchResourceGroups, fetchDatasetPreview,
+  startLiveStream, stopLiveStream, getStreamStatus,
 } from "@/lib/api";
-import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, DatasetPreview } from "@/lib/api";
+import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, DatasetPreview, StreamSession } from "@/lib/api";
 import NextLink from "next/link";
 import { useDeployment } from "@/lib/DeploymentContext";
 // import type { DeployStep } from "@/lib/DeploymentContext";
@@ -29,8 +30,8 @@ import {
   Divider,
   MessageBar,
   MessageBarBody,
-  MessageBarTitle,
   MessageBarActions,
+  MessageBarTitle,
   Checkbox,
   ToggleButton,
   Link as FluentLink,
@@ -50,11 +51,11 @@ import {
   TableRegular,
   DatabaseLink24Regular,
   Pulse24Regular,
-  AlertUrgent24Regular,
   BrainCircuit24Regular,
   Database24Regular,
   DatabaseArrowRight24Regular,
   Sparkle24Regular,
+  FlashRegular,
   Bot24Regular,
 } from "@fluentui/react-icons";
 import type { FluentIcon } from "@fluentui/react-icons";
@@ -76,26 +77,22 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     feature: "Shortcuts & Mirroring",
   },
   {
-    id: "real-time-monitoring",
-    title: "Real-Time Monitoring",
-    description: "Eventhouse + KQL Database for streaming ingestion, real-time analytics, and live dashboards.",
-    estimatedTime: "12–18 min",
-    tags: ["eventhouse", "kql", "streaming", "real-time"],
-    enabled: false,
+    id: "real-time-intelligence",
+    title: "Real-Time Intelligence",
+    description: "Eventhouse + Eventstream for live data ingestion, KQL analytics, a Real-Time Dashboard, and an Activator for threshold-based alerts.",
+    estimatedTime: "3–5 min",
+    tags: ["eventhouse", "kql", "streaming", "activator"],
+    enabled: true,
     requiresAzure: false,
     azureParams: [],
     feature: "RTI",
-  },
-  {
-    id: "anomaly-detection-alerts",
-    title: "Anomaly Detection & Alerts",
-    description: "ML-based anomaly detection on historical data with alert pipeline and drill-through report.",
-    estimatedTime: "15–20 min",
-    tags: ["ml", "anomaly", "alerts", "lakehouse"],
-    enabled: false,
-    requiresAzure: false,
-    azureParams: [],
-    feature: "Machine Learning",
+    postDeploy: [
+      { label: "Start the live stream", detail: "Use the “Live Eventstream demo” box above: copy the Eventstream’s LiveCustomEndpoint connection string from the portal and paste it here to push real events into the Eventhouse." },
+      { label: "Watch the Real-Time Dashboard", detail: "Open the dashboard and turn on Auto refresh (1 min). As data streams in, the tiles update live — the wow moment for real-time analytics." },
+      { label: "Explore the KQL Queryset", detail: "Open the queryset and run the saved queries (recent records, count, trend, avg-by-group). Edit one or write your own KQL to answer ad-hoc questions instantly." },
+      { label: "Create an Activator alert", detail: "On a dashboard tile (or in the queryset) choose Set alert, pick a metric and threshold, and an action (email/Teams). The rule lands in the Activator and fires on live data." },
+      { label: "Inspect the Eventhouse", detail: "Open the Eventhouse → System overview to see ingestion rate and row counts climb in real time, and browse the auto-created KQL database and table." },
+    ],
   },
   {
     id: "ai-ml",
@@ -152,7 +149,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     description: "Deploy a Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data — data + AI in one click. (Preview: provisions billable Azure Foundry resources in your subscription.)",
     estimatedTime: "20–30 min",
     tags: ["foundry", "ai-agent", "data-agent", "rag", "preview"],
-    enabled: true,
+    enabled: false,
     requiresAzure: true,
     azureParams: [],
     feature: "Foundry AI Agent",
@@ -162,8 +159,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
 // Professional Fluent System icons per scenario (replaces emoji).
 const SCENARIO_ICON: Record<string, FluentIcon> = {
   "data-virtualization-batch": DatabaseLink24Regular,
-  "real-time-monitoring": Pulse24Regular,
-  "anomaly-detection-alerts": AlertUrgent24Regular,
+  "real-time-intelligence": Pulse24Regular,
   "ai-ml": BrainCircuit24Regular,
   "data-warehouse": Database24Regular,
   "external-data-integration": DatabaseArrowRight24Regular,
@@ -208,6 +204,9 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
     Eventhouse: "eventhouse_24_item.svg",
     KQLDatabase: "kql_database_24_item.svg",
     KQLDashboard: "kql_dashboard_24_item.svg",
+    Eventstream: "dataflow_gen2_24_item.svg",
+    KQLQueryset: "kql_database_24_item.svg",
+    Reflex: "bolt.svg",
     Connection: "dataflow_gen2_24_item.svg",
     Shortcut: "lakehouse_24_item.svg",
   };
@@ -1002,6 +1001,12 @@ export default function DemoDetailPage() {
   const [deployedWorkspaceId, setDeployedWorkspaceId] = useState("");
   const [cleaning, setCleaning] = useState(false);
   const [cleaned, setCleaned] = useState(false);
+  // ── Live Eventstream replay (RTI demo) ──────────────────────────────────
+  const [streamConnStr, setStreamConnStr] = useState("");
+  const [streamSession, setStreamSession] = useState<StreamSession | null>(null);
+  const [streamStarting, setStreamStarting] = useState(false);
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const streamPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const currentJobIdRef = useRef<string | null>(null);
 
@@ -1213,6 +1218,39 @@ export default function DemoDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobIdParam, account]);
 
+  // These hooks must run unconditionally (before the `!demo` early return) to
+  // satisfy the rules of hooks. They only depend on top-level state/refs.
+  const handleStopStream = useCallback(async () => {
+    if (streamPollRef.current) {
+      clearInterval(streamPollRef.current);
+      streamPollRef.current = null;
+    }
+    const sid = streamSession?.sessionId;
+    if (sid) {
+      try {
+        await stopLiveStream(sid);
+      } catch {
+        /* best effort */
+      }
+      setStreamSession((prev) => (prev ? { ...prev, running: false } : prev));
+    }
+  }, [streamSession]);
+
+  // Clean up the poll timer on unmount
+  useEffect(() => {
+    return () => {
+      if (streamPollRef.current) clearInterval(streamPollRef.current);
+    };
+  }, []);
+
+  // Close preview modal on ESC
+  useEffect(() => {
+    if (!previewFileName) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPreviewFileName(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [previewFileName]);
+
   if (!demo) {
     return (
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 32px", textAlign: "center" }}>
@@ -1304,6 +1342,13 @@ export default function DemoDetailPage() {
           if (agentTok) headers["X-Agent-Token"] = agentTok;
         } catch { /* continue — agent becomes a manual step */ }
       }
+
+      // Note: the historical data seed (optional) uses the Eventhouse/KQL data
+      // plane, whose audience (kusto.fabric.microsoft.com) isn't registered in
+      // every tenant. We deliberately do NOT request that scope here (it breaks
+      // sign-in with AADSTS500011). The table is created via the Fabric API and
+      // the live Eventstream is the primary data source; in local dev the backend
+      // falls back to an az CLI Kusto token to perform the seed.
 
       // Step 1: Create the job — returns immediately with a job_id
       const createResp = await fetch(`${API}/api/jobs`, {
@@ -1520,6 +1565,43 @@ export default function DemoDetailPage() {
     await deleteWorkspace(true);
   };
 
+  const handleStartStream = async () => {
+    const conn = streamConnStr.trim();
+    if (!conn) {
+      setStreamError("Paste the custom endpoint connection string from the Fabric portal.");
+      return;
+    }
+    setStreamError(null);
+    setStreamStarting(true);
+    try {
+      const session = await startLiveStream({
+        demoId: id,
+        scenarioId: "real-time-intelligence",
+        connectionString: conn,
+      });
+      setStreamSession(session);
+      // Poll status so the UI shows live "events sent" and surfaces errors
+      if (streamPollRef.current) clearInterval(streamPollRef.current);
+      streamPollRef.current = setInterval(async () => {
+        try {
+          const s = await getStreamStatus(session.sessionId);
+          setStreamSession(s);
+          if (!s.running && streamPollRef.current) {
+            clearInterval(streamPollRef.current);
+            streamPollRef.current = null;
+            if (s.error) setStreamError(s.error);
+          }
+        } catch {
+          /* ignore transient poll errors */
+        }
+      }, 2000);
+    } catch (e: unknown) {
+      setStreamError(e instanceof Error ? e.message : "Failed to start live stream");
+    } finally {
+      setStreamStarting(false);
+    }
+  };
+
   const resetState = () => {
     setShowDeploy(true);
     setDeploying(false);
@@ -1528,6 +1610,11 @@ export default function DemoDetailPage() {
     setError(null);
     setDeployedWorkspaceId("");
     setCleaned(false);
+    handleStopStream();
+    setStreamConnStr("");
+    setStreamSession(null);
+    setStreamError(null);
+    router.replace(`/demos/${id}?mode=custom`);
     setSelectedSub("");
     setSelectedRG("");
     setStorAcctName("");
@@ -1605,14 +1692,6 @@ export default function DemoDetailPage() {
       setPreviewLoadingFile((current) => (current === fileName ? null : current));
     }
   };
-
-  // Close preview modal on ESC
-  useEffect(() => {
-    if (!previewFileName) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPreviewFileName(null); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [previewFileName]);
 
   const renderSampleDataSection = (items: SampleDataItem[] = demo.sampleData) => (
     <div className={styles.section}>
@@ -1961,6 +2040,91 @@ export default function DemoDetailPage() {
               </>
             )}
 
+            {/* === CUSTOM MODE: Real-Time Intelligence scenario selected === */}
+            {isCustomMode && selectedScenario?.id === "real-time-intelligence" && (
+              <>
+                {/* RTI data flow diagram */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <ArrowRightRegular fontSize={16} /> Data Flow
+                  </div>
+                  <div style={{ padding: "16px 20px" }}>
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Ingest</div>
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 16, flexWrap: "nowrap" }}>
+                      {[
+                        { label: "Source", value: "CSV / Stream", color: "#1f3a5c" },
+                        { label: "Eventstream", value: "Live Ingestion", color: "#1a3d6e" },
+                        { label: "Eventhouse", value: "KQL Storage", color: "#1a4a5c" },
+                        { label: "KQL DB", value: "Auto-Created", color: "#1a3d4a" },
+                      ].map((step, i, arr) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
+                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
+                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          </div>
+                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Analyze &amp; Act</div>
+                    <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap" }}>
+                      {[
+                        { label: "KQL Queryset", value: "Analytics", color: "#1a4a3d" },
+                        { label: "Dashboard", value: "Live Tiles", color: "#2d4a1a" },
+                        { label: "Activator", value: "Alert Rules", color: "#4a3d1a" },
+                      ].map((step, i, arr) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
+                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
+                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
+                          </div>
+                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* What Gets Created — RTI items */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <DatabaseRegular fontSize={16} /> What Gets Created
+                  </div>
+                  <div className={styles.sectionBody}>
+                    {(() => {
+                      const sid = id.replace(/-/g, '_');
+                      return [
+                        { type: "Workspace",    name: "New Fabric Workspace",              description: "Dedicated workspace for this deployment" },
+                        { type: "Eventhouse",   name: sid,                                 description: "KQL-native storage engine for real-time analytics" },
+                        { type: "KQLDatabase",  name: sid,                                  description: "Default KQL database (auto-created by the Eventhouse), seeded with sample data" },
+                        { type: "Eventstream",  name: `${sid}_eventstream`,                description: "Custom endpoint → Eventhouse pipeline for live streaming (push your data after deploy)" },
+                        { type: "KQLQueryset",  name: `${sid}_kql_queries`,                description: "Saved KQL queries for analytics and exploration" },
+                        { type: "KQLDashboard", name: `${sid}_realtime_dashboard`,         description: "Real-time dashboard with auto-refreshing KQL tiles" },
+                        { type: "Reflex",       name: `${sid}_activator`,                  description: "Activator item — add an alert rule yourself via 'Set alert' on a dashboard tile or queryset" },
+                      ].map((item, i, arr) => (
+                      <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                      </div>
+                    ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Sample Data — with preview support */}
+                {renderSampleDataSection()}
+
+              </>
+            )}
+
             {/* === STANDARD MODE: Original demo overview === */}
             {!isCustomMode && (
               <>
@@ -2216,7 +2380,7 @@ export default function DemoDetailPage() {
               )}
 
               {/* ── Phase 2: Configure (workspace + capacity + Azure params) ── */}
-              {showDeploy && (!isCustomMode || !!selectedScenario) && !deploying && !completed && !error && !(!!jobIdParam && !!error) && (
+              {showDeploy && (!isCustomMode || !!selectedScenario) && !deploying && !completed && !error && (
                 <div>
                   {/* Selected scenario chip */}
                   {selectedScenario && (
@@ -2499,6 +2663,72 @@ export default function DemoDetailPage() {
                           </div>
                         ) : null;
                       })()}
+                      {selectedScenario?.id === "real-time-intelligence" && (
+                        <Card style={{ marginBottom: 12, padding: 14, background: "#0d1117", border: "1px solid #30363d" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                            <FlashRegular fontSize={16} style={{ color: "#3fb68b" }} />
+                            <Text weight="semibold" style={{ fontSize: 13 }}>Live Eventstream demo</Text>
+                          </div>
+                          <Caption1 style={{ display: "block", marginBottom: 10, color: "#8b949e", lineHeight: 1.5 }}>
+                            In the workspace, open the Eventstream → select the{" "}
+                            <strong>LiveCustomEndpoint</strong> source → <strong>Details → Keys</strong>, and copy the
+                            Event Hub <strong>Connection string-primary key</strong>. Paste it below to push live data
+                            into the Eventhouse so the dashboard and Activator react in real time.
+                          </Caption1>
+                          {!streamSession?.running ? (
+                            <>
+                              <Input
+                                value={streamConnStr}
+                                onChange={(_, d) => setStreamConnStr(d.value)}
+                                placeholder="Endpoint=sb://...;SharedAccessKeyName=...;SharedAccessKey=...;EntityPath=es_..."
+                                style={{ width: "100%", marginBottom: 8 }}
+                                disabled={streamStarting}
+                              />
+                              <Button
+                                appearance="primary"
+                                icon={<FlashRegular />}
+                                onClick={handleStartStream}
+                                disabled={streamStarting || !streamConnStr.trim()}
+                                style={{ width: "100%" }}
+                              >
+                                {streamStarting ? "Starting..." : "Start live stream"}
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <MessageBar intent="info" style={{ marginBottom: 8 }}>
+                                <MessageBarBody>
+                                  Streaming live — {streamSession.sent.toLocaleString()} events sent to{" "}
+                                  <strong>{streamSession.tableName}</strong>.
+                                </MessageBarBody>
+                              </MessageBar>
+                              <Button
+                                appearance="outline"
+                                onClick={handleStopStream}
+                                style={{ width: "100%", color: "#f85149", borderColor: "#f8514966" }}
+                              >
+                                Stop live stream
+                              </Button>
+                            </>
+                          )}
+                          {streamError && (
+                            <Caption1 style={{ display: "block", marginTop: 8, color: "#f85149" }}>
+                              {streamError}
+                            </Caption1>
+                          )}
+                        </Card>
+                      )}
+                      {selectedScenario?.id === "real-time-intelligence" && (
+                        <MessageBar intent="info" style={{ marginBottom: 12 }}>
+                          <MessageBarBody>
+                            <strong>Set up the Activator alert yourself:</strong> open the
+                            real-time dashboard (or the KQL queryset), select <strong>Set alert</strong>{" "}
+                            on a tile, choose a metric and threshold, and pick an action (email/Teams).
+                            Fabric wires the rule into the <em>{`${id.replace(/-/g, "_")}_activator`}</em> item.
+                            Alert rules can&apos;t be created reliably through the API, so this step is done in the Fabric UI.
+                          </MessageBarBody>
+                        </MessageBar>
+                      )}
                       {deployedWorkspaceId && !cleaned && (
                         <Button
                           appearance="outline"

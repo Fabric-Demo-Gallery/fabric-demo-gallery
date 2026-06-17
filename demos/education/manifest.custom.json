@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Campus Operations Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "At-Risk Student Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Campus Learning Intelligence",
+      "kqlConfig": {
+        "tableName": "PlatformEvents",
+        "signalColumn": "session_duration_secs",
+        "groupByColumn": "course_id",
+        "timestampColumn": "timestamp"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Dropout Risk Prediction" },
     { "id": "data-virtualization-batch", "titleOverride": "LMS Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Education Data Warehouse" },

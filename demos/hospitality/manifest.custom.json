@@ -1,7 +1,15 @@
 {
   "scenarios": [
-    { "id": "real-time-monitoring",      "titleOverride": "Property Operations Monitoring" },
-    { "id": "anomaly-detection-alerts",  "titleOverride": "Revenue Anomaly Detection" },
+    {
+      "id": "real-time-intelligence",
+      "titleOverride": "Property Intelligence",
+      "kqlConfig": {
+        "tableName": "Bookings",
+        "signalColumn": "total_amount",
+        "groupByColumn": "property_id",
+        "timestampColumn": "check_in_date"
+      }
+    },
     { "id": "ai-ml",                     "titleOverride": "Demand & Pricing Prediction" },
     { "id": "data-virtualization-batch", "titleOverride": "Booking Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Hospitality Data Warehouse" },

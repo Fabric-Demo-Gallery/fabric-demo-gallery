@@ -806,18 +806,219 @@ class FabricClient:
             raise FabricError(404, f"KQL Database '{name}' not found after creation")
         raise FabricError(resp.status_code, resp.text[:300])
 
-    async def create_kql_dashboard(
-        self, workspace_id: str, name: str, kql_database_id: str, eventhouse_uri: str, kql_database_name: str
+    async def find_database_by_name(
+        self, workspace_id: str, name: str
+    ) -> dict | None:
+        """Find a KQL Database in the workspace by display name (e.g. the
+        Eventhouse's auto-created default database)."""
+        items = await self.list_items(workspace_id, "KQLDatabase")
+        for item in items:
+            if item.get("displayName") == name:
+                return item
+        return None
+
+    async def add_table_schema_to_database(
+        self,
+        workspace_id: str,
+        db_item_id: str,
+        eventhouse_item_id: str,
+        schema_kql: str,
+    ) -> None:
+        """Add a table (DDL only) to an existing KQL database via the Fabric
+        definition API. No Kusto data-plane token is required — Fabric executes
+        the ``DatabaseSchema.kql`` script under the caller's identity.
+        """
+        db_props = {
+            "databaseType": "ReadWrite",
+            "parentEventhouseItemId": eventhouse_item_id,
+        }
+        props_b64 = base64.b64encode(json.dumps(db_props).encode()).decode()
+        schema_b64 = base64.b64encode(schema_kql.encode()).decode()
+        definition = {
+            "parts": [
+                {"path": "DatabaseProperties.json", "payload": props_b64, "payloadType": "InlineBase64"},
+                {"path": "DatabaseSchema.kql", "payload": schema_b64, "payloadType": "InlineBase64"},
+            ]
+        }
+        await self.update_item_definition(workspace_id, db_item_id, definition)
+
+    async def create_kql_queryset_with_queries(
+        self,
+        workspace_id: str,
+        name: str,
+        cluster_uri: str,
+        database_name: str,
+        queries: list[tuple[str, str]],
     ) -> dict:
-        """Create a Real-Time Dashboard (KQL Dashboard) with pre-built tiles."""
+        """Create a KQL Queryset pre-populated with saved queries.
+
+        ``queries`` is a list of ``(title, kql)`` tuples, each rendered as a tab.
+        """
         import uuid
 
         ds_id = str(uuid.uuid4())
-        page1_id = str(uuid.uuid4())
-        page2_id = str(uuid.uuid4())
-        page3_id = str(uuid.uuid4())
+        queryset = {
+            "queryset": {
+                "version": "1.0.0",
+                "dataSources": [
+                    {
+                        "id": ds_id,
+                        "clusterUri": cluster_uri,
+                        "type": "AzureDataExplorer",
+                        "databaseName": database_name,
+                    }
+                ],
+                "tabs": [
+                    {
+                        "id": str(uuid.uuid4()),
+                        "title": title,
+                        "content": content,
+                        "dataSourceId": ds_id,
+                    }
+                    for title, content in queries
+                ],
+            }
+        }
+        payload = base64.b64encode(json.dumps(queryset).encode()).decode()
+        definition = {
+            "parts": [
+                {"path": "RealTimeQueryset.json", "payload": payload, "payloadType": "InlineBase64"}
+            ]
+        }
+        return await self.create_item(workspace_id, "KQLQueryset", name, definition)
 
-        def _tile(title, query, page_id, vis_type, x, y, w, h):
+    async def kusto_mgmt(
+        self, query_uri: str, database: str, csl: str, kusto_token: str
+    ) -> dict:
+        """Run a Kusto management command against an Eventhouse over HTTPS.
+
+        Posts ``csl`` to ``{query_uri}/v1/rest/mgmt`` with a Fabric-audience bearer
+        token (acquired with the KQLDatabase.ReadWrite.All scope).
+        """
+        url = f"{query_uri.rstrip('/')}/v1/rest/mgmt"
+        headers = {
+            "Authorization": f"Bearer {kusto_token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        resp = await self._client.post(
+            url, json={"db": database, "csl": csl}, headers=headers, timeout=120.0
+        )
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                err = resp.json()
+                detail = (
+                    err.get("error", {}).get("@message")
+                    or err.get("error", {}).get("message")
+                    or err.get("message")
+                    or detail
+                )
+            except Exception:
+                pass
+            raise FabricError(resp.status_code, str(detail)[:500])
+        try:
+            return resp.json()
+        except Exception:
+            return {}
+
+    async def kusto_ingest_inline(
+        self, query_uri: str, database: str, table: str, csv_data: str, kusto_token: str
+    ) -> dict:
+        """Push a block of CSV rows into a KQL table via the Kusto management REST endpoint.
+
+        Uses ``.ingest inline`` against ``{query_uri}/v1/rest/mgmt``. Intended for
+        seeding sample/prototyping data.
+        """
+        csl = f".ingest inline into table {table} with (format='csv') <|\n{csv_data}"
+        return await self.kusto_mgmt(query_uri, database, csl, kusto_token)
+
+    async def create_eventstream_with_topology(
+        self,
+        workspace_id: str,
+        name: str,
+        database_item_id: str,
+        database_name: str,
+        table_name: str,
+    ) -> dict:
+        """Create an Eventstream wired as: Custom Endpoint source → Eventhouse destination.
+
+        The custom endpoint lets an external app push live events; the Eventhouse
+        destination (ProcessedIngestion mode) routes them into the given KQL
+        database/table. ``database_item_id`` is the KQL **database** item id (the
+        Eventhouse destination resolves the cluster URL from it, not from the
+        Eventhouse item id). The endpoint's connection string is retrieved by the
+        user from the Fabric portal — it is not exposed by the public REST API.
+        """
+        stream_name = f"{name}-stream"
+        topology = {
+            "sources": [
+                {"name": "LiveCustomEndpoint", "type": "CustomEndpoint", "properties": {}}
+            ],
+            "destinations": [
+                {
+                    "name": "ToEventhouse",
+                    "type": "Eventhouse",
+                    "properties": {
+                        "dataIngestionMode": "ProcessedIngestion",
+                        "workspaceId": workspace_id,
+                        "itemId": database_item_id,
+                        "databaseName": database_name,
+                        "tableName": table_name,
+                        "inputSerialization": {
+                            "type": "Json",
+                            "properties": {"encoding": "UTF8"},
+                        },
+                    },
+                    "inputNodes": [{"name": stream_name}],
+                }
+            ],
+            "streams": [
+                {
+                    "name": stream_name,
+                    "type": "DefaultStream",
+                    "properties": {},
+                    "inputNodes": [{"name": "LiveCustomEndpoint"}],
+                }
+            ],
+            "operators": [],
+            "compatibilityLevel": "1.0",
+        }
+        payload = base64.b64encode(json.dumps(topology).encode()).decode()
+        definition = {
+            "parts": [
+                {
+                    "path": "eventstream.json",
+                    "payload": payload,
+                    "payloadType": "InlineBase64",
+                }
+            ]
+        }
+        return await self.create_item(workspace_id, "Eventstream", name, definition)
+
+    async def create_kql_dashboard(
+        self,
+        workspace_id: str,
+        name: str,
+        kql_database_id: str,
+        eventhouse_uri: str,
+        kql_database_name: str,
+        table_name: str = "",
+        signal_col: str = "",
+        groupby_col: str = "",
+        timestamp_col: str = "",
+    ) -> dict:
+        """Create a Real-Time Dashboard whose tiles query the given seed table.
+
+        Tiles are generated from the table name and the kqlConfig columns so the
+        dashboard works for any industry/table (not a hardcoded schema).
+        """
+        import uuid
+
+        ds_id = str(uuid.uuid4())
+        page_id = str(uuid.uuid4())
+
+        def _tile(title, query, vis_type, x, y, w, h):
             t = {
                 "id": str(uuid.uuid4()),
                 "title": title,
@@ -829,7 +1030,7 @@ class FabricClient:
                 "usedParamVariables": [],
                 "visualOptions": {},
             }
-            if vis_type in ("bar", "line"):
+            if vis_type in ("bar", "line", "timechart"):
                 t["visualOptions"] = {
                     "xColumn": {"type": "infer"},
                     "yColumns": {"type": "infer"},
@@ -844,6 +1045,27 @@ class FabricClient:
                     "multipleYAxes": {"base": {"id": "-1", "columns": [], "label": "", "yAxisMinimumValue": None, "yAxisMaximumValue": None, "yAxisScale": "linear", "horizontalLines": []}, "additional": []},
                 }
             return t
+
+        t = table_name or "Events"
+        tiles = [
+            _tile("Records Over Time",
+                  f"{t}\n| summarize Records = count() by Timestamp = bin(ingestion_time(), 1m)\n| sort by Timestamp asc\n| render timechart",
+                  "timechart", 0, 0, 12, 7),
+            _tile("Recent Records",
+                  f"{t}\n| sort by ingestion_time() desc\n| take 100",
+                  "table", 0, 7, 12, 7),
+        ]
+        next_y = 14
+        if signal_col and groupby_col:
+            tiles.append(_tile(
+                f"Avg {signal_col} by {groupby_col}",
+                f"{t}\n| summarize Avg_{signal_col} = round(avg({signal_col}), 2) by {groupby_col}\n| order by Avg_{signal_col} desc\n| take 20",
+                "bar", 0, next_y, 6, 7))
+        if signal_col and timestamp_col:
+            tiles.append(_tile(
+                f"{signal_col} Trend",
+                f"{t}\n| summarize Avg_{signal_col} = avg({signal_col}) by Timestamp = bin({timestamp_col}, 5m)\n| sort by Timestamp asc\n| render timechart",
+                "timechart", 6, next_y, 6, 7))
 
         dashboard_def = {
             "$schema": "https://dataexplorer.azure.com/static/d/schema/20/dashboard.json",
@@ -862,45 +1084,10 @@ class FabricClient:
                 }
             ],
             "pages": [
-                {"name": "Grid Health", "id": page1_id},
-                {"name": "Outages & Events", "id": page2_id},
-                {"name": "Renewable Generation", "id": page3_id},
+                {"name": "Overview", "id": page_id},
             ],
             "parameters": [],
-            "tiles": [
-                _tile("Avg Voltage by Substation",
-                      "GridSensors\n| summarize AvgVoltage=round(avg(voltage_v),1) by substation_id\n| order by AvgVoltage asc",
-                      page1_id, "bar", 0, 0, 8, 6),
-                _tile("Voltage Anomalies by Substation",
-                      "GridSensors\n| where voltage_v < 220 or voltage_v > 240\n| summarize AnomalyCount=count() by substation_id, region\n| order by AnomalyCount desc\n| take 15",
-                      page1_id, "table", 8, 0, 4, 6),
-                _tile("Hourly Load Pattern (MW)",
-                      "GridSensors\n| extend Hour=datetime_part('hour', todatetime(timestamp))\n| summarize AvgLoad=round(avg(load_mw),1) by Hour\n| order by Hour asc",
-                      page1_id, "line", 0, 6, 6, 5),
-                _tile("Avg Frequency by Region",
-                      "GridSensors\n| summarize AvgFreq=round(avg(frequency_hz),3), AvgVoltage=round(avg(voltage_v),1), Readings=count() by region\n| order by Readings desc",
-                      page1_id, "table", 6, 6, 6, 5),
-
-                _tile("Events by Type and Region",
-                      "PowerEvents\n| summarize Count=count() by event_type, region\n| order by Count desc",
-                      page2_id, "bar", 0, 0, 6, 6),
-                _tile("Outages by Region",
-                      "PowerEvents\n| where event_type == 'outage'\n| summarize Outages=count(), AffectedCustomers=sum(affected_customers), AvgDurationMin=round(avg(duration_sec)/60.0,1) by region\n| order by Outages desc",
-                      page2_id, "table", 6, 0, 6, 6),
-                _tile("Critical Events Timeline",
-                      "PowerEvents\n| where severity == 'critical'\n| extend Day=format_datetime(todatetime(timestamp), 'yyyy-MM-dd')\n| summarize CriticalCount=count() by Day\n| order by Day asc",
-                      page2_id, "line", 0, 6, 12, 5),
-
-                _tile("Generation by Plant Type",
-                      "RenewableGeneration\n| summarize TotalGen=round(sum(generation_mw),0), AvgCapacityFactor=round(avg(capacity_factor),2) by plant_type",
-                      page3_id, "bar", 0, 0, 6, 6),
-                _tile("Daily Renewable Output by Type",
-                      "RenewableGeneration\n| extend Day=format_datetime(todatetime(timestamp), 'yyyy-MM-dd')\n| summarize DailyGen=round(sum(generation_mw),0) by Day, plant_type\n| order by Day asc",
-                      page3_id, "line", 6, 0, 6, 6),
-                _tile("Capacity Factor by Plant and Weather",
-                      "RenewableGeneration\n| summarize AvgCF=round(avg(capacity_factor),3), Readings=count() by plant_type, weather\n| order by AvgCF desc",
-                      page3_id, "table", 0, 6, 12, 5),
-            ],
+            "tiles": tiles,
         }
 
         dashboard_json = json.dumps(dashboard_def)

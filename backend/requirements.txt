@@ -9,3 +9,4 @@ sse-starlette==2.2.1
 python-multipart==0.0.20
 gunicorn==23.0.0
 slowapi==0.1.9
+azure-eventhub==5.12.1

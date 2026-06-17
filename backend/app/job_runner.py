@@ -5,12 +5,54 @@ from __future__ import annotations
 import json
 import logging
 
-from app.deployer import deploy_demo, load_manifest, load_scenario
+from app.deployer import deploy_demo, load_manifest, load_scenario, DEMOS_DIR
 from app.azure_client import AzureClient
 from app.fabric_client import FabricClient
 from app.job_store import job_store
 
 logger = logging.getLogger(__name__)
+
+
+def _resolve_placeholders(items: list[dict], demo_id: str) -> list[dict]:
+    """Replace {industry} placeholder in item names/references with demo_id.
+    Hyphens in demo_id are converted to underscores so names are valid Fabric identifiers.
+    """
+    safe_id = demo_id.replace("-", "_")
+    resolved = []
+    for item in items:
+        new_item = dict(item)
+        for key in ("name", "parentEventhouse", "parentLakehouse"):
+            if key in new_item and isinstance(new_item[key], str):
+                new_item[key] = new_item[key].replace("{industry}", safe_id)
+        resolved.append(new_item)
+    return resolved
+
+
+def _find_rti_csv(demo_id: str, table_name: str) -> str:
+    """Return the most relevant CSV filename for RTI ingestion.
+
+    Preference order:
+    1. A CSV whose name matches the snake_case of the kqlConfig tableName
+    2. The largest CSV in the demo's data/ folder (most rows)
+    3. Empty string if no CSVs found
+    """
+    data_dir = DEMOS_DIR / demo_id / "data"
+    if not data_dir.exists():
+        return ""
+    csvs = list(data_dir.glob("*.csv"))
+    if not csvs:
+        return ""
+    # Try snake_case match of tableName (e.g. "SensorReadings" → "sensor_readings.csv")
+    if table_name:
+        snake = "".join(
+            f"_{c.lower()}" if c.isupper() and i > 0 else c.lower()
+            for i, c in enumerate(table_name)
+        ) + ".csv"
+        for csv in csvs:
+            if csv.name == snake:
+                return csv.name
+    # Fall back to largest file
+    return max(csvs, key=lambda f: f.stat().st_size).name
 
 
 async def run_job(
@@ -31,6 +73,7 @@ async def run_job(
     sql_server_name: str | None = None,
     search_token: str | None = None,
     agent_token: str | None = None,
+    kusto_token: str | None = None,
 ) -> None:
     """Run a deployment job in the background, updating the job store with events."""
     try:
@@ -44,25 +87,47 @@ async def run_job(
         if scenario_id:
             try:
                 sc = load_scenario(scenario_id)
-                demo_manifest = load_manifest(demo_id)
-                # Check if scenario has structural additions (e.g. Shortcuts for data-virtualization)
-                scenario_shortcut_items = [
-                    i for i in sc.get("fabricItemTemplate", []) if i["type"] == "Shortcut"
-                ]
-                if scenario_shortcut_items:
-                    # Shortcut scenario: add shortcuts before demo's standard items
+                scenario_template_items = sc.get("fabricItemTemplate", [])
+                non_shortcut_items = [i for i in scenario_template_items if i["type"] != "Shortcut"]
+
+                if non_shortcut_items:
+                    # Scenario defines its own full item set (e.g. Real-Time Intelligence
+                    # or the ML scenarios). Use the scenario items directly — do NOT merge
+                    # with the demo's lakehouse manifest. Read per-demo kqlConfig from
+                    # manifest.custom.json and inject as extra variables (empty/no-op for
+                    # non-RTI scenarios).
+                    kql_config: dict = {}
+                    custom_path = DEMOS_DIR / demo_id / "manifest.custom.json"
+                    if custom_path.exists():
+                        try:
+                            custom_data = json.loads(custom_path.read_text(encoding="utf-8"))
+                            for sc_entry in custom_data.get("scenarios", []):
+                                if sc_entry.get("id") == scenario_id:
+                                    kql_config = sc_entry.get("kqlConfig", {})
+                                    break
+                        except Exception:
+                            pass
                     manifest_override = {
                         "id": demo_id,
                         "title": sc.get("title", scenario_id),
-                        "fabricItems": scenario_shortcut_items + demo_manifest.get("fabricItems", []),
+                        "fabricItems": _resolve_placeholders(scenario_template_items, demo_id),
+                        "extraNbVars": {
+                            "RTI_TABLE_NAME": kql_config.get("tableName", ""),
+                            "RTI_CSV_FILENAME": _find_rti_csv(demo_id, kql_config.get("tableName", "")),
+                            "RTI_TIMESTAMP_COLUMN": kql_config.get("timestampColumn", ""),
+                            "RTI_SIGNAL_COLUMN": kql_config.get("signalColumn", ""),
+                            "RTI_GROUPBY_COLUMN": kql_config.get("groupByColumn", ""),
+                        },
                     }
                 else:
-                    # ML/other scenario: use scenario's own fabricItemTemplate
-                    # (has correct notebook paths like notebooks/ml/...)
+                    # Scenario only injects Shortcuts (e.g. data-virtualization-batch).
+                    # Merge shortcut additions in front of the demo's existing item list so
+                    # the ADLS connection is ready before notebooks run.
+                    demo_manifest = load_manifest(demo_id)
                     manifest_override = {
                         "id": demo_id,
                         "title": sc.get("title", scenario_id),
-                        "fabricItems": sc.get("fabricItemTemplate", []),
+                        "fabricItems": _resolve_placeholders(scenario_template_items, demo_id) + demo_manifest.get("fabricItems", []),
                     }
             except FileNotFoundError:
                 job_store.emit_event(job_id, {
@@ -90,6 +155,7 @@ async def run_job(
             sql_server_name=sql_server_name,
             search_token=search_token,
             agent_token=agent_token,
+            kusto_token=kusto_token,
         ):
             job_store.emit_event(job_id, event)
 
