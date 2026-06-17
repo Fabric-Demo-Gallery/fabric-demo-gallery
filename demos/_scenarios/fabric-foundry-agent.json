@@ -1,6 +1,6 @@
 {
   "id": "fabric-foundry-agent",
-  "title": "Fabric + Foundry AI Agent",
+  "title": "Fabric & Foundry AI Agent",
   "description": "Deploy a complete Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data \u2014 the full data + AI story in one click.",
   "icon": "\ud83e\udde0",
   "estimatedTime": "20-30 min",

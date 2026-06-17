@@ -27,8 +27,13 @@ SQL_API_VERSION = "2021-11-01"
 # Microsoft Foundry / Cognitive Services (preview — used by the Fabric+Foundry scenario)
 COG_API_VERSION = "2025-12-01"          # accounts, projects, deployments, connections
 MODEL_CAPACITY_API_VERSION = "2024-10-01"  # modelCapacities quota pre-flight
-# Built-in role: Storage Blob Data Contributor
+# Azure AI Search (Foundry IQ retrieval engine for the Fabric data agent)
+SEARCH_API_VERSION = "2023-11-01"
+# Built-in role definition GUIDs (used for the Foundry IQ RBAC wiring)
 STORAGE_BLOB_DATA_CONTRIBUTOR = "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
+SEARCH_INDEX_DATA_READER = "1407120a-92aa-4202-b7e9-c0e197c71c8f"
+SEARCH_SERVICE_CONTRIBUTOR = "7ca78c08-252a-4471-8644-bb5ff32d4ba0"
+COGNITIVE_SERVICES_USER = "a97b65f3-24c7-4388-baec-2e87135dc908"
 
 
 class AzureError(Exception):
@@ -201,6 +206,44 @@ class AzureClient:
         except AzureError as e:
             if e.status == 409:
                 return  # already assigned — not an error
+            raise
+
+    async def assign_role(
+        self,
+        scope: str,
+        role_def_guid: str,
+        principal_id: str,
+        principal_type: str = "ServicePrincipal",
+    ) -> None:
+        """Assign a built-in role to a principal at an ARM scope. ``scope`` is a full
+        ARM resource id (starts with /subscriptions/...). 409 (already assigned) is
+        treated as success. Used for the Foundry IQ managed-identity RBAC wiring."""
+        # roleDefinitions live at subscription scope; derive the subscription id.
+        sub_id = scope.split("/subscriptions/", 1)[1].split("/", 1)[0]
+        role_def_id = (
+            f"/subscriptions/{sub_id}/providers/Microsoft.Authorization"
+            f"/roleDefinitions/{role_def_guid}"
+        )
+        assignment_id = str(uuid.uuid4())
+        url = (
+            f"{ARM_API}{scope}/providers/Microsoft.Authorization"
+            f"/roleAssignments/{assignment_id}?api-version={RBAC_API_VERSION}"
+        )
+        body = {
+            "properties": {
+                "roleDefinitionId": role_def_id,
+                "principalId": principal_id,
+                "principalType": principal_type,
+            }
+        }
+        try:
+            await self._arm_request("PUT", url, json=body)
+        except AzureError as e:
+            if e.status == 409:
+                return  # already assigned
+            # ARM sometimes 400s briefly while a just-created identity propagates.
+            if e.status == 400 and "does not exist" in (e.detail or "").lower():
+                raise AzureError(400, "Principal not yet replicated in Microsoft Entra; retry shortly.")
             raise
 
     async def list_subscriptions(self) -> list[dict]:
@@ -671,9 +714,18 @@ class AzureClient:
     # may change. The deployer treats these as best-effort/skippable so a change
     # never breaks the (already-completed) Fabric half of the deploy.
 
-    async def _poll_cog_provisioning(self, url: str, what: str, timeout: int = 600) -> dict:
-        """Poll a Cognitive Services resource until provisioningState is terminal."""
+    async def _poll_cog_provisioning(
+        self, url: str, what: str, timeout: int = 600, absent_grace: int = 150
+    ) -> dict:
+        """Poll a Cognitive Services resource until provisioningState is terminal.
+
+        Tolerates a brief initial 404 window (a freshly-accepted create may not be
+        visible in ARM for a few seconds). If the resource never appears within
+        ``absent_grace`` seconds it is treated as never-created, so a genuine failure
+        surfaces quickly instead of waiting out the full timeout."""
         start = time.time()
+        seen = False
+        absent_since: float | None = None
         while time.time() - start < timeout:
             await asyncio.sleep(8)
             try:
@@ -683,8 +735,18 @@ class AzureClient:
                 continue
             except AzureError as e:
                 if e.status == 404:
+                    if not seen:
+                        absent_since = absent_since or time.time()
+                        if time.time() - absent_since > absent_grace:
+                            raise AzureError(
+                                404,
+                                f"{what} never appeared in ARM after the create was "
+                                f"accepted — it was not provisioned.",
+                            )
                     continue  # not yet visible in ARM
                 raise
+            seen = True
+            absent_since = None
             state = (resp.json().get("properties", {}).get("provisioningState") or "").lower()
             logger.debug("%s provisioningState: %s", what, state)
             if state == "succeeded":
@@ -692,6 +754,53 @@ class AzureClient:
             if state in ("failed", "canceled", "cancelled"):
                 raise AzureError(500, f"{what} provisioning ended in state '{state}'")
         raise AzureError(504, f"{what} provisioning timed out after {timeout}s")
+
+    @staticmethod
+    def _arm_error_detail(resp: httpx.Response) -> str:
+        """Pull the most actionable message out of an ARM error response."""
+        detail = resp.text[:500]
+        try:
+            detail = resp.json().get("error", {}).get("message", detail)[:500]
+        except Exception:
+            pass
+        return detail
+
+    async def _cog_put(self, url: str, body: dict, what: str, poll_timeout: int = 600) -> dict:
+        """Idempotent PUT of a Cognitive Services resource, resilient to ARM gateway
+        timeouts. A 502/503/504 on the PUT does NOT mean the create failed — the
+        resource provider has very likely accepted the request and is provisioning in
+        the background. On a transient gateway error we retry the PUT a few times,
+        then fall back to polling the resource's own provisioningState rather than
+        aborting the whole deploy."""
+        transient = (502, 503, 504)
+        last = ""
+        for attempt in range(4):
+            try:
+                resp = await self._arm_client.put(url, json=body)
+            except httpx.TransportError as e:
+                last = f"network error: {e}"
+                logger.warning("%s PUT network error (attempt %d/4): %s", what, attempt + 1, e)
+                await asyncio.sleep(5 * (attempt + 1))
+                continue
+            if resp.status_code in transient:
+                last = self._arm_error_detail(resp)
+                logger.warning("%s PUT %d (transient gateway error, attempt %d/4): %s",
+                               what, resp.status_code, attempt + 1, last)
+                await asyncio.sleep(5 * (attempt + 1))
+                continue
+            if resp.status_code >= 400:
+                raise AzureError(resp.status_code, self._arm_error_detail(resp))
+            try:
+                state = (resp.json().get("properties", {}).get("provisioningState") or "").lower()
+            except Exception:
+                state = ""
+            if state == "succeeded":
+                return resp.json()
+            return await self._poll_cog_provisioning(url, what, timeout=poll_timeout)
+        # Every PUT attempt hit a gateway timeout — the resource may still be coming up.
+        logger.warning("%s: all PUT attempts hit a gateway timeout; polling in case the "
+                       "provider accepted the create. Last error: %s", what, last)
+        return await self._poll_cog_provisioning(url, what, timeout=poll_timeout)
 
     async def check_model_capacity(
         self, subscription_id: str, model_name: str, model_version: str, model_format: str = "OpenAI"
@@ -740,17 +849,7 @@ class AzureClient:
                 "publicNetworkAccess": "Enabled",
             },
         }
-        resp = await self._arm_client.put(url, json=body)
-        if resp.status_code >= 400:
-            detail = resp.text[:500]
-            try:
-                detail = resp.json().get("error", {}).get("message", detail)[:500]
-            except Exception:
-                pass
-            raise AzureError(resp.status_code, detail)
-        if (resp.json().get("properties", {}).get("provisioningState") or "").lower() == "succeeded":
-            return resp.json()
-        return await self._poll_cog_provisioning(url, f"Foundry account '{account_name}'")
+        return await self._cog_put(url, body, f"Foundry account '{account_name}'")
 
     async def create_foundry_project(
         self, subscription_id: str, resource_group: str, account_name: str,
@@ -767,17 +866,7 @@ class AzureClient:
             "identity": {"type": "SystemAssigned"},
             "properties": {"displayName": display_name or project_name},
         }
-        resp = await self._arm_client.put(url, json=body)
-        if resp.status_code >= 400:
-            detail = resp.text[:500]
-            try:
-                detail = resp.json().get("error", {}).get("message", detail)[:500]
-            except Exception:
-                pass
-            raise AzureError(resp.status_code, detail)
-        if (resp.json().get("properties", {}).get("provisioningState") or "").lower() == "succeeded":
-            return resp.json()
-        return await self._poll_cog_provisioning(url, f"Foundry project '{project_name}'")
+        return await self._cog_put(url, body, f"Foundry project '{project_name}'")
 
     async def create_model_deployment(
         self, subscription_id: str, resource_group: str, account_name: str,
@@ -796,17 +885,7 @@ class AzureClient:
                 "model": {"format": "OpenAI", "name": model_name, "version": model_version},
             },
         }
-        resp = await self._arm_client.put(url, json=body)
-        if resp.status_code >= 400:
-            detail = resp.text[:500]
-            try:
-                detail = resp.json().get("error", {}).get("message", detail)[:500]
-            except Exception:
-                pass
-            raise AzureError(resp.status_code, detail)
-        if (resp.json().get("properties", {}).get("provisioningState") or "").lower() == "succeeded":
-            return resp.json()
-        return await self._poll_cog_provisioning(url, f"Model deployment '{deployment_name}'")
+        return await self._cog_put(url, body, f"Model deployment '{deployment_name}'")
 
     async def create_fabric_data_agent_connection(
         self, subscription_id: str, resource_group: str, account_name: str,
@@ -845,12 +924,209 @@ class AzureClient:
     async def delete_foundry_account(
         self, subscription_id: str, resource_group: str, account_name: str
     ) -> bool:
-        """Delete the Foundry account (cascades projects, deployments, connections).
-        404-tolerant: returns False if the account was already gone."""
-        url = (
+        """Delete the Foundry account. Model deployments cascade, but nested
+        **projects do NOT** — ARM rejects the account delete with
+        ``CannotDeleteResource`` while any project exists. So delete the
+        projects first, then the account. 404-tolerant: returns False if the
+        account was already gone."""
+        base = (
             f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
             f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
-            f"?api-version={COG_API_VERSION}"
+        )
+
+        # 1. Delete nested projects first (the blocker).
+        try:
+            projects_resp = await self._arm_client.get(
+                f"{base}/projects?api-version={COG_API_VERSION}"
+            )
+            if projects_resp.status_code < 400:
+                for proj in projects_resp.json().get("value", []):
+                    proj_name = proj.get("name", "").split("/")[-1]
+                    if not proj_name:
+                        continue
+                    try:
+                        await self._arm_client.delete(
+                            f"{base}/projects/{proj_name}?api-version={COG_API_VERSION}"
+                        )
+                    except Exception as pe:  # noqa: BLE001 — best-effort per project
+                        logger.warning("[foundry] project '%s' delete failed: %s", proj_name, pe)
+        except Exception as le:  # noqa: BLE001 — listing is best-effort
+            logger.warning("[foundry] could not list projects for '%s': %s", account_name, le)
+
+        # 2. Delete the account.
+        resp = await self._arm_client.delete(f"{base}?api-version={COG_API_VERSION}")
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, resp.text[:300])
+        return True
+
+    # ── Azure AI Search (Foundry IQ retrieval engine, preview) ───────────
+    # The new Foundry grounds a Fabric data agent through Foundry IQ, which runs
+    # on an Azure AI Search service. We provision the service (with a managed
+    # identity so it can call the Foundry account back), then the caller wires the
+    # 3-way RBAC. Standing-cost resource — teardown must always remove it.
+
+    async def register_search_provider(self, subscription_id: str) -> None:
+        """Register the Microsoft.Search resource provider on the subscription
+        (idempotent). New subscriptions that never used AI Search fail creation
+        with MissingSubscriptionRegistration until this runs."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/providers/Microsoft.Search"
+            f"/register?api-version=2021-04-01"
+        )
+        try:
+            await self._arm_request("POST", url)
+        except AzureError as e:
+            logger.warning("Microsoft.Search provider register returned: %s", e.detail[:120])
+
+    async def create_search_service(
+        self, subscription_id: str, resource_group: str, name: str, location: str,
+        sku: str = "standard",
+    ) -> dict:
+        """Create an Azure AI Search service with a system-assigned managed identity
+        (required so Foundry IQ can authenticate the search service back to the
+        Foundry account). Idempotent PUT; polls until provisioningState succeeds.
+        Returns the service resource (incl. identity.principalId)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Search/searchServices/{name}"
+            f"?api-version={SEARCH_API_VERSION}"
+        )
+        body = {
+            "location": location,
+            "sku": {"name": sku},
+            "identity": {"type": "SystemAssigned"},
+            "properties": {
+                "replicaCount": 1,
+                "partitionCount": 1,
+                "hostingMode": "default",
+                # Entra-ID auth (no admin keys) — matches the keyless Foundry IQ flow.
+                "authOptions": None,
+                "disableLocalAuth": True,
+            },
+        }
+        transient = (502, 503, 504)
+        for attempt in range(4):
+            try:
+                resp = await self._arm_client.put(url, json=body)
+            except httpx.TransportError as e:
+                logger.warning("Search service PUT network error (attempt %d/4): %s", attempt + 1, e)
+                await asyncio.sleep(5 * (attempt + 1))
+                continue
+            if resp.status_code in transient:
+                logger.warning("Search service PUT %d (transient gateway error, attempt %d/4): %s",
+                               resp.status_code, attempt + 1, self._arm_error_detail(resp))
+                await asyncio.sleep(5 * (attempt + 1))
+                continue
+            if resp.status_code >= 400:
+                raise AzureError(resp.status_code, self._arm_error_detail(resp))
+            break  # accepted — poll for the terminal state below
+        # Even if every PUT attempt gateway-timed-out, the service may still be
+        # provisioning; the poll below picks it up (or times out if it never appears).
+
+        start = time.time()
+        timeout = 600
+        while time.time() - start < timeout:
+            await asyncio.sleep(10)
+            try:
+                svc = (await self._arm_request("GET", url)).json()
+            except httpx.TransportError as e:
+                logger.debug("Search poll network error (retrying): %s", e)
+                continue
+            except AzureError as e:
+                if e.status == 404:
+                    continue
+                raise
+            state = (svc.get("properties", {}).get("provisioningState") or "").lower()
+            logger.debug("Search service %s provisioningState: %s", name, state)
+            if state == "succeeded":
+                return svc
+            if state == "failed":
+                raise AzureError(500, f"Search service '{name}' provisioning failed")
+        raise AzureError(504, f"Search service '{name}' provisioning timed out after {timeout}s")
+
+    async def get_search_service(
+        self, subscription_id: str, resource_group: str, name: str
+    ) -> dict:
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Search/searchServices/{name}"
+            f"?api-version={SEARCH_API_VERSION}"
+        )
+        return (await self._arm_request("GET", url)).json()
+
+    async def delete_search_service(
+        self, subscription_id: str, resource_group: str, name: str
+    ) -> bool:
+        """Delete an Azure AI Search service. 404-tolerant: returns False if gone."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Search/searchServices/{name}"
+            f"?api-version={SEARCH_API_VERSION}"
+        )
+        resp = await self._arm_client.delete(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, resp.text[:300])
+        return True
+
+    # ── Foundry project connection (RemoteTool MCP → knowledge base) ──────
+    # The agent reaches the knowledge base through a project connection that
+    # targets the KB's MCP endpoint, authenticating with the project's managed
+    # identity. ARM control-plane (api-version 2025-10-01-preview).
+
+    @staticmethod
+    def _project_resource_id(
+        subscription_id: str, resource_group: str, account: str, project: str
+    ) -> str:
+        return (
+            f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account}/projects/{project}"
+        )
+
+    async def create_kb_connection(
+        self, subscription_id: str, resource_group: str, account: str, project: str,
+        connection_name: str, search_endpoint: str, knowledge_base: str,
+    ) -> dict:
+        """Create a RemoteTool project connection pointing at the knowledge base's
+        MCP endpoint (project-managed-identity auth)."""
+        mcp_target = f"{search_endpoint}/knowledgebases/{knowledge_base}/mcp?api-version=2026-05-01-preview"
+        url = (
+            f"{ARM_API}{self._project_resource_id(subscription_id, resource_group, account, project)}"
+            f"/connections/{connection_name}?api-version=2025-10-01-preview"
+        )
+        body = {
+            "name": connection_name,
+            "type": "Microsoft.MachineLearningServices/workspaces/connections",
+            "properties": {
+                "authType": "ProjectManagedIdentity",
+                "category": "RemoteTool",
+                "target": mcp_target,
+                "isSharedToAll": True,
+                "audience": "https://search.azure.com/",
+                "metadata": {"ApiType": "Azure"},
+            },
+        }
+        resp = await self._arm_client.put(url, json=body)
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                detail = resp.json().get("error", {}).get("message", detail)[:500]
+            except Exception:
+                pass
+            raise AzureError(resp.status_code, detail)
+        return resp.json() if resp.text else {}
+
+    async def delete_kb_connection(
+        self, subscription_id: str, resource_group: str, account: str, project: str,
+        connection_name: str,
+    ) -> bool:
+        """Delete the project connection. 404-tolerant."""
+        url = (
+            f"{ARM_API}{self._project_resource_id(subscription_id, resource_group, account, project)}"
+            f"/connections/{connection_name}?api-version=2025-10-01-preview"
         )
         resp = await self._arm_client.delete(url)
         if resp.status_code == 404:

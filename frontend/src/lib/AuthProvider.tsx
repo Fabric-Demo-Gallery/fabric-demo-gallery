@@ -13,11 +13,17 @@ import {
   BrowserUtils,
   type AccountInfo,
 } from "@azure/msal-browser";
-import { msalInstance, fabricScopes, storageScopes, managementScopes } from "@/lib/msal";
+import { msalInstance, fabricScopes, storageScopes, managementScopes, searchScopes, agentScopes } from "@/lib/msal";
 
 // Local dev mode: when no AZURE_CLIENT_ID is configured, skip MSAL entirely.
 // The backend falls back to `az login` (az CLI) tokens automatically.
 const IS_DEV_MODE = !process.env.NEXT_PUBLIC_AZURE_CLIENT_ID;
+
+// interactive: allow popup on silent failure (default true).
+// allowRedirect: allow full-page redirect as a last resort if the popup fails
+// (default true). Set false for optional/best-effort tokens so a consent failure
+// throws (and the caller skips it) instead of navigating the whole page away.
+type TokenOptions = { interactive?: boolean; allowRedirect?: boolean };
 
 const DEV_ACCOUNT = {
   homeAccountId: "dev-local",
@@ -36,7 +42,9 @@ interface AuthState {
   logout: () => void;
   getFabricToken: () => Promise<string>;
   getStorageToken: () => Promise<string>;
-  getManagementToken: (options?: { interactive?: boolean }) => Promise<string>;
+  getManagementToken: (options?: TokenOptions) => Promise<string>;
+  getSearchToken: (options?: TokenOptions) => Promise<string>;
+  getAgentToken: (options?: TokenOptions) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -48,6 +56,8 @@ const AuthContext = createContext<AuthState>({
   getFabricToken: async () => "",
   getStorageToken: async () => "",
   getManagementToken: async () => "",
+  getSearchToken: async () => "",
+  getAgentToken: async () => "",
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -105,9 +115,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const getToken = useCallback(
-    async (scopes: string[], options?: { interactive?: boolean }): Promise<string> => {
+    async (scopes: string[], options?: TokenOptions): Promise<string> => {
       if (IS_DEV_MODE) return ""; // backend uses az CLI token in dev mode
       const interactive = options?.interactive !== false;
+      const allowRedirect = options?.allowRedirect !== false;
       if (!account) throw new Error("Not signed in");
       try {
         const result = await msalInstance.acquireTokenSilent({
@@ -124,8 +135,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const result = await msalInstance.acquireTokenPopup({ scopes });
           return result.accessToken;
         } catch (popupErr) {
-          // If popup also fails, try redirect as last resort
           console.error("Token popup failed:", popupErr);
+          // For optional/best-effort tokens, surface the error so the caller can
+          // skip it. A full-page redirect here would unload the deploy and trip
+          // MSAL's no_token_request_cache_error on the way back.
+          if (!allowRedirect) {
+            throw popupErr instanceof Error ? popupErr : new Error(String(popupErr));
+          }
           await msalInstance.acquireTokenRedirect({ scopes });
           throw new Error("Redirecting for token...");
         }
@@ -145,13 +161,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const getManagementToken = useCallback(
-    (options?: { interactive?: boolean }) => getToken(managementScopes, options),
+    (options?: TokenOptions) => getToken(managementScopes, options),
+    [getToken]
+  );
+
+  const getSearchToken = useCallback(
+    (options?: TokenOptions) => getToken(searchScopes, options),
+    [getToken]
+  );
+
+  const getAgentToken = useCallback(
+    (options?: TokenOptions) => getToken(agentScopes, options),
     [getToken]
   );
 
   return (
     <AuthContext.Provider
-      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken }}
+      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken }}
     >
       {children}
     </AuthContext.Provider>

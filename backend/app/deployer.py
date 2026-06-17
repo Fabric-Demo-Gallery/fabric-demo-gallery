@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 from typing import AsyncIterator
 
-from app.fabric_client import FabricClient, FabricError
+from app.fabric_client import FabricClient, FabricError, ONELAKE_API
 from app.report_builder import (
     build_manufacturing_report_definition,
     build_retail_report_definition,
@@ -160,6 +160,8 @@ async def deploy_demo(
     azure_location: str = "eastus",
     create_resource_group: bool = False,
     sql_server_name: str | None = None,
+    search_token: str | None = None,
+    agent_token: str | None = None,
 ) -> AsyncIterator[dict]:
     """
     Deploy a demo end-to-end, yielding progress events as SSE-compatible dicts.
@@ -216,6 +218,8 @@ async def deploy_demo(
             resource_group=resource_group,
             azure_location=azure_location,
             create_resource_group=create_resource_group,
+            search_token=search_token,
+            agent_token=agent_token,
         ):
             yield ev
         return
@@ -906,6 +910,7 @@ async def _best_effort_teardown(
     sql_server: str | None = None,
     storage_account: str | None = None,
     foundry_account: str | None = None,
+    search_service: str | None = None,
 ) -> tuple[str, bool]:
     """Best-effort removal of resources a failed deploy created, so nothing is
     left orphaned (and an Azure SQL server doesn't keep billing).
@@ -936,6 +941,15 @@ async def _best_effort_teardown(
         except Exception as te:  # noqa: BLE001
             logger.warning("[teardown] Foundry account '%s' delete failed: %s", foundry_account, te)
             failed.append(f"Foundry account '{foundry_account}'")
+
+    # Azure AI Search — a STANDING-cost resource; must always be removed.
+    if azure_client and subscription_id and resource_group and search_service:
+        try:
+            await azure_client.delete_search_service(subscription_id, resource_group, search_service)
+            cleaned.append("Azure AI Search service")
+        except Exception as te:  # noqa: BLE001
+            logger.warning("[teardown] Search service '%s' delete failed: %s", search_service, te)
+            failed.append(f"Azure AI Search service '{search_service}'")
 
     if azure_client and subscription_id and resource_group and storage_account:
         try:
@@ -1632,21 +1646,26 @@ async def _deploy_fabric_foundry(
     resource_group: str | None,
     azure_location: str,
     create_resource_group: bool,
+    search_token: str | None = None,
+    agent_token: str | None = None,
 ) -> AsyncIterator[dict]:
-    """Deploy the Fabric + Foundry AI agent scenario (preview):
+    """Deploy the Fabric + Foundry AI agent scenario (one-click, all headless):
 
     workspace → lakehouse → upload CSVs → run batch notebooks (populate gold
-    tables) → create & publish a Fabric data agent over the lakehouse →
-    provision a Microsoft Foundry account + project + gpt-4o-mini deployment →
-    connect the data agent as a Foundry knowledge source.
+    tables) → create & PUBLISH a Fabric data agent over the lakehouse (via item
+    definition — no notebook/SDK) → provision a Microsoft Foundry account +
+    project + gpt-4o-mini → provision Azure AI Search (Foundry IQ engine) →
+    wire the 3-way managed-identity RBAC → create the Foundry IQ knowledge
+    source + base → create the project connection + agent grounded on it.
 
-    The Fabric half is the load-bearing part. Every Foundry step is best-effort:
-    a preview-API failure degrades that step to "skipped" with portal guidance,
-    so the user still gets a working Fabric data foundation + data agent.
+    Each Foundry/Search step is best-effort: a preview-API failure degrades that
+    step to "skipped" with a manual follow-up, so the Fabric foundation + data
+    agent still succeed.
     """
     import random
     import string as _string
     from app.azure_client import AzureError
+    from app.foundry_iq_client import FoundryIQClient, FoundryAgentClient
 
     MODEL_NAME = "gpt-4o-mini"
     MODEL_VERSION = "2024-07-18"
@@ -1657,8 +1676,11 @@ async def _deploy_fabric_foundry(
     run_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
     data_agents = [i for i in items if i["type"] == "DataAgent"]
     agent_name = data_agents[0]["name"] if data_agents else "analytics_data_agent"
-    scenarios_dir = demo_dir.parent / "_scenarios"
-    data_agent_nb = scenarios_dir / "notebooks/foundry/01_create_data_agent.ipynb"
+    da_instructions = (
+        "You answer questions about manufacturing quality-control data "
+        "(production batches, sensor readings, equipment, defects). "
+        "Prefer the gold tables in the lakehouse."
+    )
     data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
 
     # ── Plan ─────────────────────────────────────────────────────────────
@@ -1676,7 +1698,10 @@ async def _deploy_fabric_foundry(
     steps.append(DeploymentStep("data-agent", f"Create & publish Fabric data agent '{agent_name}'"))
     steps.append(DeploymentStep("foundry-account", "Provision Microsoft Foundry account + project"))
     steps.append(DeploymentStep("foundry-model", f"Deploy model '{MODEL_NAME}'"))
-    steps.append(DeploymentStep("foundry-connect", "Connect Fabric data agent to Foundry"))
+    steps.append(DeploymentStep("search-service", "Provision Azure AI Search (Foundry IQ engine)"))
+    steps.append(DeploymentStep("rbac", "Wire managed-identity permissions"))
+    steps.append(DeploymentStep("knowledge", "Create Foundry IQ knowledge source + base"))
+    steps.append(DeploymentStep("agent", "Create Foundry agent grounded on the data"))
     steps.append(DeploymentStep("done", "Deployment complete"))
     yield {"event": "plan", "data": [s.to_dict() for s in steps]}
 
@@ -1684,6 +1709,9 @@ async def _deploy_fabric_foundry(
     created_ids: dict[str, str] = {}
     foundry_account = ""
     foundry_project = ""
+    search_service = ""
+    artifact_id = ""
+    agent_created = ""
     next_steps: list[str] = []  # manual follow-ups for any skipped Foundry steps
 
     try:
@@ -1798,44 +1826,51 @@ async def _deploy_fabric_foundry(
             step.status = "completed"
             yield {"event": "step", "data": step.to_dict()}
 
-        # 6. Create & publish the Fabric data agent (preview SDK, runs in a notebook)
+        # 6. Create & publish the Fabric data agent via a no-pip notebook that
+        # drives the AISkill workload API (create item -> add lakehouse datasource
+        # -> select all tables -> instructions -> publish info -> deploy). This is
+        # the only path that yields a *runtime-queryable* published agent; writing
+        # the item definition headlessly does not actually publish it.
         step = _find_step(steps, "data-agent")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
         artifact_id = ""
         try:
-            da_vars = {
-                "DATA_AGENT_NAME": agent_name,
-                "LAKEHOUSE_NAME": lakehouse_name or "analytics_lakehouse",
-                "WORKSPACE_ID": ws_id,
-            }
-            da_nb = await client.create_notebook(
-                ws_id, "00_create_data_agent", data_agent_nb, lakehouse_id, lakehouse_name,
-                variables=da_vars,
+            publish_nb = demo_dir.parent / "_scenarios" / "notebooks" / "foundry" / "publish_data_agent.ipynb"
+            lh_name = lakehouse_name or "analytics_lakehouse"
+            nb = await client.create_notebook(
+                ws_id, f"publish_{agent_name}", str(publish_nb), lakehouse_id, lh_name,
+                variables={
+                    "DATA_AGENT_NAME": agent_name,
+                    "LAKEHOUSE_ID": lakehouse_id,
+                    "INSTRUCTIONS": da_instructions,
+                },
             )
-            created_ids["00_create_data_agent"] = da_nb["id"]
-            res = await client.run_notebook(ws_id, da_nb["id"], lakehouse_id, lakehouse_name, timeout=1800)
-            js = res.get("status", "").lower() if isinstance(res, dict) else ""
-            if js == "failed":
-                raise FabricError(500, f"Data agent notebook failed: {res.get('failureReason', {}).get('message', '')[:200]}")
-            # Resolve the published agent's artifact id by listing DataAgent items.
+            await client.run_notebook(ws_id, nb["id"], lakehouse_id, lh_name, timeout=900)
+            # The notebook writes its outcome to the lakehouse — read it back.
+            pub: dict = {}
             try:
-                agents = await client.list_items(ws_id, "DataAgent")
-                match = next((a for a in agents if a.get("displayName") == agent_name), None)
-                artifact_id = (match or {}).get("id", "")
-                if artifact_id:
-                    created_ids[agent_name] = artifact_id
-            except Exception as le:  # noqa: BLE001 — id lookup is best-effort
-                logger.warning("[foundry] data agent id lookup failed: %s", le)
+                pr = await client._storage_client.get(
+                    f"{ONELAKE_API}/{ws_id}/{lakehouse_id}/Files/publish_result.json"
+                )
+                if pr.status_code < 400:
+                    pub = json.loads(pr.text)
+            except Exception as re:  # noqa: BLE001
+                logger.warning("[foundry] could not read publish_result.json: %s", re)
+            artifact_id = pub.get("dataAgentId", "")
+            if pub.get("status") != "published" or not artifact_id:
+                reason = pub.get("error") or f"stopped at step '{pub.get('step', 'unknown')}'"
+                raise FabricError(500, f"publish notebook did not finish: {reason}")
+            created_ids[agent_name] = artifact_id
             step.status = "completed"
-            step.item_id = artifact_id or None
-            step.detail = f"Published '{agent_name}'" + (f" (id {artifact_id})" if artifact_id else "")
-        except (FabricError, Exception) as e:  # noqa: BLE001 — preview; degrade gracefully
-            logger.warning("[foundry] data agent step skipped: %s", e)
+            step.item_id = artifact_id
+            step.detail = f"Published '{agent_name}' (id {artifact_id})"
+        except (FabricError, Exception) as e:  # noqa: BLE001 — degrade gracefully
+            logger.warning("[foundry] data agent publish skipped: %s", e)
             step.status = "skipped"
             detail = e.detail if isinstance(e, FabricError) else str(e)
-            step.detail = f"Data agent step skipped (preview): {detail[:160]}"
-            next_steps.append("Create a Fabric data agent over the lakehouse and Publish it.")
+            step.detail = f"Data agent step skipped: {detail[:160]}"
+            next_steps.append("Create a Fabric data agent over the lakehouse and publish it.")
         yield {"event": "step", "data": step.to_dict()}
 
         # 7. Provision the Foundry account + project (best-effort)
@@ -1845,15 +1880,17 @@ async def _deploy_fabric_foundry(
         rand6 = "".join(random.choices(_string.ascii_lowercase + _string.digits, k=6))
         foundry_account = f"fdg-foundry-{demo_id.replace('-', '')[:8]}-{rand6}"
         foundry_project = f"{demo_id.replace('-', '')[:12]}proj"
+        project_principal_id = ""
         qwarn = await _foundry_quota_warning(azure_client, subscription_id, azure_location, MODEL_NAME, MODEL_VERSION)
         try:
             if create_resource_group:
                 await azure_client.create_resource_group(subscription_id, resource_group, azure_location)
             await azure_client.create_foundry_account(subscription_id, resource_group, foundry_account, azure_location)
-            await azure_client.create_foundry_project(
+            proj = await azure_client.create_foundry_project(
                 subscription_id, resource_group, foundry_account, foundry_project,
                 azure_location, display_name=f"{demo_id} Foundry",
             )
+            project_principal_id = (proj.get("identity") or {}).get("principalId", "")
             step.status = "completed"
             step.detail = f"{foundry_account} / {foundry_project}" + (f" — note: {qwarn}" if qwarn else "")
         except (AzureError, Exception) as e:  # noqa: BLE001 — preview; degrade gracefully
@@ -1888,41 +1925,153 @@ async def _deploy_fabric_foundry(
             step.detail = "Skipped — no Foundry account"
         yield {"event": "step", "data": step.to_dict()}
 
-        # 9. Connect the Fabric data agent as a Foundry knowledge source (best-effort)
-        step = _find_step(steps, "foundry-connect")
+        # 9. Provision Azure AI Search (the Foundry IQ retrieval engine).
+        search_principal_id = ""
+        search_endpoint = ""
+        step = _find_step(steps, "search-service")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
-        if foundry_account and artifact_id:
+        if foundry_account:
             try:
-                await azure_client.create_fabric_data_agent_connection(
-                    subscription_id, resource_group, foundry_account, foundry_project,
-                    f"{demo_id}-fabric-conn", ws_id, artifact_id,
+                await azure_client.register_search_provider(subscription_id)
+                search_service = f"fdg-srch-{demo_id.replace('-', '')[:8]}-{rand6}"[:60]
+                svc = await azure_client.create_search_service(
+                    subscription_id, resource_group, search_service, azure_location
                 )
+                search_principal_id = (svc.get("identity") or {}).get("principalId", "")
+                search_endpoint = f"https://{search_service}.search.windows.net"
                 step.status = "completed"
-                step.detail = "Fabric data agent connected as a knowledge source"
+                step.detail = f"{search_service} (S1)"
             except (AzureError, Exception) as e:  # noqa: BLE001
-                logger.warning("[foundry] auto-connect skipped: %s", e)
+                logger.warning("[foundry] search service skipped: %s", e)
                 step.status = "skipped"
                 detail = e.detail if isinstance(e, AzureError) else str(e)
-                step.detail = f"Auto-connect skipped — add it in the Foundry portal: {detail[:120]}"
-                next_steps.append("In Foundry: New Agent → Add knowledge → Microsoft Fabric (use the data agent workspace-id + artifact-id).")
+                step.detail = f"Azure AI Search skipped: {detail[:140]}"
+                next_steps.append("Create an Azure AI Search service for Foundry IQ.")
+                search_service = ""
         else:
             step.status = "skipped"
-            step.detail = "Skipped — connect the data agent in the Foundry portal"
-            next_steps.append("In Foundry: New Agent → Add knowledge → Microsoft Fabric.")
+            step.detail = "Skipped — no Foundry account"
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 10. Wire the 3-way managed-identity RBAC.
+        step = _find_step(steps, "rbac")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        if search_service and search_principal_id and project_principal_id:
+            try:
+                from app.azure_client import (
+                    SEARCH_INDEX_DATA_READER, SEARCH_SERVICE_CONTRIBUTOR, COGNITIVE_SERVICES_USER,
+                )
+                search_scope = (
+                    f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+                    f"/providers/Microsoft.Search/searchServices/{search_service}"
+                )
+                foundry_scope = (
+                    f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+                    f"/providers/Microsoft.CognitiveServices/accounts/{foundry_account}"
+                )
+                # Project MI → query the search service.
+                await azure_client.assign_role(search_scope, SEARCH_INDEX_DATA_READER, project_principal_id)
+                await azure_client.assign_role(search_scope, SEARCH_SERVICE_CONTRIBUTOR, project_principal_id)
+                # Search MI → invoke the Foundry data agent.
+                await azure_client.assign_role(foundry_scope, COGNITIVE_SERVICES_USER, search_principal_id)
+                step.status = "completed"
+                step.detail = "Granted search/Foundry managed-identity roles"
+            except (AzureError, Exception) as e:  # noqa: BLE001
+                logger.warning("[foundry] rbac skipped: %s", e)
+                step.status = "skipped"
+                detail = e.detail if isinstance(e, AzureError) else str(e)
+                step.detail = f"RBAC skipped — grant roles manually: {detail[:120]}"
+                next_steps.append("Grant the Foundry project + search managed identities their roles.")
+        else:
+            step.status = "skipped"
+            step.detail = "Skipped — search service or identities unavailable"
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 11. Create the Foundry IQ knowledge source + base (Search data-plane).
+        ks_name = f"{demo_id}-ks"[:60]
+        kb_name = f"{demo_id}-kb".replace("-", "")[:24] or "fdgkb"
+        kb_ready = False
+        step = _find_step(steps, "knowledge")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        if search_service and artifact_id and search_token:
+            iq = FoundryIQClient(search_token, search_service)
+            try:
+                await iq.create_fabric_knowledge_source(ks_name, ws_id, artifact_id)
+                await iq.create_knowledge_base(kb_name, ks_name, foundry_account, DEPLOYMENT_NAME, MODEL_NAME)
+                kb_ready = True
+                step.status = "completed"
+                step.detail = f"Knowledge base '{kb_name}' over the data agent"
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[foundry] knowledge base skipped: %s", e)
+                step.status = "skipped"
+                step.detail = f"Knowledge base skipped: {str(e)[:140]}"
+                next_steps.append("In Foundry IQ: create a knowledge base over the Fabric data agent.")
+            finally:
+                await iq.close()
+        else:
+            step.status = "skipped"
+            step.detail = "Skipped — search service, data agent, or token unavailable"
+            if not search_token:
+                next_steps.append("Re-deploy with Azure AI Search consent to auto-create the knowledge base.")
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 12. Create the project connection + Foundry agent grounded on the KB.
+        step = _find_step(steps, "agent")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        if kb_ready and agent_token:
+            conn_name = f"{demo_id}-kb-conn"[:60]
+            project_endpoint = (
+                f"https://{foundry_account}.services.ai.azure.com/api/projects/{foundry_project}"
+            )
+            ag = FoundryAgentClient(agent_token, project_endpoint)
+            try:
+                await azure_client.create_kb_connection(
+                    subscription_id, resource_group, foundry_account, foundry_project,
+                    conn_name, search_endpoint, kb_name,
+                )
+                agent = await ag.create_agent(
+                    f"{demo_id}-agent"[:60], DEPLOYMENT_NAME, search_endpoint, kb_name, conn_name,
+                )
+                agent_created = agent.get("name", f"{demo_id}-agent")
+                step.status = "completed"
+                step.detail = f"Agent '{agent_created}' ready — ask it about your data"
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[foundry] agent creation skipped: %s", e)
+                step.status = "skipped"
+                step.detail = f"Agent skipped — create it in the Foundry portal: {str(e)[:120]}"
+                next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
+            finally:
+                await ag.close()
+        else:
+            step.status = "skipped"
+            step.detail = "Skipped — knowledge base or token unavailable; finish in the Foundry portal"
+            if kb_ready and not agent_token:
+                next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
         yield {"event": "step", "data": step.to_dict()}
 
         # Done — include Foundry + Azure metadata so the UI can link out and
-        # teardown can delete the Foundry account.
+        # teardown can delete the billable resources.
         step = _find_step(steps, "done")
         step.status = "completed"
+        playground = (
+            f"https://ai.azure.com/build/agents?wsid=/subscriptions/{subscription_id}"
+            f"/resourceGroups/{resource_group}/providers/Microsoft.CognitiveServices/accounts/{foundry_account}"
+            if (foundry_account and agent_created) else "https://ai.azure.com/"
+        )
         step.detail = json.dumps({
             "workspaceId": ws_id,
             "items": created_ids,
             "foundry": {
                 "portalUrl": "https://ai.azure.com/",
+                "playgroundUrl": playground,
                 "account": foundry_account,
                 "project": foundry_project,
+                "agent": agent_created,
+                "searchService": search_service,
                 "dataAgentEndpoint": (
                     f"https://fabric.microsoft.com/groups/{ws_id}/aiskills/{artifact_id}"
                     if artifact_id else ""
@@ -1933,6 +2082,7 @@ async def _deploy_fabric_foundry(
                 "subscriptionId": subscription_id,
                 "resourceGroup": resource_group,
                 "foundryAccount": foundry_account,
+                "searchService": search_service,
             },
         })
         yield {"event": "step", "data": step.to_dict()}
@@ -1951,6 +2101,7 @@ async def _deploy_fabric_foundry(
         cleanup_note, ws_remaining = await _best_effort_teardown(
             client, azure_client, ws_id, subscription_id, resource_group,
             foundry_account=foundry_account or None,
+            search_service=search_service or None,
         )
         if is_azure:
             error_msg = f"Azure error: {e.detail}"
@@ -1961,10 +2112,11 @@ async def _deploy_fabric_foundry(
         if cleanup_note:
             error_msg += "\n\n" + cleanup_note
         data: dict = {"message": error_msg, "workspaceId": ws_id if ws_remaining else ""}
-        if ws_remaining and foundry_account:
+        if ws_remaining and (foundry_account or search_service):
             data["azure"] = {
                 "subscriptionId": subscription_id,
                 "resourceGroup": resource_group,
                 "foundryAccount": foundry_account,
+                "searchService": search_service,
             }
         yield {"event": "error", "data": data}
