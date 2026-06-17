@@ -71,6 +71,8 @@ async def run_job(
     azure_location: str = "eastus",
     create_resource_group: bool = False,
     sql_server_name: str | None = None,
+    search_token: str | None = None,
+    agent_token: str | None = None,
     kusto_token: str | None = None,
 ) -> None:
     """Run a deployment job in the background, updating the job store with events."""
@@ -151,6 +153,8 @@ async def run_job(
             azure_location=azure_location,
             create_resource_group=create_resource_group,
             sql_server_name=sql_server_name,
+            search_token=search_token,
+            agent_token=agent_token,
             kusto_token=kusto_token,
         ):
             job_store.emit_event(job_id, event)

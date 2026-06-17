@@ -63,7 +63,16 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Storage-Token", "X-Management-Token", "X-OneLake-Token", "X-Kusto-Token"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-Storage-Token",
+        "X-Management-Token",
+        "X-OneLake-Token",
+        "X-Search-Token",
+        "X-Agent-Token",
+        "X-Kusto-Token",
+    ],
 )
 
 app.include_router(demos.router)

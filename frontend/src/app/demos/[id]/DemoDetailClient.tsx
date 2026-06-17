@@ -145,7 +145,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
   },
   {
     id: "fabric-foundry-agent",
-    title: "Fabric + Foundry AI Agent",
+    title: "Fabric & Foundry AI Agent",
     description: "Deploy a Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data — data + AI in one click. (Preview: provisions billable Azure Foundry resources in your subscription.)",
     estimatedTime: "20–30 min",
     tags: ["foundry", "ai-agent", "data-agent", "rag", "preview"],
@@ -986,7 +986,7 @@ export default function DemoDetailPage() {
   const id = params.id as string;
   const demo = DEMOS[id];
   const isCustomMode = searchParams.get("mode") === "custom";
-  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken } = useAuth();
+  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken } = useAuth();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
@@ -1327,6 +1327,20 @@ export default function DemoDetailPage() {
           const mgmtTok = await getManagementToken();
           if (mgmtTok) headers["X-Management-Token"] = mgmtTok;
         } catch { /* continue without management token */ }
+      }
+      // Fabric + Foundry scenario also needs Azure AI Search + Foundry agent
+      // data-plane tokens so the deploy can build the Foundry IQ knowledge base
+      // and the grounded agent. Best-effort: the backend degrades those steps to
+      // manual follow-ups if a token is missing.
+      if (selectedScenario?.id === "fabric-foundry-agent") {
+        try {
+          const searchTok = await getSearchToken({ allowRedirect: false });
+          if (searchTok) headers["X-Search-Token"] = searchTok;
+        } catch { /* continue — knowledge base becomes a manual step */ }
+        try {
+          const agentTok = await getAgentToken({ allowRedirect: false });
+          if (agentTok) headers["X-Agent-Token"] = agentTok;
+        } catch { /* continue — agent becomes a manual step */ }
       }
 
       // Note: the historical data seed (optional) uses the Eventhouse/KQL data
@@ -2428,7 +2442,21 @@ export default function DemoDetailPage() {
                   {/* Azure params — only for shortcut scenarios */}
                   {selectedScenario?.requiresAzure && (
                     <div className={styles.azureSection}>
-                      <div className={styles.azureSectionTitle}>{selectedScenario?.id === "external-data-integration" ? "Azure Resources (SQL Database)" : "Azure Resources (ADLS Gen2)"}</div>
+                      <div className={styles.azureSectionTitle}>{
+                        selectedScenario?.id === "external-data-integration" ? "Azure Resources (SQL Database)"
+                        : selectedScenario?.id === "fabric-foundry-agent" ? "Azure Resources (Foundry + AI Search)"
+                        : "Azure Resources (ADLS Gen2)"
+                      }</div>
+
+                      {selectedScenario?.id === "fabric-foundry-agent" && (
+                        <MessageBar intent="warning" style={{ marginBottom: 10 }}>
+                          <MessageBarBody>
+                            <strong>Preview · billable.</strong> This provisions a Microsoft Foundry account
+                            (gpt-4o-mini) and a standing <strong>Azure AI Search</strong> service in your
+                            subscription. Both incur Azure cost until deleted — use the cleanup button when done.
+                          </MessageBarBody>
+                        </MessageBar>
+                      )}
 
                       {/* Subscription */}
                       <div style={{ marginBottom: 10 }}>

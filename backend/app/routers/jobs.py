@@ -107,6 +107,8 @@ async def create_job(
 
     management_tok = request.headers.get("x-management-token", "")
     onelake_tok = request.headers.get("x-onelake-token", "")
+    search_tok = request.headers.get("x-search-token", "")
+    agent_tok = request.headers.get("x-agent-token", "")
 
     # Kusto token is only needed for Real-Time Intelligence seed ingestion.
     # Use the header when present; in dev fall back to az CLI, ignoring failures.
@@ -134,6 +136,8 @@ async def create_job(
             azure_location=body.azure_location or "eastus",
             create_resource_group=body.create_resource_group,
             sql_server_name=body.sql_server_name,
+            search_token=search_tok or None,
+            agent_token=agent_tok or None,
             kusto_token=kusto_tok or None,
         )
     )

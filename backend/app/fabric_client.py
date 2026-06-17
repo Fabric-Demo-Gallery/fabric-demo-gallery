@@ -323,6 +323,146 @@ class FabricClient:
             if location:
                 await self._poll_lro(location)
 
+    # ── Fabric data agent (headless create + publish via item definition) ──
+    # A Fabric DataAgent is created AND published purely through its item
+    # definition — no notebook, no fabric-data-agent-sdk, no %pip. The published
+    # state is encoded by including the `published/` parts + publish_info.json.
+    # (Verified against the live API: createItem-with-definition for type DataAgent,
+    # with regenerated table/column GUIDs, produces a queryable published agent.)
+
+    # OneLake Unity Catalog (schema discovery) — uses the storage-audience token.
+    _ONELAKE_TABLE_API = "https://onelake.table.fabric.microsoft.com"
+    # Spark/Delta type_name → SQL data_type. data_type is only an NL2SQL hint, so
+    # an approximate mapping is fine; unknown types fall back to varchar.
+    _SPARK_TO_SQL_TYPE = {
+        "string": "varchar", "long": "bigint", "int": "int", "integer": "int",
+        "double": "float", "float": "real", "timestamp": "datetime2",
+        "timestamp_ntz": "datetime2", "date": "date", "boolean": "bit",
+        "short": "smallint", "byte": "tinyint", "binary": "varbinary",
+        "decimal": "decimal",
+    }
+
+    async def discover_lakehouse_schema(
+        self, workspace_id: str, lakehouse_id: str, lakehouse_name: str, schema: str = "dbo"
+    ) -> dict[str, list[tuple[str, str]]]:
+        """Return {table_name: [(column_name, sql_type), ...]} for a lakehouse via
+        the OneLake Unity Catalog API. Works for schema-enabled lakehouses (tables
+        live under the 'dbo' schema)."""
+        catalog = f"{lakehouse_name}.Lakehouse"
+        base = f"{self._ONELAKE_TABLE_API}/delta/{workspace_id}/{lakehouse_id}/api/2.1/unity-catalog"
+        # List tables (paginate via next_page_token).
+        table_names: list[str] = []
+        url = f"{base}/tables?catalog_name={catalog}&schema_name={schema}"
+        while url:
+            resp = await self._storage_client.get(url)
+            if resp.status_code >= 400:
+                raise FabricError(resp.status_code, f"Lakehouse schema discovery failed: {resp.text[:200]}")
+            body = resp.json()
+            table_names.extend(t["name"] for t in body.get("tables", []))
+            token = body.get("next_page_token")
+            url = f"{base}/tables?catalog_name={catalog}&schema_name={schema}&page_token={token}" if token else None
+        # Fetch columns per table.
+        out: dict[str, list[tuple[str, str]]] = {}
+        for t in table_names:
+            r = await self._storage_client.get(f"{base}/tables/{catalog}.{schema}.{t}")
+            if r.status_code >= 400:
+                logger.warning("[data-agent] schema fetch for table '%s' failed: %s", t, r.status_code)
+                continue
+            cols = [
+                (c["name"], self._SPARK_TO_SQL_TYPE.get((c.get("type_name") or "string").lower(), "varchar"))
+                for c in r.json().get("columns", [])
+            ]
+            if cols:
+                out[t] = cols
+        return out
+
+    @staticmethod
+    def _data_agent_datasource(
+        workspace_id: str, lakehouse_id: str, lakehouse_name: str,
+        tables: dict[str, list[tuple[str, str]]], schema: str = "dbo",
+    ) -> dict:
+        """Build the datasource.json tree (Schemas → schema → Tables → tables →
+        columns). Node ids are fresh UUIDs (editor-tree ids, not metadata keys);
+        every column is selected so the whole lakehouse is queryable."""
+        import uuid
+
+        table_nodes = []
+        for tname, cols in tables.items():
+            col_nodes = [{
+                "id": str(uuid.uuid4()), "is_selected": True, "display_name": cname,
+                "type": "lakehouse_tables.column", "data_type": ctype,
+                "description": None, "children": [],
+            } for cname, ctype in cols]
+            table_nodes.append({
+                "id": str(uuid.uuid4()), "is_selected": False, "display_name": tname,
+                "type": "lakehouse_tables.table", "description": None, "children": col_nodes,
+            })
+        elements = [{
+            "id": str(uuid.uuid4()), "is_selected": False, "display_name": "Schemas",
+            "type": "schema_grouping", "description": None, "children": [{
+                "id": str(uuid.uuid4()), "is_selected": False, "display_name": schema,
+                "type": "lakehouse_tables.schema", "description": None, "children": [{
+                    "id": str(uuid.uuid4()), "is_selected": False, "display_name": "Tables",
+                    "type": "table_grouping", "description": None, "children": table_nodes,
+                }],
+            }],
+        }]
+        return {
+            "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/dataAgent/definition/dataSource/1.0.0/schema.json",
+            "artifactId": lakehouse_id,
+            "workspaceId": workspace_id,
+            "dataSourceInstructions": None,
+            "displayName": lakehouse_name,
+            "type": "lakehouse_tables",
+            "userDescription": None,
+            "metadata": {},
+            "elements": elements,
+        }
+
+    async def create_published_data_agent(
+        self, workspace_id: str, name: str, lakehouse_id: str, lakehouse_name: str,
+        instructions: str = "", schema: str = "dbo",
+    ) -> dict:
+        """Create AND publish a Fabric data agent over a lakehouse, headlessly,
+        via createItem-with-definition. Returns the created item dict (incl. id).
+
+        Discovers the lakehouse schema, generates the datasource tree, and emits
+        the draft + published definition parts so the agent is published on create.
+        """
+        tables = await self.discover_lakehouse_schema(workspace_id, lakehouse_id, lakehouse_name, schema)
+        if not tables:
+            raise FabricError(500, f"No tables found in lakehouse '{lakehouse_name}' — cannot build data agent.")
+
+        def b64(obj: dict) -> str:
+            return base64.b64encode(json.dumps(obj).encode("utf-8")).decode("ascii")
+
+        datasource = self._data_agent_datasource(workspace_id, lakehouse_id, lakehouse_name, tables, schema)
+        ds_b64 = b64(datasource)
+        stage = {
+            "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/dataAgent/definition/stageConfiguration/1.0.0/schema.json",
+            "aiInstructions": instructions or None,
+        }
+        stage_b64 = b64(stage)
+        seg = f"lakehouse-tables-{lakehouse_name}"
+        parts = [
+            {"path": "Files/Config/data_agent.json", "payloadType": "InlineBase64",
+             "payload": b64({"$schema": "https://developer.microsoft.com/json-schemas/fabric/item/dataAgent/definition/dataAgent/2.1.0/schema.json"})},
+            {"path": "Files/Config/draft/stage_config.json", "payloadType": "InlineBase64", "payload": stage_b64},
+            {"path": f"Files/Config/draft/{seg}/datasource.json", "payloadType": "InlineBase64", "payload": ds_b64},
+            {"path": "Files/Config/publish_info.json", "payloadType": "InlineBase64",
+             "payload": b64({"$schema": "https://developer.microsoft.com/json-schemas/fabric/item/dataAgent/definition/publishInfo/1.0.0/schema.json", "description": ""})},
+            {"path": "Files/Config/published/stage_config.json", "payloadType": "InlineBase64", "payload": stage_b64},
+            {"path": f"Files/Config/published/{seg}/datasource.json", "payloadType": "InlineBase64", "payload": ds_b64},
+            {"path": ".platform", "payloadType": "InlineBase64",
+             "payload": b64({
+                 "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+                 "metadata": {"type": "DataAgent", "displayName": name},
+                 "config": {"version": "2.0", "logicalId": "00000000-0000-0000-0000-000000000000"},
+             })},
+        ]
+        logger.info("[data-agent] creating published agent '%s' over %d tables", name, len(tables))
+        return await self.create_item(workspace_id, "DataAgent", name, definition={"parts": parts})
+
     # ── lakehouses ───────────────────────────────────────────────────────
 
     async def create_lakehouse(self, workspace_id: str, name: str) -> dict:
