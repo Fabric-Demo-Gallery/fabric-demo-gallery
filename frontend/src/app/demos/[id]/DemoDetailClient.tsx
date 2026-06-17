@@ -56,6 +56,7 @@ import {
   DatabaseArrowRight24Regular,
   Sparkle24Regular,
   FlashRegular,
+  Bot24Regular,
 } from "@fluentui/react-icons";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { DEMOS } from "@/lib/demoCatalog";
@@ -142,6 +143,17 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     azureParams: [],
     feature: "Fabric Data Agents",
   },
+  {
+    id: "fabric-foundry-agent",
+    title: "Fabric + Foundry AI Agent",
+    description: "Deploy a Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data — data + AI in one click. (Preview: provisions billable Azure Foundry resources in your subscription.)",
+    estimatedTime: "20–30 min",
+    tags: ["foundry", "ai-agent", "data-agent", "rag", "preview"],
+    enabled: false,
+    requiresAzure: true,
+    azureParams: [],
+    feature: "Foundry AI Agent",
+  },
 ];
 
 // Professional Fluent System icons per scenario (replaces emoji).
@@ -152,12 +164,14 @@ const SCENARIO_ICON: Record<string, FluentIcon> = {
   "data-warehouse": Database24Regular,
   "external-data-integration": DatabaseArrowRight24Regular,
   "genai-applications": Sparkle24Regular,
+  "fabric-foundry-agent": Bot24Regular,
 };
 
 const SCENARIO_FEATURES = [
   "RTI",
   "Fabric IQ",
   "Fabric Data Agents",
+  "Foundry AI Agent",
   "Power BI",
   "Machine Learning",
   "Shortcuts & Mirroring",

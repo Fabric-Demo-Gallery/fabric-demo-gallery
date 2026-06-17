@@ -1,0 +1,48 @@
+{
+  "id": "fabric-foundry-agent",
+  "title": "Fabric + Foundry AI Agent",
+  "description": "Deploy a complete Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data \u2014 the full data + AI story in one click.",
+  "icon": "\ud83e\udde0",
+  "estimatedTime": "20-30 min",
+  "tags": ["foundry", "ai-agent", "data-agent", "rag", "preview"],
+  "preview": true,
+  "prerequisites": [
+    "Fabric capacity (F2+, Trial, or PPU) \u2014 same tenant as Foundry",
+    "Azure subscription with Microsoft Foundry quota for gpt-4o-mini",
+    "Tenant setting 'cross-geo processing & storing for AI' enabled",
+    "Owner or Contributor + User Access Administrator on the resource group"
+  ],
+  "azureParams": [
+    {
+      "name": "subscription_id",
+      "label": "Subscription",
+      "type": "subscription",
+      "required": true,
+      "description": "Azure subscription that will host the Foundry resource."
+    },
+    {
+      "name": "resource_group",
+      "label": "Resource Group",
+      "type": "resource_group",
+      "required": true,
+      "description": "Resource group for the Foundry account (created if missing)."
+    },
+    {
+      "name": "azure_location",
+      "label": "Azure Region",
+      "type": "string",
+      "required": false,
+      "default": "eastus",
+      "description": "Region for the Foundry account + model deployment (must have gpt-4o-mini quota)."
+    }
+  ],
+  "fabricItemTemplate": [
+    { "type": "Lakehouse",     "name": "analytics_lakehouse" },
+    { "type": "Notebook",      "name": "01_bronze_ingest",      "definitionPath": "notebooks/01_bronze_ingest.ipynb",    "order": 1 },
+    { "type": "Notebook",      "name": "02_silver_transform",   "definitionPath": "notebooks/02_silver_transform.ipynb", "order": 2 },
+    { "type": "Notebook",      "name": "03_gold_aggregate",     "definitionPath": "notebooks/03_gold_aggregate.ipynb",   "order": 3 },
+    { "type": "DataAgent",     "name": "analytics_data_agent" },
+    { "type": "SemanticModel", "name": "analytics_model",       "definitionPath": "tmdl" },
+    { "type": "Report",        "name": "analytics_report" }
+  ]
+}

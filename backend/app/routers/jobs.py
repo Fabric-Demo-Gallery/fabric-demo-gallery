@@ -57,6 +57,15 @@ async def create_job(
                 detail=f"Demo '{body.demo_id}' is missing the mirroring.json spec required for this scenario.",
             )
 
+    # The Fabric + Foundry scenario provisions a Microsoft Foundry resource, so it
+    # requires an Azure subscription + resource group (plus the management token).
+    if body.scenario_id == "fabric-foundry-agent":
+        if not (body.subscription_id and body.resource_group):
+            raise HTTPException(
+                status_code=400,
+                detail="The Fabric + Foundry scenario requires an Azure subscription and resource group.",
+            )
+
     storage_tok = request.headers.get("x-storage-token", "")
     if not storage_tok:
         storage_tok = await get_storage_token(request)

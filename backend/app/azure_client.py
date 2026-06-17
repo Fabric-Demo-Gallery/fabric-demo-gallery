@@ -24,6 +24,9 @@ ARM_API_VERSION = "2022-12-01"
 RG_API_VERSION = "2021-04-01"
 RBAC_API_VERSION = "2022-04-01"
 SQL_API_VERSION = "2021-11-01"
+# Microsoft Foundry / Cognitive Services (preview — used by the Fabric+Foundry scenario)
+COG_API_VERSION = "2025-12-01"          # accounts, projects, deployments, connections
+MODEL_CAPACITY_API_VERSION = "2024-10-01"  # modelCapacities quota pre-flight
 # Built-in role: Storage Blob Data Contributor
 STORAGE_BLOB_DATA_CONTRIBUTOR = "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
 
@@ -654,6 +657,200 @@ class AzureClient:
             f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
             f"/providers/Microsoft.Storage/storageAccounts/{name}"
             f"?api-version={STORAGE_API_VERSION}"
+        )
+        resp = await self._arm_client.delete(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, resp.text[:300])
+        return True
+
+    # ── Microsoft Foundry (preview) ─────────────────────────────────
+    # Provision an Azure AI Foundry account + project + model deployment for the
+    # "Fabric + Foundry AI agent" scenario. Everything here is PREVIEW; ARM shapes
+    # may change. The deployer treats these as best-effort/skippable so a change
+    # never breaks the (already-completed) Fabric half of the deploy.
+
+    async def _poll_cog_provisioning(self, url: str, what: str, timeout: int = 600) -> dict:
+        """Poll a Cognitive Services resource until provisioningState is terminal."""
+        start = time.time()
+        while time.time() - start < timeout:
+            await asyncio.sleep(8)
+            try:
+                resp = await self._arm_request("GET", url)
+            except httpx.TransportError as e:
+                logger.debug("%s poll network error (retrying): %s", what, e)
+                continue
+            except AzureError as e:
+                if e.status == 404:
+                    continue  # not yet visible in ARM
+                raise
+            state = (resp.json().get("properties", {}).get("provisioningState") or "").lower()
+            logger.debug("%s provisioningState: %s", what, state)
+            if state == "succeeded":
+                return resp.json()
+            if state in ("failed", "canceled", "cancelled"):
+                raise AzureError(500, f"{what} provisioning ended in state '{state}'")
+        raise AzureError(504, f"{what} provisioning timed out after {timeout}s")
+
+    async def check_model_capacity(
+        self, subscription_id: str, model_name: str, model_version: str, model_format: str = "OpenAI"
+    ) -> list[dict]:
+        """Return per-region available capacity for a model (advisory pre-flight).
+        Returns a list of {location, availableCapacity}; empty on any failure so a
+        listing hiccup never blocks an otherwise-valid deploy."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/providers/Microsoft.CognitiveServices"
+            f"/modelCapacities?api-version={MODEL_CAPACITY_API_VERSION}"
+            f"&modelFormat={model_format}&modelName={model_name}&modelVersion={model_version}"
+        )
+        try:
+            resp = await self._arm_request("GET", url)
+        except Exception as e:  # noqa: BLE001 - advisory only
+            logger.warning("Model capacity check skipped: %s", e)
+            return []
+        out = []
+        for entry in resp.json().get("value", []):
+            props = entry.get("properties", {})
+            out.append({
+                "location": entry.get("location", ""),
+                "availableCapacity": props.get("availableCapacity", 0),
+            })
+        return out
+
+    async def create_foundry_account(
+        self, subscription_id: str, resource_group: str, account_name: str, location: str
+    ) -> dict:
+        """Create an Azure AI Foundry account (Microsoft.CognitiveServices/accounts,
+        kind=AIServices) with project management enabled and a system-assigned
+        identity. Idempotent PUT; polls until provisioningState is Succeeded."""
+        base = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
+        )
+        url = f"{base}?api-version={COG_API_VERSION}"
+        body = {
+            "location": location,
+            "kind": "AIServices",
+            "sku": {"name": "S0"},
+            "identity": {"type": "SystemAssigned"},
+            "properties": {
+                "allowProjectManagement": True,
+                "customSubDomainName": account_name,
+                "publicNetworkAccess": "Enabled",
+            },
+        }
+        resp = await self._arm_client.put(url, json=body)
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                detail = resp.json().get("error", {}).get("message", detail)[:500]
+            except Exception:
+                pass
+            raise AzureError(resp.status_code, detail)
+        if (resp.json().get("properties", {}).get("provisioningState") or "").lower() == "succeeded":
+            return resp.json()
+        return await self._poll_cog_provisioning(url, f"Foundry account '{account_name}'")
+
+    async def create_foundry_project(
+        self, subscription_id: str, resource_group: str, account_name: str,
+        project_name: str, location: str, display_name: str | None = None,
+    ) -> dict:
+        """Create a Foundry project under the account. Polls provisioningState."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
+            f"/projects/{project_name}?api-version={COG_API_VERSION}"
+        )
+        body = {
+            "location": location,
+            "identity": {"type": "SystemAssigned"},
+            "properties": {"displayName": display_name or project_name},
+        }
+        resp = await self._arm_client.put(url, json=body)
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                detail = resp.json().get("error", {}).get("message", detail)[:500]
+            except Exception:
+                pass
+            raise AzureError(resp.status_code, detail)
+        if (resp.json().get("properties", {}).get("provisioningState") or "").lower() == "succeeded":
+            return resp.json()
+        return await self._poll_cog_provisioning(url, f"Foundry project '{project_name}'")
+
+    async def create_model_deployment(
+        self, subscription_id: str, resource_group: str, account_name: str,
+        deployment_name: str, model_name: str, model_version: str,
+        sku_name: str = "GlobalStandard", capacity: int = 10,
+    ) -> dict:
+        """Deploy an OpenAI model on the Foundry account. Polls provisioningState."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
+            f"/deployments/{deployment_name}?api-version={COG_API_VERSION}"
+        )
+        body = {
+            "sku": {"name": sku_name, "capacity": capacity},
+            "properties": {
+                "model": {"format": "OpenAI", "name": model_name, "version": model_version},
+            },
+        }
+        resp = await self._arm_client.put(url, json=body)
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                detail = resp.json().get("error", {}).get("message", detail)[:500]
+            except Exception:
+                pass
+            raise AzureError(resp.status_code, detail)
+        if (resp.json().get("properties", {}).get("provisioningState") or "").lower() == "succeeded":
+            return resp.json()
+        return await self._poll_cog_provisioning(url, f"Model deployment '{deployment_name}'")
+
+    async def create_fabric_data_agent_connection(
+        self, subscription_id: str, resource_group: str, account_name: str,
+        project_name: str, connection_name: str, workspace_id: str, artifact_id: str,
+    ) -> dict:
+        """Create a project connection to a published Fabric data agent, carrying the
+        Fabric workspace-id + artifact-id. PREVIEW and best-effort — the connection
+        shape for Fabric data agents is evolving, so the deployer treats a failure
+        here as a skippable step (the user can add the connection in the portal)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
+            f"/projects/{project_name}/connections/{connection_name}"
+            f"?api-version={COG_API_VERSION}"
+        )
+        body = {
+            "properties": {
+                "category": "CustomKeys",
+                "target": f"https://fabric.microsoft.com/groups/{workspace_id}/aiskills/{artifact_id}",
+                "authType": "CustomKeys",
+                "isSharedToAll": False,
+                "credentials": {"keys": {"workspace-id": workspace_id, "artifact-id": artifact_id}},
+                "metadata": {"type": "fabric_dataagent"},
+            }
+        }
+        resp = await self._arm_client.put(url, json=body)
+        if resp.status_code >= 400:
+            detail = resp.text[:500]
+            try:
+                detail = resp.json().get("error", {}).get("message", detail)[:500]
+            except Exception:
+                pass
+            raise AzureError(resp.status_code, detail)
+        return resp.json()
+
+    async def delete_foundry_account(
+        self, subscription_id: str, resource_group: str, account_name: str
+    ) -> bool:
+        """Delete the Foundry account (cascades projects, deployments, connections).
+        404-tolerant: returns False if the account was already gone."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
+            f"?api-version={COG_API_VERSION}"
         )
         resp = await self._arm_client.delete(url)
         if resp.status_code == 404:
