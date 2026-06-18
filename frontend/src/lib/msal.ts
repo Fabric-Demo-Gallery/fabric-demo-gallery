@@ -42,12 +42,16 @@ export const msalInstance = new PublicClientApplication(msalConfig);
 //   API permissions → Power BI Service → Delegated
 // Required: Workspace.ReadWrite.All, Item.ReadWrite.All,
 //           Connection.ReadWrite.All, OneLake.ReadWrite.All
+// NOTE: KQLDatabase.ReadWrite.All is intentionally NOT requested at sign-in. It's
+// only needed for the optional RTI history seed, so it's acquired incrementally
+// via `kustoScopes` / getKustoToken. Keeping the up-front consent set small avoids
+// "Need admin approval" in tenants that restrict consent for unverified apps —
+// an expanding sign-in scope set forces re-consent that such tenants block.
 export const fabricScopes = [
   "https://api.fabric.microsoft.com/Workspace.ReadWrite.All",
   "https://api.fabric.microsoft.com/Item.ReadWrite.All",
   "https://api.fabric.microsoft.com/Connection.ReadWrite.All",
   "https://api.fabric.microsoft.com/OneLake.ReadWrite.All",
-  "https://api.fabric.microsoft.com/KQLDatabase.ReadWrite.All",
 ];
 
 // Separate OneLake scope — needs its own token for shortcut creation (OneLake.ReadWrite.All)
