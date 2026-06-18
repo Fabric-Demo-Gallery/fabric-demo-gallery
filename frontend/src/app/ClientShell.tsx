@@ -23,6 +23,9 @@ import {
   PersonRegular,
   SignOutRegular,
   OpenRegular,
+  ShieldKeyholeRegular,
+  ChevronDownRegular,
+  DismissRegular,
 } from "@fluentui/react-icons";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/AuthProvider";
@@ -176,23 +179,122 @@ function Navbar() {
   );
 }
 
+const useNoteStyles = makeStyles({
+  bar: {
+    background: "linear-gradient(180deg, #0f1f3d 0%, #0d1a33 100%)",
+    borderBottom: "1px solid rgba(56,139,253,0.3)",
+  },
+  inner: {
+    maxWidth: "1080px",
+    margin: "0 auto",
+    display: "flex",
+    alignItems: "flex-start",
+    columnGap: "12px",
+    paddingTop: "12px",
+    paddingBottom: "12px",
+    paddingLeft: "24px",
+    paddingRight: "24px",
+  },
+  iconWrap: {
+    flexShrink: 0,
+    width: "30px",
+    height: "30px",
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(56,139,253,0.15)",
+    color: "#58a6ff",
+    marginTop: "1px",
+  },
+  content: { flexGrow: 1, minWidth: 0, fontSize: "12.5px", lineHeight: "1.5", color: "#b6c2cf" },
+  title: { fontWeight: 600, color: "#e6edf3", fontSize: "13px" },
+  sub: { marginTop: "2px" },
+  toggle: {
+    backgroundColor: "transparent",
+    border: "none",
+    padding: "0",
+    color: "#58a6ff",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: "12.5px",
+    display: "inline-flex",
+    alignItems: "center",
+    columnGap: "2px",
+    ":hover": { textDecorationLine: "underline" },
+  },
+  chevron: { transitionProperty: "transform", transitionDuration: "0.15s" },
+  details: {
+    marginTop: "10px",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gap: "10px",
+  },
+  method: {
+    backgroundColor: "rgba(56,139,253,0.07)",
+    border: "1px solid rgba(56,139,253,0.18)",
+    borderRadius: "8px",
+    paddingTop: "9px",
+    paddingBottom: "9px",
+    paddingLeft: "11px",
+    paddingRight: "11px",
+  },
+  methodTitle: { fontWeight: 600, color: "#e6edf3", marginBottom: "3px", fontSize: "12px" },
+  dismiss: {
+    flexShrink: 0,
+    backgroundColor: "transparent",
+    border: "none",
+    color: "#8b949e",
+    cursor: "pointer",
+    display: "flex",
+    padding: "2px",
+    borderRadius: "4px",
+    ":hover": { color: "#e6edf3", backgroundColor: "rgba(255,255,255,0.06)" },
+  },
+});
+
 function AdminConsentNote() {
   const { account } = useAuth();
+  const s = useNoteStyles();
   const [dismissed, setDismissed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     setDismissed(typeof window !== "undefined" && localStorage.getItem("fdg_admin_consent_note") === "dismissed");
   }, []);
   if (account || dismissed) return null;
   return (
-    <div style={{ backgroundColor: "#0d1b33", borderBottom: "1px solid rgba(31,111,235,0.4)", padding: "10px 24px" }}>
-      <div style={{ position: "relative", maxWidth: 1040, margin: "0 auto", paddingRight: 24, fontSize: 12.5, lineHeight: 1.5, color: "#c9d1d9" }}>
+    <div className={s.bar}>
+      <div className={s.inner}>
+        <span className={s.iconWrap}><ShieldKeyholeRegular fontSize={18} /></span>
+        <div className={s.content}>
+          <div className={s.title}>First time signing in from your organization?</div>
+          <div className={s.sub}>
+            If you hit <strong>&ldquo;Need admin approval&rdquo;</strong>, a one&#8209;time admin consent unblocks your whole tenant.{" "}
+            <button className={s.toggle} onClick={() => setExpanded((v) => !v)}>
+              {expanded ? "Hide steps" : "How to approve"}
+              <ChevronDownRegular fontSize={14} className={s.chevron} style={{ transform: expanded ? "rotate(180deg)" : "none" }} />
+            </button>
+          </div>
+          {expanded && (
+            <div className={s.details}>
+              <div className={s.method}>
+                <div className={s.methodTitle}>You have an admin account</div>
+                On the approval screen pick <strong>&ldquo;Have an admin account? Sign in with that account&rdquo;</strong>, sign in as a <strong>Global Administrator</strong>, and click <strong>Accept</strong>.
+              </div>
+              <div className={s.method}>
+                <div className={s.methodTitle}>You can self&#8209;elevate (sandbox tenant)</div>
+                <strong>Azure portal</strong> &rarr; search <strong>Privileged Identity Management</strong> &rarr; <strong>My roles</strong> &rarr; <strong>Activate</strong> the <strong>Global Administrator</strong> role (just&#8209;in&#8209;time), then approve.
+              </div>
+            </div>
+          )}
+        </div>
         <button
+          className={s.dismiss}
           onClick={() => { localStorage.setItem("fdg_admin_consent_note", "dismissed"); setDismissed(true); }}
           aria-label="Dismiss"
-          style={{ position: "absolute", top: 0, right: 0, background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
-        >×</button>
-        <strong style={{ color: "#e6edf3" }}>First time signing in from your organization?</strong>{" "}
-        If you see <strong>&ldquo;Need admin approval&rdquo;</strong>, your tenant needs a one-time admin consent. A Microsoft Entra <strong>Global Administrator</strong> clicks <strong>&ldquo;Have an admin account? Sign in with that account&rdquo;</strong> on that screen and <strong>Accepts</strong> — approving the app for the whole tenant. Not an admin yet? Go to your <strong>Azure portal</strong>, search for <strong>Privileged Identity Management</strong>, open <strong>My roles</strong>, and click <strong>Activate</strong> (just-in-time) on the <strong>Global Administrator</strong> role — then come back and approve. One approval unblocks everyone in your tenant.
+        >
+          <DismissRegular fontSize={16} />
+        </button>
       </div>
     </div>
   );
