@@ -1830,6 +1830,8 @@ export default function DemoDetailPage() {
                 <div className={styles.scenarioGrid}>
                   {ALL_SCENARIOS
                     .filter((sc) => scenarioFilter === "All" || sc.feature === scenarioFilter)
+                    .slice()
+                    .sort((a, b) => Number(b.enabled) - Number(a.enabled))
                     .map((sc) => (
                     <div
                       key={sc.id}

@@ -1681,6 +1681,18 @@ async def _deploy_mirroring(
         await client.provision_workspace_identity(ws_id)
         ws_info = await client.get_workspace(ws_id)
         ws_identity_name = ws_info.get("displayName") or (workspace_name or demo_id)
+        # The workspace identity's Application (client) ID lets the seed notebook
+        # create the contained SQL user BY SID, avoiding the Microsoft Graph lookup
+        # that `CREATE USER ... FROM EXTERNAL PROVIDER` performs (which fails in
+        # governed tenants where the SQL server identity lacks Directory Readers).
+        ws_identity_app_id = (ws_info.get("workspaceIdentity") or {}).get("applicationId") or ""
+        if ws_identity_app_id:
+            logger.info("[ws-identity] applicationId %s", ws_identity_app_id)
+        else:
+            logger.warning(
+                "[ws-identity] no applicationId in workspace response; seed notebook "
+                "will fall back to FROM EXTERNAL PROVIDER (needs Directory Readers)"
+            )
         # Region for the Azure SQL server. Honor the user's chosen region
         # (azure_location, the scenario's "Azure Region" field) FIRST: mirroring
         # replicates cross-region, and many governed subscriptions (e.g. MCAPS)
@@ -1848,6 +1860,7 @@ async def _deploy_mirroring(
             "SQL_SERVER": sql_fqdn,
             "SQL_DATABASE": sql_database,
             "WORKSPACE_IDENTITY_NAME": ws_identity_name,
+            "WORKSPACE_IDENTITY_APP_ID": ws_identity_app_id,
             "DATA_SOURCE_PATH": "Files/landing",
             "WORKSPACE_ID": ws_id,
             "MIRRORING_SPEC_B64": spec_b64,
