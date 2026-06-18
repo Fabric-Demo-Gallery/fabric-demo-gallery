@@ -1,10 +1,10 @@
 {
   "id": "genai-applications",
-  "title": "GenAI Applications",
-  "description": "AI Skills (Data Agent) + RAG pattern over lakehouse data — build a natural-language Q&A interface on top of your industry dataset.",
+  "title": "Fabric IQ",
+  "description": "Showcase Fabric IQ: build a semantic ontology over your data, expose it through Fabric Data Agents, and explore relationships with the knowledge graph for natural-language, context-aware analytics.",
   "icon": "✨",
   "estimatedTime": "15-20 min",
-  "tags": ["genai", "data-agent", "rag", "lakehouse"],
+  "tags": ["fabric-iq", "ontology", "data-agent", "knowledge-graph"],
   "prerequisites": [
     "Fabric capacity (F2+, Trial, or PPU)",
     "Azure OpenAI or Fabric-native AI capacity enabled"

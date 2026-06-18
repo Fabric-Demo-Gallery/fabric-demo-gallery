@@ -63,6 +63,24 @@ import { DEMOS } from "@/lib/demoCatalog";
 import { PRESENTER } from "@/lib/presenterContent";
 import { explainError } from "@/lib/errorHelp";
 
+// Coerce an SSE error payload's `message` into a readable string. The backend
+// usually sends a string, but some failure paths send a nested object (e.g.
+// {detail: "..."} or an ARM error), which would otherwise render as
+// "[object Object]" in the UI.
+function coerceErrorMessage(message: unknown, fallback = "Deployment failed"): string {
+  if (typeof message === "string" && message.trim()) return message;
+  if (message && typeof message === "object") {
+    const o = message as Record<string, unknown>;
+    const nested = o.message ?? o.detail ?? o.error ?? o.title;
+    if (typeof nested === "string" && nested.trim()) return nested;
+    try {
+      const j = JSON.stringify(message);
+      if (j && j !== "{}") return j;
+    } catch { /* fall through */ }
+  }
+  return fallback;
+}
+
 // Universal scenarios — identical across all industries (IDs match backend _scenarios/)
 const ALL_SCENARIOS: ScenarioInfo[] = [
   {
@@ -86,13 +104,6 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     requiresAzure: false,
     azureParams: [],
     feature: "RTI",
-    postDeploy: [
-      { label: "Start the live stream", detail: "Use the “Live Eventstream demo” box above: copy the Eventstream’s LiveCustomEndpoint connection string from the portal and paste it here to push real events into the Eventhouse." },
-      { label: "Watch the Real-Time Dashboard", detail: "Open the dashboard and turn on Auto refresh (1 min). As data streams in, the tiles update live — the wow moment for real-time analytics." },
-      { label: "Explore the KQL Queryset", detail: "Open the queryset and run the saved queries (recent records, count, trend, avg-by-group). Edit one or write your own KQL to answer ad-hoc questions instantly." },
-      { label: "Create an Activator alert", detail: "On a dashboard tile (or in the queryset) choose Set alert, pick a metric and threshold, and an action (email/Teams). The rule lands in the Activator and fires on live data." },
-      { label: "Inspect the Eventhouse", detail: "Open the Eventhouse → System overview to see ingestion rate and row counts climb in real time, and browse the auto-created KQL database and table." },
-    ],
   },
   {
     id: "ai-ml",
@@ -126,22 +137,17 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     requiresAzure: true,
     azureParams: [],
     feature: "Shortcuts & Mirroring",
-    postDeploy: [
-      { label: "02_live_change notebook", detail: "The wow moment: change a row in Azure SQL and watch it replicate into Fabric in seconds, with no pipeline or refresh." },
-      { label: "The mirrored database", detail: "Open it and select Monitor replication to see all tables syncing live." },
-      { label: "01_explore_mirrored notebook", detail: "Query the replicated tables directly from OneLake with Spark. No copy, always current." },
-    ],
   },
   {
     id: "genai-applications",
-    title: "GenAI Applications",
-    description: "AI Skills (Data Agent) and a RAG pattern for a natural-language Q&A interface on your industry dataset.",
+    title: "Fabric IQ",
+    description: "Showcase Fabric IQ: build a semantic ontology over your data, expose it through Fabric Data Agents, and explore relationships with the knowledge graph for natural-language, context-aware analytics.",
     estimatedTime: "15–20 min",
-    tags: ["genai", "data-agent", "rag", "lakehouse"],
+    tags: ["fabric-iq", "ontology", "data-agent", "knowledge-graph"],
     enabled: false,
     requiresAzure: false,
     azureParams: [],
-    feature: "Fabric Data Agents",
+    feature: "Fabric IQ",
   },
   {
     id: "fabric-foundry-agent",
@@ -1029,6 +1035,17 @@ export default function DemoDetailPage() {
   const [previewLoadingFile, setPreviewLoadingFile] = useState<string | null>(null);
   const [previewErrors, setPreviewErrors] = useState<Record<string, string>>({});
 
+  // Validate an optional, user-supplied Azure Storage account name against the
+  // Azure naming rules (3–24 chars, lowercase letters + digits only, globally
+  // unique). Returns an error string, or null when valid/blank (blank = auto-gen).
+  const storAcctNameError: string | null = (() => {
+    const v = storAcctName.trim();
+    if (!v) return null; // blank → backend auto-generates a valid name
+    if (v.length < 3 || v.length > 24) return "Must be 3–24 characters.";
+    if (!/^[a-z0-9]+$/.test(v)) return "Only lowercase letters (a–z) and numbers (0–9) — no spaces, hyphens, or uppercase.";
+    return null;
+  })();
+
   // Auto-open deploy panel when arriving via ?mode=custom
   useEffect(() => {
     if (isCustomMode && !showDeploy) {
@@ -1190,7 +1207,7 @@ export default function DemoDetailPage() {
                   }
                 } else if (currentEvent === "error") {
                   streamHadError = true;
-                  setError(data.message || "Deployment failed");
+                  setError(coerceErrorMessage(data.message));
                   if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
                 }
               } catch { /* ignore malformed lines */ }
@@ -1449,7 +1466,7 @@ export default function DemoDetailPage() {
                 }
               } else if (currentEvent === "error") {
                 streamHadError = true;
-                setError(data.message || "Deployment failed");
+                setError(coerceErrorMessage(data.message));
                 if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
               }
             } catch {
@@ -2523,6 +2540,9 @@ export default function DemoDetailPage() {
                           placeholder="myaccount"
                           style={{ width: "100%" }}
                         />
+                        <Caption1 style={{ display: "block", marginTop: 4, color: storAcctNameError ? "#f85149" : "#484f58" }}>
+                          {storAcctNameError ?? "3–24 characters, lowercase letters and numbers only. Must be globally unique."}
+                        </Caption1>
                       </div>
                       )}
 
@@ -2547,6 +2567,7 @@ export default function DemoDetailPage() {
                         disabled={
                           loadingCapacities ||
                           !selectedCapacity ||
+                          !!storAcctNameError ||
                           (!!selectedScenario?.requiresAzure && (loadingSubs || !selectedSub || !selectedRG))
                         }
                         style={{ flex: 1 }}
@@ -2565,12 +2586,14 @@ export default function DemoDetailPage() {
                       {isCustomMode ? "← Back" : "Cancel"}
                     </Button>
                   </div>
-                  {account && (loadingCapacities || !selectedCapacity || (!!selectedScenario?.requiresAzure && (!selectedSub || !selectedRG))) && (
-                    <Caption1 style={{ display: "block", marginTop: 8, color: "#8b949e" }}>
+                  {account && (loadingCapacities || !selectedCapacity || !!storAcctNameError || (!!selectedScenario?.requiresAzure && (!selectedSub || !selectedRG))) && (
+                    <Caption1 style={{ display: "block", marginTop: 8, color: storAcctNameError ? "#f85149" : "#8b949e" }}>
                       {loadingCapacities
                         ? "Loading capacities…"
                         : !selectedCapacity
                         ? "Select a Fabric capacity to deploy."
+                        : storAcctNameError
+                        ? `Fix the storage account name: ${storAcctNameError}`
                         : "Select an Azure subscription and resource group to deploy."}
                     </Caption1>
                   )}
@@ -2642,27 +2665,6 @@ export default function DemoDetailPage() {
                           </FluentLink>
                         </MessageBarBody>
                       </MessageBar>
-                      {/* Post-deploy guidance — what to show the customer next.
-                          A selected scenario's own postDeploy overrides the demo default. */}
-                      {(() => {
-                        const nextItems = selectedScenario?.postDeploy ?? PRESENTER[id]?.postDeploy;
-                        return nextItems && nextItems.length > 0 ? (
-                          <div style={{ marginBottom: 12 }}>
-                            <div className={styles.presenterSubhead}>What to show next</div>
-                            <div className={styles.nextList}>
-                              {nextItems.map((n, i) => (
-                                <div key={i} className={styles.nextItem}>
-                                  <span className={styles.nextDot} />
-                                  <div>
-                                    <div className={styles.nextLabel}>{n.label}</div>
-                                    <div className={styles.nextDetail}>{n.detail}</div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null;
-                      })()}
                       {selectedScenario?.id === "real-time-intelligence" && (
                         <Card style={{ marginBottom: 12, padding: 14, background: "#0d1117", border: "1px solid #30363d" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
