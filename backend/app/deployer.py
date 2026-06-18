@@ -897,7 +897,7 @@ async def deploy_demo(
             # few times with escalating backoff (same as the mirroring + RTI
             # paths via _is_transient_run_error); a genuine notebook code error is
             # not transient and fails fast.
-            max_attempts = 4
+            max_attempts = 5
             last_err: FabricError | None = None
             for attempt in range(max_attempts):
                 try:
@@ -918,8 +918,8 @@ async def deploy_demo(
                 except FabricError as e:
                     last_err = e
                     if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
-                        wait = 45 + attempt * 30
-                        step.detail = f"Transient Spark/Fabric hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
+                        wait = _retry_wait_seconds(e.detail, attempt)
+                        step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
                         yield {"event": "step", "data": step.to_dict()}
                         await asyncio.sleep(wait)
                         continue
@@ -1526,6 +1526,16 @@ def _is_transient_run_error(detail: str) -> bool:
     return any(s in d for s in signatures)
 
 
+def _retry_wait_seconds(detail: str, attempt: int) -> int:
+    """Backoff (seconds) before the next notebook-run retry. A saturated Spark
+    capacity (TooManyRequestsForCapacity / HTTP 430) needs minutes to free up, so
+    it waits noticeably longer than a one-off Spark cold-start or session blip."""
+    d = (detail or "").lower()
+    if "toomanyrequestsforcapacity" in d or "430" in d or "compute or api rate limit" in d:
+        return min(60 + attempt * 45, 200)   # capacity saturated: 60,105,150,195,200
+    return min(45 + attempt * 30, 150)        # cold-start / blip: 45,75,105,135,150
+
+
 async def _deploy_mirroring(
     client: FabricClient,
     demo_id: str,
@@ -1884,7 +1894,7 @@ async def _deploy_mirroring(
             # Run with bounded retries on transient Spark/capacity hiccups
             # (cold-start, platform-cancelled session, throttling). A real code
             # error in the notebook is not transient and fails immediately.
-            max_attempts = 4
+            max_attempts = 5
             last_err: FabricError | None = None
             for attempt in range(max_attempts):
                 try:
@@ -1894,9 +1904,10 @@ async def _deploy_mirroring(
                 except FabricError as e:
                     last_err = e
                     if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
-                        step.detail = f"Spark session interrupted — retrying ({attempt + 1}/{max_attempts - 1}) in 60s..."
+                        wait = _retry_wait_seconds(e.detail, attempt)
+                        step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
                         yield {"event": "step", "data": step.to_dict()}
-                        await asyncio.sleep(60)
+                        await asyncio.sleep(wait)
                         continue
                     raise
             if last_err is not None:
@@ -2278,7 +2289,7 @@ async def _deploy_fabric_foundry(
             if i > 0:
                 await asyncio.sleep(45)  # avoid Spark throttling between runs
             nb_id = notebook_ids[nb["name"]]
-            max_attempts = 4
+            max_attempts = 5
             last_err: FabricError | None = None
             for attempt in range(max_attempts):
                 try:
@@ -2291,9 +2302,10 @@ async def _deploy_fabric_foundry(
                 except FabricError as e:
                     last_err = e
                     if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
-                        step.detail = f"Spark session interrupted — retrying ({attempt + 1}/{max_attempts - 1}) in 60s..."
+                        wait = _retry_wait_seconds(e.detail, attempt)
+                        step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
                         yield {"event": "step", "data": step.to_dict()}
-                        await asyncio.sleep(60)
+                        await asyncio.sleep(wait)
                         continue
                     raise
             if last_err is not None:
