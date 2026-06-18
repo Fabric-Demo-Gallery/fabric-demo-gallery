@@ -1767,7 +1767,7 @@ async def _deploy_mirroring(
         #    not available") -> regenerate the name and retry (unless the caller
         #    pinned an explicit sql_server_name we must not change).
         chosen_region = sql_location
-        _fallback_regions = ["westus2", "westus3", "westeurope", "centralus", "eastus2"]
+        _fallback_regions = ["westus2", "westus3", "westeurope", "centralus", "eastus2", "swedencentral", "germanywestcentral", "switzerlandnorth"]
         region_candidates = [chosen_region] + [r for r in _fallback_regions if r != chosen_region]
         srv = None
         _last_err: AzureError | None = None

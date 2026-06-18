@@ -1037,6 +1037,9 @@ export default function DemoDetailPage() {
     { name: "westus3", displayName: "West US 3" },
     { name: "eastus2", displayName: "East US 2" },
     { name: "westeurope", displayName: "West Europe" },
+    { name: "swedencentral", displayName: "Sweden Central" },
+    { name: "germanywestcentral", displayName: "Germany West Central" },
+    { name: "switzerlandnorth", displayName: "Switzerland North" },
     { name: "centralus", displayName: "Central US" },
     { name: "eastus", displayName: "East US" },
   ];
