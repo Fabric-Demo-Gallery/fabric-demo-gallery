@@ -913,7 +913,12 @@ async def deploy_demo(
                 st.detail = "Running in one shared Spark session…"
                 yield {"event": "step", "data": st.to_dict()}
 
-            orch_source = _build_orchestrator_source(runnable)
+            # Cosmetic dashboards are best-effort: a render hiccup must not fail
+            # an otherwise-good deploy (the pipeline data + reports are intact).
+            optional_names = {
+                nb["name"] for nb in runnable if "dashboard" in nb["name"].lower()
+            }
+            orch_source = _build_orchestrator_source(runnable, optional_names)
             orch = await client.create_notebook_from_source(
                 ws_id, "_fdg_pipeline_runner", orch_source, lakehouse_id, lakehouse_name,
             )
@@ -1673,10 +1678,16 @@ def _friendly_capacity_error(detail: str) -> str:
     return detail
 
 
-def _build_orchestrator_source(notebooks_to_run: list[dict]) -> str:
+def _build_orchestrator_source(
+    notebooks_to_run: list[dict], optional_names: set[str] | None = None
+) -> str:
     """Build the Python source for an *orchestrator* notebook that runs every
     medallion notebook inside ONE shared Spark session via
     ``notebookutils.notebook.runMultiple``.
+
+    ``optional_names`` are best-effort activities (e.g. the cosmetic dashboard):
+    if one of them fails, the pipeline data is still good, so the deploy is NOT
+    failed — the failure is logged and the run still exits successfully.
 
     Why: each ``run_notebook`` API call creates its own Livy/Spark session. On
     constrained Fabric capacities (Trial / small F-SKUs) firing one session per
@@ -1715,12 +1726,14 @@ def _build_orchestrator_source(notebooks_to_run: list[dict]) -> str:
     }
     # json.dumps output is also a valid Python literal here (no bool/null values).
     dag_literal = json.dumps(dag, indent=4)
+    optional_literal = json.dumps(sorted(optional_names or []))
 
     return (
         "import notebookutils\n"
         "from notebookutils.common.exceptions import RunMultipleFailedException\n"
         "\n"
         f"DAG = {dag_literal}\n"
+        f"OPTIONAL = {optional_literal}\n"
         "\n"
         "notebookutils.notebook.validateDAG(DAG)\n"
         "\n"
@@ -1729,14 +1742,22 @@ def _build_orchestrator_source(notebooks_to_run: list[dict]) -> str:
         "except RunMultipleFailedException as ex:\n"
         "    results = ex.result\n"
         "\n"
-        "failures = []\n"
+        "required_failures = []\n"
+        "optional_failures = []\n"
         "for _name, _res in (results or {}).items():\n"
         "    _exc = _res.get('exception') if isinstance(_res, dict) else None\n"
         "    if _exc:\n"
-        "        failures.append(\"Notebook '%s' failed: %s\" % (_name, str(_exc)[:500]))\n"
+        "        _msg = \"Notebook '%s' failed: %s\" % (_name, str(_exc)[:500])\n"
+        "        if _name in OPTIONAL:\n"
+        "            optional_failures.append(_msg)\n"
+        "        else:\n"
+        "            required_failures.append(_msg)\n"
         "\n"
-        "if failures:\n"
-        "    raise Exception(' | '.join(failures))\n"
+        "if optional_failures:\n"
+        "    print('Non-fatal best-effort notebook failure(s): ' + ' | '.join(optional_failures))\n"
+        "\n"
+        "if required_failures:\n"
+        "    raise Exception(' | '.join(required_failures))\n"
         "\n"
         "notebookutils.notebook.exit('ok')\n"
     )
