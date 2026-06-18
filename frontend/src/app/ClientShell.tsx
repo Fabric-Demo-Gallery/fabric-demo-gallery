@@ -176,6 +176,28 @@ function Navbar() {
   );
 }
 
+function AdminConsentNote() {
+  const { account } = useAuth();
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    setDismissed(typeof window !== "undefined" && localStorage.getItem("fdg_admin_consent_note") === "dismissed");
+  }, []);
+  if (account || dismissed) return null;
+  return (
+    <div style={{ backgroundColor: "#0d1b33", borderBottom: "1px solid rgba(31,111,235,0.4)", padding: "10px 24px" }}>
+      <div style={{ position: "relative", maxWidth: 1040, margin: "0 auto", paddingRight: 24, fontSize: 12.5, lineHeight: 1.5, color: "#c9d1d9" }}>
+        <button
+          onClick={() => { localStorage.setItem("fdg_admin_consent_note", "dismissed"); setDismissed(true); }}
+          aria-label="Dismiss"
+          style={{ position: "absolute", top: 0, right: 0, background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
+        >×</button>
+        <strong style={{ color: "#e6edf3" }}>First time signing in from your organization?</strong>{" "}
+        If you see <strong>&ldquo;Need admin approval&rdquo;</strong>, your tenant needs a one-time admin consent. A Microsoft Entra <strong>Global Administrator</strong> clicks <strong>&ldquo;Have an admin account? Sign in with that account&rdquo;</strong> on that screen and <strong>Accepts</strong> — approving the app for the whole tenant. Not an admin? In a sandbox tenant, self-activate <strong>Global Administrator</strong> via <strong>Microsoft Entra &rarr; PIM</strong>, then approve. One approval unblocks everyone in your tenant.
+      </div>
+    </div>
+  );
+}
+
 export default function ClientShell({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -198,6 +220,7 @@ function ClientShellInner({ children }: { children: ReactNode }) {
       <AuthProvider>
         <DeploymentProvider>
         <Navbar />
+        <AdminConsentNote />
         <main className={styles.main}>{children}</main>
         <footer className={styles.footer}>
           <Text size={200} style={{ color: "#484f58" }}>
