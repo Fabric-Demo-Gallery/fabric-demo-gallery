@@ -63,13 +63,6 @@ export const storageScopes = ["https://storage.azure.com/.default"];
 // Scopes needed for Azure Resource Manager (ARM) — used for ADLS Gen2 provisioning
 export const managementScopes = ["https://management.azure.com/user_impersonation"];
 
-// Azure AI Search data-plane — Foundry IQ knowledge source + base (fabric-foundry-agent scenario)
-export const searchScopes = ["https://search.azure.com/user_impersonation"];
-
-// Microsoft Foundry Agent Service data-plane — create the grounded agent.
-// user_impersonation (not .default) so the consent popup can grant it dynamically.
-export const agentScopes = ["https://ai.azure.com/user_impersonation"];
-
 // Scope used to attempt the optional historical data seed via the Eventhouse/KQL
 // data-plane. NOTE: `kusto.fabric.microsoft.com` is not registered as a resource
 // principal in every tenant (causes AADSTS500011 at sign-in), so we request the
