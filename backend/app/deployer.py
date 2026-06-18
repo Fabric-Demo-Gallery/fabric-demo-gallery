@@ -887,7 +887,14 @@ async def deploy_demo(
         # session sharing" pattern) — the deploy then only has to win capacity
         # admission once instead of once per notebook, and puts ~3× less pressure
         # on the Spark API rate limit.
+        #
+        # Two budgets: a single notebook gets 30 min, but the orchestrator runs
+        # the WHOLE medallion pipeline (3-5 notebooks) inside one session, so it
+        # needs a much larger budget — otherwise a pipeline that is legitimately
+        # running on a busy/small capacity gets killed mid-run and looks like it
+        # "never finishes".
         notebook_timeout = 1800
+        pipeline_timeout = 3600
         max_attempts = 5
 
         runnable = [nb for nb in notebooks_to_run if notebook_ids.get(nb["name"])]
@@ -917,7 +924,7 @@ async def deploy_demo(
             for attempt in range(max_attempts):
                 try:
                     result = await client.run_notebook(
-                        ws_id, orch_id, lakehouse_id, lakehouse_name, timeout=notebook_timeout,
+                        ws_id, orch_id, lakehouse_id, lakehouse_name, timeout=pipeline_timeout,
                     )
                     job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
                     if job_status == "failed":
@@ -928,7 +935,13 @@ async def deploy_demo(
                     break
                 except FabricError as e:
                     last_err = e
-                    if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
+                    # Only retry when the Spark *session could not be created*
+                    # (capacity 430 / Livy admission). That happens before any
+                    # work runs, so retrying is cheap and safe. A failure AFTER
+                    # the session starts — an in-notebook error, or a run that
+                    # exceeds the pipeline timeout — fails fast: re-running the
+                    # whole pipeline would just repeat the same long, doomed run.
+                    if attempt < max_attempts - 1 and _is_admission_error(e.detail):
                         wait = _retry_wait_seconds(e.detail, attempt)
                         for st in run_steps:
                             st.detail = f"Spark capacity busy — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
@@ -1615,6 +1628,23 @@ def _is_capacity_error(detail: str) -> bool:
     )
 
 
+def _is_admission_error(detail: str) -> bool:
+    """True only when the Spark *session could not be created* (capacity 430 /
+    Livy admission). These failures happen BEFORE any notebook runs, so retrying
+    is cheap and safe. Anything that fails AFTER the session starts — an
+    in-notebook error, or a run that exceeds the pipeline timeout — is NOT an
+    admission error and must fail fast rather than re-run the whole pipeline."""
+    d = (detail or "").lower()
+    return (
+        "failed to create livy session" in d
+        or "toomanyrequestsforcapacity" in d
+        or "430" in d
+        or "compute or api rate limit" in d
+        or "toomanyrequests" in d
+        or "throttl" in d
+    )
+
+
 def _friendly_capacity_error(detail: str) -> str:
     """Turn a raw 430/TooManyRequestsForCapacity error into clear, actionable
     guidance. A notebook job submitted through the Fabric public API can't be
@@ -1630,6 +1660,15 @@ def _friendly_capacity_error(detail: str) -> str:
             "(an F-SKU with more Spark vCores than Trial), then redeploy. The "
             "deploy already runs the whole pipeline in a single, minimal Spark "
             "session to use as little capacity as possible."
+        )
+    d = (detail or "").lower()
+    if "did not finish within" in d or "timed out" in d:
+        return (
+            "The deployment didn't finish in time and was stopped. The notebooks "
+            "were running but took longer than the allowed window — usually "
+            "because the Fabric capacity is busy or under-sized. Try again when "
+            "the capacity is less loaded, or use a larger capacity (an F-SKU), "
+            "then redeploy."
         )
     return detail
 
@@ -1668,7 +1707,10 @@ def _build_orchestrator_source(notebooks_to_run: list[dict]) -> str:
 
     dag = {
         "activities": activities,
-        "timeoutInSeconds": 5400,
+        # Bound the DAG just under the deployer's pipeline_timeout (3600s) so the
+        # DAG self-terminates and releases the Spark session before the API stops
+        # waiting, instead of lingering.
+        "timeoutInSeconds": 3300,
         "concurrency": 1,  # run sequentially: bronze → silver → gold, minimal footprint
     }
     # json.dumps output is also a valid Python literal here (no bool/null values).
