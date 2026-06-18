@@ -985,6 +985,33 @@ function FlowSteps({ steps }: { steps: { label?: string; value: string; color: s
   );
 }
 
+function AdminConsentNote() {
+  const { account } = useAuth();
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    setDismissed(typeof window !== "undefined" && localStorage.getItem("fdg_admin_consent_note") === "dismissed");
+  }, []);
+  if (account || dismissed) return null;
+  return (
+    <div style={{ position: "relative", marginBottom: 12, padding: "10px 28px 10px 12px", borderRadius: 6, border: "1px solid rgba(31,111,235,0.4)", backgroundColor: "#0d1b33", fontSize: 12, lineHeight: 1.5, color: "#c9d1d9" }}>
+      <button
+        onClick={() => { localStorage.setItem("fdg_admin_consent_note", "dismissed"); setDismissed(true); }}
+        aria-label="Dismiss"
+        style={{ position: "absolute", top: 6, right: 8, background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: 15, lineHeight: 1 }}
+      >×</button>
+      <div style={{ fontWeight: 600, marginBottom: 4, color: "#e6edf3" }}>First time signing in from your organization?</div>
+      If you see <strong>&ldquo;Need admin approval&rdquo;</strong> after clicking sign in, your tenant requires a one-time admin consent for this app. A Microsoft Entra <strong>Global Administrator</strong> approves it once:
+      <ol style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+        <li>On that screen, click <strong>&ldquo;Have an admin account? Sign in with that account.&rdquo;</strong></li>
+        <li>Sign in as a Global Administrator and <strong>Accept</strong> &mdash; this approves the app for your entire tenant.</li>
+      </ol>
+      <div style={{ marginTop: 6, color: "#8b949e" }}>
+        Not an admin yet? In a sandbox/test tenant, self-activate the <strong>Global Administrator</strong> role in <strong>Microsoft Entra &rarr; Privileged Identity Management (PIM)</strong>, then approve. One approval unblocks everyone in your tenant.
+      </div>
+    </div>
+  );
+}
+
 export default function DemoDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -2383,13 +2410,16 @@ export default function DemoDetailPage() {
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      appearance="primary"
-                      style={{ width: "100%" }}
-                      onClick={login}
-                    >
-                      Sign in to deploy
-                    </Button>
+                    <>
+                      <AdminConsentNote />
+                      <Button
+                        appearance="primary"
+                        style={{ width: "100%" }}
+                        onClick={login}
+                      >
+                        Sign in to deploy
+                      </Button>
+                    </>
                   )}
                   {authError && (
                     <div style={{ marginTop: 8, color: "#f85149", fontSize: 12 }}>
@@ -2407,9 +2437,12 @@ export default function DemoDetailPage() {
                       Signed in as {account.username}
                     </Caption1>
                   ) : (
-                    <Button appearance="primary" style={{ width: "100%", marginBottom: 12 }} onClick={login}>
-                      Sign in to deploy
-                    </Button>
+                    <>
+                      <AdminConsentNote />
+                      <Button appearance="primary" style={{ width: "100%", marginBottom: 12 }} onClick={login}>
+                        Sign in to deploy
+                      </Button>
+                    </>
                   )}
                   <div style={{ padding: "16px", borderRadius: 6, border: "1px dashed #30363d", backgroundColor: "#0d1117", textAlign: "center" }}>
                     <Caption1 style={{ color: "#484f58" }}>← Select a scenario to configure</Caption1>
