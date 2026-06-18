@@ -132,7 +132,7 @@ class FabricClient:
             elif resp.status_code == 404:
                 raise FabricError(404, "Operation tracking lost. The item may have been created — check the workspace.")
             await asyncio.sleep(5)
-        raise FabricError(504, f"Operation timed out after {timeout}s. The item may still be provisioning — check the workspace in Fabric portal.")
+        raise FabricError(504, f"Operation did not finish within {timeout}s. It may still be running in Fabric — check the workspace in the Fabric portal.")
 
     # ── workspaces ───────────────────────────────────────────────────────
 
@@ -680,6 +680,7 @@ class FabricClient:
                     "conf": {
                         "spark.dynamicAllocation.enabled": "false",
                         "spark.executor.instances": "1",
+                        "spark.dynamicAllocation.maxExecutors": "1",
                     },
                 }
             }
