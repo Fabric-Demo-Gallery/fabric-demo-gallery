@@ -598,6 +598,63 @@ class FabricClient:
         await self.update_item_definition(workspace_id, nb_id, definition)
         return item
 
+    async def create_notebook_from_source(
+        self,
+        workspace_id: str,
+        name: str,
+        py_source: str,
+        lakehouse_id: str,
+        lakehouse_name: str,
+    ) -> dict:
+        """Create a single-cell PySpark notebook from an inline Python source string.
+
+        Mirrors ``create_notebook`` but takes raw Python instead of an .ipynb file.
+        Used to build the medallion *orchestrator* notebook that runs all the
+        pipeline notebooks inside one shared Spark session via
+        ``notebookutils.notebook.runMultiple`` (so a deploy only needs to win
+        Fabric capacity admission once instead of once per notebook).
+        """
+        item = await self.create_item(workspace_id, "Notebook", name)
+        nb_id = item["id"]
+        logger.info("Created orchestrator notebook '%s' (%s), updating definition...", name, nb_id)
+
+        py_lines = ["# Fabric notebook source", ""]
+
+        metadata = {
+            "dependencies": {
+                "lakehouse": {
+                    "default_lakehouse": lakehouse_id,
+                    "default_lakehouse_name": lakehouse_name,
+                    "default_lakehouse_workspace_id": workspace_id,
+                    "known_lakehouses": [{"id": lakehouse_id}],
+                }
+            }
+        }
+        py_lines.append("# METADATA ********************")
+        py_lines.append("")
+        for line in json.dumps(metadata, indent=2).splitlines():
+            py_lines.append(f"# META {line}")
+        py_lines.append("")
+
+        py_lines.append("# CELL ********************")
+        py_lines.append("")
+        py_lines.append(py_source.rstrip())
+        py_lines.append("")
+
+        py_content = "\r\n".join(py_lines)
+        encoded = base64.b64encode(py_content.encode()).decode()
+        definition = {
+            "parts": [
+                {
+                    "path": "notebook-content.py",
+                    "payload": encoded,
+                    "payloadType": "InlineBase64",
+                }
+            ]
+        }
+        await self.update_item_definition(workspace_id, nb_id, definition)
+        return item
+
     async def run_notebook(
         self,
         workspace_id: str,
