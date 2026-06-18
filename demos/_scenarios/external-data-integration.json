@@ -28,8 +28,8 @@
       "label": "Azure Region",
       "type": "string",
       "required": false,
-      "default": "eastus",
-      "description": "Region for the SQL server."
+      "default": "westus2",
+      "description": "Region for the SQL server. Some subscriptions restrict Azure SQL provisioning in certain regions (e.g. East US on MCAPS); westus2 is broadly available."
     }
   ],
   "fabricItemTemplate": [

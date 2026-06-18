@@ -271,6 +271,26 @@ class AzureClient:
             for rg in resp.json().get("value", [])
         ]
 
+    async def list_locations(self, subscription_id: str) -> list[dict]:
+        """List the physical Azure regions available to a subscription
+        (parallels list_subscriptions / list_resource_groups for the region picker)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/locations"
+            f"?api-version={ARM_API_VERSION}"
+        )
+        resp = await self._arm_request("GET", url)
+        out = []
+        for loc in resp.json().get("value", []):
+            meta = loc.get("metadata") or {}
+            # Skip logical/edge regions — only offer real datacenter regions.
+            if meta.get("regionType") and meta["regionType"] != "Physical":
+                continue
+            out.append(
+                {"name": loc["name"], "displayName": loc.get("displayName", loc["name"])}
+            )
+        out.sort(key=lambda r: r["displayName"])
+        return out
+
     async def create_resource_group(
         self, subscription_id: str, name: str, location: str
     ) -> dict:

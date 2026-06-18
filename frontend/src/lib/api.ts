@@ -210,6 +210,23 @@ export async function fetchResourceGroups(
   return res.json();
 }
 
+export interface AzureLocation {
+  name: string;
+  displayName: string;
+}
+
+export async function fetchLocations(
+  managementToken: string,
+  subscriptionId: string
+): Promise<AzureLocation[]> {
+  const res = await fetch(
+    `${API_BASE}/api/azure/locations?subscriptionId=${encodeURIComponent(subscriptionId)}`,
+    { headers: { "X-Management-Token": managementToken } }
+  );
+  if (!res.ok) throw new Error(`Failed to fetch regions: ${res.statusText}`);
+  return res.json();
+}
+
 // ── Deployment scenario helpers ──────────────────────────────────────────────
 
 export interface ScenarioAzureParam {
