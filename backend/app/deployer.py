@@ -893,72 +893,39 @@ async def deploy_demo(
                 logger.info("Waiting 45s before next notebook to avoid capacity throttling...")
                 await asyncio.sleep(45)
 
-            # Retry once on throttling errors
-            try:
-                result = await client.run_notebook(
-                    ws_id,
-                    nb_id,
-                    lakehouse_id,
-                    lakehouse_name,
-                    timeout=notebook_timeout,
-                )
-                job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
-                if job_status == "failed":
-                    failure = result.get("failureReason", {})
-                    err_msg = failure.get("message", "Notebook execution failed")
-                    raise FabricError(500, f"Notebook '{nb['name']}' failed: {err_msg[:200]}")
-            except FabricError as e:
-                if "TooManyRequests" in e.detail or "430" in e.detail or "throttl" in e.detail.lower():
-                    step.detail = "Rate limited — retrying in 60s..."
-                    yield {"event": "step", "data": step.to_dict()}
-                    await asyncio.sleep(60)
-                    await client.run_notebook(
+            # Robust retry: transient Spark/capacity/Fabric hiccups are retried a
+            # few times with escalating backoff (same as the mirroring + RTI
+            # paths via _is_transient_run_error); a genuine notebook code error is
+            # not transient and fails fast.
+            max_attempts = 4
+            last_err: FabricError | None = None
+            for attempt in range(max_attempts):
+                try:
+                    result = await client.run_notebook(
                         ws_id,
                         nb_id,
                         lakehouse_id,
                         lakehouse_name,
                         timeout=notebook_timeout,
                     )
-                elif "Livy" in e.detail or "Failed to create Livy session" in e.detail:
-                    # Transient Spark cold-start — retry a few times on a longer backoff
+                    job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
+                    if job_status == "failed":
+                        failure = result.get("failureReason", {})
+                        err_msg = failure.get("message", "Notebook execution failed")
+                        raise FabricError(500, f"Notebook '{nb['name']}' failed: {err_msg[:200]}")
+                    last_err = None
+                    break
+                except FabricError as e:
                     last_err = e
-                    succeeded = False
-                    for attempt in range(3):
-                        step.detail = f"Spark session cold-start — retrying ({attempt + 1}/3) in 60s..."
+                    if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
+                        wait = 45 + attempt * 30
+                        step.detail = f"Transient Spark/Fabric hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
                         yield {"event": "step", "data": step.to_dict()}
-                        await asyncio.sleep(60)
-                        try:
-                            await client.run_notebook(
-                                ws_id,
-                                nb_id,
-                                lakehouse_id,
-                                lakehouse_name,
-                                timeout=notebook_timeout,
-                            )
-                            succeeded = True
-                            break
-                        except FabricError as retry_err:
-                            last_err = retry_err
-                            if not ("Livy" in retry_err.detail or "Failed to create Livy session" in retry_err.detail):
-                                raise
-                    if not succeeded:
-                        raise FabricError(500, f"Notebook '{nb['name']}' failed: Spark session could not start after retries. {last_err.detail[:150]}")
-                elif "Session_Statements_Failed" in e.detail or "Cancelled" in e.detail:
-                    step.detail = f"Notebook code error — retrying in 45s..."
-                    yield {"event": "step", "data": step.to_dict()}
-                    await asyncio.sleep(45)
-                    try:
-                        await client.run_notebook(
-                            ws_id,
-                            nb_id,
-                            lakehouse_id,
-                            lakehouse_name,
-                            timeout=notebook_timeout,
-                        )
-                    except FabricError:
-                        raise FabricError(500, f"Notebook '{nb['name']}' failed twice. Check the notebook code in Fabric portal for errors.")
-                else:
+                        await asyncio.sleep(wait)
+                        continue
                     raise
+            if last_err is not None:
+                raise last_err
 
             step.status = "completed"
             yield {"event": "step", "data": step.to_dict()}
@@ -1541,6 +1508,20 @@ def _is_transient_run_error(detail: str) -> bool:
         "toomanyrequests",
         "430",
         "throttl",
+        # Transient Fabric / infrastructure server errors ("Fabric returned a
+        # server error" — gateway, internal, service-unavailable). These are not
+        # notebook code errors and almost always clear on a retry.
+        "internalerror",
+        "internal server error",
+        "service unavailable",
+        "serviceunavailable",
+        "temporarily unavailable",
+        "bad gateway",
+        "gateway timeout",
+        "502",
+        "503",
+        "504",
+        "an unexpected error",
     )
     return any(s in d for s in signatures)
 
