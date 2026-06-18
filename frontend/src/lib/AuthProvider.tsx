@@ -13,7 +13,7 @@ import {
   BrowserUtils,
   type AccountInfo,
 } from "@azure/msal-browser";
-import { msalInstance, fabricScopes, storageScopes, managementScopes, kustoScopes } from "@/lib/msal";
+import { msalInstance, fabricScopes, storageScopes, managementScopes, searchScopes, agentScopes, kustoScopes } from "@/lib/msal";
 
 // Local dev mode: when no AZURE_CLIENT_ID is configured, skip MSAL entirely.
 // The backend falls back to `az login` (az CLI) tokens automatically.
@@ -43,6 +43,8 @@ interface AuthState {
   getFabricToken: () => Promise<string>;
   getStorageToken: () => Promise<string>;
   getManagementToken: (options?: TokenOptions) => Promise<string>;
+  getSearchToken: (options?: TokenOptions) => Promise<string>;
+  getAgentToken: (options?: TokenOptions) => Promise<string>;
   getKustoToken: () => Promise<string>;
 }
 
@@ -55,6 +57,8 @@ const AuthContext = createContext<AuthState>({
   getFabricToken: async () => "",
   getStorageToken: async () => "",
   getManagementToken: async () => "",
+  getSearchToken: async () => "",
+  getAgentToken: async () => "",
   getKustoToken: async () => "",
 });
 
@@ -97,12 +101,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async () => {
     if (IS_DEV_MODE) return; // already "logged in" via az CLI in dev mode
+    setAuthError("");
     try {
+      // MSAL v3 requires initialize() before any interactive call. It's idempotent,
+      // so awaiting it here makes a click that lands before the mount-time init
+      // finishes still work — otherwise loginRedirect throws
+      // "uninitialized_public_client_application" and the button silently no-ops.
+      await msalInstance.initialize();
       await msalInstance.loginRedirect({
         scopes: fabricScopes,
       });
     } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
       console.error("Login failed:", e);
+      // A prior interrupted redirect can leave MSAL's interaction flag set, so
+      // loginRedirect throws "interaction_in_progress" and nothing happens. Surface
+      // it instead of swallowing, and tell the user to refresh — a page load runs
+      // handleRedirectPromise() which clears the stuck flag.
+      if (/interaction_in_progress/i.test(msg)) {
+        setAuthError("A previous sign-in didn't finish. Please refresh the page, then click Sign in again.");
+      } else {
+        setAuthError(`Sign-in couldn't start: ${msg}. Please refresh and try again.`);
+      }
     }
   }, []);
 
@@ -163,6 +183,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [getToken]
   );
 
+  const getSearchToken = useCallback(
+    (options?: TokenOptions) => getToken(searchScopes, options),
+    [getToken]
+  );
+
+  const getAgentToken = useCallback(
+    (options?: TokenOptions) => getToken(agentScopes, options),
+    [getToken]
+  );
+
   const getKustoToken = useCallback(
     () => getToken(kustoScopes),
     [getToken]
@@ -170,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getKustoToken }}
+      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, getKustoToken }}
     >
       {children}
     </AuthContext.Provider>

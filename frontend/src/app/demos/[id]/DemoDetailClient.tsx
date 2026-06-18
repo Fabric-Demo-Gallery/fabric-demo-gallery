@@ -992,7 +992,7 @@ export default function DemoDetailPage() {
   const id = params.id as string;
   const demo = DEMOS[id];
   const isCustomMode = searchParams.get("mode") === "custom";
-  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken } = useAuth();
+  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken } = useAuth();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
@@ -1368,6 +1368,20 @@ export default function DemoDetailPage() {
           const mgmtTok = await getManagementToken();
           if (mgmtTok) headers["X-Management-Token"] = mgmtTok;
         } catch { /* continue without management token */ }
+      }
+      // Fabric + Foundry scenario also needs Azure AI Search + Foundry agent
+      // data-plane tokens so the deploy can build the Foundry IQ knowledge base
+      // and the grounded agent. Best-effort: the backend degrades those steps to
+      // manual follow-ups if a token is missing.
+      if (selectedScenario?.id === "fabric-foundry-agent") {
+        try {
+          const searchTok = await getSearchToken({ allowRedirect: false });
+          if (searchTok) headers["X-Search-Token"] = searchTok;
+        } catch { /* continue — knowledge base becomes a manual step */ }
+        try {
+          const agentTok = await getAgentToken({ allowRedirect: false });
+          if (agentTok) headers["X-Agent-Token"] = agentTok;
+        } catch { /* continue — agent becomes a manual step */ }
       }
 
       // Note: the historical data seed (optional) uses the Eventhouse/KQL data
