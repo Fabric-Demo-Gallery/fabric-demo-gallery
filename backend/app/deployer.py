@@ -1690,13 +1690,20 @@ async def _deploy_mirroring(
         await client.provision_workspace_identity(ws_id)
         ws_info = await client.get_workspace(ws_id)
         ws_identity_name = ws_info.get("displayName") or (workspace_name or demo_id)
-        # Co-locate the Azure SQL server with the Fabric capacity's region. Many
-        # governed subscriptions (e.g. MCAPS) restrict SQL provisioning to certain
-        # regions; the capacity's region is always one where the user has quota.
-        # Azure region codes are the display name lowercased with spaces removed
-        # ("West US 3" -> "westus3").
+        # Region for the Azure SQL server. Honor the user's chosen region
+        # (azure_location, the scenario's "Azure Region" field) FIRST: mirroring
+        # replicates cross-region, and many governed subscriptions (e.g. MCAPS)
+        # actually RESTRICT Azure SQL provisioning in the Fabric capacity's region,
+        # so blindly co-locating there hard-fails ("Subscriptions are restricted
+        # from provisioning in this region"). Fall back to the capacity's region
+        # only when the user supplied no region. Azure region codes are the display
+        # name lowercased with spaces removed ("West US 3" -> "westus3").
         cap_region = (ws_info.get("capacityRegion") or "").strip()
-        sql_location = cap_region.lower().replace(" ", "") if cap_region else azure_location
+        sql_location = (
+            (azure_location or "").strip().lower().replace(" ", "")
+            or cap_region.lower().replace(" ", "")
+            or "eastus"
+        )
         step.status = "completed"
         step.detail = f"Workspace identity '{ws_identity_name}' ready"
         yield {"event": "step", "data": step.to_dict()}
@@ -1740,13 +1747,47 @@ async def _deploy_mirroring(
         )
         sql_database = f"{demo_id.replace('-', '')[:12]}ops"
         sami_principal_id = ""
+        # The resource group is just a metadata container and isn't subject to the
+        # SQL per-region provisioning deny policy, so create it once up front.
         try:
             if create_resource_group:
                 await azure_client.create_resource_group(subscription_id, resource_group, sql_location)
-            srv = await azure_client.create_sql_server(
-                subscription_id, resource_group, sql_server, sql_location,
-                entra_login, entra_oid, entra_tenant,
+        except AzureError as e:
+            raise FabricError(e.status, f"Azure SQL provisioning failed: {e.detail}")
+
+        # Provision the SQL server with region auto-fallback. Some subscriptions
+        # (e.g. MCAPS) deny Azure SQL provisioning in specific regions, which only
+        # surfaces at create time ("Provisioning is restricted in this region").
+        # Try the chosen region first, then fall back through broadly-available
+        # ones so a one-click deploy self-heals instead of hard-failing.
+        chosen_region = sql_location
+        _fallback_regions = ["westus2", "westus3", "westeurope", "centralus", "eastus2"]
+        region_candidates = [chosen_region] + [r for r in _fallback_regions if r != chosen_region]
+        srv = None
+        _last_err: AzureError | None = None
+        for _region in region_candidates:
+            try:
+                srv = await azure_client.create_sql_server(
+                    subscription_id, resource_group, sql_server, _region,
+                    entra_login, entra_oid, entra_tenant,
+                )
+                sql_location = _region
+                break
+            except AzureError as e:
+                _last_err = e
+                _msg = (e.detail or "").lower()
+                if "restricted" in _msg and "region" in _msg:
+                    continue  # region-restriction → try the next candidate
+                raise FabricError(e.status, f"Azure SQL provisioning failed: {e.detail}")
+        if srv is None:
+            raise FabricError(
+                getattr(_last_err, "status", 500),
+                "Azure SQL provisioning failed: no candidate region accepted provisioning "
+                f"({', '.join(region_candidates)}). Last error: "
+                f"{getattr(_last_err, 'detail', 'unknown error')}",
             )
+
+        try:
             sami_principal_id = (srv.get("identity") or {}).get("principalId", "")
             # 'Allow Azure services' — required by both Fabric Spark and the mirroring service
             await azure_client.create_sql_firewall_rule(
@@ -1759,7 +1800,8 @@ async def _deploy_mirroring(
         except AzureError as e:
             raise FabricError(e.status, f"Azure SQL provisioning failed: {e.detail}")
         step.status = "completed"
-        step.detail = f"{sql_server}.database.windows.net / {sql_database} (S3 tier, {sql_location})"
+        _fallback_note = "" if sql_location == chosen_region else f" (fell back from {chosen_region})"
+        step.detail = f"{sql_server}.database.windows.net / {sql_database} (S3 tier, {sql_location}){_fallback_note}"
         yield {"event": "step", "data": step.to_dict()}
 
         sql_fqdn = f"{sql_server}.database.windows.net"

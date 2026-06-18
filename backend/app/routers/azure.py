@@ -44,3 +44,20 @@ async def list_resource_groups(
         return await client.list_resource_groups(subscriptionId)
     finally:
         await client.close()
+
+
+@router.get("/locations")
+@limiter.limit("30/minute")
+async def list_locations(
+    subscriptionId: str,
+    request: Request,
+    token: str = Depends(get_management_token),
+):
+    """List Azure regions available to a subscription (for the region picker)."""
+    if not _UUID.match(subscriptionId):
+        raise HTTPException(status_code=400, detail="Invalid subscriptionId")
+    client = AzureClient(token)
+    try:
+        return await client.list_locations(subscriptionId)
+    finally:
+        await client.close()

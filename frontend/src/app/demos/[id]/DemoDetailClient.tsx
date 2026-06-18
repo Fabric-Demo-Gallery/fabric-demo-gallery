@@ -7,10 +7,10 @@ import { oneLakeScopes } from "@/lib/msal";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 import {
-  fetchSubscriptions, fetchResourceGroups, fetchDatasetPreview,
+  fetchSubscriptions, fetchResourceGroups, fetchLocations, fetchDatasetPreview,
   startLiveStream, stopLiveStream, getStreamStatus,
 } from "@/lib/api";
-import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, DatasetPreview, StreamSession } from "@/lib/api";
+import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, AzureLocation, DatasetPreview, StreamSession } from "@/lib/api";
 import NextLink from "next/link";
 import { useDeployment } from "@/lib/DeploymentContext";
 // import type { DeployStep } from "@/lib/DeploymentContext";
@@ -1025,11 +1025,21 @@ export default function DemoDetailPage() {
   const [selectedSub, setSelectedSub] = useState("");
   const [selectedRG, setSelectedRG] = useState("");
   const [storAcctName, setStorAcctName] = useState("");
-  const [azureRegion, setAzureRegion] = useState("eastus");
+  const [azureRegion, setAzureRegion] = useState("westus2");
   const [createRG, setCreateRG] = useState(false);
   const [loadingSubs, setLoadingSubs] = useState(false);
   const [subscriptionsError, setSubscriptionsError] = useState<string | null>(null);
   const [loadingRGs, setLoadingRGs] = useState(false);
+  const [azureLocations, setAzureLocations] = useState<AzureLocation[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const FALLBACK_REGIONS: AzureLocation[] = [
+    { name: "westus2", displayName: "West US 2" },
+    { name: "westus3", displayName: "West US 3" },
+    { name: "eastus2", displayName: "East US 2" },
+    { name: "westeurope", displayName: "West Europe" },
+    { name: "centralus", displayName: "Central US" },
+    { name: "eastus", displayName: "East US" },
+  ];
   const [previewFileName, setPreviewFileName] = useState<string | null>(null);
   const [datasetPreviews, setDatasetPreviews] = useState<Record<string, DatasetPreview>>({});
   const [previewLoadingFile, setPreviewLoadingFile] = useState<string | null>(null);
@@ -1134,6 +1144,17 @@ export default function DemoDetailPage() {
       .then(setAzureRGs)
       .catch(() => {})
       .finally(() => setLoadingRGs(false));
+  }, [selectedSub, account, stableGetManagementToken]);
+
+  // Fetch the subscription's available Azure regions for the region picker
+  useEffect(() => {
+    if (!selectedSub || !account) return;
+    setLoadingLocations(true);
+    stableGetManagementToken({ interactive: false })
+      .then((tok) => fetchLocations(tok, selectedSub))
+      .then(setAzureLocations)
+      .catch(() => {})
+      .finally(() => setLoadingLocations(false));
   }, [selectedSub, account, stableGetManagementToken]);
 
   // Reconnect to an existing job when ?job_id= is in the URL (e.g. from Monitoring → View)
@@ -1381,7 +1402,7 @@ export default function DemoDetailPage() {
           ...(selectedSub && { subscription_id: selectedSub }),
           ...(selectedRG && { resource_group: selectedRG }),
           ...(storAcctName && { storage_account_name: storAcctName }),
-          azure_location: azureRegion || "eastus",
+          azure_location: azureRegion || "westus2",
           create_resource_group: createRG,
         }),
         signal: controller.signal,
@@ -1635,7 +1656,7 @@ export default function DemoDetailPage() {
     setSelectedSub("");
     setSelectedRG("");
     setStorAcctName("");
-    setAzureRegion("eastus");
+    setAzureRegion("westus2");
     setCreateRG(false);
   };
 
@@ -2549,12 +2570,18 @@ export default function DemoDetailPage() {
                       {/* Azure Region */}
                       <div>
                         <label className={styles.formLabel}>Azure Region</label>
-                        <Input
-                          value={azureRegion}
-                          onChange={(_, data) => setAzureRegion(data.value)}
-                          placeholder="eastus"
-                          style={{ width: "100%" }}
-                        />
+                        {loadingLocations ? (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading…</Caption1></div>
+                        ) : (
+                          <Select value={azureRegion} onChange={(_, data) => setAzureRegion(data.value)} style={{ width: "100%" }}>
+                            {(azureLocations.length > 0 ? azureLocations : FALLBACK_REGIONS).map((loc) => (
+                              <option key={loc.name} value={loc.name}>{loc.displayName}</option>
+                            ))}
+                          </Select>
+                        )}
+                        <Caption1 style={{ color: "#484f58" }}>
+                          Some subscriptions restrict Azure SQL in certain regions — the deploy auto-falls back to an available region if needed.
+                        </Caption1>
                       </div>
                     </div>
                   )}
