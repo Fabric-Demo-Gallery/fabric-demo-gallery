@@ -192,7 +192,7 @@ function AdminConsentNote() {
           style={{ position: "absolute", top: 0, right: 0, background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
         >×</button>
         <strong style={{ color: "#e6edf3" }}>First time signing in from your organization?</strong>{" "}
-        If you see <strong>&ldquo;Need admin approval&rdquo;</strong>, your tenant needs a one-time admin consent. A Microsoft Entra <strong>Global Administrator</strong> clicks <strong>&ldquo;Have an admin account? Sign in with that account&rdquo;</strong> on that screen and <strong>Accepts</strong> — approving the app for the whole tenant. Not an admin? In a sandbox tenant, self-activate <strong>Global Administrator</strong> via <strong>Microsoft Entra &rarr; PIM</strong>, then approve. One approval unblocks everyone in your tenant.
+        If you see <strong>&ldquo;Need admin approval&rdquo;</strong>, your tenant needs a one-time admin consent. A Microsoft Entra <strong>Global Administrator</strong> clicks <strong>&ldquo;Have an admin account? Sign in with that account&rdquo;</strong> on that screen and <strong>Accepts</strong> — approving the app for the whole tenant. Not an admin yet? Go to your <strong>Azure portal</strong>, search for <strong>Privileged Identity Management</strong>, open <strong>My roles</strong>, and click <strong>Activate</strong> (just-in-time) on the <strong>Global Administrator</strong> role — then come back and approve. One approval unblocks everyone in your tenant.
       </div>
     </div>
   );
