@@ -1771,40 +1771,67 @@ async def _deploy_mirroring(
         region_candidates = [chosen_region] + [r for r in _fallback_regions if r != chosen_region]
         srv = None
         _last_err: AzureError | None = None
-        for _name_attempt in range(5):
-            _name_taken = False
-            for _region in region_candidates:
+        _restricted_regions: list[str] = []   # regions the subscription blocks SQL in
+        _tried_regions: list[str] = []
+        # Iterate regions, using a FRESH globally-unique server name for each region
+        # attempt (unless the caller pinned an explicit name). This prevents a
+        # self-inflicted 409 "name already taken": a region-restricted create
+        # returns 202 first and only fails async, which leaves the name reserved —
+        # reusing it in the next region would then 409 and be misreported as a name
+        # collision rather than the real region restriction.
+        for _region in region_candidates:
+            _name_for_region = sql_server_name or _gen_sql_name()
+            _tried_regions.append(_region)
+            try:
+                srv = await azure_client.create_sql_server(
+                    subscription_id, resource_group, _name_for_region, _region,
+                    entra_login, entra_oid, entra_tenant,
+                )
+                sql_server = _name_for_region
+                sql_location = _region
+                break
+            except AzureError as e:
+                _last_err = e
+                _msg = (e.detail or "").lower()
+                # Best-effort cleanup of any half-created server holding this name,
+                # so it can't poison later attempts or linger as an orphan.
                 try:
-                    srv = await azure_client.create_sql_server(
-                        subscription_id, resource_group, sql_server, _region,
-                        entra_login, entra_oid, entra_tenant,
-                    )
-                    sql_location = _region
-                    break
-                except AzureError as e:
-                    _last_err = e
-                    _msg = (e.detail or "").lower()
-                    if "restricted" in _msg and "region" in _msg:
-                        continue  # region-restriction → try the next region
-                    if (
-                        "already" in _msg or "not available" in _msg or "taken" in _msg
-                    ) and ("name" in _msg or "server" in _msg):
-                        _name_taken = True  # global name collision → regenerate name
-                        break
-                    raise FabricError(e.status, f"Azure SQL provisioning failed: {e.detail}")
-            if srv is not None:
-                break
-            # Stop retrying if it wasn't a name collision (regions exhausted) or the
-            # caller pinned an explicit name we can't safely change.
-            if not _name_taken or sql_server_name:
-                break
-            sql_server = _gen_sql_name()  # fresh globally-unique name, then retry
+                    await azure_client.delete_sql_server(subscription_id, resource_group, _name_for_region)
+                except Exception:
+                    pass
+                if "restricted" in _msg and "region" in _msg:
+                    _restricted_regions.append(_region)
+                    continue  # region-restriction → try the next region
+                if (
+                    "already" in _msg or "not available" in _msg or "taken" in _msg
+                ) and ("name" in _msg or "server" in _msg):
+                    if sql_server_name:
+                        # Caller pinned a name we can't change — fail clearly.
+                        raise FabricError(
+                            409,
+                            f"SQL server name '{sql_server_name}' is already taken globally. "
+                            "Choose a different name.",
+                        )
+                    continue  # fresh name next region anyway → just move on
+                raise FabricError(e.status, f"Azure SQL provisioning failed: {e.detail}")
 
         if srv is None:
+            # If every region we attempted was region-restricted, the subscription
+            # simply can't provision Azure SQL there — say so plainly and point the
+            # user at the region picker, rather than a misleading "name taken".
+            if _restricted_regions and len(_restricted_regions) == len(_tried_regions):
+                raise FabricError(
+                    403,
+                    "Your Azure subscription is restricted from provisioning Azure SQL in all "
+                    f"attempted regions ({', '.join(_tried_regions)}). Pick a region your "
+                    "subscription allows in the Azure Region dropdown and retry. If none work, "
+                    "your subscription likely has a provisioning policy on Azure SQL — request an "
+                    "exception via Azure support (Issue type: 'Service and subscription limits').",
+                )
             raise FabricError(
                 getattr(_last_err, "status", 500),
                 "Azure SQL provisioning failed "
-                f"(regions tried: {', '.join(region_candidates)}). Last error: "
+                f"(regions tried: {', '.join(_tried_regions)}). Last error: "
                 f"{getattr(_last_err, 'detail', 'unknown error')}",
             )
 
@@ -1856,6 +1883,11 @@ async def _deploy_mirroring(
         for nb in seed_notebooks:
             step = _find_step(steps, f"run:{nb['name']}")
             step.status = "running"
+            step.detail = (
+                "Loading tables, then registering the Fabric workspace identity in Azure SQL. "
+                "The identity can take 1–3 min to propagate in Microsoft Entra before SQL can "
+                "resolve it — this step is waiting on that, not stuck."
+            )
             yield {"event": "step", "data": step.to_dict()}
 
             async def _run_seed() -> dict:
