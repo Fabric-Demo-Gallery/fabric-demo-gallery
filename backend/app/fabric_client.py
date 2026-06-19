@@ -675,18 +675,15 @@ class FabricClient:
                         "id": lakehouse_id,
                         "name": lakehouse_name,
                     },
-                    # NOTE: we deliberately do NOT inject a custom Spark `conf`
-                    # here. Pinning a custom session configuration (a single
-                    # executor, or a custom dynamic-allocation range) forces Fabric
-                    # to provision a *custom* Spark session instead of attaching to
-                    # the workspace's default starter pool. On constrained Trial /
-                    # small F-SKU capacities that custom session can fail to
-                    # provision or get cancelled mid-run (System_Cancelled_Session),
-                    # which showed up as the medallion pipeline stalling partway
-                    # through the gold notebook and then retrying. Running the
-                    # notebook with no conf override uses the same default starter
-                    # pool a manual run in the Fabric UI uses — which provisions
-                    # fast and completes reliably.
+                    # NOTE: we intentionally do NOT force a custom Spark `conf`
+                    # here. Forcing spark.dynamicAllocation.enabled=false +
+                    # executor.instances=1 onto a Fabric Starter pool (which is
+                    # built around dynamic allocation) destabilised the session
+                    # and produced System_Cancelled_Session_Statements_Failed
+                    # mid-run. Letting Fabric use its default, autoscaling Starter
+                    # pool session is stable. Each notebook runs in its own clean
+                    # session (the deployer runs them sequentially), so there's no
+                    # need to shrink the per-notebook footprint here.
                 }
             }
         }
