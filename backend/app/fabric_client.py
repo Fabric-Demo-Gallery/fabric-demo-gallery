@@ -125,6 +125,10 @@ class FabricClient:
                     err_code = fr.get("errorCode") or ""
                     err_msg = err.get("message") or fr.get("message") or ""
                     detail = " ".join(p for p in (err_code, err_msg) if p) or json.dumps(body)[:300]
+                    # Log the full terminal body so the true root cause is captured
+                    # in app.log (the SSE stream only reaches the browser).
+                    logger.warning("[lro] operation %s — errorCode=%r message=%r full=%s",
+                                   status, err_code, err_msg, json.dumps(body)[:1000])
                     raise FabricError(500, f"Operation {status}: {detail}")
                 logger.debug("LRO status: %s", status)
             elif resp.status_code == 401:
@@ -671,17 +675,18 @@ class FabricClient:
                         "id": lakehouse_id,
                         "name": lakehouse_name,
                     },
-                    # Pin each run to a minimal Spark session (1 executor, no
-                    # autoscale). The demo datasets are tiny, so this is plenty —
-                    # and it keeps the per-notebook footprint small so deploys fit
-                    # within constrained Fabric Trial / small F-SKU capacities and
-                    # stop tripping TooManyRequestsForCapacity (HTTP 430) when
-                    # sequential notebook sessions overlap.
-                    "conf": {
-                        "spark.dynamicAllocation.enabled": "false",
-                        "spark.executor.instances": "1",
-                        "spark.dynamicAllocation.maxExecutors": "1",
-                    },
+                    # NOTE: we deliberately do NOT inject a custom Spark `conf`
+                    # here. Pinning a custom session configuration (a single
+                    # executor, or a custom dynamic-allocation range) forces Fabric
+                    # to provision a *custom* Spark session instead of attaching to
+                    # the workspace's default starter pool. On constrained Trial /
+                    # small F-SKU capacities that custom session can fail to
+                    # provision or get cancelled mid-run (System_Cancelled_Session),
+                    # which showed up as the medallion pipeline stalling partway
+                    # through the gold notebook and then retrying. Running the
+                    # notebook with no conf override uses the same default starter
+                    # pool a manual run in the Fabric UI uses — which provisions
+                    # fast and completes reliably.
                 }
             }
         }

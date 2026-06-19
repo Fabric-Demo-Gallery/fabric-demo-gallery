@@ -92,7 +92,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: true,
     requiresAzure: true,
     azureParams: [],
-    feature: "Shortcuts & Mirroring",
+    feature: "Shortcuts",
   },
   {
     id: "real-time-intelligence",
@@ -136,7 +136,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     enabled: true,
     requiresAzure: true,
     azureParams: [],
-    feature: "Shortcuts & Mirroring",
+    feature: "Mirroring",
   },
   {
     id: "genai-applications",
@@ -180,7 +180,8 @@ const SCENARIO_FEATURES = [
   "Foundry AI Agent",
   "Power BI",
   "Machine Learning",
-  "Shortcuts & Mirroring",
+  "Shortcuts",
+  "Mirroring",
 ];
 
 type DeployStep = {

@@ -877,24 +877,11 @@ async def deploy_demo(
 
         # 5. Execute notebooks.
         #
-        # On constrained Fabric capacities (Trial / small F-SKUs) the dominant
-        # cause of deploy failures is TooManyRequestsForCapacity (HTTP 430):
-        # every run_notebook API call spins up its own Spark/Livy session, and
-        # notebook jobs submitted through the public API are never queued, so a
-        # busy capacity rejects them outright. To minimise that, when there are
-        # 2+ notebooks to run we orchestrate them inside ONE shared Spark session
-        # via notebookutils.notebook.runMultiple (the documented "high concurrency
-        # session sharing" pattern) — the deploy then only has to win capacity
-        # admission once instead of once per notebook, and puts ~3× less pressure
-        # on the Spark API rate limit.
-        #
-        # Two budgets: a single notebook gets 30 min, but the orchestrator runs
-        # the WHOLE medallion pipeline (3-5 notebooks) inside one session, so it
-        # needs a much larger budget — otherwise a pipeline that is legitimately
-        # running on a busy/small capacity gets killed mid-run and looks like it
-        # "never finishes".
+        # Each medallion notebook is run as its own direct notebook job, in order
+        # (bronze → silver → gold → …). Capacity admission pressure (HTTP 430 on
+        # constrained Trial / small F-SKU capacities) is absorbed by the per-
+        # notebook transient retry + backoff below.
         notebook_timeout = 1800
-        pipeline_timeout = 3600
         max_attempts = 5
 
         runnable = [nb for nb in notebooks_to_run if notebook_ids.get(nb["name"])]
@@ -905,116 +892,72 @@ async def deploy_demo(
                 step.detail = "Notebook was not created — skipping execution"
                 yield {"event": "step", "data": step.to_dict()}
 
-        if len(runnable) >= 2:
-            # ── Single shared Spark session via an orchestrator notebook ──────
-            run_steps = [_find_step(steps, f"run:{nb['name']}") for nb in runnable]
-            for st in run_steps:
-                st.status = "running"
-                st.detail = "Running in one shared Spark session…"
-                yield {"event": "step", "data": st.to_dict()}
-
+        # Run the medallion notebooks SEQUENTIALLY, each as its own direct
+        # notebook job (bronze → silver → gold → …). We deliberately do NOT use a
+        # single orchestrator notebook + notebookutils.notebook.runMultiple here:
+        # that runs each child in its own REPL inside one shared session and is
+        # blocked/stalls when a child's default lakehouse doesn't exactly match
+        # the root's (and adds per-child REPL warm-up), which on small/Trial
+        # capacities manifests as a run that spins for minutes writing nothing.
+        # A plain per-notebook run is what works reliably and finishes in well
+        # under a minute each, and it gives true live per-step progress.
+        #
+        # Capacity admission (HTTP 430) is handled per notebook by the transient
+        # retry + backoff below, so we don't need the shared-session trick to
+        # avoid it.
+        ordered_runnable = sorted(runnable, key=lambda n: n.get("order", 0))
+        for nb in ordered_runnable:
+            step = _find_step(steps, f"run:{nb['name']}")
+            nb_id = notebook_ids[nb["name"]]
             # Cosmetic dashboards are best-effort: a render hiccup must not fail
             # an otherwise-good deploy (the pipeline data + reports are intact).
-            optional_names = {
-                nb["name"] for nb in runnable if "dashboard" in nb["name"].lower()
-            }
-            orch_source = _build_orchestrator_source(runnable, optional_names)
-            orch = await client.create_notebook_from_source(
-                ws_id, "_fdg_pipeline_runner", orch_source, lakehouse_id, lakehouse_name,
-            )
-            orch_id = orch["id"]
-            created_ids["_fdg_pipeline_runner"] = orch_id
+            is_optional = "dashboard" in nb["name"].lower()
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
 
             last_err: FabricError | None = None
             for attempt in range(max_attempts):
                 try:
                     result = await client.run_notebook(
-                        ws_id, orch_id, lakehouse_id, lakehouse_name, timeout=pipeline_timeout,
+                        ws_id, nb_id, lakehouse_id, lakehouse_name, timeout=notebook_timeout,
                     )
                     job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
                     if job_status == "failed":
                         failure = result.get("failureReason", {})
                         err_msg = failure.get("message", "Notebook execution failed")
-                        raise FabricError(500, err_msg[:500])
+                        raise FabricError(500, f"Notebook '{nb['name']}' failed: {err_msg[:200]}")
                     last_err = None
                     break
                 except FabricError as e:
                     last_err = e
-                    # Only retry when the Spark *session could not be created*
-                    # (capacity 430 / Livy admission). That happens before any
-                    # work runs, so retrying is cheap and safe. A failure AFTER
-                    # the session starts — an in-notebook error, or a run that
-                    # exceeds the pipeline timeout — fails fast: re-running the
-                    # whole pipeline would just repeat the same long, doomed run.
-                    if attempt < max_attempts - 1 and _is_admission_error(e.detail):
+                    if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
                         wait = _retry_wait_seconds(e.detail, attempt)
-                        for st in run_steps:
-                            st.detail = f"Spark capacity busy — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
-                            yield {"event": "step", "data": st.to_dict()}
+                        busy = _is_admission_error(e.detail or "")
+                        reason = (
+                            "Spark capacity busy" if busy
+                            else "Spark session hiccup — restarting"
+                        )
+                        step.detail = f"{reason} — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
+                        yield {"event": "step", "data": step.to_dict()}
                         await asyncio.sleep(wait)
                         continue
                     break
+
             if last_err is not None:
-                msg = _friendly_capacity_error(last_err.detail or "")
-                # Attribute the failure to the specific notebook when we can.
-                failed_idx = next(
-                    (i for i, nb in enumerate(runnable) if f"'{nb['name']}'" in (last_err.detail or "")),
-                    0,
-                )
-                for i, st in enumerate(run_steps):
-                    if i < failed_idx:
-                        st.status = "completed"
-                    elif i == failed_idx:
-                        st.status = "failed"
-                        st.detail = msg[:400]
-                    else:
-                        break
-                    yield {"event": "step", "data": st.to_dict()}
-                raise FabricError(last_err.status, msg)
-
-            for st in run_steps:
-                st.status = "completed"
-                st.detail = "Completed in one shared Spark session"
-                yield {"event": "step", "data": st.to_dict()}
-        else:
-            # ── 0 or 1 runnable notebook — run directly (no orchestrator) ─────
-            for nb in runnable:
-                step = _find_step(steps, f"run:{nb['name']}")
-                nb_id = notebook_ids[nb["name"]]
-                step.status = "running"
-                yield {"event": "step", "data": step.to_dict()}
-
-                last_err = None
-                for attempt in range(max_attempts):
-                    try:
-                        result = await client.run_notebook(
-                            ws_id, nb_id, lakehouse_id, lakehouse_name, timeout=notebook_timeout,
-                        )
-                        job_status = result.get("status", "").lower() if isinstance(result, dict) else ""
-                        if job_status == "failed":
-                            failure = result.get("failureReason", {})
-                            err_msg = failure.get("message", "Notebook execution failed")
-                            raise FabricError(500, f"Notebook '{nb['name']}' failed: {err_msg[:200]}")
-                        last_err = None
-                        break
-                    except FabricError as e:
-                        last_err = e
-                        if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
-                            wait = _retry_wait_seconds(e.detail, attempt)
-                            step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
-                            yield {"event": "step", "data": step.to_dict()}
-                            await asyncio.sleep(wait)
-                            continue
-                        break
-                if last_err is not None:
-                    friendly = _friendly_capacity_error(last_err.detail or "")
-                    step.status = "failed"
-                    step.detail = friendly[:400]
+                friendly = _friendly_capacity_error(last_err.detail or "")
+                if is_optional:
+                    # Don't fail the whole deploy over a cosmetic dashboard.
+                    step.status = "completed"
+                    step.detail = f"Skipped (best-effort): {friendly[:200]}"
                     yield {"event": "step", "data": step.to_dict()}
-                    raise FabricError(last_err.status, friendly)
-
-                step.status = "completed"
+                    continue
+                step.status = "failed"
+                step.detail = friendly[:400]
                 yield {"event": "step", "data": step.to_dict()}
+                raise FabricError(last_err.status, friendly)
+
+            step.status = "completed"
+            yield {"event": "step", "data": step.to_dict()}
 
         # 6. Wait for SQL endpoint (only relevant for lakehouse-based demos)
         conn_string = ""
@@ -1662,9 +1605,9 @@ def _friendly_capacity_error(detail: str) -> str:
             "not a problem with the demo or your account. To deploy: open the "
             "Fabric Monitoring hub and cancel any running Spark jobs, wait a few "
             "minutes for compute to free up, or switch to a larger capacity "
-            "(an F-SKU with more Spark vCores than Trial), then redeploy. The "
-            "deploy already runs the whole pipeline in a single, minimal Spark "
-            "session to use as little capacity as possible."
+            "(an F-SKU with more Spark vCores than Trial), then redeploy. Each "
+            "notebook already runs in a minimal Spark session to use as little "
+            "capacity as possible."
         )
     d = (detail or "").lower()
     if "did not finish within" in d or "timed out" in d:
@@ -1676,91 +1619,6 @@ def _friendly_capacity_error(detail: str) -> str:
             "then redeploy."
         )
     return detail
-
-
-def _build_orchestrator_source(
-    notebooks_to_run: list[dict], optional_names: set[str] | None = None
-) -> str:
-    """Build the Python source for an *orchestrator* notebook that runs every
-    medallion notebook inside ONE shared Spark session via
-    ``notebookutils.notebook.runMultiple``.
-
-    ``optional_names`` are best-effort activities (e.g. the cosmetic dashboard):
-    if one of them fails, the pipeline data is still good, so the deploy is NOT
-    failed — the failure is logged and the run still exits successfully.
-
-    Why: each ``run_notebook`` API call creates its own Livy/Spark session. On
-    constrained Fabric capacities (Trial / small F-SKUs) firing one session per
-    notebook (bronze → silver → gold) means the deploy has to win capacity
-    admission three separate times, and notebook jobs submitted via the public
-    API are never queued — so a busy capacity returns HTTP 430. Running them as a
-    single sequential DAG inside one session (the documented "high concurrency
-    session sharing" pattern for small capacities) means the deploy only needs to
-    win admission once and puts ~3× less pressure on the Spark API rate limit.
-
-    A child failure raises ``Notebook '<name>' failed: ...`` so the caller can map
-    it back to the matching ``run:<name>`` step.
-    """
-    ordered = sorted(notebooks_to_run, key=lambda n: n.get("order", 0))
-    activities: list[dict] = []
-    prev: str | None = None
-    for nb in ordered:
-        name = nb["name"]
-        activity: dict = {
-            "name": name,
-            "path": name,
-            "timeoutPerCellInSeconds": 1200,
-        }
-        if prev is not None:
-            activity["dependencies"] = [prev]
-        activities.append(activity)
-        prev = name
-
-    dag = {
-        "activities": activities,
-        # Bound the DAG just under the deployer's pipeline_timeout (3600s) so the
-        # DAG self-terminates and releases the Spark session before the API stops
-        # waiting, instead of lingering.
-        "timeoutInSeconds": 3300,
-        "concurrency": 1,  # run sequentially: bronze → silver → gold, minimal footprint
-    }
-    # json.dumps output is also a valid Python literal here (no bool/null values).
-    dag_literal = json.dumps(dag, indent=4)
-    optional_literal = json.dumps(sorted(optional_names or []))
-
-    return (
-        "import notebookutils\n"
-        "from notebookutils.common.exceptions import RunMultipleFailedException\n"
-        "\n"
-        f"DAG = {dag_literal}\n"
-        f"OPTIONAL = {optional_literal}\n"
-        "\n"
-        "notebookutils.notebook.validateDAG(DAG)\n"
-        "\n"
-        "try:\n"
-        "    results = notebookutils.notebook.runMultiple(DAG)\n"
-        "except RunMultipleFailedException as ex:\n"
-        "    results = ex.result\n"
-        "\n"
-        "required_failures = []\n"
-        "optional_failures = []\n"
-        "for _name, _res in (results or {}).items():\n"
-        "    _exc = _res.get('exception') if isinstance(_res, dict) else None\n"
-        "    if _exc:\n"
-        "        _msg = \"Notebook '%s' failed: %s\" % (_name, str(_exc)[:500])\n"
-        "        if _name in OPTIONAL:\n"
-        "            optional_failures.append(_msg)\n"
-        "        else:\n"
-        "            required_failures.append(_msg)\n"
-        "\n"
-        "if optional_failures:\n"
-        "    print('Non-fatal best-effort notebook failure(s): ' + ' | '.join(optional_failures))\n"
-        "\n"
-        "if required_failures:\n"
-        "    raise Exception(' | '.join(required_failures))\n"
-        "\n"
-        "notebookutils.notebook.exit('ok')\n"
-    )
 
 
 async def _deploy_mirroring(
