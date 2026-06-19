@@ -677,8 +677,9 @@ class FabricClient:
                     # built around dynamic allocation) destabilised the session
                     # and produced System_Cancelled_Session_Statements_Failed
                     # mid-run. Letting Fabric use its default, autoscaling Starter
-                    # pool session is stable, and the single-session orchestrator
-                    # already keeps each deploy to one session.
+                    # pool session is stable. Each notebook runs in its own clean
+                    # session (the deployer runs them sequentially), so there's no
+                    # need to shrink the per-notebook footprint here.
                 }
             }
         }
