@@ -1429,87 +1429,121 @@ export default function DemoDetailPage() {
       const { job_id } = await createResp.json();
       currentJobIdRef.current = job_id;
 
-      // Step 2: Stream progress from the job's SSE endpoint
-      const streamResp = await fetch(`${API}/api/jobs/${job_id}/stream`, {
-        headers: fabricToken ? { Authorization: `Bearer ${fabricToken}` } : {},
-        signal: controller.signal,
-      });
-
-      if (!streamResp.ok) {
-        const text = await streamResp.text();
-        setError(`Stream error ${streamResp.status}: ${text.slice(0, 200)}`);
-        setDeploying(false);
-        return;
-      }
-
-      const reader = streamResp.body?.getReader();
+      // Step 2: Stream progress from the job's SSE endpoint.
+      //
+      // The deploy runs as a decoupled background job on the server, and the
+      // stream endpoint replays all past events before tailing live updates.
+      // So if the connection drops mid-deploy (a transient network blip, proxy
+      // idle timeout, Wi-Fi/VPN switch, laptop sleep, etc.) we simply reconnect
+      // and resume — the replay re-syncs the UI — instead of failing the whole
+      // deploy with a scary "network error" while the job is still running.
+      // Only a server-sent "error" event or the "done" event is terminal.
       const decoder = new TextDecoder();
-      if (!reader) {
-        setError("No response stream");
-        setDeploying(false);
-        return;
-      }
-
-      let buffer = "";
-      let currentEvent = "";
       let streamHadError = false;
       let sawDone = false;
+      let connectionLost = false;
+      let reconnectAttempts = 0;
+      const MAX_RECONNECTS = 150; // consecutive failures (reset whenever data arrives)
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("event: ")) {
-            currentEvent = line.slice(7).trim();
-          } else if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (currentEvent === "plan") {
-                setSteps(data as DeployStep[]);
-              } else if (currentEvent === "step") {
-                const step = data as DeployStep;
-                setSteps((prev) =>
-                  prev.map((s) => (s.name === step.name ? { ...s, ...step } : s))
-                );
-                if (step.name === "done" && step.status === "completed") {
-                  sawDone = true;
-                  setCompleted(true);
-                  if (step.detail) {
-                    try {
-                      const info = JSON.parse(step.detail as string);
-                      if (info.workspaceId) setDeployedWorkspaceId(info.workspaceId);
-                    } catch { /* detail might not be JSON */ }
-                  }
-                }
-                if (step.name === "workspace" && step.itemId) {
-                  setDeployedWorkspaceId(step.itemId);
-                }
-              } else if (currentEvent === "error") {
-                streamHadError = true;
-                setError(coerceErrorMessage(data.message));
-                if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
-              }
-            } catch {
-              // ignore malformed data lines
-            }
-            currentEvent = "";
-          }
+      while (!sawDone && !streamHadError) {
+        let streamResp: Response;
+        try {
+          streamResp = await fetch(`${API}/api/jobs/${job_id}/stream`, {
+            headers: fabricToken ? { Authorization: `Bearer ${fabricToken}` } : {},
+            signal: controller.signal,
+          });
+        } catch {
+          if (controller.signal.aborted) throw new DOMException("Aborted", "AbortError");
+          if (++reconnectAttempts > MAX_RECONNECTS) { connectionLost = true; break; }
+          await new Promise((r) => setTimeout(r, 2000));
+          continue;
         }
+
+        if (streamResp.status === 404) {
+          // Job no longer exists server-side — nothing left to resume.
+          connectionLost = true;
+          break;
+        }
+        if (!streamResp.ok || !streamResp.body) {
+          if (++reconnectAttempts > MAX_RECONNECTS) { connectionLost = true; break; }
+          await new Promise((r) => setTimeout(r, 2000));
+          continue;
+        }
+
+        const reader = streamResp.body.getReader();
+        let buffer = "";
+        let currentEvent = "";
+        let gotData = false;
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            gotData = true;
+            buffer += decoder.decode(value, { stream: true });
+
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+
+            for (const line of lines) {
+              if (line.startsWith("event: ")) {
+                currentEvent = line.slice(7).trim();
+              } else if (line.startsWith("data: ")) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (currentEvent === "plan") {
+                    setSteps(data as DeployStep[]);
+                  } else if (currentEvent === "step") {
+                    const step = data as DeployStep;
+                    setSteps((prev) =>
+                      prev.map((s) => (s.name === step.name ? { ...s, ...step } : s))
+                    );
+                    if (step.name === "done" && step.status === "completed") {
+                      sawDone = true;
+                      setCompleted(true);
+                      if (step.detail) {
+                        try {
+                          const info = JSON.parse(step.detail as string);
+                          if (info.workspaceId) setDeployedWorkspaceId(info.workspaceId);
+                        } catch { /* detail might not be JSON */ }
+                      }
+                    }
+                    if (step.name === "workspace" && step.itemId) {
+                      setDeployedWorkspaceId(step.itemId);
+                    }
+                  } else if (currentEvent === "error") {
+                    streamHadError = true;
+                    setError(coerceErrorMessage(data.message));
+                    if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
+                  }
+                } catch {
+                  // ignore malformed data lines
+                }
+                currentEvent = "";
+              }
+            }
+
+            if (sawDone || streamHadError) break;
+          }
+        } catch {
+          // Mid-stream read failure = dropped connection. Fall through to
+          // reconnect (the server replays past events so the UI re-syncs).
+          if (controller.signal.aborted) throw new DOMException("Aborted", "AbortError");
+        }
+
+        if (sawDone || streamHadError) break;
+        // Stream ended/dropped before the deploy finished — reconnect & resume.
+        if (gotData) reconnectAttempts = 0;
+        if (++reconnectAttempts > MAX_RECONNECTS) { connectionLost = true; break; }
+        await new Promise((r) => setTimeout(r, 1500));
       }
 
-      // Stream ended — only mark completed if we actually got a "done" event
-      // Use the local sawDone flag (not the `completed` state, which is stale
-      // inside this async closure) so a successful deployment doesn't falsely
-      // report a lost connection.
       if (sawDone) {
         setCompleted(true);
-      } else if (!streamHadError) {
-        setError("Connection to deployment server was lost. Check the Monitoring page to see if the deployment is still running.");
+      } else if (streamHadError) {
+        // Error already surfaced via setError from the "error" event.
+      } else if (connectionLost) {
+        setError("Lost connection to the deployment server after several retries. The deploy may still be running — check the Monitoring page.");
       }
     } catch (e: unknown) {
       if (e instanceof DOMException && e.name === "AbortError") {
