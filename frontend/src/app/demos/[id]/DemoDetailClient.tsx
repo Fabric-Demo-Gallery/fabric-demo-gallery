@@ -1693,7 +1693,7 @@ export default function DemoDetailPage() {
             isTrial: c.sku?.startsWith("FT") || false,
           }));
         setCapacities(caps);
-        if (caps.length > 0) setSelectedCapacity(caps[0].id);
+        if (caps.length > 0) setSelectedCapacity((prev) => prev || caps[0].id);
       } else {
         const text = await res.text();
         setError(`Fabric API error ${res.status}: ${text.slice(0, 200)}`);
