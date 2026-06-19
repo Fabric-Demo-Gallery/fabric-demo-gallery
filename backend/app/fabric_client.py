@@ -671,17 +671,14 @@ class FabricClient:
                         "id": lakehouse_id,
                         "name": lakehouse_name,
                     },
-                    # Pin each run to a minimal Spark session (1 executor, no
-                    # autoscale). The demo datasets are tiny, so this is plenty —
-                    # and it keeps the per-notebook footprint small so deploys fit
-                    # within constrained Fabric Trial / small F-SKU capacities and
-                    # stop tripping TooManyRequestsForCapacity (HTTP 430) when
-                    # sequential notebook sessions overlap.
-                    "conf": {
-                        "spark.dynamicAllocation.enabled": "false",
-                        "spark.executor.instances": "1",
-                        "spark.dynamicAllocation.maxExecutors": "1",
-                    },
+                    # NOTE: we intentionally do NOT force a custom Spark `conf`
+                    # here. Forcing spark.dynamicAllocation.enabled=false +
+                    # executor.instances=1 onto a Fabric Starter pool (which is
+                    # built around dynamic allocation) destabilised the session
+                    # and produced System_Cancelled_Session_Statements_Failed
+                    # mid-run. Letting Fabric use its default, autoscaling Starter
+                    # pool session is stable, and the single-session orchestrator
+                    # already keeps each deploy to one session.
                 }
             }
         }

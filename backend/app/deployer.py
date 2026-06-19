@@ -905,7 +905,17 @@ async def deploy_demo(
                 step.detail = "Notebook was not created — skipping execution"
                 yield {"event": "step", "data": step.to_dict()}
 
-        if len(runnable) >= 2:
+        # The single-session orchestrator (notebookutils.notebook.runMultiple)
+        # is DISABLED. It reliably failed with
+        # System_Cancelled_Session_Statements_Failed on EVERY capacity — including
+        # F32/F64 with plenty of headroom — because packing all medallion
+        # notebooks into one shared Spark session via reference runs destabilised
+        # the session mid-pipeline. The direct path below (one clean Spark session
+        # per notebook, sequential, with retry) is proven to deploy end-to-end
+        # reliably. Re-enable ONLY if runMultiple stability is fixed + verified.
+        USE_SINGLE_SESSION_ORCHESTRATOR = False
+
+        if USE_SINGLE_SESSION_ORCHESTRATOR and len(runnable) >= 2:
             # ── Single shared Spark session via an orchestrator notebook ──────
             run_steps = [_find_step(steps, f"run:{nb['name']}") for nb in runnable]
             for st in run_steps:
@@ -977,8 +987,14 @@ async def deploy_demo(
                 st.detail = "Completed in one shared Spark session"
                 yield {"event": "step", "data": st.to_dict()}
         else:
-            # ── 0 or 1 runnable notebook — run directly (no orchestrator) ─────
-            for nb in runnable:
+            # ── Default path: one clean Spark session per notebook, in order ──
+            # A fresh session per notebook is rock-solid. A short pause between
+            # notebooks lets the previous Spark session release so sequential runs
+            # don't overlap and trip TooManyRequestsForCapacity on smaller
+            # capacities (the retry below is the backstop if they still do).
+            for i, nb in enumerate(runnable):
+                if i > 0:
+                    await asyncio.sleep(20)
                 step = _find_step(steps, f"run:{nb['name']}")
                 nb_id = notebook_ids[nb["name"]]
                 step.status = "running"
