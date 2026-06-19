@@ -30,6 +30,10 @@ from app.report_builder import (
     build_construction_ml_report_definition,
     build_education_ml_report_definition,
 )
+from app.report_generic import (
+    build_generic_model_definition,
+    build_generic_report_definition,
+)
 from app.azure_client import AzureClient, AzureError
 
 logger = logging.getLogger(__name__)
@@ -1048,6 +1052,36 @@ async def deploy_demo(
             yield {"event": "step", "data": step.to_dict()}
 
         # 7. Semantic models (with dynamic SQL endpoint injection)
+        #
+        # Sectors that ship a hand-authored tmdl/model.bim use it. Sectors that
+        # don't get a lightweight Direct Lake model auto-generated from the gold
+        # tables discovered in the lakehouse, so every deploy produces a working
+        # model + report instead of a silent skip. ``gold_schema`` is discovered
+        # lazily (once) and reused by the report step.
+        gold_schema: dict | None = None
+        generic_models: set[str] = set()
+
+        async def _discover_gold_schema() -> dict:
+            nonlocal gold_schema
+            if gold_schema is not None:
+                return gold_schema
+            gold_schema = {}
+            if not (lakehouse_id and lakehouse_name):
+                return gold_schema
+            try:
+                all_tables = await client.discover_lakehouse_schema(
+                    ws_id, lakehouse_id, lakehouse_name
+                )
+                # Only surface the analytics-facing tables in the model/report.
+                gold_schema = {
+                    t: cols for t, cols in all_tables.items()
+                    if t.startswith("gold_") or t.startswith("dim_")
+                }
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Gold schema discovery failed; model/report will be skipped: %s", e)
+                gold_schema = {}
+            return gold_schema
+
         for sm in semantic_models:
             step = _find_step(steps, f"model:{sm['name']}")
             step.status = "running"
@@ -1066,9 +1100,24 @@ async def deploy_demo(
                 step.item_id = result.get("id")
                 step.status = "completed"
             else:
-                step.status = "completed"
-                step.detail = "Skipped — no definition (create manually in Fabric)"
+                # No hand-authored model — auto-generate one from the gold tables.
+                schema = await _discover_gold_schema()
+                if schema:
+                    definition = build_generic_model_definition(
+                        schema, conn_string, lakehouse_name or ""
+                    )
+                    result = await client.create_semantic_model(ws_id, sm["name"], definition)
+                    created_ids[sm["name"]] = result.get("id", "")
+                    generic_models.add(sm["name"])
+                    step.item_id = result.get("id")
+                    step.status = "completed"
+                    step.detail = f"Auto-generated Direct Lake model over {len(schema)} gold tables"
+                else:
+                    # Genuinely nothing to model — be honest, not falsely green.
+                    step.status = "skipped"
+                    step.detail = "Skipped — no gold tables found to model"
             yield {"event": "step", "data": step.to_dict()}
+
 
         # 7b. Refresh semantic models
         for sm in semantic_models:
@@ -1101,13 +1150,23 @@ async def deploy_demo(
             step.status = "running"
             yield {"event": "step", "data": step.to_dict()}
             sm_id = None
+            sm_is_generic = False
             for sm in semantic_models:
                 sm_id = created_ids.get(sm["name"])
                 if sm_id:
+                    sm_is_generic = sm["name"] in generic_models
                     break
             if sm_id:
                 try:
-                    report_def = _build_report_definition(demo_id, sm_id, scenario_id)
+                    if sm_is_generic:
+                        # The model was auto-generated from the gold tables, so the
+                        # report must be too (a hand-authored report references
+                        # sector-specific tables that may not exist here).
+                        schema = await _discover_gold_schema()
+                        report_title = f"{demo_id.replace('-', ' ').title()} Analytics"
+                        report_def = build_generic_report_definition(schema, sm_id, report_title)
+                    else:
+                        report_def = _build_report_definition(demo_id, sm_id, scenario_id)
                     logger.info("Report definition built, %d parts, creating item...", len(report_def.get("parts", [])))
                     result = await client.create_item(ws_id, "Report", rp["name"], report_def)
                     rp_id = result.get("id", "")
@@ -1124,7 +1183,7 @@ async def deploy_demo(
                     step.status = "failed"
                     step.detail = f"Unexpected: {str(e)[:200]}"
             else:
-                step.status = "completed"
+                step.status = "skipped"
                 step.detail = "Skipped — no semantic model available"
             yield {"event": "step", "data": step.to_dict()}
 
