@@ -261,6 +261,7 @@ ENABLED_SCENARIOS: set[str] = {
     "ai-ml",
     "external-data-integration",
     "real-time-intelligence",
+    "fabric-foundry-agent",
 }
 
 

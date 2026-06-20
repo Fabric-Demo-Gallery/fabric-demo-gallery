@@ -14,6 +14,7 @@
     { "id": "data-virtualization-batch", "titleOverride": "Supplier Data Virtualization & Batch Analytics" },
     { "id": "data-warehouse",            "titleOverride": "Manufacturing Data Warehouse" },
     { "id": "external-data-integration", "titleOverride": "ERP / MES Integration" },
-    { "id": "genai-applications",        "titleOverride": "Manufacturing Copilot" }
+    { "id": "genai-applications",        "titleOverride": "Manufacturing Copilot" },
+    { "id": "fabric-foundry-agent",      "titleOverride": "Quality-Control AI Agent" }
   ]
 }
