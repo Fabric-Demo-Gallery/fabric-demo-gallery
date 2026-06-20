@@ -69,10 +69,24 @@ import { explainError } from "@/lib/errorHelp";
 // "[object Object]" in the UI.
 function coerceErrorMessage(message: unknown, fallback = "Deployment failed"): string {
   if (typeof message === "string" && message.trim()) return message;
+  // FastAPI validation errors arrive as [{loc, msg, type}, ...].
+  if (Array.isArray(message)) {
+    const msgs = message
+      .map((m) =>
+        m && typeof m === "object" && typeof (m as Record<string, unknown>).msg === "string"
+          ? (m as Record<string, string>).msg
+          : typeof m === "string"
+          ? m
+          : null
+      )
+      .filter((s): s is string => Boolean(s));
+    if (msgs.length) return msgs.join("; ");
+  }
   if (message && typeof message === "object") {
     const o = message as Record<string, unknown>;
     const nested = o.message ?? o.detail ?? o.error ?? o.title;
     if (typeof nested === "string" && nested.trim()) return nested;
+    if (nested && typeof nested === "object") return coerceErrorMessage(nested, fallback);
     try {
       const j = JSON.stringify(message);
       if (j && j !== "{}") return j;
@@ -1416,7 +1430,10 @@ export default function DemoDetailPage() {
         let errorMsg = `Deployment failed (${createResp.status})`;
         try {
           const errData = await createResp.json();
-          errorMsg = errData.detail || errData.message || errorMsg;
+          // `detail`/`message` may be a string OR a structured object/array
+          // (e.g. a FastAPI 422 validation error). Coerce so the real reason is
+          // shown instead of "[object Object]".
+          errorMsg = coerceErrorMessage(errData.detail ?? errData.message ?? errData, errorMsg);
         } catch {
           const text = await createResp.text();
           errorMsg = text.slice(0, 300) || errorMsg;
