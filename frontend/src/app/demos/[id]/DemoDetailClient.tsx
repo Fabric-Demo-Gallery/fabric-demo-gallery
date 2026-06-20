@@ -2624,7 +2624,7 @@ export default function DemoDetailPage() {
                         </Caption1>
                         {selectedScenario?.id === "fabric-foundry-agent" && (
                           <Caption1 style={{ color: "#d29922", display: "block", marginTop: 4 }}>
-                            ⚠️ <strong>gpt-4o-mini quota is region-specific.</strong> Choose <strong>East US</strong>, East US 2, or Sweden Central. West US 2 has no quota — the model deployment and Foundry agent steps would be skipped.
+                            ⚠️ <strong>gpt-4o-mini quota is region-specific and varies by subscription.</strong> East US is usually a safe choice. If the model step is skipped, your subscription has no gpt-4o-mini quota in the selected region — pick another (check Azure AI Foundry → Management → Quotas).
                           </Caption1>
                         )}
                       </div>
