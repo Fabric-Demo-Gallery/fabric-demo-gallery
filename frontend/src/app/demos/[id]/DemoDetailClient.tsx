@@ -155,7 +155,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     description: "Deploy a Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data — data + AI in one click. (Preview: provisions billable Azure Foundry resources in your subscription.)",
     estimatedTime: "20–30 min",
     tags: ["foundry", "ai-agent", "data-agent", "rag", "preview"],
-    enabled: false,
+    enabled: true,
     requiresAzure: true,
     azureParams: [],
     feature: "Foundry AI Agent",
