@@ -294,11 +294,22 @@ class AzureClient:
     async def create_resource_group(
         self, subscription_id: str, name: str, location: str
     ) -> dict:
-        """Create (or update) a resource group."""
+        """Create the resource group if absent, else reuse the existing one.
+
+        A resource group's location is only metadata — the resources inside it may
+        live in any region — so an RG that already exists in a *different* region is
+        still perfectly usable (e.g. an eastus RG from a Shortcuts demo reused by a
+        westus2 Mirroring demo). ARM rejects a PUT that would change an existing
+        RG's location ("Invalid resource group location ... already exists in
+        location ..."), so GET-then-create instead of blindly PUT-ing.
+        """
         url = (
             f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{name}"
             f"?api-version={RG_API_VERSION}"
         )
+        existing = await self._arm_client.get(url)
+        if existing.status_code == 200:
+            return existing.json()
         resp = await self._arm_request("PUT", url, json={"location": location})
         return resp.json()
 
