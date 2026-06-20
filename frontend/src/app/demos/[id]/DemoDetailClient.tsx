@@ -2622,6 +2622,11 @@ export default function DemoDetailPage() {
                         <Caption1 style={{ color: "#484f58" }}>
                           Some subscriptions restrict Azure SQL in certain regions — the deploy auto-falls back to an available region if needed.
                         </Caption1>
+                        {selectedScenario?.id === "fabric-foundry-agent" && (
+                          <Caption1 style={{ color: "#d29922", display: "block", marginTop: 4 }}>
+                            ⚠️ <strong>gpt-4o-mini quota is region-specific.</strong> Choose <strong>East US</strong>, East US 2, or Sweden Central. West US 2 has no quota — the model deployment and Foundry agent steps would be skipped.
+                          </Caption1>
+                        )}
                       </div>
                     </div>
                   )}
