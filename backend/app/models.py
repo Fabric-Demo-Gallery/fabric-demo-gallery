@@ -43,7 +43,10 @@ class DeployRequest(BaseModel):
     @classmethod
     def validate_workspace_name(cls, v: str | None) -> str | None:
         if v is not None and not SAFE_NAME.match(v):
-            raise ValueError("Workspace name contains invalid characters")
+            raise ValueError(
+                "Workspace name must be 1-100 characters using letters, numbers, "
+                "spaces, and , & _ - ( ) ."
+            )
         return v
 
     @field_validator("workspace_id", "capacity_id", "subscription_id")

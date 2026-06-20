@@ -95,6 +95,26 @@ function coerceErrorMessage(message: unknown, fallback = "Deployment failed"): s
   return fallback;
 }
 
+// Build a default workspace name that satisfies the backend validator
+// (<=100 chars; letters/numbers/spaces and , & _ - ( ) .). The descriptive
+// "<industry> - Custom - <scenario title>" form can exceed 100 chars for long
+// industry/scenario names (e.g. "Media, Telecommunications & Entertainment" +
+// "Data Virtualization & Batch Analytics (Shortcuts)"), so fall back to a
+// compact "<industry> - <feature>" form and hard-cap at 100.
+function defaultWorkspaceName(
+  industry: string,
+  isCustom: boolean,
+  scenarioTitle: string,
+  feature?: string,
+): string {
+  const full = isCustom
+    ? `${industry} - Custom - ${scenarioTitle}`
+    : `${industry} - Standard`;
+  if (full.length <= 100) return full;
+  const compact = isCustom ? `${industry} - ${feature ?? scenarioTitle}` : full;
+  return compact.slice(0, 100);
+}
+
 // Universal scenarios — identical across all industries (IDs match backend _scenarios/)
 const ALL_SCENARIOS: ScenarioInfo[] = [
   {
@@ -1412,9 +1432,8 @@ export default function DemoDetailPage() {
         headers,
         body: JSON.stringify({
           demo_id: id,
-          workspace_name: workspaceName || (isCustomMode
-            ? `${demo.industry} - Custom - ${selectedScenario?.title ?? demo.title}`
-            : `${demo.industry} - Standard`),
+          workspace_name: workspaceName || defaultWorkspaceName(
+            demo.industry, isCustomMode, selectedScenario?.title ?? demo.title, selectedScenario?.feature),
           capacity_id: selectedCapacity || undefined,
           ...(selectedScenario && { scenario_id: selectedScenario.id }),
           ...(selectedSub && { subscription_id: selectedSub }),
@@ -2498,9 +2517,7 @@ export default function DemoDetailPage() {
                     <Input
                       value={workspaceName}
                       onChange={(_, data) => setWorkspaceName(data.value)}
-                      placeholder={isCustomMode
-                        ? `${demo.industry} - Custom - ${selectedScenario?.title ?? demo.title}`
-                        : `${demo.industry} - Standard`}
+                      placeholder={defaultWorkspaceName(demo.industry, isCustomMode, selectedScenario?.title ?? demo.title, selectedScenario?.feature)}
                       style={{ width: "100%" }}
                     />
                   </div>
