@@ -1,0 +1,29 @@
+name: Notebook Gate
+
+# Static medallion-notebook gate: blocks PRs that introduce provable column /
+# contract / syntax / ambiguous-join / model.bim errors in any demo's
+# Bronze -> Silver -> Gold notebooks. Pure-stdlib, no install step.
+
+on:
+  pull_request:
+    paths:
+      - "demos/**/notebooks/**"
+      - "demos/**/model.bim"
+      - "tools/notebook_gate.py"
+  push:
+    branches: [main]
+    paths:
+      - "demos/**/notebooks/**"
+      - "demos/**/model.bim"
+  workflow_dispatch: {}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run static medallion-notebook gate
+        run: python tools/notebook_gate.py --all
