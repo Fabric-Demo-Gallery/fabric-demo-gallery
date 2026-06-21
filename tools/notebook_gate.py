@@ -442,7 +442,7 @@ class Analyzer:
 
 # ── model.bim contract ──────────────────────────────────────────────────────
 def validate_model_bim(demo_dir: Path, tables: dict, findings: list):
-    bim = demo_dir / "model.bim"
+    bim = demo_dir / "tmdl" / "model.bim"
     if not bim.exists():
         return
     try:
