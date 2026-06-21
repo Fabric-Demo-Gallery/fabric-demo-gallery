@@ -1,0 +1,236 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "discourageImplicitMeasures": true,
+    "expressions": [
+      {
+        "name": "DatabaseQuery",
+        "kind": "m",
+        "expression": "let\n    database = Sql.Database(\"{{SQL_ENDPOINT}}\", \"{{LAKEHOUSE_NAME}}\")\nin\n    database"
+      }
+    ],
+    "relationships": [
+      {
+        "name": "daily_revenue_to_property",
+        "fromTable": "gold_daily_revenue",
+        "fromColumn": "property_id",
+        "toTable": "gold_property_scorecards",
+        "toColumn": "property_id"
+      },
+      {
+        "name": "occupancy_to_property",
+        "fromTable": "gold_occupancy_analysis",
+        "fromColumn": "property_id",
+        "toTable": "gold_property_scorecards",
+        "toColumn": "property_id"
+      }
+    ],
+    "tables": [
+      {
+        "name": "gold_property_scorecards",
+        "columns": [
+          {"name": "property_id", "dataType": "string", "sourceColumn": "property_id"},
+          {"name": "property_name", "dataType": "string", "sourceColumn": "property_name"},
+          {"name": "city", "dataType": "string", "sourceColumn": "city"},
+          {"name": "country", "dataType": "string", "sourceColumn": "country"},
+          {"name": "star_rating", "dataType": "int64", "sourceColumn": "star_rating"},
+          {"name": "room_count", "dataType": "int64", "sourceColumn": "room_count"},
+          {"name": "property_type", "dataType": "string", "sourceColumn": "property_type"},
+          {"name": "total_bookings", "dataType": "int64", "sourceColumn": "total_bookings"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "adr", "dataType": "double", "sourceColumn": "adr"},
+          {"name": "avg_los", "dataType": "double", "sourceColumn": "avg_los"},
+          {"name": "repeat_guest_pct", "dataType": "double", "sourceColumn": "repeat_guest_pct"},
+          {"name": "review_count", "dataType": "int64", "sourceColumn": "review_count"},
+          {"name": "avg_overall_score", "dataType": "double", "sourceColumn": "avg_overall_score"},
+          {"name": "avg_cleanliness", "dataType": "double", "sourceColumn": "avg_cleanliness"},
+          {"name": "avg_service", "dataType": "double", "sourceColumn": "avg_service"},
+          {"name": "avg_value", "dataType": "double", "sourceColumn": "avg_value"},
+          {"name": "avg_food", "dataType": "double", "sourceColumn": "avg_food"},
+          {"name": "revpar", "dataType": "double", "sourceColumn": "revpar"},
+          {"name": "performance_band", "dataType": "string", "sourceColumn": "performance_band"},
+          {"name": "gold_timestamp", "dataType": "dateTime", "sourceColumn": "gold_timestamp"}
+        ],
+        "measures": [
+          {"name": "Property Count", "expression": "COUNTROWS('gold_property_scorecards')", "formatString": "#,##0"},
+          {"name": "Avg Overall Score", "expression": "AVERAGE('gold_property_scorecards'[avg_overall_score])", "formatString": "0.0"},
+          {"name": "Avg RevPAR", "expression": "AVERAGE('gold_property_scorecards'[revpar])", "formatString": "\\$#,##0.00"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_property_scorecards",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_property_scorecards",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_daily_revenue",
+        "columns": [
+          {"name": "property_id", "dataType": "string", "sourceColumn": "property_id"},
+          {"name": "city", "dataType": "string", "sourceColumn": "city"},
+          {"name": "country", "dataType": "string", "sourceColumn": "country"},
+          {"name": "star_rating", "dataType": "int64", "sourceColumn": "star_rating"},
+          {"name": "room_count", "dataType": "int64", "sourceColumn": "room_count"},
+          {"name": "check_in_date", "dataType": "dateTime", "sourceColumn": "check_in_date"},
+          {"name": "bookings", "dataType": "int64", "sourceColumn": "bookings"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "adr", "dataType": "double", "sourceColumn": "adr"},
+          {"name": "avg_los", "dataType": "double", "sourceColumn": "avg_los"},
+          {"name": "revpar", "dataType": "double", "sourceColumn": "revpar"},
+          {"name": "occupancy_rate", "dataType": "double", "sourceColumn": "occupancy_rate"},
+          {"name": "gold_timestamp", "dataType": "dateTime", "sourceColumn": "gold_timestamp"}
+        ],
+        "measures": [
+          {"name": "Total Revenue", "expression": "SUM('gold_daily_revenue'[total_revenue])", "formatString": "\\$#,##0"},
+          {"name": "Total Bookings", "expression": "SUM('gold_daily_revenue'[bookings])", "formatString": "#,##0"},
+          {"name": "Avg ADR", "expression": "AVERAGE('gold_daily_revenue'[adr])", "formatString": "\\$#,##0.00"},
+          {"name": "Avg Occupancy %", "expression": "AVERAGE('gold_daily_revenue'[occupancy_rate])", "formatString": "0.0\"%\""},
+          {"name": "Avg Length of Stay", "expression": "AVERAGE('gold_daily_revenue'[avg_los])", "formatString": "0.0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_daily_revenue",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_daily_revenue",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_occupancy_analysis",
+        "columns": [
+          {"name": "property_id", "dataType": "string", "sourceColumn": "property_id"},
+          {"name": "city", "dataType": "string", "sourceColumn": "city"},
+          {"name": "star_rating", "dataType": "int64", "sourceColumn": "star_rating"},
+          {"name": "room_type", "dataType": "string", "sourceColumn": "room_type"},
+          {"name": "adr_band", "dataType": "string", "sourceColumn": "adr_band"},
+          {"name": "total_bookings", "dataType": "int64", "sourceColumn": "total_bookings"},
+          {"name": "completed_bookings", "dataType": "int64", "sourceColumn": "completed_bookings"},
+          {"name": "cancelled_bookings", "dataType": "int64", "sourceColumn": "cancelled_bookings"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "avg_rate", "dataType": "double", "sourceColumn": "avg_rate"},
+          {"name": "avg_los", "dataType": "double", "sourceColumn": "avg_los"},
+          {"name": "cancellation_rate", "dataType": "double", "sourceColumn": "cancellation_rate"},
+          {"name": "gold_timestamp", "dataType": "dateTime", "sourceColumn": "gold_timestamp"}
+        ],
+        "measures": [
+          {"name": "Cancellation Rate %", "expression": "AVERAGE('gold_occupancy_analysis'[cancellation_rate])", "formatString": "0.0\"%\""},
+          {"name": "Completed Bookings", "expression": "SUM('gold_occupancy_analysis'[completed_bookings])", "formatString": "#,##0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_occupancy_analysis",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_occupancy_analysis",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_loyalty_segments",
+        "columns": [
+          {"name": "loyalty_tier", "dataType": "string", "sourceColumn": "loyalty_tier"},
+          {"name": "region", "dataType": "string", "sourceColumn": "region"},
+          {"name": "age_group", "dataType": "string", "sourceColumn": "age_group"},
+          {"name": "total_bookings", "dataType": "int64", "sourceColumn": "total_bookings"},
+          {"name": "unique_guests", "dataType": "int64", "sourceColumn": "unique_guests"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "avg_rate", "dataType": "double", "sourceColumn": "avg_rate"},
+          {"name": "avg_los", "dataType": "double", "sourceColumn": "avg_los"},
+          {"name": "repeat_guest_pct", "dataType": "double", "sourceColumn": "repeat_guest_pct"},
+          {"name": "revenue_per_guest", "dataType": "double", "sourceColumn": "revenue_per_guest"},
+          {"name": "gold_timestamp", "dataType": "dateTime", "sourceColumn": "gold_timestamp"}
+        ],
+        "measures": [
+          {"name": "Revenue per Guest", "expression": "AVERAGE('gold_loyalty_segments'[revenue_per_guest])", "formatString": "\\$#,##0.00"},
+          {"name": "Repeat Guest %", "expression": "AVERAGE('gold_loyalty_segments'[repeat_guest_pct])", "formatString": "0.0\"%\""}
+        ],
+        "partitions": [
+          {
+            "name": "gold_loyalty_segments",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_loyalty_segments",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_channel_performance",
+        "columns": [
+          {"name": "channel", "dataType": "string", "sourceColumn": "channel"},
+          {"name": "total_bookings", "dataType": "int64", "sourceColumn": "total_bookings"},
+          {"name": "completed", "dataType": "int64", "sourceColumn": "completed"},
+          {"name": "cancelled", "dataType": "int64", "sourceColumn": "cancelled"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "avg_rate", "dataType": "double", "sourceColumn": "avg_rate"},
+          {"name": "avg_los", "dataType": "double", "sourceColumn": "avg_los"},
+          {"name": "conversion_rate", "dataType": "double", "sourceColumn": "conversion_rate"},
+          {"name": "gold_timestamp", "dataType": "dateTime", "sourceColumn": "gold_timestamp"}
+        ],
+        "measures": [
+          {"name": "Conversion Rate %", "expression": "AVERAGE('gold_channel_performance'[conversion_rate])", "formatString": "0.0\"%\""},
+          {"name": "Channel Revenue", "expression": "SUM('gold_channel_performance'[total_revenue])", "formatString": "\\$#,##0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_channel_performance",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_channel_performance",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      },
+      {
+        "name": "gold_weekly_trends",
+        "columns": [
+          {"name": "week", "dataType": "dateTime", "sourceColumn": "week"},
+          {"name": "bookings", "dataType": "int64", "sourceColumn": "bookings"},
+          {"name": "total_revenue", "dataType": "double", "sourceColumn": "total_revenue"},
+          {"name": "adr", "dataType": "double", "sourceColumn": "adr"},
+          {"name": "avg_los", "dataType": "double", "sourceColumn": "avg_los"},
+          {"name": "gold_timestamp", "dataType": "dateTime", "sourceColumn": "gold_timestamp"}
+        ],
+        "measures": [
+          {"name": "Weekly Revenue", "expression": "SUM('gold_weekly_trends'[total_revenue])", "formatString": "\\$#,##0"},
+          {"name": "Weekly Bookings", "expression": "SUM('gold_weekly_trends'[bookings])", "formatString": "#,##0"}
+        ],
+        "partitions": [
+          {
+            "name": "gold_weekly_trends",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "gold_weekly_trends",
+              "schemaName": "dbo",
+              "expressionSource": "DatabaseQuery"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
