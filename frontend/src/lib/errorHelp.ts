@@ -56,6 +56,74 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     };
   }
 
+  // Invalid / too-long name (validation, not a conflict)
+  if (
+    m.includes("invalid character") ||
+    m.includes("contains invalid") ||
+    (m.includes("name") && m.includes("must be") && m.includes("character"))
+  ) {
+    return {
+      title: "That name isn't allowed",
+      guidance:
+        "The name has unsupported characters or is too long (max 100 — letters, numbers, spaces, and , & _ - ( ) . only). Enter a shorter, simpler name and retry.",
+      retryable: true,
+    };
+  }
+
+  // Storage account name globally taken / unavailable
+  if (m.includes("storage") && (m.includes("already taken") || m.includes("not available") || m.includes("alreadyexists"))) {
+    return {
+      title: "Storage account name taken",
+      guidance:
+        "Storage account names must be globally unique, and this one is in use. Leave the name blank to auto-generate one (or pick another), then retry.",
+      retryable: true,
+    };
+  }
+
+  // Missing Azure inputs for Azure-provisioning scenarios
+  if (m.includes("requires subscription") || m.includes("azure credentials") || (m.includes("subscription") && m.includes("required"))) {
+    return {
+      title: "Azure details needed",
+      guidance:
+        "This scenario provisions Azure resources, so it needs an Azure subscription, a resource group, and sign-in. Select those, then retry.",
+      retryable: true,
+    };
+  }
+
+  // Model / resource quota (e.g. gpt-4o-mini for the Foundry agent)
+  if (m.includes("quota") || (m.includes("no capacity") && m.includes("region"))) {
+    return {
+      title: "Not enough quota",
+      guidance:
+        "Your subscription has no quota for a required resource (often an AI model like gpt-4o-mini) in the chosen region. Pick a region where you have quota, or request a quota increase in the Azure/Foundry portal, then retry.",
+      retryable: true,
+    };
+  }
+
+  // Azure resource provider not registered
+  if (m.includes("not registered") || m.includes("subscriptionnotregistered")) {
+    return {
+      title: "Azure resource provider not registered",
+      guidance:
+        "A required Azure resource provider isn't registered on your subscription (e.g. Microsoft.Storage or Microsoft.Sql). Register it under Subscription → Resource providers in the Azure portal, then retry.",
+      retryable: true,
+    };
+  }
+
+  // Region / subscription provisioning policy restriction
+  if (
+    (m.includes("restricted") && (m.includes("region") || m.includes("provision"))) ||
+    m.includes("not available in this region") ||
+    m.includes("disallowed by policy")
+  ) {
+    return {
+      title: "Region blocked for this subscription",
+      guidance:
+        "Your subscription's policy blocks provisioning in the selected region. Choose a different Azure region and retry.",
+      retryable: true,
+    };
+  }
+
   // Workspace name conflict
   if ((m.includes("name") && (m.includes("conflict") || m.includes("already") || m.includes("taken") || m.includes("exists"))) || m.includes("409")) {
     return {
@@ -106,10 +174,13 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     };
   }
 
-  // Fallback — show the raw message, still offer retry
+  // Fallback — no specific pattern matched. Show the (coerced, readable) detail
+  // so nothing is hidden, with actionable guidance when there's no detail.
   return {
     title: "Deployment failed",
-    guidance: msg || "An unexpected error occurred during deployment.",
+    guidance:
+      msg ||
+      "An unexpected error occurred. Wait a moment and retry; if it keeps failing, check that your Fabric capacity is active and that you have permissions in the selected Azure subscription.",
     retryable: true,
   };
 }
