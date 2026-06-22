@@ -2019,6 +2019,90 @@ export default function DemoDetailPage() {
               </>
             )}
 
+            {/* === FABRIC & FOUNDRY AI AGENT === */}
+            {isCustomMode && selectedScenario?.id === "fabric-foundry-agent" && (
+              <>
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <ArrowRightRegular fontSize={16} /> Data Flow
+                  </div>
+                  <div style={{ padding: "20px" }}>
+                    <div className={styles.flowGroupLabel}>Data Foundation</div>
+                    <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
+                      <FlowSteps steps={[
+                        { label: "Source", value: "CSV Files", color: "#1f6feb" },
+                        { label: "Lakehouse", value: "Delta Tables", color: "#3fb68b" },
+                        { label: "Notebooks", value: "Bronze→Gold", color: "#238636" },
+                        { label: "Data Agent", value: "Over Gold", color: "#8957e5" },
+                      ]} />
+                    </div>
+                    <div className={styles.flowGroupLabel}>AI Agent · Microsoft Foundry</div>
+                    <div className={styles.flowSubRow}>
+                      <FlowSteps steps={[
+                        { label: "Foundry", value: "gpt-4o-mini", color: "#8957e5" },
+                        { label: "AI Search", value: "Knowledge Base", color: "#bb8009" },
+                        { label: "Agent", value: "Grounded on Data", color: "#da3633" },
+                      ]} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <DatabaseRegular fontSize={16} /> What Gets Created
+                  </div>
+                  <div className={styles.sectionBody}>
+                    <div className={styles.groupLabel}>Azure &amp; Foundry Resources</div>
+                    {[
+                      { type: "FoundryAccount", name: "Microsoft Foundry Account + Project", description: "AI Foundry (AIServices) account with a project and system-assigned identity", badge: "Azure" },
+                      { type: "ModelDeployment", name: "gpt-4o-mini", description: "OpenAI model deployment that powers the grounded agent", badge: "Azure" },
+                      { type: "SearchService", name: "Azure AI Search", description: "Search service backing the Foundry IQ knowledge base", badge: "Azure" },
+                      { type: "KnowledgeBase", name: "Foundry IQ Knowledge Base", description: "Knowledge source + base built over the Fabric data agent", badge: "Foundry" },
+                      { type: "Agent", name: "Grounded Foundry Agent", description: "Conversational agent grounded on your gold data", badge: "Foundry" },
+                      { type: "RBACRole", name: "Managed-identity role assignments", description: "Wires the workspace and Foundry identities together", badge: "RBAC" },
+                    ].map((item, i) => (
+                      <div key={i} className={styles.itemRow}>
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="warning">{item.badge}</Badge>
+                      </div>
+                    ))}
+                    <div className={styles.groupLabel}>Fabric Resources</div>
+                    {[
+                      { type: "Workspace", name: "New Fabric Workspace", description: "Dedicated workspace for this deployment" },
+                      { type: "Lakehouse", name: demo.fabricItems.find(f => f.type === "Lakehouse")?.name ?? "analytics_lakehouse", description: "Central data lakehouse (Bronze → Silver → Gold)" },
+                      ...demo.fabricItems
+                        .filter(f => ["Notebook", "SemanticModel", "Report"].includes(f.type))
+                        .map(f => ({ type: f.type, name: f.name, description: f.description })),
+                      { type: "DataAgent", name: "analytics_data_agent", description: "Fabric data agent published over the gold tables" },
+                    ].map((item, i, arr) => (
+                      <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {renderSampleDataSection()}
+              </>
+            )}
+
             {/* === EXTERNAL DATABASE INTEGRATION (Mirroring) === */}
             {isCustomMode && selectedScenario?.id === "external-data-integration" && (
               <>
