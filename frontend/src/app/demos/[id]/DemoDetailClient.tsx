@@ -1027,7 +1027,7 @@ export default function DemoDetailPage() {
   const id = params.id as string;
   const demo = DEMOS[id];
   const isCustomMode = searchParams.get("mode") === "custom";
-  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken } = useAuth();
+  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, ensureFoundryConsent } = useAuth();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
@@ -1368,6 +1368,16 @@ export default function DemoDetailPage() {
     const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
     try {
+      // Foundry scenario: secure the Azure AI Search + Foundry Agent consent in a
+      // SINGLE popup tied to THIS click (fresh user activation), before the long
+      // token/deploy flow consumes the gesture. Otherwise the late popup is blocked
+      // by the browser and the knowledge-base + agent steps skip. Best-effort: if
+      // the user dismisses it, those two steps degrade to manual follow-ups.
+      if (selectedScenario?.id === "fabric-foundry-agent") {
+        try {
+          await ensureFoundryConsent();
+        } catch { /* consent dismissed — Foundry IQ steps will skip gracefully */ }
+      }
       let fabricToken = "";
       let storageToken = "";
       let oneLakeToken = "";
@@ -1410,11 +1420,13 @@ export default function DemoDetailPage() {
       // manual follow-ups if a token is missing.
       if (selectedScenario?.id === "fabric-foundry-agent") {
         try {
-          const searchTok = await getSearchToken({ allowRedirect: false });
+          // Consent was secured up front via ensureFoundryConsent(), so these
+          // resolve silently here — no late, browser-blocked popup.
+          const searchTok = await getSearchToken({ interactive: false });
           if (searchTok) headers["X-Search-Token"] = searchTok;
         } catch { /* continue — knowledge base becomes a manual step */ }
         try {
-          const agentTok = await getAgentToken({ allowRedirect: false });
+          const agentTok = await getAgentToken({ interactive: false });
           if (agentTok) headers["X-Agent-Token"] = agentTok;
         } catch { /* continue — agent becomes a manual step */ }
       }
@@ -2961,6 +2973,28 @@ export default function DemoDetailPage() {
                             {friendly.guidance}
                           </MessageBarBody>
                         </MessageBar>
+                        {error && error.trim() !== friendly.guidance.trim() && (
+                          <details style={{ marginBottom: 12 }}>
+                            <summary style={{ cursor: "pointer", fontSize: 12, color: "#605e5c" }}>
+                              Technical details
+                            </summary>
+                            <pre
+                              style={{
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
+                                fontSize: 12,
+                                margin: "8px 0 0",
+                                padding: 8,
+                                background: "#faf9f8",
+                                border: "1px solid #edebe9",
+                                borderRadius: 4,
+                                color: "#323130",
+                              }}
+                            >
+                              {error}
+                            </pre>
+                          </details>
+                        )}
                         {deployedWorkspaceId && !cleaned && (
                           <Button
                             appearance="outline"

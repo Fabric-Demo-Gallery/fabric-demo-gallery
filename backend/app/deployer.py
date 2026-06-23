@@ -536,7 +536,14 @@ async def deploy_demo(
                 if e.status == 409:
                     step.detail = f"A workspace named '{workspace_name}' already exists. Please choose a different name."
                 elif e.status == 403:
-                    step.detail = "You don't have permission to create workspaces. Contact your Fabric admin."
+                    # Surface Fabric's actual reason — a 403 here can be workspace-create
+                    # rights OR capacity-assignment rights on the selected capacity, and
+                    # only Fabric's message says which. Don't hide it behind a guess.
+                    step.detail = (
+                        "Fabric denied the workspace creation (403). This is a permission on "
+                        "either creating workspaces or assigning one to the selected capacity. "
+                        "Fabric said: " + (e.detail[:400] if e.detail else "(no detail returned)")
+                    )
                 elif e.status == 401:
                     step.detail = "Authentication expired. Please sign out and sign in again."
                 else:
