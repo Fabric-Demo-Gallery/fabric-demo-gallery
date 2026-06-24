@@ -35,9 +35,12 @@ STORAGE_BLOB_DATA_CONTRIBUTOR = "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
 SEARCH_INDEX_DATA_READER = "1407120a-92aa-4202-b7e9-c0e197c71c8f"
 SEARCH_SERVICE_CONTRIBUTOR = "7ca78c08-252a-4471-8644-bb5ff32d4ba0"
 COGNITIVE_SERVICES_USER = "a97b65f3-24c7-4388-baec-2e87135dc908"
+# "Azure AI Developer" carries Microsoft.MachineLearningServices/workspaces/*/action
+# (incl. .../agents/*) — the action the Foundry Agent Service checks at create-agent.
 AZURE_AI_DEVELOPER = "64702f94-c441-49e6-a78b-ef80e0188fee"
-# "Foundry User" (formerly "Azure AI User") — the documented role for create/edit
-# agents; its Microsoft.CognitiveServices/* dataAction grants the agents data-plane.
+# "Foundry User" (formerly "Azure AI User") grants the Microsoft.CognitiveServices/*
+# data-plane (model/inference) but has NO MachineLearningServices actions, so it alone
+# cannot create agents — use it ALONGSIDE Azure AI Developer, not instead of it.
 FOUNDRY_USER = "53ca6127-db72-4b80-b1b0-d745d6d5456d"
 
 

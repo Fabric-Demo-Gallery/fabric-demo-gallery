@@ -2795,13 +2795,23 @@ async def _deploy_fabric_foundry(
                         backend_mi_agent_token = await azure_client.get_managed_identity_token("https://ai.azure.com")
                         mi_oid = azure_client.oid_from_token(backend_mi_agent_token)
                         if mi_oid:
-                            from app.azure_client import FOUNDRY_USER
-                            # "Foundry User" (formerly Azure AI User) at the PROJECT
-                            # scope is the DOCUMENTED role for create/edit agents — its
-                            # Microsoft.CognitiveServices/* dataAction grants the agents
-                            # data-plane action (Azure AI Developer does NOT).
+                            from app.azure_client import AZURE_AI_DEVELOPER, FOUNDRY_USER
+                            # The Foundry Agent Service authorizes create-agent via the
+                            # Microsoft.MachineLearningServices/workspaces/agents/* ACTION
+                            # (the 403 names it explicitly). Only "Azure AI Developer"
+                            # carries those workspace actions; "Foundry User" has zero
+                            # MachineLearningServices actions and can never satisfy it.
+                            # Also grant "Foundry User" for the agent's CognitiveServices
+                            # data-plane. Grant at the account scope (inherits to every
+                            # project) AND the project scope, since the data-plane may
+                            # evaluate either resource.
                             project_scope = f"{foundry_scope}/projects/{foundry_project}"
-                            await azure_client.assign_role(project_scope, FOUNDRY_USER, mi_oid)
+                            for _scope in (foundry_scope, project_scope):
+                                for _role in (AZURE_AI_DEVELOPER, FOUNDRY_USER):
+                                    try:
+                                        await azure_client.assign_role(_scope, _role, mi_oid)
+                                    except Exception as grant_err:  # noqa: BLE001 — best-effort; keep the MI token
+                                        logger.warning("[foundry] MI role grant skipped (%s): %s", _role, grant_err)
                     except Exception as mie:  # noqa: BLE001
                         logger.warning("[foundry] backend-MI agent grant skipped: %s", mie)
                         backend_mi_agent_token = None
@@ -2887,14 +2897,14 @@ async def _deploy_fabric_foundry(
                 # propagating through Entra / the data-plane when we first call the
                 # agents API (can take a couple of minutes).
                 agent = {}
-                for attempt in range(9):
+                for attempt in range(12):
                     try:
                         agent = await ag.create_agent(
                             f"{demo_id}-agent"[:60], DEPLOYMENT_NAME, search_endpoint, kb_name, conn_name,
                         )
                         break
                     except FoundryAgentError as ae:
-                        if ae.status in (401, 403) and attempt < 8:
+                        if ae.status in (401, 403) and attempt < 11:
                             await asyncio.sleep(20)
                             continue
                         raise
