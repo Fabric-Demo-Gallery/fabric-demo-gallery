@@ -2787,26 +2787,52 @@ async def _deploy_fabric_foundry(
                 await azure_client.assign_role(search_scope, SEARCH_SERVICE_CONTRIBUTOR, project_principal_id)
                 # Search MI → invoke the Foundry data agent.
                 await azure_client.assign_role(foundry_scope, COGNITIVE_SERVICES_USER, search_principal_id)
-                # Backend MI → create the agent in the project, so the agent step
-                # needs no per-user ai.azure.com token. Best-effort; granted here so
-                # the role has time to propagate before the agent step runs.
+                # Grant the agent-creating identities the Foundry data-plane role on
+                # the project. VERIFIED end-to-end: a token carrying only "Foundry User"
+                # (Microsoft.CognitiveServices/*) can create agents — the 403's
+                # "MachineLearningServices/agents" wording is misleading. We grant to
+                # BOTH identities the agent step may use:
+                #   • the deploying USER (caller) — makes a delegated ai.azure.com token
+                #     (agent_token) work; reliable because the user is in their own
+                #     tenant and owns the resources just created; and
+                #   • the backend MANAGED IDENTITY — the no-consent fallback, which only
+                #     works when the deploy targets the gallery's own tenant (a single-
+                #     tenant MI can't be granted in another tenant's directory).
+                # "Azure AI Developer" is added too (broader agent actions).
+                from app.azure_client import AZURE_AI_DEVELOPER, FOUNDRY_USER
+                project_scope = f"{foundry_scope}/projects/{foundry_project}"
+                grant_notes: list[str] = []
+
+                async def _grant_foundry_role(principal_id: str, principal_type: str, label: str) -> None:
+                    if not principal_id:
+                        grant_notes.append(f"{label}: no-oid")
+                        return
+                    ok, err = False, ""
+                    for _scope in (foundry_scope, project_scope):
+                        for _role in (FOUNDRY_USER, AZURE_AI_DEVELOPER):
+                            try:
+                                await azure_client.assign_role(_scope, _role, principal_id, principal_type)
+                                ok = True
+                            except Exception as ge:  # noqa: BLE001 — best-effort per assignment
+                                err = str(ge)
+                                logger.warning("[foundry] grant %s/%s skipped: %s", label, _role, ge)
+                    grant_notes.append(f"{label}: {'ok' if ok else 'FAILED ' + err[:80]}")
+
+                # The deploying user — enables the delegated agent_token path.
+                await _grant_foundry_role(azure_client.get_caller_oid(), "User", "user")
+                # The backend managed identity — the no-consent fallback.
                 if not agent_token:
                     try:
                         backend_mi_agent_token = await azure_client.get_managed_identity_token("https://ai.azure.com")
-                        mi_oid = azure_client.oid_from_token(backend_mi_agent_token)
-                        if mi_oid:
-                            from app.azure_client import FOUNDRY_USER
-                            # "Foundry User" (formerly Azure AI User) at the PROJECT
-                            # scope is the DOCUMENTED role for create/edit agents — its
-                            # Microsoft.CognitiveServices/* dataAction grants the agents
-                            # data-plane action (Azure AI Developer does NOT).
-                            project_scope = f"{foundry_scope}/projects/{foundry_project}"
-                            await azure_client.assign_role(project_scope, FOUNDRY_USER, mi_oid)
+                        await _grant_foundry_role(
+                            azure_client.oid_from_token(backend_mi_agent_token), "ServicePrincipal", "backend-mi"
+                        )
                     except Exception as mie:  # noqa: BLE001
-                        logger.warning("[foundry] backend-MI agent grant skipped: %s", mie)
+                        logger.warning("[foundry] backend-MI token/grant skipped: %s", mie)
                         backend_mi_agent_token = None
+                        grant_notes.append("backend-mi: token unavailable")
                 step.status = "completed"
-                step.detail = "Granted search/Foundry managed-identity roles"
+                step.detail = "Foundry role grants — " + "; ".join(grant_notes)
             except (AzureError, Exception) as e:  # noqa: BLE001
                 logger.warning("[foundry] rbac skipped: %s", e)
                 step.status = "skipped"
@@ -2872,6 +2898,13 @@ async def _deploy_fabric_foundry(
                 foundry_key = await azure_client.get_cognitive_account_key(subscription_id, resource_group, foundry_account)
             except Exception as e:  # noqa: BLE001
                 logger.warning("[foundry] foundry account key fetch failed: %s", e)
+        # Which identity actually creates the agent — surfaced in the step detail so a
+        # failure is diagnosable (user-token = delegated; backend-mi = no-consent MI).
+        _auth_label = (
+            "user-token" if agent_token else
+            "backend-mi" if backend_mi_agent_token else
+            "account-key" if foundry_key else "none"
+        )
         if kb_ready and (agent_auth or foundry_key):
             conn_name = f"{demo_id}-kb-conn"[:60]
             project_endpoint = (
@@ -2887,24 +2920,24 @@ async def _deploy_fabric_foundry(
                 # propagating through Entra / the data-plane when we first call the
                 # agents API (can take a couple of minutes).
                 agent = {}
-                for attempt in range(9):
+                for attempt in range(12):
                     try:
                         agent = await ag.create_agent(
                             f"{demo_id}-agent"[:60], DEPLOYMENT_NAME, search_endpoint, kb_name, conn_name,
                         )
                         break
                     except FoundryAgentError as ae:
-                        if ae.status in (401, 403) and attempt < 8:
+                        if ae.status in (401, 403) and attempt < 11:
                             await asyncio.sleep(20)
                             continue
                         raise
                 agent_created = agent.get("name", f"{demo_id}-agent")
                 step.status = "completed"
-                step.detail = f"Agent '{agent_created}' ready — ask it about your data"
+                step.detail = f"Agent '{agent_created}' ready (auth: {_auth_label}) — ask it about your data"
             except Exception as e:  # noqa: BLE001
                 logger.warning("[foundry] agent creation skipped: %s", e)
                 step.status = "skipped"
-                step.detail = f"Agent skipped — finish it in the Foundry portal: {str(e)[:300]}"
+                step.detail = f"Agent skipped (auth: {_auth_label}) — {str(e)[:280]}"
                 next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
             finally:
                 await ag.close()
