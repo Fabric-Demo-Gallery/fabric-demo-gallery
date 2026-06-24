@@ -2806,8 +2806,18 @@ async def _deploy_fabric_foundry(
         step = _find_step(steps, "knowledge")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
-        if search_service and artifact_id and search_token:
-            iq = FoundryIQClient(search_token, search_service)
+        # Prefer the Search service ADMIN KEY (fetched via ARM with the management
+        # token every user grants) so this works for EVERYONE — not just users who
+        # consented to the search.azure.com delegated scope. Fall back to the user's
+        # delegated search token if the key can't be fetched.
+        search_key = None
+        if search_service and azure_client and subscription_id and resource_group:
+            try:
+                search_key = await azure_client.get_search_admin_key(subscription_id, resource_group, search_service)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[foundry] search admin key fetch failed: %s", e)
+        if search_service and artifact_id and (search_key or search_token):
+            iq = FoundryIQClient(search_service, token=search_token, api_key=search_key)
             try:
                 await iq.create_fabric_knowledge_source(ks_name, ws_id, artifact_id)
                 await iq.create_knowledge_base(kb_name, ks_name, foundry_account, DEPLOYMENT_NAME, MODEL_NAME)
@@ -2823,21 +2833,29 @@ async def _deploy_fabric_foundry(
                 await iq.close()
         else:
             step.status = "skipped"
-            step.detail = "Skipped — search service, data agent, or token unavailable"
-            if not search_token:
-                next_steps.append("Re-deploy with Azure AI Search consent to auto-create the knowledge base.")
+            step.detail = "Skipped — search service or data agent unavailable"
+            next_steps.append("In Foundry IQ: create a knowledge base over the Fabric data agent.")
         yield {"event": "step", "data": step.to_dict()}
 
         # 12. Create the project connection + Foundry agent grounded on the KB.
         step = _find_step(steps, "agent")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
-        if kb_ready and agent_token:
+        # Prefer the delegated ai.azure.com token (known-good path); if absent, fall
+        # back to the Foundry account key so non-consented users still get an agent
+        # attempt instead of an automatic skip.
+        foundry_key = None
+        if kb_ready and not agent_token and azure_client and subscription_id and resource_group:
+            try:
+                foundry_key = await azure_client.get_cognitive_account_key(subscription_id, resource_group, foundry_account)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[foundry] foundry account key fetch failed: %s", e)
+        if kb_ready and (agent_token or foundry_key):
             conn_name = f"{demo_id}-kb-conn"[:60]
             project_endpoint = (
                 f"https://{foundry_account}.services.ai.azure.com/api/projects/{foundry_project}"
             )
-            ag = FoundryAgentClient(agent_token, project_endpoint)
+            ag = FoundryAgentClient(project_endpoint, token=agent_token, api_key=foundry_key)
             try:
                 await azure_client.create_kb_connection(
                     subscription_id, resource_group, foundry_account, foundry_project,
@@ -2858,8 +2876,8 @@ async def _deploy_fabric_foundry(
                 await ag.close()
         else:
             step.status = "skipped"
-            step.detail = "Skipped — knowledge base or token unavailable; finish in the Foundry portal"
-            if kb_ready and not agent_token:
+            step.detail = "Skipped — knowledge base unavailable; finish in the Foundry portal"
+            if kb_ready:
                 next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
         yield {"event": "step", "data": step.to_dict()}
 
