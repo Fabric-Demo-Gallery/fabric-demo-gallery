@@ -1379,12 +1379,16 @@ export default function DemoDetailPage() {
       let oneLakeToken = "";
       if (account) {
         const { msalInstance } = await import("@/lib/msal");
+        // Force-refresh so a long deploy starts with full-lifetime tokens. MSAL
+        // returns cached access tokens until they actually expire, so a near-expiry
+        // cached token (especially the management token used late for Azure
+        // provisioning) would otherwise expire mid-deploy and fail that step.
         [fabricToken, storageToken] = await Promise.all([
-          getFabricToken(),
-          getStorageToken(),
+          getFabricToken({ forceRefresh: true }),
+          getStorageToken({ forceRefresh: true }),
         ]);
         try {
-          const res = await msalInstance.acquireTokenSilent({ scopes: oneLakeScopes, account });
+          const res = await msalInstance.acquireTokenSilent({ scopes: oneLakeScopes, account, forceRefresh: true });
           oneLakeToken = res.accessToken;
         } catch {
           try {
@@ -1406,7 +1410,7 @@ export default function DemoDetailPage() {
       }
       if (selectedScenario?.requiresAzure) {
         try {
-          const mgmtTok = await getManagementToken();
+          const mgmtTok = await getManagementToken({ forceRefresh: true });
           if (mgmtTok) headers["X-Management-Token"] = mgmtTok;
         } catch { /* continue without management token */ }
       }
@@ -1423,11 +1427,11 @@ export default function DemoDetailPage() {
           // AADSTS invalid_client, and that errored popup was hanging the whole
           // deploy. The knowledge-base + agent steps then degrade to manual
           // follow-ups (surfaced in the post-deploy guidance).
-          const searchTok = await getSearchToken({ interactive: false });
+          const searchTok = await getSearchToken({ interactive: false, forceRefresh: true });
           if (searchTok) headers["X-Search-Token"] = searchTok;
         } catch { /* continue — knowledge base becomes a manual step */ }
         try {
-          const agentTok = await getAgentToken({ interactive: false });
+          const agentTok = await getAgentToken({ interactive: false, forceRefresh: true });
           if (agentTok) headers["X-Agent-Token"] = agentTok;
         } catch { /* continue — agent becomes a manual step */ }
       }
