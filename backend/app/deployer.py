@@ -2795,15 +2795,13 @@ async def _deploy_fabric_foundry(
                         backend_mi_agent_token = await azure_client.get_managed_identity_token("https://ai.azure.com")
                         mi_oid = azure_client.oid_from_token(backend_mi_agent_token)
                         if mi_oid:
-                            from app.azure_client import AZURE_AI_DEVELOPER
-                            # Grant at the RESOURCE GROUP scope. The agents data-plane
-                            # evaluates Microsoft.MachineLearningServices/workspaces/agents
-                            # — a DIFFERENT ARM resource than the CognitiveServices
-                            # account/project — so an account-scoped grant doesn't cover
-                            # it. Azure AI Developer includes the MachineLearningServices
-                            # workspace actions, so a RG-scope grant covers both providers.
-                            rg_scope = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
-                            await azure_client.assign_role(rg_scope, AZURE_AI_DEVELOPER, mi_oid)
+                            from app.azure_client import FOUNDRY_USER
+                            # "Foundry User" (formerly Azure AI User) at the PROJECT
+                            # scope is the DOCUMENTED role for create/edit agents — its
+                            # Microsoft.CognitiveServices/* dataAction grants the agents
+                            # data-plane action (Azure AI Developer does NOT).
+                            project_scope = f"{foundry_scope}/projects/{foundry_project}"
+                            await azure_client.assign_role(project_scope, FOUNDRY_USER, mi_oid)
                     except Exception as mie:  # noqa: BLE001
                         logger.warning("[foundry] backend-MI agent grant skipped: %s", mie)
                         backend_mi_agent_token = None
