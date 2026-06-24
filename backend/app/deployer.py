@@ -2796,7 +2796,16 @@ async def _deploy_fabric_foundry(
                         mi_oid = azure_client.oid_from_token(backend_mi_agent_token)
                         if mi_oid:
                             from app.azure_client import AZURE_AI_DEVELOPER
+                            # Grant at the account scope (inherited) AND the project
+                            # scope itself — the agents data-plane evaluates the
+                            # project-scoped assignment for create-agent.
                             await azure_client.assign_role(foundry_scope, AZURE_AI_DEVELOPER, mi_oid)
+                            try:
+                                await azure_client.assign_role(
+                                    f"{foundry_scope}/projects/{foundry_project}", AZURE_AI_DEVELOPER, mi_oid
+                                )
+                            except Exception as pe:  # noqa: BLE001 — best-effort; keep the MI token
+                                logger.warning("[foundry] project-scope MI grant skipped: %s", pe)
                     except Exception as mie:  # noqa: BLE001
                         logger.warning("[foundry] backend-MI agent grant skipped: %s", mie)
                         backend_mi_agent_token = None
@@ -2879,17 +2888,18 @@ async def _deploy_fabric_foundry(
                     conn_name, search_endpoint, kb_name,
                 )
                 # Retry on 401/403 — the backend-MI role assignment may still be
-                # propagating through Entra when we first call the agents API.
+                # propagating through Entra / the data-plane when we first call the
+                # agents API (can take a couple of minutes).
                 agent = {}
-                for attempt in range(5):
+                for attempt in range(9):
                     try:
                         agent = await ag.create_agent(
                             f"{demo_id}-agent"[:60], DEPLOYMENT_NAME, search_endpoint, kb_name, conn_name,
                         )
                         break
                     except FoundryAgentError as ae:
-                        if ae.status in (401, 403) and attempt < 4:
-                            await asyncio.sleep(15)
+                        if ae.status in (401, 403) and attempt < 8:
+                            await asyncio.sleep(20)
                             continue
                         raise
                 agent_created = agent.get("name", f"{demo_id}-agent")
@@ -2898,7 +2908,7 @@ async def _deploy_fabric_foundry(
             except Exception as e:  # noqa: BLE001
                 logger.warning("[foundry] agent creation skipped: %s", e)
                 step.status = "skipped"
-                step.detail = f"Agent skipped — create it in the Foundry portal: {str(e)[:120]}"
+                step.detail = f"Agent skipped — finish it in the Foundry portal: {str(e)[:300]}"
                 next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
             finally:
                 await ag.close()
