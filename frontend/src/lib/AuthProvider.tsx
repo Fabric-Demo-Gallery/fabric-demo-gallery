@@ -23,7 +23,10 @@ const IS_DEV_MODE = !process.env.NEXT_PUBLIC_AZURE_CLIENT_ID;
 // allowRedirect: allow full-page redirect as a last resort if the popup fails
 // (default true). Set false for optional/best-effort tokens so a consent failure
 // throws (and the caller skips it) instead of navigating the whole page away.
-type TokenOptions = { interactive?: boolean; allowRedirect?: boolean };
+// forceRefresh: bypass MSAL's access-token cache and mint a fresh token from the
+// refresh token. Use before a long-running deploy so a near-expiry cached token
+// doesn't expire mid-deploy.
+type TokenOptions = { interactive?: boolean; allowRedirect?: boolean; forceRefresh?: boolean };
 
 const DEV_ACCOUNT = {
   homeAccountId: "dev-local",
@@ -40,8 +43,8 @@ interface AuthState {
   authError: string;
   login: () => Promise<void>;
   logout: () => void;
-  getFabricToken: () => Promise<string>;
-  getStorageToken: () => Promise<string>;
+  getFabricToken: (options?: TokenOptions) => Promise<string>;
+  getStorageToken: (options?: TokenOptions) => Promise<string>;
   getManagementToken: (options?: TokenOptions) => Promise<string>;
   getSearchToken: (options?: TokenOptions) => Promise<string>;
   getAgentToken: (options?: TokenOptions) => Promise<string>;
@@ -145,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await msalInstance.acquireTokenSilent({
           scopes,
           account,
+          forceRefresh: options?.forceRefresh,
         });
         return result.accessToken;
       } catch (e) {
@@ -172,12 +176,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const getFabricToken = useCallback(
-    () => getToken(fabricScopes),
+    (options?: TokenOptions) => getToken(fabricScopes, options),
     [getToken]
   );
 
   const getStorageToken = useCallback(
-    () => getToken(storageScopes),
+    (options?: TokenOptions) => getToken(storageScopes, options),
     [getToken]
   );
 
