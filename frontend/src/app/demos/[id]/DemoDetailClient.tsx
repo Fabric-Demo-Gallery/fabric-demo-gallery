@@ -1033,7 +1033,7 @@ export default function DemoDetailPage() {
   const id = params.id as string;
   const demo = DEMOS[id];
   const isCustomMode = searchParams.get("mode") === "custom";
-  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, ensureFoundryConsent } = useAuth();
+  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken } = useAuth();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
@@ -1374,16 +1374,6 @@ export default function DemoDetailPage() {
     const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
     try {
-      // Foundry scenario: secure the Azure AI Search + Foundry Agent consent in a
-      // SINGLE popup tied to THIS click (fresh user activation), before the long
-      // token/deploy flow consumes the gesture. Otherwise the late popup is blocked
-      // by the browser and the knowledge-base + agent steps skip. Best-effort: if
-      // the user dismisses it, those two steps degrade to manual follow-ups.
-      if (selectedScenario?.id === "fabric-foundry-agent") {
-        try {
-          await ensureFoundryConsent();
-        } catch { /* consent dismissed — Foundry IQ steps will skip gracefully */ }
-      }
       let fabricToken = "";
       let storageToken = "";
       let oneLakeToken = "";
@@ -1426,8 +1416,13 @@ export default function DemoDetailPage() {
       // manual follow-ups if a token is missing.
       if (selectedScenario?.id === "fabric-foundry-agent") {
         try {
-          // Consent was secured up front via ensureFoundryConsent(), so these
-          // resolve silently here — no late, browser-blocked popup.
+          // Best-effort, SILENT only. If the Azure AI Search + Foundry data-plane
+          // scopes are already consented (e.g. admin-consented in the tenant), the
+          // token resolves and the Foundry IQ steps run. If not, we deliberately do
+          // NOT open a consent popup here: some tenants reject these scopes with
+          // AADSTS invalid_client, and that errored popup was hanging the whole
+          // deploy. The knowledge-base + agent steps then degrade to manual
+          // follow-ups (surfaced in the post-deploy guidance).
           const searchTok = await getSearchToken({ interactive: false });
           if (searchTok) headers["X-Search-Token"] = searchTok;
         } catch { /* continue — knowledge base becomes a manual step */ }

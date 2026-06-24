@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthProvider";
-import { getJobs, deleteJobWorkspace } from "@/lib/api";
+import { getJobs, deleteJobWorkspace, cancelJob } from "@/lib/api";
 import type { JobSummary } from "@/lib/api";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { explainError } from "@/lib/errorHelp";
@@ -22,6 +22,7 @@ import {
   OpenRegular,
   DeleteRegular,
   EyeRegular,
+  DismissRegular,
 } from "@fluentui/react-icons";
 
 const DEMO_TITLES: Record<string, string> = {
@@ -146,6 +147,12 @@ function StatusBadge({ status }: { status: string }) {
           Pending
         </Badge>
       );
+    case "cancelled":
+      return (
+        <Badge appearance="tint" color="subtle" size="small">
+          Cancelled
+        </Badge>
+      );
     default:
       return <Badge appearance="tint" size="small">{status}</Badge>;
   }
@@ -159,6 +166,7 @@ export default function MonitoringClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingJob, setDeletingJob] = useState<string | null>(null);
+  const [cancellingJob, setCancellingJob] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async () => {
     try {
@@ -200,6 +208,22 @@ export default function MonitoringClient() {
       alert(e instanceof Error ? e.message : "Delete failed");
     } finally {
       setDeletingJob(null);
+    }
+  };
+
+  // Cancel a stuck running/pending job so it stops showing as active. Does not
+  // delete any workspace that may have been partially created.
+  const handleCancel = async (job: JobSummary) => {
+    if (!confirm("Cancel this deployment? It will be marked cancelled.")) return;
+    setCancellingJob(job.job_id);
+    try {
+      const token = await getFabricToken();
+      await cancelJob(token, job.job_id);
+      await fetchJobs();
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Cancel failed");
+    } finally {
+      setCancellingJob(null);
     }
   };
 
@@ -353,6 +377,17 @@ export default function MonitoringClient() {
                           }
                         >
                           View
+                        </Button>
+                      )}
+                      {(job.status === "running" || job.status === "pending") && (
+                        <Button
+                          appearance="subtle"
+                          size="small"
+                          icon={<DismissRegular />}
+                          onClick={() => handleCancel(job)}
+                          disabled={cancellingJob === job.job_id}
+                        >
+                          {cancellingJob === job.job_id ? "..." : "Cancel"}
                         </Button>
                       )}
                       {job.status === "completed" && job.workspace_id && (
