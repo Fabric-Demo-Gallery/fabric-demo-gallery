@@ -38,15 +38,16 @@ class FoundryIQError(Exception):
 class FoundryIQClient:
     """Async client for the Azure AI Search data-plane (Foundry IQ KB/KS)."""
 
-    def __init__(self, search_token: str, service_name: str):
+    def __init__(self, service_name: str, *, token: str | None = None, api_key: str | None = None):
         self._endpoint = f"https://{service_name}.search.windows.net"
-        self._client = httpx.AsyncClient(
-            headers={
-                "Authorization": f"Bearer {search_token}",
-                "Content-Type": "application/json",
-            },
-            timeout=60.0,
-        )
+        headers = {"Content-Type": "application/json"}
+        # Prefer the service admin key (works for everyone); fall back to a
+        # delegated search.azure.com bearer token when only that is available.
+        if api_key:
+            headers["api-key"] = api_key
+        elif token:
+            headers["Authorization"] = f"Bearer {token}"
+        self._client = httpx.AsyncClient(headers=headers, timeout=60.0)
 
     async def close(self):
         await self._client.aclose()
@@ -139,15 +140,16 @@ class FoundryAgentClient:
 
     AGENT_API_VERSION = "v1"
 
-    def __init__(self, agent_token: str, project_endpoint: str):
+    def __init__(self, project_endpoint: str, *, token: str | None = None, api_key: str | None = None):
         self._endpoint = project_endpoint.rstrip("/")
-        self._client = httpx.AsyncClient(
-            headers={
-                "Authorization": f"Bearer {agent_token}",
-                "Content-Type": "application/json",
-            },
-            timeout=60.0,
-        )
+        headers = {"Content-Type": "application/json"}
+        # Prefer the delegated ai.azure.com bearer token (known-good path); fall
+        # back to the Foundry account key for users who haven't consented.
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        elif api_key:
+            headers["api-key"] = api_key
+        self._client = httpx.AsyncClient(headers=headers, timeout=60.0)
 
     async def close(self):
         await self._client.aclose()

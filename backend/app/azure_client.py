@@ -452,6 +452,40 @@ class AzureClient:
             raise AzureError(500, f"No keys returned for storage account '{account_name}'")
         return keys[0]["value"]
 
+    async def get_search_admin_key(
+        self, subscription_id: str, resource_group: str, service_name: str
+    ) -> str:
+        """Primary admin key of an Azure AI Search service (via ARM). Lets the
+        backend call the Search data-plane with api-key auth instead of a per-user
+        delegated token — so the Foundry IQ steps work for EVERY user, not only
+        ones who have consented to the search.azure.com scope."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Search/searchServices/{service_name}"
+            f"/listAdminKeys?api-version={SEARCH_API_VERSION}"
+        )
+        resp = await self._arm_request("POST", url)
+        key = resp.json().get("primaryKey")
+        if not key:
+            raise AzureError(500, f"No admin key returned for search service '{service_name}'")
+        return key
+
+    async def get_cognitive_account_key(
+        self, subscription_id: str, resource_group: str, account_name: str
+    ) -> str:
+        """First API key of a Cognitive Services / Foundry account (via ARM)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
+            f"/listKeys?api-version={COG_API_VERSION}"
+        )
+        resp = await self._arm_request("POST", url)
+        body = resp.json()
+        key = body.get("key1") or body.get("key2")
+        if not key:
+            raise AzureError(500, f"No key returned for account '{account_name}'")
+        return key
+
     # ── blob upload (SharedKeyLite auth) ─────────────────────────────────
 
     async def upload_blob(
