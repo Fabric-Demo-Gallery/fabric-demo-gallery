@@ -55,25 +55,25 @@ export function Breadcrumbs({
         boxSizing: "border-box",
       }}
     >
-      {crumbs.map((c, i) =>
-        c.href ? (
+      {crumbs.map((c, i) => {
+        const isLast = i === crumbs.length - 1;
+        const sep = !isLast && (
+          <span aria-hidden="true" style={{ margin: "0 8px", color: "#3fb68b", fontSize: "14px" }}>›</span>
+        );
+        return c.href ? (
           <span key={i}>
             <Link href={c.href} style={{ color: "#3fb68b", textDecoration: "none" }}>
               {c.label}
             </Link>
-            {i < crumbs.length - 1 && (
-              <span style={{ margin: "0 8px", color: "#3fb68b", fontSize: "14px" }}>›</span>
-            )}
+            {sep}
           </span>
         ) : (
-          <span key={i} style={{ color: "#e6edf3" }}>
+          <span key={i} style={{ color: "#e6edf3" }} aria-current={isLast ? "page" : undefined}>
             {c.label}
-            {i < crumbs.length - 1 && (
-              <span style={{ margin: "0 8px", color: "#3fb68b", fontSize: "14px" }}>›</span>
-            )}
+            {sep}
           </span>
-        )
-      )}
+        );
+      })}
     </nav>
   );
 }

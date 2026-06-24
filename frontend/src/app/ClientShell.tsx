@@ -31,6 +31,7 @@ import { AuthProvider } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { DeploymentProvider } from "@/lib/DeploymentContext";
 import NextLink from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 /* Microsoft Fabric "F" ribbon logo */
@@ -116,6 +117,7 @@ const useStyles = makeStyles({
 function Navbar() {
   const { account, login, logout, initialized } = useAuth();
   const styles = useStyles();
+  const pathname = usePathname();
 
   return (
     <header className={styles.topBar}>
@@ -125,17 +127,32 @@ function Navbar() {
           Demo Gallery
         </NextLink>
         <div className={styles.separator} />
-        <NextLink href="/" className={styles.navLink}>Demos</NextLink>
+        <NextLink
+          href="/"
+          className={styles.navLink}
+          aria-current={pathname === "/" ? "page" : undefined}
+          style={pathname === "/" ? { color: "#e6edf3" } : undefined}
+        >
+          Demos
+        </NextLink>
         {account && (
-          <NextLink href="/monitoring" className={styles.navLink}>Monitoring</NextLink>
+          <NextLink
+            href="/monitoring"
+            className={styles.navLink}
+            aria-current={pathname === "/monitoring" ? "page" : undefined}
+            style={pathname === "/monitoring" ? { color: "#e6edf3" } : undefined}
+          >
+            Monitoring
+          </NextLink>
         )}
         <a
           href="https://github.com/omerizm47/fabric-demo-gallery"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.navLink}
+          aria-label="GitHub repository (opens in a new tab)"
         >
-          GitHub <OpenRegular fontSize={11} style={{ marginLeft: 3, verticalAlign: "middle" }} />
+          GitHub <OpenRegular fontSize={11} aria-hidden style={{ marginLeft: 3, verticalAlign: "middle" }} />
         </a>
       </div>
       <div className={styles.rightGroup}>

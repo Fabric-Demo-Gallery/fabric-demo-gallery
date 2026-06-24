@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { industries } from "@/lib/industryCatalog";
 import { DEMOS } from "@/lib/demoCatalog";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
@@ -104,6 +105,25 @@ const styles = {
   },
 } as const;
 
+// A deployment option card. When there's no demo (coming soon) we render a
+// NON-interactive div with aria-disabled instead of a <Link href="#">, so
+// keyboard users can't tab to / activate a broken link (pointerEvents only
+// blocks the mouse).
+function DeployOption({ href, enabled, children }: { href: string; enabled: boolean; children: ReactNode }) {
+  if (!enabled) {
+    return (
+      <div aria-disabled="true" style={{ textDecoration: "none", display: "block", opacity: 0.5, pointerEvents: "none" }}>
+        {children}
+      </div>
+    );
+  }
+  return (
+    <Link href={href} style={{ textDecoration: "none", display: "block" }}>
+      {children}
+    </Link>
+  );
+}
+
 export function generateStaticParams() {
   return industries.filter((i) => i.enabled).map((i) => ({ industry: i.slug }));
 }
@@ -122,12 +142,12 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
     <div style={styles.page}>
       <Breadcrumbs industrySlug={industry.slug} />
       <div style={styles.inner}>
-        <div style={styles.title}>{industry.title}</div>
+        <h1 style={{ ...styles.title, marginTop: 0 }}>{industry.title}</h1>
         <div style={styles.desc}>{industry.description}</div>
         <div style={styles.grid}>
-          <Link href={industry.demoId ? `/demos/${industry.demoId}` : '#'} style={{ textDecoration: "none", pointerEvents: industry.demoId ? undefined : "none", opacity: industry.demoId ? 1 : 0.5 }}>
+          <DeployOption href={industry.demoId ? `/demos/${industry.demoId}` : "#"} enabled={!!industry.demoId}>
             <div style={styles.card}>
-              <div style={styles.cardTitle}>Standard Deployment</div>
+              <h2 style={{ ...styles.cardTitle, marginTop: 0 }}>Standard Deployment</h2>
               <div style={styles.cardDesc}>Preconfigured, ready-to-deploy solution for this industry.</div>
               {uniqueTypes.length > 0 && (
                 <div style={styles.itemStrip}>
@@ -140,20 +160,20 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
                 </div>
               )}
             </div>
-          </Link>
-          <Link
-            href={industry.demoId ? `/demos/${industry.demoId}?mode=custom` : '#'}
-            style={{ textDecoration: "none", pointerEvents: industry.demoId ? undefined : "none", opacity: industry.demoId ? 1 : 0.5 }}
+          </DeployOption>
+          <DeployOption
+            href={industry.demoId ? `/demos/${industry.demoId}?mode=custom` : "#"}
+            enabled={!!industry.demoId}
           >
             <div style={styles.card}>
-              <div style={styles.cardTitle}>Custom Deployment</div>
+              <h2 style={{ ...styles.cardTitle, marginTop: 0 }}>Custom Deployment</h2>
               <div style={styles.cardDesc}>
                 {industry.demoId
                   ? "Choose a deployment pattern — shortcut, real-time, AI, and more."
                   : "Customizable deployment (coming soon)."}
               </div>
             </div>
-          </Link>
+          </DeployOption>
         </div>
       </div>
     </div>

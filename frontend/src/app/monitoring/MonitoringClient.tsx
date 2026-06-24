@@ -233,7 +233,7 @@ export default function MonitoringClient() {
       <Breadcrumbs pageName="Deployment Monitoring" />
       <div className={styles.page}>
         <div className={styles.header}>
-        <span className={styles.title}>Deployment Monitoring</span>
+        <h1 className={styles.title} style={{ margin: 0 }}>Deployment Monitoring</h1>
         <Button
           appearance="subtle"
           size="small"
@@ -253,7 +253,7 @@ export default function MonitoringClient() {
       {!loading && error && (() => {
         const friendly = explainError(error);
         return (
-          <div style={{ color: "#f85149", textAlign: "center", padding: "32px 0" }}>
+          <div role="alert" style={{ color: "#f85149", textAlign: "center", padding: "32px 0" }}>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>{friendly.title}</div>
             <Caption1 style={{ color: "#8b949e" }}>{friendly.guidance}</Caption1>
           </div>
@@ -271,14 +271,17 @@ export default function MonitoringClient() {
 
       {!loading && !error && jobs.length > 0 && (
         <table className={styles.table}>
+          <caption style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 }}>
+            Your Fabric deployments
+          </caption>
           <thead>
             <tr>
-              <th className={styles.th}>Demo</th>
-              <th className={styles.th}>Workspace</th>
-              <th className={styles.th}>Started</th>
-              <th className={styles.th}>Status</th>
-              <th className={styles.th}>Progress</th>
-              <th className={styles.th}>Actions</th>
+              <th scope="col" className={styles.th}>Demo</th>
+              <th scope="col" className={styles.th}>Workspace</th>
+              <th scope="col" className={styles.th}>Started</th>
+              <th scope="col" className={styles.th}>Status</th>
+              <th scope="col" className={styles.th}>Progress</th>
+              <th scope="col" className={styles.th}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -315,7 +318,14 @@ export default function MonitoringClient() {
                     <Caption1>
                       {job.step_summary.completed}/{job.step_summary.total} steps
                     </Caption1>
-                    <div className={styles.progressBar}>
+                    <div
+                      className={styles.progressBar}
+                      role="progressbar"
+                      aria-valuenow={pct}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`${job.step_summary.completed} of ${job.step_summary.total} steps complete`}
+                    >
                       <div
                         className={styles.progressFill}
                         style={{

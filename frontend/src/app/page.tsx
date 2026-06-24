@@ -434,7 +434,7 @@ export default function Home() {
           <div className={styles.heroGrid}>
             <div className={styles.heroCopy}>
               <div className={styles.heroEyebrow}>Microsoft Fabric</div>
-              <div className={styles.heroTitle}>Industry Demo Gallery</div>
+              <h1 className={styles.heroTitle} style={{ margin: 0 }}>Industry Demo Gallery</h1>
               <div className={styles.heroDesc}>
                 Browse production-ready Fabric demos by industry, then deploy a complete
                 environment in minutes.
@@ -456,7 +456,7 @@ export default function Home() {
                 <Link
                   key={ind.slug}
                   href={`/industries/${ind.slug}`}
-                  style={{ textDecoration: "none" }}
+                  style={{ textDecoration: "none", display: "block" }}
                 >
                   <div className={styles.card}>
                     <div className={styles.cardAccent} />
