@@ -215,8 +215,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const ensureFoundryConsent = useCallback(async (): Promise<void> => {
     if (IS_DEV_MODE || !account) return;
     try {
-      // Already consented (e.g. a prior deploy)? Nothing interactive needed.
-      await msalInstance.acquireTokenSilent({ scopes: searchScopes, account });
+      // Already consented (e.g. a prior deploy)? Gate on the AGENT scope — it's the
+      // one that actually blocks agent creation, and it's granted together with
+      // Search in the popup below, so a missing agent scope must re-trigger consent.
+      await msalInstance.acquireTokenSilent({ scopes: agentScopes, account });
       return;
     } catch {
       // One interactive consent: Search (primary token) + Foundry Agent

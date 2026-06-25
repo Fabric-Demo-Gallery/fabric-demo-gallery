@@ -1033,7 +1033,7 @@ export default function DemoDetailPage() {
   const id = params.id as string;
   const demo = DEMOS[id];
   const isCustomMode = searchParams.get("mode") === "custom";
-  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken } = useAuth();
+  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, ensureFoundryConsent } = useAuth();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
@@ -1363,6 +1363,21 @@ export default function DemoDetailPage() {
       setError("Select an Azure subscription and resource group for this scenario before deploying.");
       return;
     }
+
+    // Fabric + Foundry: pre-acquire the Search + Foundry Agent data-plane consent in
+    // ONE popup, fired NOW within the Deploy click's activation window. Browsers
+    // block popups requested later (after the token awaits below), which is why the
+    // agent step silently fell back to the backend managed identity and 403'd for
+    // users who hadn't consented. Non-fatal: if consent is declined or the tenant
+    // rejects the scope, the KB/agent steps degrade to the manual Foundry-portal finish.
+    if (selectedScenario?.id === "fabric-foundry-agent") {
+      try {
+        await ensureFoundryConsent();
+      } catch {
+        /* non-fatal — agent/KB become a manual follow-up */
+      }
+    }
+
     setDeploying(true);
     setError(null);
     setCompleted(false);

@@ -30,6 +30,7 @@ import {
 import { AuthProvider } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { DeploymentProvider } from "@/lib/DeploymentContext";
+import { BrowserUtils } from "@azure/msal-browser";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -325,6 +326,30 @@ export default function ClientShell({ children }: { children: ReactNode }) {
     return (
       <div style={{ backgroundColor: "#0d1117", minHeight: "100vh" }}>
         <div style={{ backgroundColor: "#010409", height: 48, borderBottom: "1px solid #21262d" }} />
+      </div>
+    );
+  }
+
+  // If this document is the MSAL sign-in/consent popup (or a hidden auth iframe) —
+  // i.e. the redirect target after auth — do NOT mount the app here. The window that
+  // opened the popup owns the handshake: it reads the auth response off this popup's
+  // URL and closes it. Mounting the SPA (a second MSAL instance) in the popup consumes
+  // that response first and strands the popup on the homepage (the bug we saw).
+  if (BrowserUtils.isInPopup() || BrowserUtils.isInIframe()) {
+    return (
+      <div
+        style={{
+          backgroundColor: "#0d1117",
+          color: "#8b949e",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: fabricFont,
+          fontSize: 14,
+        }}
+      >
+        Completing sign-in…
       </div>
     );
   }
