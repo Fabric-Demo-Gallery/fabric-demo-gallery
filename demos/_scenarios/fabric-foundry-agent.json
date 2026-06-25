@@ -8,7 +8,7 @@
   "preview": true,
   "prerequisites": [
     "Fabric capacity (F2+, Trial, or PPU) \u2014 same tenant as Foundry",
-    "Azure subscription with Microsoft Foundry quota for gpt-4o-mini",
+    "Azure subscription with Microsoft Foundry quota for gpt-4.1-mini (or gpt-4o-mini)",
     "Tenant setting 'cross-geo processing & storing for AI' enabled",
     "Owner or Contributor + User Access Administrator on the resource group"
   ],
@@ -33,7 +33,7 @@
       "type": "string",
       "required": false,
       "default": "eastus",
-      "description": "Region for the Foundry account + model deployment (must have gpt-4o-mini quota)."
+      "description": "Region for the Foundry account + model deployment (must have gpt-4.1-mini or gpt-4o-mini quota)."
     }
   ],
   "fabricItemTemplate": [
