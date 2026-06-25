@@ -2529,10 +2529,23 @@ async def _deploy_fabric_foundry(
     run_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
     data_agents = [i for i in items if i["type"] == "DataAgent"]
     agent_name = data_agents[0]["name"] if data_agents else "analytics_data_agent"
+    # Per-sector data-agent instructions, derived from the sector manifest so the
+    # agent describes ITS OWN data (this was previously hardcoded to manufacturing).
+    # Falls back to a generic prompt if the manifest can't be read.
+    try:
+        _sector = load_manifest(demo_id)
+    except Exception:  # noqa: BLE001 — best-effort; never block the deploy
+        _sector = {}
+    _industry = (_sector.get("industry") or "").strip()
+    _title = (_sector.get("title") or "").strip()
+    _desc = (_sector.get("description") or "").strip()
+    _domain = _industry or _title or "the organization's"
     da_instructions = (
-        "You answer questions about manufacturing quality-control data "
-        "(production batches, sensor readings, equipment, defects). "
-        "Prefer the gold tables in the lakehouse."
+        f"You answer analytical questions about {_domain} data"
+        + (f" — {_title}." if _title and _title != _domain else ".")
+        + (f" {_desc}" if _desc else "")
+        + " Prefer the gold tables in the lakehouse and cite them; if the data"
+        " doesn't contain the answer, say so."
     )
     data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
 
