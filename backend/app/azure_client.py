@@ -1134,7 +1134,10 @@ class AzureClient:
         # provisioning; the poll below picks it up (or times out if it never appears).
 
         start = time.time()
-        timeout = 600
+        # Azure AI Search S1 usually provisions in 1-3 min, but congested regions can
+        # take 10-15+ min. Wait up to 20 min so a transiently slow region doesn't make
+        # the whole Foundry IQ chain (RBAC/knowledge base/agent) skip downstream.
+        timeout = 1200
         while time.time() - start < timeout:
             await asyncio.sleep(10)
             try:
