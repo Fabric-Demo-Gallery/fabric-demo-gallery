@@ -2772,8 +2772,22 @@ async def _deploy_fabric_foundry(
                 logger.warning("[foundry] search service skipped: %s", e)
                 step.status = "skipped"
                 detail = e.detail if isinstance(e, AzureError) else str(e)
-                step.detail = f"Azure AI Search skipped: {detail[:140]}"
-                next_steps.append("Create an Azure AI Search service for Foundry IQ.")
+                # A 504 means the PUT was accepted but provisioning didn't finish inside
+                # our poll window — the service almost certainly comes up shortly after,
+                # so it is NOT lost. Name it so the user can re-run (to attach) or delete
+                # it, instead of silently leaving a billable S1 service orphaned.
+                if isinstance(e, AzureError) and e.status == 504 and search_service:
+                    step.detail = (
+                        f"Azure AI Search '{search_service}' still provisioning past the wait "
+                        f"window — re-run the deploy to attach to it, or delete it if abandoned."
+                    )
+                    next_steps.append(
+                        f"Azure AI Search '{search_service}' was still provisioning when the deploy "
+                        f"gave up — re-run to finish Foundry IQ, or delete the service to avoid charges."
+                    )
+                else:
+                    step.detail = f"Azure AI Search skipped: {detail[:140]}"
+                    next_steps.append("Create an Azure AI Search service for Foundry IQ.")
                 search_service = ""
         else:
             step.status = "skipped"
