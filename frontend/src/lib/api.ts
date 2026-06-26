@@ -348,6 +348,19 @@ export async function deleteJobWorkspace(
   }
 }
 
+// Cancel a running/pending job (clears a stuck deployment from the list). Does
+// NOT delete any workspace — use deleteJobWorkspace for that.
+export async function cancelJob(token: string, jobId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/jobs/${jobId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to cancel deployment: ${text.slice(0, 200)}`);
+  }
+}
+
 // ── Live Eventstream replay (Real-Time Intelligence demo) ────────────────────
 
 export interface StreamSession {

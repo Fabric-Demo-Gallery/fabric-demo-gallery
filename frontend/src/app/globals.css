@@ -22,4 +22,30 @@
   *, *::before, *::after {
     box-sizing: border-box;
   }
+
+  /* Visible keyboard-focus indicator. :focus-visible keeps mouse clicks clean
+     while giving keyboard users a clear, consistent ring (brand accent). */
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [tabindex]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid #3fb68b;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* Respect users who prefer reduced motion — disable non-essential animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

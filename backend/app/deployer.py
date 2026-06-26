@@ -552,7 +552,14 @@ async def deploy_demo(
                 if e.status == 409:
                     step.detail = f"A workspace named '{workspace_name}' already exists. Please choose a different name."
                 elif e.status == 403:
-                    step.detail = "You don't have permission to create workspaces. Contact your Fabric admin."
+                    # Surface Fabric's actual reason — a 403 here can be workspace-create
+                    # rights OR capacity-assignment rights on the selected capacity, and
+                    # only Fabric's message says which. Don't hide it behind a guess.
+                    step.detail = (
+                        "Fabric denied the workspace creation (403). This is a permission on "
+                        "either creating workspaces or assigning one to the selected capacity. "
+                        "Fabric said: " + (e.detail[:400] if e.detail else "(no detail returned)")
+                    )
                 elif e.status == 401:
                     step.detail = "Authentication expired. Please sign out and sign in again."
                 else:
@@ -2483,7 +2490,7 @@ async def _deploy_fabric_foundry(
     import random
     import string as _string
     from app.azure_client import AzureError
-    from app.foundry_iq_client import FoundryIQClient, FoundryAgentClient
+    from app.foundry_iq_client import FoundryIQClient, FoundryAgentClient, FoundryAgentError
 
     MODEL_NAME = "gpt-4o-mini"
     MODEL_VERSION = "2024-07-18"
@@ -2773,7 +2780,8 @@ async def _deploy_fabric_foundry(
             step.detail = "Skipped — no Foundry account"
         yield {"event": "step", "data": step.to_dict()}
 
-        # 10. Wire the 3-way managed-identity RBAC.
+        # 10. Wire the managed-identity RBAC.
+        backend_mi_agent_token: str | None = None
         step = _find_step(steps, "rbac")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
@@ -2795,8 +2803,52 @@ async def _deploy_fabric_foundry(
                 await azure_client.assign_role(search_scope, SEARCH_SERVICE_CONTRIBUTOR, project_principal_id)
                 # Search MI → invoke the Foundry data agent.
                 await azure_client.assign_role(foundry_scope, COGNITIVE_SERVICES_USER, search_principal_id)
+                # Grant the agent-creating identities the Foundry data-plane role on
+                # the project. VERIFIED end-to-end: a token carrying only "Foundry User"
+                # (Microsoft.CognitiveServices/*) can create agents — the 403's
+                # "MachineLearningServices/agents" wording is misleading. We grant to
+                # BOTH identities the agent step may use:
+                #   • the deploying USER (caller) — makes a delegated ai.azure.com token
+                #     (agent_token) work; reliable because the user is in their own
+                #     tenant and owns the resources just created; and
+                #   • the backend MANAGED IDENTITY — the no-consent fallback, which only
+                #     works when the deploy targets the gallery's own tenant (a single-
+                #     tenant MI can't be granted in another tenant's directory).
+                # "Azure AI Developer" is added too (broader agent actions).
+                from app.azure_client import AZURE_AI_DEVELOPER, FOUNDRY_USER
+                project_scope = f"{foundry_scope}/projects/{foundry_project}"
+                grant_notes: list[str] = []
+
+                async def _grant_foundry_role(principal_id: str, principal_type: str, label: str) -> None:
+                    if not principal_id:
+                        grant_notes.append(f"{label}: no-oid")
+                        return
+                    ok, err = False, ""
+                    for _scope in (foundry_scope, project_scope):
+                        for _role in (FOUNDRY_USER, AZURE_AI_DEVELOPER):
+                            try:
+                                await azure_client.assign_role(_scope, _role, principal_id, principal_type)
+                                ok = True
+                            except Exception as ge:  # noqa: BLE001 — best-effort per assignment
+                                err = str(ge)
+                                logger.warning("[foundry] grant %s/%s skipped: %s", label, _role, ge)
+                    grant_notes.append(f"{label}: {'ok' if ok else 'FAILED ' + err[:80]}")
+
+                # The deploying user — enables the delegated agent_token path.
+                await _grant_foundry_role(azure_client.get_caller_oid(), "User", "user")
+                # The backend managed identity — the no-consent fallback.
+                if not agent_token:
+                    try:
+                        backend_mi_agent_token = await azure_client.get_managed_identity_token("https://ai.azure.com")
+                        await _grant_foundry_role(
+                            azure_client.oid_from_token(backend_mi_agent_token), "ServicePrincipal", "backend-mi"
+                        )
+                    except Exception as mie:  # noqa: BLE001
+                        logger.warning("[foundry] backend-MI token/grant skipped: %s", mie)
+                        backend_mi_agent_token = None
+                        grant_notes.append("backend-mi: token unavailable")
                 step.status = "completed"
-                step.detail = "Granted search/Foundry managed-identity roles"
+                step.detail = "Foundry role grants — " + "; ".join(grant_notes)
             except (AzureError, Exception) as e:  # noqa: BLE001
                 logger.warning("[foundry] rbac skipped: %s", e)
                 step.status = "skipped"
@@ -2815,8 +2867,18 @@ async def _deploy_fabric_foundry(
         step = _find_step(steps, "knowledge")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
-        if search_service and artifact_id and search_token:
-            iq = FoundryIQClient(search_token, search_service)
+        # Prefer the Search service ADMIN KEY (fetched via ARM with the management
+        # token every user grants) so this works for EVERYONE — not just users who
+        # consented to the search.azure.com delegated scope. Fall back to the user's
+        # delegated search token if the key can't be fetched.
+        search_key = None
+        if search_service and azure_client and subscription_id and resource_group:
+            try:
+                search_key = await azure_client.get_search_admin_key(subscription_id, resource_group, search_service)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[foundry] search admin key fetch failed: %s", e)
+        if search_service and artifact_id and (search_key or search_token):
+            iq = FoundryIQClient(search_service, token=search_token, api_key=search_key)
             try:
                 await iq.create_fabric_knowledge_source(ks_name, ws_id, artifact_id)
                 await iq.create_knowledge_base(kb_name, ks_name, foundry_account, DEPLOYMENT_NAME, MODEL_NAME)
@@ -2832,43 +2894,73 @@ async def _deploy_fabric_foundry(
                 await iq.close()
         else:
             step.status = "skipped"
-            step.detail = "Skipped — search service, data agent, or token unavailable"
-            if not search_token:
-                next_steps.append("Re-deploy with Azure AI Search consent to auto-create the knowledge base.")
+            step.detail = "Skipped — search service or data agent unavailable"
+            next_steps.append("In Foundry IQ: create a knowledge base over the Fabric data agent.")
         yield {"event": "step", "data": step.to_dict()}
 
         # 12. Create the project connection + Foundry agent grounded on the KB.
         step = _find_step(steps, "agent")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
-        if kb_ready and agent_token:
+        # Prefer the delegated ai.azure.com token (known-good path); if absent, fall
+        # back to the Foundry account key so non-consented users still get an agent
+        # attempt instead of an automatic skip.
+        # Auth precedence: user delegated token > backend managed-identity token >
+        # Foundry account key. The MI path works for everyone (no user consent).
+        agent_auth = agent_token or backend_mi_agent_token
+        foundry_key = None
+        if kb_ready and not agent_auth and azure_client and subscription_id and resource_group:
+            try:
+                foundry_key = await azure_client.get_cognitive_account_key(subscription_id, resource_group, foundry_account)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[foundry] foundry account key fetch failed: %s", e)
+        # Which identity actually creates the agent — surfaced in the step detail so a
+        # failure is diagnosable (user-token = delegated; backend-mi = no-consent MI).
+        _auth_label = (
+            "user-token" if agent_token else
+            "backend-mi" if backend_mi_agent_token else
+            "account-key" if foundry_key else "none"
+        )
+        if kb_ready and (agent_auth or foundry_key):
             conn_name = f"{demo_id}-kb-conn"[:60]
             project_endpoint = (
                 f"https://{foundry_account}.services.ai.azure.com/api/projects/{foundry_project}"
             )
-            ag = FoundryAgentClient(agent_token, project_endpoint)
+            ag = FoundryAgentClient(project_endpoint, token=agent_auth, api_key=foundry_key)
             try:
                 await azure_client.create_kb_connection(
                     subscription_id, resource_group, foundry_account, foundry_project,
                     conn_name, search_endpoint, kb_name,
                 )
-                agent = await ag.create_agent(
-                    f"{demo_id}-agent"[:60], DEPLOYMENT_NAME, search_endpoint, kb_name, conn_name,
-                )
+                # Retry on 401/403 — the backend-MI role assignment may still be
+                # propagating through Entra / the data-plane when we first call the
+                # agents API (can take a couple of minutes).
+                agent = {}
+                for attempt in range(12):
+                    try:
+                        agent = await ag.create_agent(
+                            f"{demo_id}-agent"[:60], DEPLOYMENT_NAME, search_endpoint, kb_name, conn_name,
+                        )
+                        break
+                    except FoundryAgentError as ae:
+                        if ae.status in (401, 403) and attempt < 11:
+                            await asyncio.sleep(20)
+                            continue
+                        raise
                 agent_created = agent.get("name", f"{demo_id}-agent")
                 step.status = "completed"
-                step.detail = f"Agent '{agent_created}' ready — ask it about your data"
+                step.detail = f"Agent '{agent_created}' ready (auth: {_auth_label}) — ask it about your data"
             except Exception as e:  # noqa: BLE001
                 logger.warning("[foundry] agent creation skipped: %s", e)
                 step.status = "skipped"
-                step.detail = f"Agent skipped — create it in the Foundry portal: {str(e)[:120]}"
+                step.detail = f"Agent skipped (auth: {_auth_label}) — {str(e)[:280]}"
                 next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
             finally:
                 await ag.close()
         else:
             step.status = "skipped"
-            step.detail = "Skipped — knowledge base or token unavailable; finish in the Foundry portal"
-            if kb_ready and not agent_token:
+            step.detail = "Skipped — knowledge base unavailable; finish in the Foundry portal"
+            if kb_ready:
                 next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
         yield {"event": "step", "data": step.to_dict()}
 

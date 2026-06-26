@@ -23,7 +23,10 @@ const IS_DEV_MODE = !process.env.NEXT_PUBLIC_AZURE_CLIENT_ID;
 // allowRedirect: allow full-page redirect as a last resort if the popup fails
 // (default true). Set false for optional/best-effort tokens so a consent failure
 // throws (and the caller skips it) instead of navigating the whole page away.
-type TokenOptions = { interactive?: boolean; allowRedirect?: boolean };
+// forceRefresh: bypass MSAL's access-token cache and mint a fresh token from the
+// refresh token. Use before a long-running deploy so a near-expiry cached token
+// doesn't expire mid-deploy.
+type TokenOptions = { interactive?: boolean; allowRedirect?: boolean; forceRefresh?: boolean };
 
 const DEV_ACCOUNT = {
   homeAccountId: "dev-local",
@@ -40,12 +43,14 @@ interface AuthState {
   authError: string;
   login: () => Promise<void>;
   logout: () => void;
-  getFabricToken: () => Promise<string>;
-  getStorageToken: () => Promise<string>;
+  getFabricToken: (options?: TokenOptions) => Promise<string>;
+  getStorageToken: (options?: TokenOptions) => Promise<string>;
   getManagementToken: (options?: TokenOptions) => Promise<string>;
   getSearchToken: (options?: TokenOptions) => Promise<string>;
   getAgentToken: (options?: TokenOptions) => Promise<string>;
   getKustoToken: () => Promise<string>;
+  /** Pre-consent the Foundry data-plane resources (Search + Agent) in one popup. */
+  ensureFoundryConsent: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -60,6 +65,7 @@ const AuthContext = createContext<AuthState>({
   getSearchToken: async () => "",
   getAgentToken: async () => "",
   getKustoToken: async () => "",
+  ensureFoundryConsent: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -142,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await msalInstance.acquireTokenSilent({
           scopes,
           account,
+          forceRefresh: options?.forceRefresh,
         });
         return result.accessToken;
       } catch (e) {
@@ -169,12 +176,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const getFabricToken = useCallback(
-    () => getToken(fabricScopes),
+    (options?: TokenOptions) => getToken(fabricScopes, options),
     [getToken]
   );
 
   const getStorageToken = useCallback(
-    () => getToken(storageScopes),
+    (options?: TokenOptions) => getToken(storageScopes, options),
     [getToken]
   );
 
@@ -198,9 +205,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [getToken]
   );
 
+  // Pre-acquire the Foundry data-plane consent (Azure AI Search + Foundry Agent)
+  // in ONE popup, tied to a fresh user gesture. Browsers only allow a popup
+  // within the activation window of a click, so requesting these late in the
+  // deploy flow (after several awaits) gets the popup blocked — which is why the
+  // knowledge-base + agent steps silently skipped. Calling this first, straight
+  // off the Deploy click, fires a single consent popup covering BOTH resources;
+  // the deploy then reads each token silently with no further popup.
+  const ensureFoundryConsent = useCallback(async (): Promise<void> => {
+    if (IS_DEV_MODE || !account) return;
+    try {
+      // Already consented (e.g. a prior deploy)? Gate on the AGENT scope — it's the
+      // one that actually blocks agent creation, and it's granted together with
+      // Search in the popup below, so a missing agent scope must re-trigger consent.
+      await msalInstance.acquireTokenSilent({ scopes: agentScopes, account });
+      return;
+    } catch {
+      // One interactive consent: Search (primary token) + Foundry Agent
+      // (extraScopesToConsent) so both can subsequently be acquired silently.
+      await msalInstance.acquireTokenPopup({
+        scopes: searchScopes,
+        extraScopesToConsent: agentScopes,
+      });
+    }
+  }, [account]);
+
   return (
     <AuthContext.Provider
-      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, getKustoToken }}
+      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, getKustoToken, ensureFoundryConsent }}
     >
       {children}
     </AuthContext.Provider>

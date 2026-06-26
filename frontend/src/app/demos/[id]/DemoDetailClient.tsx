@@ -35,6 +35,12 @@ import {
   Checkbox,
   ToggleButton,
   Link as FluentLink,
+  Dialog,
+  DialogSurface,
+  DialogBody,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
@@ -1115,7 +1121,7 @@ export default function DemoDetailPage() {
   const id = params.id as string;
   const demo = DEMOS[id];
   const isCustomMode = searchParams.get("mode") === "custom";
-  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken } = useAuth();
+  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, ensureFoundryConsent } = useAuth();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
@@ -1445,6 +1451,21 @@ export default function DemoDetailPage() {
       setError("Select an Azure subscription and resource group for this scenario before deploying.");
       return;
     }
+
+    // Fabric + Foundry: pre-acquire the Search + Foundry Agent data-plane consent in
+    // ONE popup, fired NOW within the Deploy click's activation window. Browsers
+    // block popups requested later (after the token awaits below), which is why the
+    // agent step silently fell back to the backend managed identity and 403'd for
+    // users who hadn't consented. Non-fatal: if consent is declined or the tenant
+    // rejects the scope, the KB/agent steps degrade to the manual Foundry-portal finish.
+    if (selectedScenario?.id === "fabric-foundry-agent") {
+      try {
+        await ensureFoundryConsent();
+      } catch {
+        /* non-fatal — agent/KB become a manual follow-up */
+      }
+    }
+
     setDeploying(true);
     setError(null);
     setCompleted(false);
@@ -1461,12 +1482,16 @@ export default function DemoDetailPage() {
       let oneLakeToken = "";
       if (account) {
         const { msalInstance } = await import("@/lib/msal");
+        // Force-refresh so a long deploy starts with full-lifetime tokens. MSAL
+        // returns cached access tokens until they actually expire, so a near-expiry
+        // cached token (especially the management token used late for Azure
+        // provisioning) would otherwise expire mid-deploy and fail that step.
         [fabricToken, storageToken] = await Promise.all([
-          getFabricToken(),
-          getStorageToken(),
+          getFabricToken({ forceRefresh: true }),
+          getStorageToken({ forceRefresh: true }),
         ]);
         try {
-          const res = await msalInstance.acquireTokenSilent({ scopes: oneLakeScopes, account });
+          const res = await msalInstance.acquireTokenSilent({ scopes: oneLakeScopes, account, forceRefresh: true });
           oneLakeToken = res.accessToken;
         } catch {
           try {
@@ -1488,7 +1513,7 @@ export default function DemoDetailPage() {
       }
       if (selectedScenario?.requiresAzure) {
         try {
-          const mgmtTok = await getManagementToken();
+          const mgmtTok = await getManagementToken({ forceRefresh: true });
           if (mgmtTok) headers["X-Management-Token"] = mgmtTok;
         } catch { /* continue without management token */ }
       }
@@ -1498,11 +1523,18 @@ export default function DemoDetailPage() {
       // manual follow-ups if a token is missing.
       if (selectedScenario?.id === "fabric-foundry-agent") {
         try {
-          const searchTok = await getSearchToken({ allowRedirect: false });
+          // Best-effort, SILENT only. If the Azure AI Search + Foundry data-plane
+          // scopes are already consented (e.g. admin-consented in the tenant), the
+          // token resolves and the Foundry IQ steps run. If not, we deliberately do
+          // NOT open a consent popup here: some tenants reject these scopes with
+          // AADSTS invalid_client, and that errored popup was hanging the whole
+          // deploy. The knowledge-base + agent steps then degrade to manual
+          // follow-ups (surfaced in the post-deploy guidance).
+          const searchTok = await getSearchToken({ interactive: false, forceRefresh: true });
           if (searchTok) headers["X-Search-Token"] = searchTok;
         } catch { /* continue — knowledge base becomes a manual step */ }
         try {
-          const agentTok = await getAgentToken({ allowRedirect: false });
+          const agentTok = await getAgentToken({ interactive: false, forceRefresh: true });
           if (agentTok) headers["X-Agent-Token"] = agentTok;
         } catch { /* continue — agent becomes a manual step */ }
       }
@@ -1755,13 +1787,14 @@ export default function DemoDetailPage() {
     }
   };
 
+  // Which delete is pending confirmation (drives the Fluent dialog below).
+  const [confirmDelete, setConfirmDelete] = useState<null | "full" | "partial">(null);
+
   const handleCleanup = async () => {
-    if (!confirm("Delete the entire workspace and all items?")) return;
     await deleteWorkspace(false);
   };
 
   const handlePartialCleanup = async () => {
-    if (!confirm("Delete the partially created workspace?")) return;
     await deleteWorkspace(true);
   };
 
@@ -1994,7 +2027,21 @@ export default function DemoDetailPage() {
                     .map((sc) => (
                     <div
                       key={sc.id}
+                      role="button"
+                      tabIndex={sc.enabled ? 0 : -1}
+                      aria-disabled={sc.enabled ? undefined : true}
+                      aria-label={sc.enabled ? sc.title : `${sc.title} (coming soon)`}
                       onClick={sc.enabled ? () => handleSelectScenario(sc) : undefined}
+                      onKeyDown={
+                        sc.enabled
+                          ? (e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleSelectScenario(sc);
+                              }
+                            }
+                          : undefined
+                      }
                       className={[
                         styles.scenarioCard,
                         sc.enabled ? styles.scenarioCardActive : styles.scenarioCardDisabled,
@@ -2768,7 +2815,7 @@ export default function DemoDetailPage() {
                     ) : loadingCapacities ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}>
                         <Spinner size="tiny" />
-                        <Caption1>Loading capacities...</Caption1>
+                        <Caption1>Loading capacities…</Caption1>
                       </div>
                     ) : capacities.length > 0 ? (
                       <Select
@@ -2783,9 +2830,16 @@ export default function DemoDetailPage() {
                         ))}
                       </Select>
                     ) : (
-                      <MessageBar intent="error">
-                        <MessageBarBody>{error || "No capacities found."}</MessageBarBody>
-                      </MessageBar>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        <MessageBar intent="error">
+                          <MessageBarBody>
+                            {error || "No active Fabric capacity found for your account. Start (or get assigned to) an F-SKU, Trial, or PPU capacity in the Fabric admin portal, then retry."}
+                          </MessageBarBody>
+                        </MessageBar>
+                        <Button size="small" appearance="subtle" onClick={() => { void loadCapacities(); }}>
+                          Retry
+                        </Button>
+                      </div>
                     )}
                     {/* Fabric IQ: warn when the chosen capacity is Trial (data agents need F2+). */}
                     {selectedScenario?.id === "genai-applications" &&
@@ -2823,7 +2877,7 @@ export default function DemoDetailPage() {
                       <div style={{ marginBottom: 10 }}>
                         <label className={styles.formLabel}>Subscription</label>
                         {loadingSubs ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading…</Caption1></div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading subscriptions…</Caption1></div>
                         ) : azureSubs.length > 0 ? (
                           <Select value={selectedSub} onChange={(_, data) => setSelectedSub(data.value)} style={{ width: "100%" }}>
                             <option value="">Select…</option>
@@ -2833,7 +2887,11 @@ export default function DemoDetailPage() {
                           </Select>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            <Caption1 style={{ color: "#f85149" }}>{subscriptionsError || "No subscriptions found. Check sign-in."}</Caption1>
+                            <MessageBar intent="error">
+                              <MessageBarBody>
+                                {subscriptionsError || "No Azure subscriptions were returned — usually Azure consent wasn't granted. Retry to trigger the Azure sign-in popup."}
+                              </MessageBarBody>
+                            </MessageBar>
                             <Button size="small" appearance="subtle" onClick={() => { void loadAzureSubscriptions(true); }}>
                               Retry Azure sign-in
                             </Button>
@@ -2846,7 +2904,7 @@ export default function DemoDetailPage() {
                         <div style={{ marginBottom: 10 }}>
                           <label className={styles.formLabel}>Resource Group</label>
                           {loadingRGs ? (
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading…</Caption1></div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading resource groups…</Caption1></div>
                           ) : (
                             <Select value={selectedRG} onChange={(_, data) => setSelectedRG(data.value)} style={{ width: "100%", marginBottom: 4 }}>
                               <option value="">Select or type a name…</option>
@@ -2862,6 +2920,9 @@ export default function DemoDetailPage() {
                             style={{ width: "100%", marginTop: 4 }}
                             size="small"
                           />
+                          <Caption1 style={{ display: "block", marginTop: 4, color: "#484f58" }}>
+                            Pick an existing group above, or type a new name here and tick &ldquo;Create resource group&rdquo; below.
+                          </Caption1>
                           <div style={{ marginTop: 6 }}>
                             <Checkbox
                               label={<Caption1>Create resource group if not found</Caption1>}
@@ -2894,7 +2955,7 @@ export default function DemoDetailPage() {
                       <div>
                         <label className={styles.formLabel}>Azure Region</label>
                         {loadingLocations ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading…</Caption1></div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading regions…</Caption1></div>
                         ) : (
                           <Select value={azureRegion} onChange={(_, data) => setAzureRegion(data.value)} style={{ width: "100%" }}>
                             {(azureLocations.length > 0 ? azureLocations : FALLBACK_REGIONS).map((loc) => (
@@ -2906,9 +2967,13 @@ export default function DemoDetailPage() {
                           Some subscriptions restrict Azure SQL in certain regions — the deploy auto-falls back to an available region if needed.
                         </Caption1>
                         {selectedScenario?.id === "fabric-foundry-agent" && (
-                          <Caption1 style={{ color: "#d29922", display: "block", marginTop: 4 }}>
-                            ⚠️ <strong>gpt-4o-mini quota is region-specific and varies by subscription.</strong> East US is usually a safe choice. If the model step is skipped, your subscription has no gpt-4o-mini quota in the selected region — pick another (check Azure AI Foundry → Management → Quotas).
-                          </Caption1>
+                          <MessageBar intent="warning" style={{ marginTop: 8 }}>
+                            <MessageBarBody>
+                              <strong>gpt-4o-mini quota is region-specific and varies by subscription.</strong> East US is
+                              usually a safe choice. If the model step is skipped, your subscription has no gpt-4o-mini quota
+                              in the selected region — pick another (Azure AI Foundry → Management → Quotas).
+                            </MessageBarBody>
+                          </MessageBar>
                         )}
                       </div>
                     </div>
@@ -2974,9 +3039,19 @@ export default function DemoDetailPage() {
 
               {(deploying || completed || !!error) && (
                 <div>
+                  <div role="list" aria-label="Deployment steps" aria-live="polite" aria-busy={deploying}>
                   {steps.map((step, i) => (
-                    <div key={i} className={styles.stepRow}>
-                      <span className={styles.stepIcon}>
+                    <div key={i} className={styles.stepRow} role="listitem">
+                      <span
+                        className={styles.stepIcon}
+                        role="img"
+                        aria-label={
+                          step.status === "completed" ? "Completed" :
+                          step.status === "running" ? "In progress" :
+                          step.status === "failed" ? "Failed" :
+                          step.status === "skipped" ? "Skipped" : "Pending"
+                        }
+                      >
                         {step.status === "completed" && (
                           <CheckmarkCircleFilled fontSize={16} style={{ color: tokens.colorPaletteGreenForeground1 }} />
                         )}
@@ -3002,13 +3077,14 @@ export default function DemoDetailPage() {
                       }>
                         {step.description}
                         {(step.status === "failed" || step.status === "skipped") && step.detail && (
-                          <span style={{ display: "block", fontSize: 11, opacity: 0.7, marginTop: 2 }}>
+                          <span style={{ display: "block", fontSize: 12, color: "#8b949e", marginTop: 2 }}>
                             {step.detail}
                           </span>
                         )}
                       </span>
                     </div>
                   ))}
+                  </div>
 
                   {/* Fabric IQ: query cheat-sheet stays BELOW the deployment steps. */}
                   {selectedScenario?.id === "genai-applications" && FABRICIQ_QUERIES[id] && (
@@ -3040,7 +3116,7 @@ export default function DemoDetailPage() {
                   )}
 
                   {completed && (
-                    <div style={{ marginTop: 16 }}>
+                    <div style={{ marginTop: 16 }} role="status" aria-live="polite">
                       <Divider style={{ marginBottom: 16 }} />
                       <MessageBar intent="success" style={{ marginBottom: 12 }}>
                         <MessageBarBody>
@@ -3050,10 +3126,28 @@ export default function DemoDetailPage() {
                             target="_blank"
                             inline
                           >
-                            Open workspace <OpenRegular fontSize={12} />
+                            Open workspace (opens in a new tab) <OpenRegular fontSize={12} />
                           </FluentLink>
                         </MessageBarBody>
                       </MessageBar>
+                      {selectedScenario?.id === "external-data-integration" && (
+                        <MessageBar intent="info" style={{ marginBottom: 12 }}>
+                          <MessageBarBody>
+                            <strong>Next:</strong> open the Mirrored Database in the workspace to watch tables replicate
+                            from Azure SQL into OneLake — zero-ETL, no pipeline. The explore &amp; live-change notebooks
+                            walk through the sync end to end.
+                          </MessageBarBody>
+                        </MessageBar>
+                      )}
+                      {selectedScenario?.id === "fabric-foundry-agent" && (
+                        <MessageBar intent="info" style={{ marginBottom: 12 }}>
+                          <MessageBarBody>
+                            <strong>Next:</strong> open the Foundry portal to chat with your grounded agent, backed by the
+                            published Fabric data agent over your gold lakehouse. If the knowledge-base or agent steps were
+                            skipped, approve the Azure AI Search consent and redeploy, or finish them in Foundry IQ.
+                          </MessageBarBody>
+                        </MessageBar>
+                      )}
                       {selectedScenario?.id === "real-time-intelligence" && (
                         <Card style={{ marginBottom: 12, padding: 14, background: "#0d1117", border: "1px solid #30363d" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -3124,7 +3218,7 @@ export default function DemoDetailPage() {
                         <Button
                           appearance="outline"
                           icon={<DeleteRegular />}
-                          onClick={handleCleanup}
+                          onClick={() => setConfirmDelete("full")}
                           disabled={cleaning}
                           style={{ width: "100%", marginBottom: 8 }}
                         >
@@ -3152,7 +3246,7 @@ export default function DemoDetailPage() {
                   {error && (() => {
                     const friendly = explainError(error);
                     return (
-                      <div style={{ marginTop: 16 }}>
+                      <div style={{ marginTop: 16 }} role="alert">
                         <Divider style={{ marginBottom: 16 }} />
                         <MessageBar intent="error" style={{ marginBottom: 12 }}>
                           <MessageBarBody>
@@ -3160,11 +3254,33 @@ export default function DemoDetailPage() {
                             {friendly.guidance}
                           </MessageBarBody>
                         </MessageBar>
+                        {error && error.trim() !== friendly.guidance.trim() && (
+                          <details style={{ marginBottom: 12 }}>
+                            <summary style={{ cursor: "pointer", fontSize: 12, color: "#8b949e" }}>
+                              Technical details
+                            </summary>
+                            <pre
+                              style={{
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
+                                fontSize: 12,
+                                margin: "8px 0 0",
+                                padding: 8,
+                                background: "#0d1117",
+                                border: "1px solid #30363d",
+                                borderRadius: 4,
+                                color: "#e6edf3",
+                              }}
+                            >
+                              {error}
+                            </pre>
+                          </details>
+                        )}
                         {deployedWorkspaceId && !cleaned && (
                           <Button
                             appearance="outline"
                             icon={<DeleteRegular />}
-                            onClick={handlePartialCleanup}
+                            onClick={() => setConfirmDelete("partial")}
                             disabled={cleaning}
                             style={{ width: "100%", marginBottom: 8 }}
                           >
@@ -3201,6 +3317,38 @@ export default function DemoDetailPage() {
     </div>
 
     {/* ── Fullscreen data preview modal ───────────────────────────────── */}
+    {/* Delete-confirmation dialog — replaces the native confirm() so it's
+        styled, focus-trapped, and screen-reader friendly. */}
+    <Dialog open={confirmDelete !== null} onOpenChange={(_, d) => { if (!d.open) setConfirmDelete(null); }}>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle>{confirmDelete === "partial" ? "Delete partial workspace?" : "Delete workspace?"}</DialogTitle>
+          <DialogContent>
+            {confirmDelete === "partial"
+              ? "This removes the partially created workspace and everything provisioned so far, so you can start clean. This can't be undone."
+              : "This permanently deletes the Fabric workspace and every item in it. This can't be undone."}
+          </DialogContent>
+          <DialogActions>
+            <Button appearance="secondary" disabled={cleaning} onClick={() => setConfirmDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              appearance="primary"
+              disabled={cleaning}
+              onClick={async () => {
+                const which = confirmDelete;
+                if (which === "full") await handleCleanup();
+                else if (which === "partial") await handlePartialCleanup();
+                setConfirmDelete(null);
+              }}
+            >
+              {cleaning ? "Deleting…" : "Delete"}
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+
     {previewFileName && (
       <div
         className={styles.modalBackdrop}

@@ -8,6 +8,7 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 import re
 import time
 import uuid
@@ -34,6 +35,13 @@ STORAGE_BLOB_DATA_CONTRIBUTOR = "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
 SEARCH_INDEX_DATA_READER = "1407120a-92aa-4202-b7e9-c0e197c71c8f"
 SEARCH_SERVICE_CONTRIBUTOR = "7ca78c08-252a-4471-8644-bb5ff32d4ba0"
 COGNITIVE_SERVICES_USER = "a97b65f3-24c7-4388-baec-2e87135dc908"
+# "Azure AI Developer" carries Microsoft.MachineLearningServices/workspaces/*/action
+# (incl. .../agents/*) — the action the Foundry Agent Service checks at create-agent.
+AZURE_AI_DEVELOPER = "64702f94-c441-49e6-a78b-ef80e0188fee"
+# "Foundry User" (formerly "Azure AI User") grants the Microsoft.CognitiveServices/*
+# data-plane (model/inference) but has NO MachineLearningServices actions, so it alone
+# cannot create agents — use it ALONGSIDE Azure AI Developer, not instead of it.
+FOUNDRY_USER = "53ca6127-db72-4b80-b1b0-d745d6d5456d"
 
 
 class AzureError(Exception):
@@ -451,6 +459,71 @@ class AzureClient:
         if not keys:
             raise AzureError(500, f"No keys returned for storage account '{account_name}'")
         return keys[0]["value"]
+
+    async def get_search_admin_key(
+        self, subscription_id: str, resource_group: str, service_name: str
+    ) -> str:
+        """Primary admin key of an Azure AI Search service (via ARM). Lets the
+        backend call the Search data-plane with api-key auth instead of a per-user
+        delegated token — so the Foundry IQ steps work for EVERY user, not only
+        ones who have consented to the search.azure.com scope."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Search/searchServices/{service_name}"
+            f"/listAdminKeys?api-version={SEARCH_API_VERSION}"
+        )
+        resp = await self._arm_request("POST", url)
+        key = resp.json().get("primaryKey")
+        if not key:
+            raise AzureError(500, f"No admin key returned for search service '{service_name}'")
+        return key
+
+    async def get_cognitive_account_key(
+        self, subscription_id: str, resource_group: str, account_name: str
+    ) -> str:
+        """First API key of a Cognitive Services / Foundry account (via ARM)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.CognitiveServices/accounts/{account_name}"
+            f"/listKeys?api-version={COG_API_VERSION}"
+        )
+        resp = await self._arm_request("POST", url)
+        body = resp.json()
+        key = body.get("key1") or body.get("key2")
+        if not key:
+            raise AzureError(500, f"No key returned for account '{account_name}'")
+        return key
+
+    async def get_managed_identity_token(self, resource: str) -> str:
+        """Acquire an access token for `resource` using the App Service system-assigned
+        managed identity (App Service MSI endpoint). Lets the backend call data-plane
+        APIs (e.g. the Foundry Agent Service) without any per-user delegated token."""
+        endpoint = os.environ.get("IDENTITY_ENDPOINT")
+        header = os.environ.get("IDENTITY_HEADER")
+        if not endpoint or not header:
+            raise AzureError(500, "Backend managed identity is not available")
+        async with httpx.AsyncClient(timeout=30.0) as c:
+            resp = await c.get(
+                endpoint,
+                params={"resource": resource, "api-version": "2019-08-01"},
+                headers={"X-IDENTITY-HEADER": header},
+            )
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, f"MI token request failed: {resp.text[:200]}")
+        tok = resp.json().get("access_token", "")
+        if not tok:
+            raise AzureError(500, "MI token response had no access_token")
+        return tok
+
+    @staticmethod
+    def oid_from_token(token: str) -> str:
+        """Decode the `oid` (principal object id) claim from a JWT access token."""
+        try:
+            payload = token.split(".")[1]
+            payload += "=" * (-len(payload) % 4)
+            return json.loads(base64.urlsafe_b64decode(payload)).get("oid", "")
+        except Exception:
+            return ""
 
     # ── blob upload (SharedKeyLite auth) ─────────────────────────────────
 
@@ -1032,9 +1105,13 @@ class AzureClient:
                 "replicaCount": 1,
                 "partitionCount": 1,
                 "hostingMode": "default",
-                # Entra-ID auth (no admin keys) — matches the keyless Foundry IQ flow.
-                "authOptions": None,
-                "disableLocalAuth": True,
+                # Allow BOTH Entra-ID (RBAC — used by the project + Foundry IQ runtime)
+                # AND admin api-keys, so the backend can create the Foundry IQ knowledge
+                # source/base with the admin key (fetched via ARM) WITHOUT each user
+                # consenting to the search.azure.com delegated scope. Keyless-only made
+                # the knowledge-base step fail with 401 for non-consented users.
+                "authOptions": {"aadOrApiKey": {"aadAuthFailureMode": "http403"}},
+                "disableLocalAuth": False,
             },
         }
         transient = (502, 503, 504)
