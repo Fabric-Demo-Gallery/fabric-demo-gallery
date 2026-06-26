@@ -2841,14 +2841,22 @@ export default function DemoDetailPage() {
                         </Button>
                       </div>
                     )}
-                    {/* Fabric IQ: warn when the chosen capacity is Trial (data agents need F2+). */}
-                    {selectedScenario?.id === "genai-applications" &&
+                    {/* Data-agent scenarios: warn when the chosen capacity is Trial
+                        (Fabric Data Agents require a paid F2+ SKU; FT1/Trial is rejected). */}
+                    {(selectedScenario?.id === "genai-applications" || selectedScenario?.id === "fabric-foundry-agent") &&
                       capacities.find((c) => c.id === selectedCapacity)?.isTrial && (
                       <MessageBar intent="warning" style={{ marginTop: 8 }}>
                         <MessageBarBody>
-                          <strong>Trial capacity selected.</strong> The ontology, lakehouse and eventhouse will
-                          deploy, but the two Fabric <strong>Data Agents</strong> need a paid <strong>F2+</strong>
-                          {" "}capacity and will be skipped on Trial (FT1). Pick a paid capacity to auto-create them.
+                          <strong>Trial capacity selected.</strong>{" "}
+                          {selectedScenario?.id === "genai-applications" ? (
+                            <>The ontology, lakehouse and eventhouse will deploy, but the two Fabric{" "}
+                            <strong>Data Agents</strong> need a paid <strong>F2+</strong> capacity and will be skipped
+                            on Trial (FT1). Pick a paid capacity to auto-create them.</>
+                          ) : (
+                            <>The Fabric foundation and Foundry resources will deploy, but the Fabric{" "}
+                            <strong>Data Agent</strong> needs a paid <strong>F2+</strong> capacity and will be skipped
+                            on Trial (FT1). Pick a paid capacity to auto-create it.</>
+                          )}
                         </MessageBarBody>
                       </MessageBar>
                     )}
