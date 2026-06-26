@@ -147,7 +147,7 @@ function Navbar() {
           </NextLink>
         )}
         <a
-          href="https://github.com/omerizm47/fabric-demo-gallery"
+          href="https://github.com/Fabric-Demo-Gallery/fabric-demo-gallery"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.navLink}

@@ -285,6 +285,7 @@ const useStyles = makeStyles({
     fontWeight: 600,
     color: "#e6edf3",
     lineHeight: "22px",
+    marginTop: 0,
     marginBottom: "2px",
   },
   cardIndustry: {
@@ -470,7 +471,7 @@ export default function Home() {
                             })()}
                           </div>
                           <div className={styles.cardTitleGroup}>
-                            <div className={styles.cardTitle}>{ind.title}</div>
+                            <h2 className={styles.cardTitle}>{ind.title}</h2>
                             {demo && <div className={styles.cardIndustry}>{demo.title}</div>}
                           </div>
                         </div>
