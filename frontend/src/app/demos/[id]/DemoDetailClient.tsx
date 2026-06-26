@@ -175,10 +175,10 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "genai-applications",
     title: "Fabric IQ",
-    description: "Showcase Fabric IQ: build a semantic ontology over your data, expose it through Fabric Data Agents, and explore relationships with the knowledge graph for natural-language, context-aware analytics.",
+    description: "Showcase Fabric IQ: build a semantic ontology over this industry's data spanning a Lakehouse and an Eventhouse, bind it to real tables, and expose it through a Fabric Data Agent for natural-language, context-aware analytics over your business entities and relationships.",
     estimatedTime: "15–20 min",
     tags: ["fabric-iq", "ontology", "data-agent", "knowledge-graph"],
-    enabled: false,
+    enabled: true,
     requiresAzure: false,
     azureParams: [],
     feature: "Fabric IQ",
@@ -258,6 +258,94 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
 }
 
 const LAYER_COLORS = ["#3fb68b", "#238636", "#196c2e"];
+
+// Fabric IQ — verified comparison queries per industry (2 medium-hard + 1 hard).
+// Medium-hard = a two-dimension Lakehouse join (the fact filtered through two
+// related entities). Hard = filter a Lakehouse attribute → join the Eventhouse
+// time-series → aggregate (sum/avg). The Ontology agent traverses the defined
+// relationships (and the Lakehouse↔Eventhouse binding); the Direct agent must
+// guess the joins and tends to fail. Answers computed from each demo's ACTUAL
+// deployed (capped) data.
+const FABRICIQ_QUERIES: Record<string, { q: string; expect: string; hint: string; level: "Medium-hard" | "Hard" }[]> = {
+  "retail-sales": [
+    { level: "Medium-hard", q: "How many point-of-sale transactions were for Electronics products sold at stores in the West region?", expect: "1,001 transactions", hint: "PosTransaction → Product (category=Electronics) AND → Store (region=West)" },
+    { level: "Medium-hard", q: "How many transactions were for BrandB products in the Apparel category?", expect: "4,268 transactions", hint: "PosTransaction → Product (brand=BrandB AND category=Apparel)" },
+    { level: "Hard", q: "What is the total sales revenue (unit price × quantity) for Electronics products?", expect: "≈ $2,834,504", hint: "Filter Product (category=Electronics) → SUM PosTransaction price × qty (Eventhouse)" },
+  ],
+  "manufacturing-qc": [
+    { level: "Medium-hard", q: "How many batches with a failure event ran on Injection Molder machines on Line-B?", expect: "69 batches", hint: "ProductionBatch → Machine (type=Injection Molder) + filter line=Line-B AND failure_event" },
+    { level: "Medium-hard", q: "How many batches of product Gear-X ran on Injection Molder machines?", expect: "138 batches", hint: "ProductionBatch → Machine (type=Injection Molder) + filter product=Gear-X" },
+    { level: "Hard", q: "What is the total downtime (minutes) for batches run on Injection Molder machines?", expect: "≈ 43,914 minutes (≈ 732 hours)", hint: "Filter Machine (type=Injection Molder) → SUM ProductionBatch downtime (Eventhouse)" },
+  ],
+  "energy-grid": [
+    { level: "Medium-hard", q: "How many grid-sensor readings are at North-region substations that had a high-severity power event?", expect: "4,020 readings", hint: "GridSensor → Substation ← PowerEvent (region=North + severity=high)" },
+    { level: "Medium-hard", q: "How many renewable readings came from solar plants during overcast weather?", expect: "1,531 readings", hint: "RenewableReading → GenerationPlant (type=solar) + filter weather=overcast" },
+    { level: "Hard", q: "What is the average load (MW) recorded by grid sensors at North-region substations?", expect: "≈ 28.11 MW", hint: "Filter Substation (region=North) → AVG GridSensor load (Eventhouse)" },
+  ],
+  "healthcare": [
+    { level: "Medium-hard", q: "How many clinical records were recorded by Afternoon-shift staff for emergency Oncology admissions?", expect: "293 records", hint: "ClinicalRecord → Staff (shift=Afternoon) AND → Admission → Department (Oncology + Emergency)" },
+    { level: "Medium-hard", q: "How many NHS-insured admissions were there in Oncology?", expect: "2,056 admissions", hint: "Admission → Department (Oncology) + filter insurance_type=NHS" },
+    { level: "Hard", q: "What is the average length of stay for emergency admissions in Oncology?", expect: "≈ 6.83 days", hint: "Filter Department=Oncology + Emergency → AVG Admission length_of_stay (Eventhouse)" },
+  ],
+  "financial-services": [
+    { level: "Medium-hard", q: "How many flagged-fraud transactions were made by High risk-tier customers in the Corporate segment?", expect: "95 fraud-flagged transactions", hint: "Transaction → Customer (risk_tier=High AND segment=Corporate) + filter is_flagged_fraud" },
+    { level: "Medium-hard", q: "How many Credit Card accounts are held by High risk-tier customers?", expect: "84 accounts", hint: "Account (type=Credit Card) → Customer (risk_tier=High)" },
+    { level: "Hard", q: "What is the total transaction amount by High risk-tier customers?", expect: "≈ £622,430", hint: "Filter Customer (risk_tier=High) → SUM Transaction amount (Eventhouse)" },
+  ],
+  "transportation": [
+    { level: "Medium-hard", q: "How many late deliveries by HGV vehicles were on Standard routes?", expect: "636 late deliveries", hint: "Delivery → Vehicle (type=HGV) AND → Route (type=Standard) + filter is_late" },
+    { level: "Medium-hard", q: "How many deliveries were made by HGV vehicles based at the Birmingham depot?", expect: "1,572 deliveries", hint: "Delivery → Vehicle (type=HGV AND depot=Birmingham)" },
+    { level: "Hard", q: "What is the total load (tonnes) delivered by HGV vehicles?", expect: "≈ 87,988 tonnes", hint: "Filter Vehicle (type=HGV) → SUM Delivery load_tonnes (Eventhouse)" },
+  ],
+  "technology": [
+    { level: "Medium-hard", q: "How many High-priority SLA-breached tickets did churned Enterprise accounts have?", expect: "1 ticket", hint: "SupportTicket → Account (is_churned + plan=Enterprise) + filter priority=High AND is_sla_breached" },
+    { level: "Medium-hard", q: "How many Admin users are on Enterprise accounts?", expect: "204 users", hint: "User (role=Admin) → Account (plan=Enterprise)" },
+    { level: "Hard", q: "What is the total feature-usage time (hours) for Enterprise accounts?", expect: "≈ 97 hours", hint: "Filter Account (plan=Enterprise) → SUM UsageEvent duration (Eventhouse)" },
+  ],
+  "media": [
+    { level: "Medium-hard", q: "How many completed views of Action-genre content came from Latin America subscribers?", expect: "210 completed views", hint: "ViewingEvent → Content (genre=Action) AND → Subscriber (region=Latin America) + filter is_completed" },
+    { level: "Medium-hard", q: "How many Action-genre titles are Series?", expect: "82 titles", hint: "Content (genre=Action AND content_type=Series)" },
+    { level: "Hard", q: "What is the total ad revenue generated by Action-genre content?", expect: "≈ $112,424", hint: "Filter Content (genre=Action) → SUM AdImpression revenue (Eventhouse)" },
+  ],
+  "hospitality": [
+    { level: "Medium-hard", q: "How many bookings at 5-star properties by Platinum-tier guests were cancelled?", expect: "76 cancelled bookings", hint: "Booking → Property (star_rating=5) AND → Guest (loyalty_tier=Platinum) + filter is_cancelled" },
+    { level: "Medium-hard", q: "How many bookings were made at 5-star properties in the UK?", expect: "4,076 bookings", hint: "Booking → Property (star_rating=5 AND country=UK)" },
+    { level: "Hard", q: "What is the total booking revenue (room rate × nights) at 5-star properties?", expect: "≈ £7,954,477", hint: "Filter Property (star_rating=5) → SUM Booking room_rate × nights (Eventhouse)" },
+  ],
+  "professional-services": [
+    { level: "Medium-hard", q: "How many over-budget engagements for Strategic-tier clients were led by Partner-grade consultants?", expect: "5 over-budget engagements", hint: "Engagement → Client (tier=Strategic) AND → Consultant (grade=Partner) + filter is_over_budget" },
+    { level: "Medium-hard", q: "How many engagements are there for Strategic-tier clients in the Retail industry?", expect: "203 engagements", hint: "Engagement → Client (tier=Strategic AND industry=Retail)" },
+    { level: "Hard", q: "What is the total actual spend on engagements for Strategic-tier clients?", expect: "≈ £487.8M", hint: "Filter Client (tier=Strategic) → SUM Engagement actual_spend (Eventhouse)" },
+  ],
+  "construction": [
+    { level: "Medium-hard", q: "How many delayed tasks on Commercial projects were assigned to MEP-trade subcontractors?", expect: "99 delayed tasks", hint: "Task → Project (type=Commercial) AND → Subcontractor (trade=MEP) + filter is_delayed" },
+    { level: "Medium-hard", q: "How many tasks are on Commercial projects in Scotland?", expect: "370 tasks", hint: "Task → Project (type=Commercial AND region=Scotland)" },
+    { level: "Hard", q: "What is the total actual cost logged for Commercial projects?", expect: "≈ £887.7M", hint: "Filter Project (type=Commercial) → SUM CostEntry actual_cost (Eventhouse)" },
+  ],
+  "education": [
+    { level: "Medium-hard", q: "How many failed assessments are there for postgraduate enrolments in the Law School?", expect: "67 failed assessments", hint: "Assessment → Enrolment (level=Postgraduate AND department=Law School) + filter not is_pass" },
+    { level: "Medium-hard", q: "How many postgraduate enrolments were withdrawn?", expect: "2,115 withdrawn enrolments", hint: "Enrolment (level=Postgraduate + is_withdrawn)" },
+    { level: "Hard", q: "What is the average assessment score for postgraduate enrolments?", expect: "≈ 60.7", hint: "Filter Enrolment (level=Postgraduate) → AVG Assessment score (Eventhouse)" },
+  ],
+};
+
+// One row of the Fabric IQ query cheat-sheet (shared by the configure + progress
+// sidebar blocks). Shows the Qn label, a difficulty badge, the question, and the
+// verified expected answer.
+function FabricIqQueryRow({ item, i }: { item: { q: string; expect: string; level: "Medium-hard" | "Hard" }; i: number }) {
+  const c = item.level === "Hard" ? "#d29922" : "#8957e5";
+  return (
+    <div style={{ padding: "8px 0", borderTop: i > 0 ? "1px solid #161b22" : undefined }}>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 3 }}>
+        <span style={{ color: "#8957e5", fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{`Q${i + 1}`}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase", color: c, border: `1px solid ${c}55`, borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>{item.level}</span>
+      </div>
+      <span style={{ fontSize: 12, color: "#e6edf3", lineHeight: "16px" }}>{item.q}</span>
+      <Caption1 style={{ display: "block", color: "#3fb68b", marginTop: 2 }}>✓ {item.expect}</Caption1>
+    </div>
+  );
+}
+
 
 // Per-sector AI/ML pipeline details, shown in the "ML Pipeline" section of the
 // AI & Machine Learning scenario. Target variables and feature counts are taken
@@ -2103,6 +2191,72 @@ export default function DemoDetailPage() {
               </>
             )}
 
+            {/* === FABRIC IQ (Ontology + Data Agent) === */}
+            {isCustomMode && selectedScenario?.id === "genai-applications" && (() => {
+              const sid = id.replace(/-/g, "_");
+              const pascal = id.split("-").map(p => p.charAt(0).toUpperCase() + p.slice(1)).join("");
+              return (
+              <>
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <ArrowRightRegular fontSize={16} /> Data Flow
+                  </div>
+                  <div style={{ padding: "20px" }}>
+                    <div className={styles.flowGroupLabel}>Bind Data · Lakehouse + Eventhouse</div>
+                    <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
+                      <FlowSteps steps={[
+                        { label: "Source", value: "Industry CSVs", color: "#1f6feb" },
+                        { label: "Lakehouse", value: "Static Entities", color: "#3fb68b" },
+                        { label: "Eventhouse", value: "Time-Series", color: "#bb8009" },
+                      ]} />
+                    </div>
+                    <div className={styles.flowGroupLabel}>Semantic Layer · Fabric IQ</div>
+                    <div className={styles.flowSubRow}>
+                      <FlowSteps steps={[
+                        { label: "Ontology", value: "Entities + Relations", color: "#8957e5" },
+                        { label: "Ontology Agent", value: "NL over Ontology", color: "#3fb68b" },
+                        { label: "Direct Agent", value: "NL over LH + EH", color: "#da3633" },
+                      ]} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <DatabaseRegular fontSize={16} /> What Gets Created
+                  </div>
+                  <div className={styles.sectionBody}>
+                    {[
+                      { type: "Workspace", name: "New Fabric Workspace", description: "Dedicated workspace for this deployment" },
+                      { type: "Lakehouse", name: `${sid}_lakehouse`, description: "Static entity data — the non-time-series attributes of every ontology entity (Delta tables)" },
+                      { type: "Eventhouse", name: `${sid}_eventhouse`, description: "Time-series data — the streaming/event columns of the time-series entities (KQL tables)" },
+                      { type: "Notebook", name: "01_generate_ontology_data", description: "Loads the ontology package's instance data → Lakehouse Delta tables and events → Eventhouse" },
+                      { type: "Notebook", name: "02_create_ontology", description: "Builds the ontology, binds entities to the LH/EH tables, and publishes both data agents" },
+                      { type: "Ontology", name: `${pascal}Ontology`, description: "Semantic layer: business entities + relationships bound to the lakehouse and eventhouse" },
+                      { type: "DataAgent", name: `${pascal}OntologyAgent`, description: "Data agent grounded on the ontology (graph) — answers in business terms with relationship context" },
+                      { type: "DataAgent", name: `${pascal}DirectAgent`, description: "Baseline data agent over the raw Lakehouse + Eventhouse tables (no semantic layer) — for comparison" },
+                    ].map((item, i, arr) => (
+                      <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
+                        <div className={styles.itemLeft}>
+                          <span className={styles.itemIconWrap}>
+                            <FabricItemIcon type={item.type} size={20} />
+                          </span>
+                          <div>
+                            <Text weight="medium" size={300}>{item.name}</Text>
+                            <div><Caption1>{item.description}</Caption1></div>
+                          </div>
+                        </div>
+                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {renderSampleDataSection()}
+              </>
+              );
+            })()}
+
             {/* === EXTERNAL DATABASE INTEGRATION (Mirroring) === */}
             {isCustomMode && selectedScenario?.id === "external-data-integration" && (
               <>
@@ -2633,6 +2787,17 @@ export default function DemoDetailPage() {
                         <MessageBarBody>{error || "No capacities found."}</MessageBarBody>
                       </MessageBar>
                     )}
+                    {/* Fabric IQ: warn when the chosen capacity is Trial (data agents need F2+). */}
+                    {selectedScenario?.id === "genai-applications" &&
+                      capacities.find((c) => c.id === selectedCapacity)?.isTrial && (
+                      <MessageBar intent="warning" style={{ marginTop: 8 }}>
+                        <MessageBarBody>
+                          <strong>Trial capacity selected.</strong> The ontology, lakehouse and eventhouse will
+                          deploy, but the two Fabric <strong>Data Agents</strong> need a paid <strong>F2+</strong>
+                          {" "}capacity and will be skipped on Trial (FT1). Pick a paid capacity to auto-create them.
+                        </MessageBarBody>
+                      </MessageBar>
+                    )}
                   </div>
 
                   {/* Azure params — only for shortcut scenarios */}
@@ -2787,6 +2952,23 @@ export default function DemoDetailPage() {
                         : "Select an Azure subscription and resource group to deploy."}
                     </Caption1>
                   )}
+
+                  {/* Fabric IQ: query cheat-sheet below the deploy button */}
+                  {selectedScenario?.id === "genai-applications" && FABRICIQ_QUERIES[id] && (
+                    <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid #21262d" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#e6edf3", marginBottom: 4 }}>
+                        Try after deploy · Ontology Data Agent vs Direct Data Agent
+                      </div>
+                      <Caption1 style={{ display: "block", color: "#8b949e", marginBottom: 10 }}>
+                        Ask both agents the same question. Each filters a Lakehouse attribute, joins the Eventhouse
+                        time-series, and aggregates (sum/avg). The Ontology Data Agent knows the Lakehouse↔Eventhouse
+                        binding; the Direct Data Agent treats them as two separate sources and usually fails.
+                      </Caption1>
+                      {FABRICIQ_QUERIES[id].map((item, i) => (
+                        <FabricIqQueryRow key={i} item={item} i={i} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2827,6 +3009,23 @@ export default function DemoDetailPage() {
                       </span>
                     </div>
                   ))}
+
+                  {/* Fabric IQ: query cheat-sheet stays BELOW the deployment steps. */}
+                  {selectedScenario?.id === "genai-applications" && FABRICIQ_QUERIES[id] && (
+                    <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid #21262d" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#e6edf3", marginBottom: 4 }}>
+                        Try after deploy · Ontology Data Agent vs Direct Data Agent
+                      </div>
+                      <Caption1 style={{ display: "block", color: "#8b949e", marginBottom: 10 }}>
+                        Ask both agents the same question. Each filters a Lakehouse attribute, joins the Eventhouse
+                        time-series, and aggregates (sum/avg). The Ontology Data Agent knows the Lakehouse↔Eventhouse
+                        binding; the Direct Data Agent treats them as two separate sources and usually fails.
+                      </Caption1>
+                      {FABRICIQ_QUERIES[id].map((item, i) => (
+                        <FabricIqQueryRow key={i} item={item} i={i} />
+                      ))}
+                    </div>
+                  )}
 
                   {deploying && !completed && (
                     <div style={{ marginTop: 12 }}>

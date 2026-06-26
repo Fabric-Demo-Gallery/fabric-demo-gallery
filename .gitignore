@@ -37,5 +37,9 @@ Thumbs.db
 # Temp deploy/validation/audit helpers
 backend/_tmp_*.py
 
+# Fabric IQ accelerator — local reference only (the shared .whl is vendored
+# into backend/assets/fabriciq/ for the deployer; the rest is not committed)
+fabriciq-accelerator-0.1.0/
+
 # Domain registrant WHOIS contact (personal info — never commit)
 infra/domain/contact.json

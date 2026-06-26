@@ -1,23 +1,23 @@
 {
   "id": "genai-applications",
   "title": "Fabric IQ",
-  "description": "Showcase Fabric IQ: build a semantic ontology over your data, expose it through Fabric Data Agents, and explore relationships with the knowledge graph for natural-language, context-aware analytics.",
+  "description": "Showcase Fabric IQ: build a semantic ontology over this industry's data spanning a Lakehouse (static entities) and an Eventhouse (time-series), bind it to real tables, and expose it through a Fabric Data Agent for natural-language, context-aware analytics over your business entities and relationships.",
   "icon": "✨",
   "estimatedTime": "15-20 min",
-  "tags": ["fabric-iq", "ontology", "data-agent", "knowledge-graph"],
+  "tags": ["fabric-iq", "ontology", "data-agent", "knowledge-graph", "eventhouse"],
   "prerequisites": [
-    "Fabric capacity (F2+, Trial, or PPU)",
-    "Azure OpenAI or Fabric-native AI capacity enabled"
+    "Paid Fabric capacity (F2+) for the data agents — Trial/FT1 SKUs are not supported",
+    "Fabric IQ / Ontology (preview) enabled in the tenant",
+    "Data agent item type + Copilot/AI enabled in the tenant"
   ],
   "azureParams": [],
   "fabricItemTemplate": [
-    { "type": "Lakehouse",     "name": "analytics_lakehouse" },
-    { "type": "Notebook",      "name": "01_bronze_ingest",     "definitionPath": "notebooks/batch/01_bronze_ingest.ipynb",    "order": 1 },
-    { "type": "Notebook",      "name": "02_silver_transform",  "definitionPath": "notebooks/batch/02_silver_transform.ipynb", "order": 2 },
-    { "type": "Notebook",      "name": "03_gold_aggregate",    "definitionPath": "notebooks/batch/03_gold_aggregate.ipynb",   "order": 3 },
-    { "type": "Notebook",      "name": "04_build_embeddings",  "definitionPath": "notebooks/genai/04_build_embeddings.ipynb", "order": 4 },
-    { "type": "DataAgent",     "name": "analytics_agent" },
-    { "type": "SemanticModel", "name": "analytics_model",      "definitionPath": "tmdl" },
-    { "type": "Report",        "name": "analytics_report" }
+    { "type": "Lakehouse",  "name": "fabriciq_lakehouse" },
+    { "type": "Eventhouse", "name": "fabriciq_eventhouse" },
+    { "type": "Notebook",   "name": "01_generate_ontology_data", "definitionPath": "_scenarios/notebooks/fabriciq/01_generate_ontology_data.ipynb", "order": 1 },
+    { "type": "Notebook",   "name": "02_create_ontology",        "definitionPath": "_scenarios/notebooks/fabriciq/02_create_ontology.ipynb",        "order": 2 },
+    { "type": "Ontology",   "name": "FabricIqOntology" },
+    { "type": "DataAgent",  "name": "FabricIqOntologyAgent" },
+    { "type": "DataAgent",  "name": "FabricIqDirectAgent" }
   ]
 }

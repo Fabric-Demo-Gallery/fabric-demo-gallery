@@ -262,6 +262,7 @@ ENABLED_SCENARIOS: set[str] = {
     "external-data-integration",
     "real-time-intelligence",
     "fabric-foundry-agent",
+    "genai-applications",
 }
 
 
@@ -366,6 +367,21 @@ async def deploy_demo(
             azure_location=azure_location,
             create_resource_group=create_resource_group,
             sql_server_name=sql_server_name,
+        ):
+            yield ev
+        return
+
+    # Fabric IQ ontology scenario — Lakehouse + Eventhouse + 2 notebooks that
+    # build a semantic ontology and an ontology-grounded data agent. Delegate.
+    if scenario_id == "genai-applications":
+        async for ev in _deploy_fabric_iq(
+            client=client,
+            demo_id=demo_id,
+            demo_dir=demo_dir,
+            items=items,
+            workspace_name=workspace_name,
+            workspace_id=workspace_id,
+            capacity_id=capacity_id,
         ):
             yield ev
         return
@@ -2923,3 +2939,290 @@ async def _deploy_fabric_foundry(
                 "searchService": search_service,
             }
         yield {"event": "error", "data": data}
+
+
+async def _deploy_fabric_iq(
+    client: FabricClient,
+    demo_id: str,
+    demo_dir: Path,
+    items: list[dict],
+    workspace_name: str | None,
+    workspace_id: str | None,
+    capacity_id: str | None,
+) -> AsyncIterator[dict]:
+    """Deploy the Fabric IQ ontology scenario (one-click, headless).
+
+    workspace → empty Lakehouse + Eventhouse → upload the accelerator ``.whl`` +
+    the retail ``.iq`` package to the lakehouse ``Files/`` → create the two
+    notebooks (placeholders substituted) → run notebook 1 (load instance data to
+    Lakehouse Delta tables + events to Eventhouse Kusto tables) → run notebook 2
+    (build the ontology definition, bind it to the LH/EH items, create the
+    Ontology item, then create & publish a data agent grounded on the ontology)
+    → read back ``data_agent_result.json``.
+
+    The data agent step is best-effort: an ontology data-source is preview, so a
+    preview-API hiccup degrades that step to "skipped" with a manual follow-up
+    while the ontology + notebooks still succeed.
+    """
+    lakehouses = [i for i in items if i["type"] == "Lakehouse"]
+    eventhouses = [i for i in items if i["type"] == "Eventhouse"]
+    notebooks = [i for i in items if i["type"] == "Notebook"]
+    run_notebooks = sorted(
+        (nb for nb in notebooks if nb.get("order") is not None),
+        key=lambda n: n["order"],
+    )
+    ontologies = [i for i in items if i["type"] == "Ontology"]
+    data_agents = [i for i in items if i["type"] == "DataAgent"]
+
+    # Derive per-industry names from the demo id so one shared scenario template
+    # serves every industry (e.g. "retail-sales" → retail_sales_lakehouse,
+    # RetailSalesOntology). The scenario-template item names are generic, so we
+    # ignore them in favour of these industry-specific names.
+    sid = demo_id.replace("-", "_")
+    pascal = "".join(part.capitalize() for part in demo_id.replace("_", "-").split("-"))
+    lh_name = f"{sid}_lakehouse"
+    eh_name = f"{sid}_eventhouse"
+    ontology_name = f"{pascal}Ontology"
+    ontology_agent_name = f"{pascal}OntologyAgent"
+    direct_agent_name = f"{pascal}DirectAgent"
+    agent_domain = demo_id.replace("-", " ") + " operations"
+    lakehouse_schema = "dbo"
+    eventhouse_db = eh_name  # Eventhouse auto-creates a default KQL DB of the same name
+
+    # Accelerator wheel (shared, in the repo) + this demo's ontology package.
+    # The .iq lives at demos/<industry>/fabriciq/<industry>_ontology_package.iq —
+    # resolve it generically so every industry's Fabric IQ scenario works.
+    whl_path = _APP_DIR / "assets" / "fabriciq" / "fabriciq_ontology_accelerator-0.1.0-py3-none-any.whl"
+    fabriciq_dir = demo_dir / "fabriciq"
+    iq_candidates = sorted(fabriciq_dir.glob("*.iq")) if fabriciq_dir.exists() else []
+    iq_path = iq_candidates[0] if iq_candidates else fabriciq_dir / f"{demo_id}_ontology_package.iq"
+    whl_filename = whl_path.name
+    iq_filename = iq_path.name
+
+    # ── Plan ─────────────────────────────────────────────────────────────
+    steps: list[DeploymentStep] = []
+    if not workspace_id:
+        steps.append(DeploymentStep("workspace", f"Create workspace '{workspace_name}'"))
+    steps.append(DeploymentStep(f"lakehouse:{lh_name}", f"Create lakehouse '{lh_name}'"))
+    steps.append(DeploymentStep(f"eventhouse:{eh_name}", f"Create eventhouse '{eh_name}'"))
+    steps.append(DeploymentStep("upload", "Upload ontology package + accelerator library"))
+    for nb in run_notebooks:
+        steps.append(DeploymentStep(f"notebook:{nb['name']}", f"Create notebook '{nb['name']}'"))
+    steps.append(DeploymentStep(f"run:{run_notebooks[0]['name']}", "Load data → Lakehouse + Eventhouse"))
+    steps.append(DeploymentStep(f"run:{run_notebooks[1]['name']}", "Build ontology + 2 data agents (ontology vs raw)"))
+    steps.append(DeploymentStep("done", "Deployment complete"))
+    yield {"event": "plan", "data": [s.to_dict() for s in steps]}
+
+    ws_id = workspace_id
+    created_ids: dict[str, str] = {}
+    next_steps: list[str] = []
+
+    try:
+        # Pre-flight: fail fast on a paused/inactive capacity.
+        cap_err = await _capacity_inactive_error(client, capacity_id, workspace_id)
+        if cap_err:
+            yield {"event": "error", "data": {"message": cap_err, "workspaceId": ""}}
+            return
+
+        if not whl_path.exists():
+            yield {"event": "error", "data": {"message": f"Accelerator library not found at {whl_path}.", "workspaceId": ""}}
+            return
+        if not iq_path.exists():
+            yield {"event": "error", "data": {"message": f"Ontology package not found at {iq_path}.", "workspaceId": ""}}
+            return
+
+        # 1. Workspace
+        if not ws_id:
+            step = _find_step(steps, "workspace")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            try:
+                ws = await client.create_workspace(workspace_name or demo_id, capacity_id)
+                ws_id = ws["id"]
+                step.status = "completed"
+                step.item_id = ws_id
+            except FabricError as e:
+                step.status = "failed"
+                if e.status == 409:
+                    step.detail = f"A workspace named '{workspace_name}' already exists. Please choose a different name."
+                else:
+                    step.detail = f"Failed to create workspace: {e.detail[:200]}"
+                yield {"event": "step", "data": step.to_dict()}
+                yield {"event": "error", "data": {"message": step.detail, "workspaceId": ""}}
+                return
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 2. Empty Lakehouse (schema-enabled)
+        step = _find_step(steps, f"lakehouse:{lh_name}")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        lh = await client.create_lakehouse(ws_id, lh_name)
+        lakehouse_id = lh["id"]
+        created_ids[lh_name] = lakehouse_id
+        step.status = "completed"
+        step.item_id = lakehouse_id
+        yield {"event": "step", "data": step.to_dict()}
+
+        # 3. Empty Eventhouse (+ resolve its query/cluster URI)
+        step = _find_step(steps, f"eventhouse:{eh_name}")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        eh = await client.create_eventhouse(ws_id, eh_name)
+        eventhouse_id = eh["id"]
+        created_ids[eh_name] = eventhouse_id
+        eventhouse_uri = ""
+        try:
+            eh_details = await client.get_eventhouse(ws_id, eventhouse_id)
+            eventhouse_uri = eh_details.get("properties", {}).get("queryServiceUri", "")
+        except Exception as e:  # noqa: BLE001
+            logger.warning("[fabric-iq] could not resolve eventhouse URI: %s", e)
+        step.status = "completed"
+        step.item_id = eventhouse_id
+        step.detail = eventhouse_uri or "Created"
+        yield {"event": "step", "data": step.to_dict()}
+        if not eventhouse_uri:
+            raise FabricError(500, "Could not resolve the Eventhouse query URI — cannot bind the ontology's time-series data.")
+
+        # 4. Upload the accelerator wheel + ontology package to Files/
+        step = _find_step(steps, "upload")
+        step.status = "running"
+        yield {"event": "step", "data": step.to_dict()}
+        await client.upload_file_to_lakehouse(ws_id, lakehouse_id, whl_filename, whl_path)
+        await client.upload_file_to_lakehouse(ws_id, lakehouse_id, iq_filename, iq_path)
+        step.status = "completed"
+        step.detail = f"Uploaded {whl_filename} + {iq_filename}"
+        yield {"event": "step", "data": step.to_dict()}
+
+        # Shared notebook variables (superset — unused placeholders are ignored).
+        nb_variables = {
+            "WHL_FILENAME": whl_filename,
+            "IQ_FILENAME": iq_filename,
+            "ONTOLOGY_ITEM_NAME": ontology_name,
+            "ONTOLOGY_AGENT_NAME": ontology_agent_name,
+            "DIRECT_AGENT_NAME": direct_agent_name,
+            "AGENT_DOMAIN": agent_domain,
+            "LAKEHOUSE_NAME": lh_name,
+            "LAKEHOUSE_SCHEMA": lakehouse_schema,
+            "EVENTHOUSE_NAME": eh_name,
+            "EVENTHOUSE_CLUSTER_URI": eventhouse_uri,
+            "EVENTHOUSE_DATABASE": eventhouse_db,
+        }
+
+        # 5. Create the two notebooks (attached to the lakehouse)
+        notebook_ids: dict[str, str] = {}
+        for nb in run_notebooks:
+            step = _find_step(steps, f"notebook:{nb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            def_path = nb.get("definitionPath", f"notebooks/{nb['name']}.ipynb")
+            ipynb_path = DEMOS_DIR / def_path if def_path.startswith("_scenarios/") else demo_dir / def_path
+            result = await client.create_notebook(
+                ws_id, nb["name"], ipynb_path, lakehouse_id, lh_name,
+                variables=nb_variables,
+            )
+            notebook_ids[nb["name"]] = result["id"]
+            created_ids[nb["name"]] = result["id"]
+            step.status = "completed"
+            step.item_id = result["id"]
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 6. Run the notebooks sequentially.
+        for i, nb in enumerate(run_notebooks):
+            step = _find_step(steps, f"run:{nb['name']}")
+            step.status = "running"
+            yield {"event": "step", "data": step.to_dict()}
+            if i > 0:
+                await asyncio.sleep(45)  # ease Spark capacity pressure between runs
+            nb_id = notebook_ids[nb["name"]]
+            max_attempts = 5
+            last_err: FabricError | None = None
+            for attempt in range(max_attempts):
+                try:
+                    res = await client.run_notebook(ws_id, nb_id, lakehouse_id, lh_name, timeout=1800)
+                    js = res.get("status", "").lower() if isinstance(res, dict) else ""
+                    if js == "failed":
+                        raise FabricError(500, f"Notebook '{nb['name']}' failed: {res.get('failureReason', {}).get('message', '')[:200]}")
+                    last_err = None
+                    break
+                except FabricError as e:
+                    last_err = e
+                    if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
+                        wait = _retry_wait_seconds(e.detail, attempt)
+                        step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
+                        yield {"event": "step", "data": step.to_dict()}
+                        await asyncio.sleep(wait)
+                        continue
+                    raise
+            if last_err is not None:
+                raise last_err
+            step.status = "completed"
+            yield {"event": "step", "data": step.to_dict()}
+
+        # 6b. Read back the two-agent outcome written by notebook 2.
+        onto_agent = {"status": "unknown"}
+        direct_agent = {"status": "unknown"}
+        try:
+            pr = await client._storage_client.get(
+                f"{ONELAKE_API}/{ws_id}/{lakehouse_id}/Files/data_agent_result.json"
+            )
+            if pr.status_code < 400:
+                da = json.loads(pr.text)
+                onto_agent = da.get("ontologyAgent", {}) or {}
+                direct_agent = da.get("directAgent", {}) or {}
+                if onto_agent.get("dataAgentId"):
+                    created_ids[ontology_agent_name] = onto_agent["dataAgentId"]
+                if direct_agent.get("dataAgentId"):
+                    created_ids[direct_agent_name] = direct_agent["dataAgentId"]
+                # Data agents require a paid Fabric capacity (F2+); Trial (FT1)
+                # is rejected by the API. Surface that as one clear note rather
+                # than two cryptic per-agent failures.
+                if onto_agent.get("status") == "unsupported_sku" or direct_agent.get("status") == "unsupported_sku":
+                    next_steps.append(
+                        "Data agents were skipped — they require a paid Fabric capacity "
+                        "(F2+ with Copilot/AI enabled). This workspace is on a Trial/unsupported "
+                        "SKU. The ontology, lakehouse and eventhouse are fully deployed; re-deploy "
+                        "on a paid F-SKU to auto-create both agents."
+                    )
+                else:
+                    if onto_agent.get("status") != "published":
+                        reason = onto_agent.get("error") or f"stopped at step '{onto_agent.get('step', 'unknown')}'"
+                        next_steps.append(f"Ontology data agent incomplete — {reason[:150]}")
+                    if direct_agent.get("status") != "published":
+                        reason = direct_agent.get("error") or f"stopped at step '{direct_agent.get('step', 'unknown')}'"
+                        next_steps.append(f"Direct (LH+EH) data agent incomplete — {reason[:150]}")
+        except Exception as e:  # noqa: BLE001
+            logger.warning("[fabric-iq] could not read data_agent_result.json: %s", e)
+            next_steps.append(f"Create the Fabric data agents over '{ontology_name}' in the portal.")
+
+        # 7. Done
+        step = _find_step(steps, "done")
+        step.status = "completed"
+        step.detail = json.dumps({
+            "workspaceId": ws_id,
+            "items": created_ids,
+            "fabricIq": {
+                "ontology": ontology_name,
+                "ontologyAgent": ontology_agent_name,
+                "ontologyAgentId": onto_agent.get("dataAgentId", ""),
+                "ontologyAgentPublished": onto_agent.get("status") == "published",
+                "directAgent": direct_agent_name,
+                "directAgentId": direct_agent.get("dataAgentId", ""),
+                "directAgentPublished": direct_agent.get("status") == "published",
+                "eventhouseUri": eventhouse_uri,
+                "nextSteps": next_steps,
+            },
+        })
+        yield {"event": "step", "data": step.to_dict()}
+
+    except (FabricError, Exception) as e:  # noqa: BLE001
+        is_fabric = isinstance(e, FabricError)
+        if not is_fabric:
+            logger.exception("Fabric IQ deployment failed")
+        for s in steps:
+            if s.status == "running":
+                s.status = "failed"
+                s.detail = (e.detail if is_fabric else str(e))[:300]
+                yield {"event": "step", "data": s.to_dict()}
+                break
+        error_msg = str(e) if is_fabric else f"Unexpected error: {str(e)[:300]}"
+        yield {"event": "error", "data": {"message": error_msg, "workspaceId": ws_id or ""}}
