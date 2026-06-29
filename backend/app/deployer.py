@@ -3081,10 +3081,14 @@ async def _deploy_fabric_iq(
     lakehouse_schema = "dbo"
     eventhouse_db = eh_name  # Eventhouse auto-creates a default KQL DB of the same name
 
-    # Accelerator wheel (shared, in the repo) + this demo's ontology package.
-    # The .iq lives at demos/<industry>/fabriciq/<industry>_ontology_package.iq —
-    # resolve it generically so every industry's Fabric IQ scenario works.
-    whl_path = _APP_DIR / "assets" / "fabriciq" / "fabriciq_ontology_accelerator-0.1.0-py3-none-any.whl"
+    # Accelerator wheel (shared) + this demo's ontology package. The wheel lives
+    # under demos/_scenarios/fabriciq/ so it ships with the demo content (the
+    # backend bundle does not include backend/assets/). The .iq lives at
+    # demos/<industry>/fabriciq/<industry>_ontology_package.iq.
+    whl_path = DEMOS_DIR / "_scenarios" / "fabriciq" / "fabriciq_ontology_accelerator-0.1.0-py3-none-any.whl"
+    if not whl_path.exists():
+        # Fallback to the legacy vendored location for older bundles.
+        whl_path = _APP_DIR / "assets" / "fabriciq" / "fabriciq_ontology_accelerator-0.1.0-py3-none-any.whl"
     fabriciq_dir = demo_dir / "fabriciq"
     iq_candidates = sorted(fabriciq_dir.glob("*.iq")) if fabriciq_dir.exists() else []
     iq_path = iq_candidates[0] if iq_candidates else fabriciq_dir / f"{demo_id}_ontology_package.iq"
