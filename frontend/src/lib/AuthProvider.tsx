@@ -13,7 +13,7 @@ import {
   BrowserUtils,
   type AccountInfo,
 } from "@azure/msal-browser";
-import { msalInstance, fabricScopes, storageScopes, managementScopes, searchScopes, agentScopes, kustoScopes } from "@/lib/msal";
+import { msalInstance, popupRedirectUri, fabricScopes, storageScopes, managementScopes, searchScopes, agentScopes, kustoScopes } from "@/lib/msal";
 
 // Local dev mode: when no AZURE_CLIENT_ID is configured, skip MSAL entirely.
 // The backend falls back to `az login` (az CLI) tokens automatically.
@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         // Any failure (interaction required, timeout, etc.) → use popup
         try {
-          const result = await msalInstance.acquireTokenPopup({ scopes });
+          const result = await msalInstance.acquireTokenPopup({ scopes, redirectUri: popupRedirectUri });
           return result.accessToken;
         } catch (popupErr) {
           console.error("Token popup failed:", popupErr);
@@ -226,6 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await msalInstance.acquireTokenPopup({
         scopes: searchScopes,
         extraScopesToConsent: agentScopes,
+        redirectUri: popupRedirectUri,
       });
     }
   }, [account]);

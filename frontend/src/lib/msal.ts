@@ -37,6 +37,15 @@ const msalConfig: Configuration = {
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
+// Popup/iframe token flows return to a minimal static page (public/auth.html)
+// instead of the full SPA. The window that opens the popup reads the auth response
+// off the popup's URL and closes it; loading the entire app in the popup raced that
+// close and stranded it on "Completing sign-in\u2026" even though the opener got the
+// token. A blank same-origin page is read + closed instantly. The global
+// redirectUri stays `/` because the full-page loginRedirect must land on the app.
+export const popupRedirectUri =
+  typeof window !== "undefined" ? `${window.location.origin}/auth.html` : "http://localhost:3000/auth.html";
+
 // All Fabric API scopes requested at sign-in so consent happens once upfront.
 // These must be added to the app registration under:
 //   API permissions → Power BI Service → Delegated
