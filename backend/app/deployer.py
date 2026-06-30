@@ -2458,6 +2458,41 @@ async def _foundry_quota_warning(
     )
 
 
+async def _select_foundry_model(
+    azure_client: "AzureClient | None",
+    subscription_id: str | None,
+    location: str,
+    candidates: list[tuple[str, str]],
+) -> tuple[str, str, str | None]:
+    """Pick the first candidate ``(name, version)`` that has quota in ``location``,
+    falling back to the next when the preferred model is capped. Never fatal: if we
+    can't determine capacity (no creds or a listing hiccup) we return the first
+    candidate so the deploy proceeds and the normal advisory warning still applies.
+    Returns ``(model_name, model_version, note)`` where ``note`` explains a downgrade."""
+    primary_name, primary_version = candidates[0]
+    if not azure_client or not subscription_id:
+        return primary_name, primary_version, None
+    loc = (location or "").lower().replace(" ", "")
+    for idx, (name, version) in enumerate(candidates):
+        caps = await azure_client.check_model_capacity(subscription_id, name, version)
+        if not caps:
+            # Unknown (listing hiccup). Trust it only for the preferred model — use
+            # it and move on; for a fallback candidate keep looking.
+            if idx == 0:
+                return primary_name, primary_version, None
+            continue
+        here = next((c for c in caps if (c.get("location") or "").lower() == loc), None)
+        if here and here.get("availableCapacity", 0) > 0:
+            if idx == 0:
+                return name, version, None
+            return name, version, (
+                f"'{primary_name}' has no quota in '{location}' — deployed '{name}' instead."
+            )
+    # No candidate had quota in this region: keep the preferred model and let the
+    # advisory warning + graceful skip explain it.
+    return primary_name, primary_version, None
+
+
 async def _deploy_fabric_foundry(
     client: FabricClient,
     demo_id: str,
@@ -2479,7 +2514,7 @@ async def _deploy_fabric_foundry(
     workspace → lakehouse → upload CSVs → run batch notebooks (populate gold
     tables) → create & PUBLISH a Fabric data agent over the lakehouse (via item
     definition — no notebook/SDK) → provision a Microsoft Foundry account +
-    project + gpt-4o-mini → provision Azure AI Search (Foundry IQ engine) →
+    project + chat model → provision Azure AI Search (Foundry IQ engine) →
     wire the 3-way managed-identity RBAC → create the Foundry IQ knowledge
     source + base → create the project connection + agent grounded on it.
 
@@ -2492,19 +2527,41 @@ async def _deploy_fabric_foundry(
     from app.azure_client import AzureError
     from app.foundry_iq_client import FoundryIQClient, FoundryAgentClient, FoundryAgentError
 
-    MODEL_NAME = "gpt-4o-mini"
-    MODEL_VERSION = "2024-07-18"
-    DEPLOYMENT_NAME = "gpt-4o-mini"
+    # Preferred model first, then a graceful fallback when the preferred one has no
+    # quota in the chosen region. Both deploy as GlobalStandard (capacity pooled
+    # across regions — the most quota/region-flexible SKU).
+    FOUNDRY_MODEL_CANDIDATES = [
+        ("gpt-4.1-mini", "2025-04-14"),  # preferred: stronger reasoning + tool-calling
+        ("gpt-4o-mini", "2024-07-18"),   # fallback: widest availability + highest quota
+    ]
+    MODEL_NAME, MODEL_VERSION, model_note = await _select_foundry_model(
+        azure_client, subscription_id, azure_location, FOUNDRY_MODEL_CANDIDATES
+    )
+    # Deployment names allow only alphanumerics, '_' and '-' (no dots).
+    DEPLOYMENT_NAME = MODEL_NAME.replace(".", "")
 
     lakehouses = [i for i in items if i["type"] == "Lakehouse"]
     notebooks = [i for i in items if i["type"] == "Notebook"]
     run_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
     data_agents = [i for i in items if i["type"] == "DataAgent"]
     agent_name = data_agents[0]["name"] if data_agents else "analytics_data_agent"
+    # Per-sector data-agent instructions, derived from the sector manifest so the
+    # agent describes ITS OWN data (this was previously hardcoded to manufacturing).
+    # Falls back to a generic prompt if the manifest can't be read.
+    try:
+        _sector = load_manifest(demo_id)
+    except Exception:  # noqa: BLE001 — best-effort; never block the deploy
+        _sector = {}
+    _industry = (_sector.get("industry") or "").strip()
+    _title = (_sector.get("title") or "").strip()
+    _desc = (_sector.get("description") or "").strip()
+    _domain = _industry or _title or "the organization's"
     da_instructions = (
-        "You answer questions about manufacturing quality-control data "
-        "(production batches, sensor readings, equipment, defects). "
-        "Prefer the gold tables in the lakehouse."
+        f"You answer analytical questions about {_domain} data"
+        + (f" — {_title}." if _title and _title != _domain else ".")
+        + (f" {_desc}" if _desc else "")
+        + " Prefer the gold tables in the lakehouse and cite them; if the data"
+        " doesn't contain the answer, say so."
     )
     data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
 
@@ -2739,7 +2796,7 @@ async def _deploy_fabric_foundry(
                     DEPLOYMENT_NAME, MODEL_NAME, MODEL_VERSION,
                 )
                 step.status = "completed"
-                step.detail = f"{DEPLOYMENT_NAME} ({MODEL_NAME})"
+                step.detail = f"{DEPLOYMENT_NAME} ({MODEL_NAME})" + (f" — {model_note}" if model_note else "")
             except (AzureError, Exception) as e:  # noqa: BLE001
                 logger.warning("[foundry] model deployment skipped: %s", e)
                 step.status = "skipped"

@@ -7,7 +7,7 @@ the search service:
   * a *knowledge source* of kind ``fabricDataAgent`` (carries the Fabric
     workspace + data-agent ids), and
   * a *knowledge base* that references the source and a chat model (the Foundry
-    ``gpt-4o-mini`` deployment).
+    chat-model deployment).
 
 These use the Azure AI Search REST API (host ``{service}.search.windows.net``),
 which has a DIFFERENT token audience (``https://search.azure.com``) than ARM, so
@@ -86,10 +86,10 @@ class FoundryIQClient:
         knowledge_source_name: str,
         foundry_account: str,
         model_deployment: str,
-        model_name: str = "gpt-4o-mini",
+        model_name: str = "gpt-4.1-mini",
     ) -> dict:
         """Create/update a knowledge base that grounds on the knowledge source and
-        uses the Foundry ``gpt-4o-mini`` deployment for retrieval reasoning."""
+        uses the Foundry chat-model deployment for retrieval reasoning."""
         body = {
             "name": name,
             "description": "",
