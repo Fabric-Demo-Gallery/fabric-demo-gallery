@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Completing sign-in…</title>
+  </head>
+  <body
+    style="
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      color: #444;
+    "
+  >
+    <!--
+      Dedicated MSAL popup/iframe redirect target. Intentionally a minimal static
+      page with NO app bundle and NO MSAL init: the window that opened the popup
+      reads the auth response off this page's URL and closes it. Loading the full
+      SPA here raced that close and stranded the popup on "Completing sign-in…".
+    -->
+    <p>Completing sign-in… you can close this window.</p>
+  </body>
+</html>

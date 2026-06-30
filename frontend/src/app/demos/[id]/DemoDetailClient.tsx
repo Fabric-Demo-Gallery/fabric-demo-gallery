@@ -3,7 +3,7 @@
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Fragment, useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/AuthProvider";
-import { oneLakeScopes } from "@/lib/msal";
+import { oneLakeScopes, popupRedirectUri } from "@/lib/msal";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 import {
@@ -1495,7 +1495,7 @@ export default function DemoDetailPage() {
           oneLakeToken = res.accessToken;
         } catch {
           try {
-            const res = await msalInstance.acquireTokenPopup({ scopes: oneLakeScopes });
+            const res = await msalInstance.acquireTokenPopup({ scopes: oneLakeScopes, redirectUri: popupRedirectUri });
             oneLakeToken = res.accessToken;
           } catch { /* proceed without OneLake token */ }
         }
