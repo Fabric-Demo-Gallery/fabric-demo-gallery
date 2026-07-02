@@ -63,6 +63,14 @@ import {
   Sparkle24Regular,
   FlashRegular,
   Bot24Regular,
+  Grid24Regular,
+  Cube24Regular,
+  Search24Regular,
+  Library24Regular,
+  ShieldKeyhole24Regular,
+  Storage24Regular,
+  Flowchart24Regular,
+  PersonKey24Regular,
 } from "@fluentui/react-icons";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { DEMOS } from "@/lib/demoCatalog";
@@ -239,7 +247,9 @@ type SampleDataItem = {
   rows: number;
 };
 
-/* Fabric workload icons — official SVGs from Microsoft */
+/* Fabric workload icons — official SVGs from Microsoft. Types without an
+   official item SVG (Azure resources, agents, RBAC…) get a matching Fluent
+   system icon instead of a bare letter, so every row reads consistently. */
 function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
   const FILE_MAP: Record<string, string> = {
     Lakehouse: "lakehouse_24_item.svg",
@@ -257,10 +267,29 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
     Connection: "dataflow_gen2_24_item.svg",
     Shortcut: "lakehouse_24_item.svg",
   };
+  const FLUENT_MAP: Record<string, FluentIcon> = {
+    Workspace: Grid24Regular,
+    DataAgent: Bot24Regular,
+    Agent: Sparkle24Regular,
+    FoundryAccount: Cube24Regular,
+    ModelDeployment: BrainCircuit24Regular,
+    SearchService: Search24Regular,
+    KnowledgeBase: Library24Regular,
+    RBACRole: ShieldKeyhole24Regular,
+    StorageAccount: Storage24Regular,
+    SQLDatabase: Database24Regular,
+    MirroredDatabase: DatabaseArrowRight24Regular,
+    Ontology: Flowchart24Regular,
+    WorkspaceIdentity: PersonKey24Regular,
+  };
   const file = FILE_MAP[type];
-  if (!file) return <span style={{ fontSize: size * 0.65, color: "#8b949e", fontWeight: 700, lineHeight: 1 }}>{type.charAt(0)}</span>;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
+  if (file) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
+  }
+  const Icon = FLUENT_MAP[type];
+  if (Icon) return <Icon fontSize={size + 2} style={{ color: "#8b949e" }} />;
+  return <span style={{ fontSize: size * 0.65, color: "#8b949e", fontWeight: 700, lineHeight: 1 }}>{type.charAt(0)}</span>;
 }
 
 // Medallion layers rendered as their namesake metals — tinted, not saturated.
