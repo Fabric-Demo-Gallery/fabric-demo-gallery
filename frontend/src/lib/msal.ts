@@ -50,7 +50,12 @@ export const popupRedirectUri =
 // These must be added to the app registration under:
 //   API permissions → Power BI Service → Delegated
 // Required: Workspace.ReadWrite.All, Item.ReadWrite.All,
-//           Connection.ReadWrite.All, OneLake.ReadWrite.All
+//           Connection.ReadWrite.All, OneLake.ReadWrite.All, Capacity.Read.All
+// Capacity.Read.All is required by GET /v1/capacities (the capacity picker).
+// Without it in the token's scp claim, users consenting from OTHER tenants get
+// 403 on the capacities call even though sign-in succeeds — tenants that had
+// admin-consented the app's full permission list never hit this, which is why
+// it only reproduced for external users.
 // NOTE: KQLDatabase.ReadWrite.All is intentionally NOT requested at sign-in. It's
 // only needed for the optional RTI history seed, so it's acquired incrementally
 // via `kustoScopes` / getKustoToken. Keeping the up-front consent set small avoids
@@ -61,6 +66,7 @@ export const fabricScopes = [
   "https://api.fabric.microsoft.com/Item.ReadWrite.All",
   "https://api.fabric.microsoft.com/Connection.ReadWrite.All",
   "https://api.fabric.microsoft.com/OneLake.ReadWrite.All",
+  "https://api.fabric.microsoft.com/Capacity.Read.All",
 ];
 
 // Separate OneLake scope — needs its own token for shortcut creation (OneLake.ReadWrite.All)

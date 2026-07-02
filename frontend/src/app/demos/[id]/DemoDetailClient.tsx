@@ -1199,15 +1199,25 @@ export default function DemoDetailPage() {
   const stableGetFabricToken = useCallback(getFabricToken, [getFabricToken]);
   useEffect(() => {
     if (!selectedScenario || !account) return;
-    setLoadingCapacities(true);
-    setError(null);
-    stableGetFabricToken()
-      .then((token) =>
-        fetch("https://api.fabric.microsoft.com/v1/capacities", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      )
-      .then(async (res) => {
+    let cancelled = false;
+    const fetchCaps = async (forceRefresh: boolean) => {
+      const token = await stableGetFabricToken({ forceRefresh });
+      return fetch("https://api.fabric.microsoft.com/v1/capacities", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    };
+    (async () => {
+      setLoadingCapacities(true);
+      setError(null);
+      try {
+        let res = await fetchCaps(false);
+        if (res.status === 401 || res.status === 403) {
+          // A cached token can predate a consent/permission change (e.g. it lacks
+          // Capacity.Read.All). One retry with a forced refresh picks up the
+          // current grant before we surface an error.
+          res = await fetchCaps(true);
+        }
+        if (cancelled) return;
         if (res.ok) {
           const data = await res.json();
           const caps = (data.value || [])
@@ -1221,13 +1231,32 @@ export default function DemoDetailPage() {
           setCapacities(caps);
           if (caps.length > 0) setSelectedCapacity((prev) => prev || caps[0].id);
         } else {
-          setError("Failed to load Fabric capacities");
+          let detail = "";
+          try {
+            const body = await res.json();
+            detail = body?.errorCode || body?.message || "";
+          } catch {
+            // non-JSON error body — status alone will have to do
+          }
+          const hint =
+            res.status === 401 || res.status === 403
+              ? " Your account may not have Microsoft Fabric access, or your organization hasn't granted this app the Capacity.Read.All permission. Try signing out and back in; if it persists, ask your Fabric admin."
+              : "";
+          setError(
+            `Failed to load Fabric capacities (HTTP ${res.status}${detail ? `: ${detail}` : ""}).${hint}`
+          );
         }
-      })
-      .catch((e: unknown) => {
-        setError(`Failed to load capacities: ${e instanceof Error ? e.message : String(e)}`);
-      })
-      .finally(() => setLoadingCapacities(false));
+      } catch (e: unknown) {
+        if (!cancelled) {
+          setError(`Failed to load capacities: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      } finally {
+        if (!cancelled) setLoadingCapacities(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedScenario, account, stableGetFabricToken]);
 
   // Fetch Azure subscriptions once a scenario requiring Azure is selected
