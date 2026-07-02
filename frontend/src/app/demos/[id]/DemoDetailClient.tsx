@@ -63,14 +63,6 @@ import {
   Sparkle24Regular,
   FlashRegular,
   Bot24Regular,
-  Grid24Regular,
-  Cube24Regular,
-  Search24Regular,
-  Library24Regular,
-  ShieldKeyhole24Regular,
-  Storage24Regular,
-  Flowchart24Regular,
-  PersonKey24Regular,
 } from "@fluentui/react-icons";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { DEMOS } from "@/lib/demoCatalog";
@@ -247,11 +239,13 @@ type SampleDataItem = {
   rows: number;
 };
 
-/* Fabric workload icons — official SVGs from Microsoft. Types without an
-   official item SVG (Azure resources, agents, RBAC…) get a matching Fluent
-   system icon instead of a bare letter, so every row reads consistently. */
+/* Item logos — OFFICIAL icons only. Fabric item types use the official Fabric
+   item SVGs (@fabric-msft/svg-icons); Azure resources use the official Azure
+   architecture icons. No lookalike glyphs — the letter fallback survives only
+   for unknown future types. */
 function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
   const FILE_MAP: Record<string, string> = {
+    // Fabric items — official Fabric item icons
     Lakehouse: "lakehouse_24_item.svg",
     Notebook: "notebook_24_item.svg",
     SemanticModel: "semantic_model_24_item.svg",
@@ -261,34 +255,31 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
     Eventhouse: "eventhouse_24_item.svg",
     KQLDatabase: "kql_database_24_item.svg",
     KQLDashboard: "kql_dashboard_24_item.svg",
-    Eventstream: "dataflow_gen2_24_item.svg",
-    KQLQueryset: "kql_database_24_item.svg",
+    Eventstream: "eventstream_24_item.svg",
+    KQLQueryset: "kql_queryset_24_item.svg",
     Reflex: "bolt.svg",
-    Connection: "dataflow_gen2_24_item.svg",
-    Shortcut: "lakehouse_24_item.svg",
-  };
-  const FLUENT_MAP: Record<string, FluentIcon> = {
-    Workspace: Grid24Regular,
-    DataAgent: Bot24Regular,
-    Agent: Sparkle24Regular,
-    FoundryAccount: Cube24Regular,
-    ModelDeployment: BrainCircuit24Regular,
-    SearchService: Search24Regular,
-    KnowledgeBase: Library24Regular,
-    RBACRole: ShieldKeyhole24Regular,
-    StorageAccount: Storage24Regular,
-    SQLDatabase: Database24Regular,
-    MirroredDatabase: DatabaseArrowRight24Regular,
-    Ontology: Flowchart24Regular,
-    WorkspaceIdentity: PersonKey24Regular,
+    Connection: "links_24_item.svg",
+    Shortcut: "links_24_item.svg",
+    Workspace: "group_workspace_24_non-item.svg",
+    DataAgent: "data_agent_24_item.svg",
+    Ontology: "ontology_24_item.svg",
+    SQLDatabase: "sql_database_24_item.svg",
+    MirroredDatabase: "mirrored_generic_database_24_item.svg",
+    // Azure resources — official Azure architecture icons
+    FoundryAccount: "azure_foundry.svg",
+    KnowledgeBase: "azure_foundry.svg",
+    Agent: "azure_foundry.svg",
+    ModelDeployment: "azure_openai.svg",
+    SearchService: "azure_ai_search.svg",
+    StorageAccount: "azure_storage.svg",
+    RBACRole: "azure_managed_identity.svg",
+    WorkspaceIdentity: "azure_managed_identity.svg",
   };
   const file = FILE_MAP[type];
   if (file) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
   }
-  const Icon = FLUENT_MAP[type];
-  if (Icon) return <Icon fontSize={size + 2} style={{ color: "#8b949e" }} />;
   return <span style={{ fontSize: size * 0.65, color: "#8b949e", fontWeight: 700, lineHeight: 1 }}>{type.charAt(0)}</span>;
 }
 
