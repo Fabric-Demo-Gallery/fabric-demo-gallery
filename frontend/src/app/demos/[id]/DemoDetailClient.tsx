@@ -263,7 +263,8 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
   return <img src={`/icons/${file}`} alt={type} width={size} height={size} style={{ objectFit: "contain" }} />;
 }
 
-const LAYER_COLORS = ["#3fb68b", "#238636", "#196c2e"];
+// Medallion layers rendered as their namesake metals — tinted, not saturated.
+const LAYER_COLORS = ["#db8a5f", "#9ba6b0", "#e3b341"];
 
 // Fabric IQ — verified comparison queries per industry (2 medium-hard + 1 hard).
 // Medium-hard = a two-dimension Lakehouse join (the fact filtered through two
@@ -339,11 +340,11 @@ const FABRICIQ_QUERIES: Record<string, { q: string; expect: string; hint: string
 // sidebar blocks). Shows the Qn label, a difficulty badge, the question, and the
 // verified expected answer.
 function FabricIqQueryRow({ item, i }: { item: { q: string; expect: string; level: "Medium-hard" | "Hard" }; i: number }) {
-  const c = item.level === "Hard" ? "#d29922" : "#8957e5";
+  const c = item.level === "Hard" ? "#d29922" : "#a371f7";
   return (
     <div style={{ padding: "8px 0", borderTop: i > 0 ? "1px solid #161b22" : undefined }}>
       <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 3 }}>
-        <span style={{ color: "#8957e5", fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{`Q${i + 1}`}</span>
+        <span style={{ color: "#a371f7", fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{`Q${i + 1}`}</span>
         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase", color: c, border: `1px solid ${c}55`, borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>{item.level}</span>
       </div>
       <span style={{ fontSize: 12, color: "#e6edf3", lineHeight: "16px" }}>{item.q}</span>
@@ -517,11 +518,11 @@ const useStyles = makeStyles({
     gap: "8px",
     padding: "14px 20px",
     borderBottom: "1px solid #21262d",
-    fontSize: "13px",
+    fontSize: "12px",
     fontWeight: 600,
-    color: "#e6edf3",
+    color: "#8b949e",
     textTransform: "uppercase" as const,
-    letterSpacing: "0.5px",
+    letterSpacing: "0.8px",
   },
   sectionBody: {
     padding: "0",
@@ -677,7 +678,7 @@ const useStyles = makeStyles({
   flowValue: {
     fontSize: "13px",
     fontWeight: 500,
-    color: "#ffffff",
+    color: "#e6edf3",
   },
   flowArrow: {
     marginLeft: "6px",
@@ -1095,6 +1096,8 @@ const useStyles = makeStyles({
 // LEADS each box (rendered before it) and is grouped with that box, so when the
 // row wraps to a new line the arrow wraps with its box — never left dangling at
 // the end of a row (the old trailing-arrow layout broke on wrap).
+// Chips are tinted (accent at low alpha + hairline border) rather than solid
+// saturated fills — calmer, and the accent still color-codes each stage.
 function FlowSteps({ steps }: { steps: { label?: string; value: string; color: string }[] }) {
   const styles = useStyles();
   return (
@@ -1102,9 +1105,9 @@ function FlowSteps({ steps }: { steps: { label?: string; value: string; color: s
       {steps.map((step, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
           {i > 0 && <ArrowRightRegular className={styles.flowArrow} fontSize={18} />}
-          <div className={styles.flowBox} style={{ backgroundColor: step.color }}>
+          <div className={styles.flowBox} style={{ backgroundColor: `${step.color}14`, border: `1px solid ${step.color}59` }}>
             {step.label && (
-              <div className={styles.flowLabel} style={{ color: "rgba(255,255,255,0.7)" }}>{step.label}</div>
+              <div className={styles.flowLabel} style={{ color: step.color }}>{step.label}</div>
             )}
             <div className={styles.flowValue}>{step.value}</div>
           </div>
@@ -1974,7 +1977,7 @@ export default function DemoDetailPage() {
               style={index === items.length - 1 ? { borderBottom: "none" } : undefined}
             >
               <div className={styles.dataLeft}>
-                <Badge appearance="tint" color="severe" size="small">{dataset.format}</Badge>
+                <Badge appearance="tint" color="informative" size="small">{dataset.format}</Badge>
                 <div style={{ minWidth: 0 }}>
                   <Text weight="medium" size={200}>{dataset.fileName}</Text>
                   <div><Caption1>{dataset.description}</Caption1></div>
@@ -2114,9 +2117,9 @@ export default function DemoDetailPage() {
                     <div className={styles.flowGroupLabel}>Ingest</div>
                     <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
                       <FlowSteps steps={[
-                        { label: "Source", value: "CSV Files", color: "#1f6feb" },
-                        { label: "Azure", value: "ADLS Gen2", color: "#1f6feb" },
-                        { label: "Shortcut", value: "Virtual Link", color: "#8957e5" },
+                        { label: "Source", value: "CSV Files", color: "#4493f8" },
+                        { label: "Azure", value: "ADLS Gen2", color: "#4493f8" },
+                        { label: "Shortcut", value: "Virtual Link", color: "#a371f7" },
                         { label: "Lakehouse", value: "Delta Tables", color: "#3fb68b" },
                       ]} />
                     </div>
@@ -2124,9 +2127,9 @@ export default function DemoDetailPage() {
                     <div className={styles.flowGroupLabel}>Analyze &amp; Serve</div>
                     <div className={styles.flowSubRow}>
                       <FlowSteps steps={[
-                        { label: "Notebooks", value: "Bronze→Gold", color: "#238636" },
-                        { label: "Semantic Model", value: "Direct Lake", color: "#bb8009" },
-                        { label: "Power BI", value: "Reports", color: "#da3633" },
+                        { label: "Notebooks", value: "Bronze→Gold", color: "#56d364" },
+                        { label: "Semantic Model", value: "Direct Lake", color: "#d29922" },
+                        { label: "Power BI", value: "Reports", color: "#db6d28" },
                       ]} />
                     </div>
                   </div>
@@ -2198,18 +2201,18 @@ export default function DemoDetailPage() {
                     <div className={styles.flowGroupLabel}>Data Foundation</div>
                     <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
                       <FlowSteps steps={[
-                        { label: "Source", value: "CSV Files", color: "#1f6feb" },
+                        { label: "Source", value: "CSV Files", color: "#4493f8" },
                         { label: "Lakehouse", value: "Delta Tables", color: "#3fb68b" },
-                        { label: "Notebooks", value: "Bronze→Gold", color: "#238636" },
-                        { label: "Data Agent", value: "Over Gold", color: "#8957e5" },
+                        { label: "Notebooks", value: "Bronze→Gold", color: "#56d364" },
+                        { label: "Data Agent", value: "Over Gold", color: "#a371f7" },
                       ]} />
                     </div>
                     <div className={styles.flowGroupLabel}>AI Agent · Microsoft Foundry</div>
                     <div className={styles.flowSubRow}>
                       <FlowSteps steps={[
-                        { label: "Foundry", value: "gpt-5-mini", color: "#8957e5" },
-                        { label: "AI Search", value: "Knowledge Base", color: "#bb8009" },
-                        { label: "Agent", value: "Grounded on Data", color: "#da3633" },
+                        { label: "Foundry", value: "gpt-5-mini", color: "#a371f7" },
+                        { label: "AI Search", value: "Knowledge Base", color: "#d29922" },
+                        { label: "Agent", value: "Grounded on Data", color: "#db6d28" },
                       ]} />
                     </div>
                   </div>
@@ -2285,17 +2288,17 @@ export default function DemoDetailPage() {
                     <div className={styles.flowGroupLabel}>Bind Data · Lakehouse + Eventhouse</div>
                     <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
                       <FlowSteps steps={[
-                        { label: "Source", value: "Industry CSVs", color: "#1f6feb" },
+                        { label: "Source", value: "Industry CSVs", color: "#4493f8" },
                         { label: "Lakehouse", value: "Static Entities", color: "#3fb68b" },
-                        { label: "Eventhouse", value: "Time-Series", color: "#bb8009" },
+                        { label: "Eventhouse", value: "Time-Series", color: "#d29922" },
                       ]} />
                     </div>
                     <div className={styles.flowGroupLabel}>Semantic Layer · Fabric IQ</div>
                     <div className={styles.flowSubRow}>
                       <FlowSteps steps={[
-                        { label: "Ontology", value: "Entities + Relations", color: "#8957e5" },
+                        { label: "Ontology", value: "Entities + Relations", color: "#a371f7" },
                         { label: "Ontology Agent", value: "NL over Ontology", color: "#3fb68b" },
-                        { label: "Direct Agent", value: "NL over LH + EH", color: "#da3633" },
+                        { label: "Direct Agent", value: "NL over LH + EH", color: "#db6d28" },
                       ]} />
                     </div>
                   </div>
@@ -2400,9 +2403,9 @@ export default function DemoDetailPage() {
                     <div className={styles.flowGroupLabel}>Replicate (zero-ETL)</div>
                     <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
                       <FlowSteps steps={[
-                        { label: "Source", value: "CSV Files", color: "#1f6feb" },
-                        { label: "Azure SQL", value: "Operational DB", color: "#1f6feb" },
-                        { label: "Mirroring", value: "Live Replication", color: "#8957e5" },
+                        { label: "Source", value: "CSV Files", color: "#4493f8" },
+                        { label: "Azure SQL", value: "Operational DB", color: "#4493f8" },
+                        { label: "Mirroring", value: "Live Replication", color: "#a371f7" },
                         { label: "OneLake", value: "Delta Tables", color: "#3fb68b" },
                       ]} />
                     </div>
@@ -2410,8 +2413,8 @@ export default function DemoDetailPage() {
                     <div className={styles.flowGroupLabel}>Explore &amp; Prove</div>
                     <div className={styles.flowSubRow}>
                       <FlowSteps steps={[
-                        { label: "Notebooks", value: "Spark on OneLake", color: "#238636" },
-                        { label: "Live Change", value: "Watch It Sync", color: "#bb8009" },
+                        { label: "Notebooks", value: "Spark on OneLake", color: "#56d364" },
+                        { label: "Live Change", value: "Watch It Sync", color: "#d29922" },
                       ]} />
                     </div>
                   </div>
@@ -2480,39 +2483,23 @@ export default function DemoDetailPage() {
                   <div className={styles.sectionHeader}>
                     <ArrowRightRegular fontSize={16} /> Data Flow
                   </div>
-                  <div style={{ padding: "16px 20px" }}>
-                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Ingest</div>
-                    <div style={{ display: "flex", alignItems: "center", marginBottom: 16, flexWrap: "nowrap" }}>
-                      {[
-                        { label: "Source", value: "CSV / Stream", color: "#1f3a5c" },
-                        { label: "Eventstream", value: "Live Ingestion", color: "#1a3d6e" },
-                        { label: "Eventhouse", value: "KQL Storage", color: "#1a4a5c" },
-                        { label: "KQL DB", value: "Auto-Created", color: "#1a3d4a" },
-                      ].map((step, i, arr) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
-                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
-                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
-                          </div>
-                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
-                        </div>
-                      ))}
+                  <div style={{ padding: "20px" }}>
+                    <div className={styles.flowGroupLabel}>Ingest</div>
+                    <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
+                      <FlowSteps steps={[
+                        { label: "Source", value: "CSV / Stream", color: "#4493f8" },
+                        { label: "Eventstream", value: "Live Ingestion", color: "#39c5cf" },
+                        { label: "Eventhouse", value: "KQL Storage", color: "#3fb68b" },
+                        { label: "KQL DB", value: "Auto-Created", color: "#a371f7" },
+                      ]} />
                     </div>
-                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b949e", letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 8 }}>Analyze &amp; Act</div>
-                    <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap" }}>
-                      {[
-                        { label: "KQL Queryset", value: "Analytics", color: "#1a4a3d" },
-                        { label: "Dashboard", value: "Live Tiles", color: "#2d4a1a" },
-                        { label: "Activator", value: "Alert Rules", color: "#4a3d1a" },
-                      ].map((step, i, arr) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                          <div style={{ backgroundColor: step.color, borderRadius: 6, padding: "8px 14px", minWidth: 108, flexShrink: 0 }}>
-                            <div style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 2 }}>{step.label}</div>
-                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>{step.value}</div>
-                          </div>
-                          {i < arr.length - 1 && <ArrowRightRegular style={{ color: "#30363d", flexShrink: 0, margin: "0 2px" }} fontSize={16} />}
-                        </div>
-                      ))}
+                    <div className={styles.flowGroupLabel}>Analyze &amp; Act</div>
+                    <div className={styles.flowSubRow}>
+                      <FlowSteps steps={[
+                        { label: "KQL Queryset", value: "Analytics", color: "#3fb68b" },
+                        { label: "Dashboard", value: "Live Tiles", color: "#d29922" },
+                        { label: "Activator", value: "Alert Rules", color: "#db6d28" },
+                      ]} />
                     </div>
                   </div>
                 </div>
@@ -2663,11 +2650,11 @@ export default function DemoDetailPage() {
                   </div>
                   <div className={styles.flowRow}>
                     <FlowSteps steps={[
-                      { label: "Bronze", value: "Raw Ingest", color: "#3fb68b" },
-                      { label: "Silver", value: "Clean & Enrich", color: "#238636" },
-                      { label: "Features", value: "ML Feature Table", color: "#1f6feb" },
-                      { label: "Train", value: "LightGBM", color: "#8957e5" },
-                      { label: "Score", value: "Predictions & Risk", color: "#da3633" },
+                      { label: "Bronze", value: "Raw Ingest", color: "#db8a5f" },
+                      { label: "Silver", value: "Clean & Enrich", color: "#9ba6b0" },
+                      { label: "Features", value: "ML Feature Table", color: "#4493f8" },
+                      { label: "Train", value: "LightGBM", color: "#a371f7" },
+                      { label: "Score", value: "Predictions & Risk", color: "#db6d28" },
                     ]} />
                   </div>
                 </div>

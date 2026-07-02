@@ -47,6 +47,7 @@ const useStyles = makeStyles({
   /* ---- Hero ---- */
   hero: {
     background: "#0d1117",
+    backgroundImage: "radial-gradient(ellipse 720px 340px at 78% 0%, rgba(63,182,139,0.08), transparent 70%)",
     color: "#e6edf3",
     borderBottom: "1px solid #21262d",
   },
@@ -71,9 +72,10 @@ const useStyles = makeStyles({
     marginBottom: "12px",
   },
   heroTitle: {
-    fontSize: "32px",
+    fontSize: "34px",
     fontWeight: 700,
-    lineHeight: "40px",
+    lineHeight: "42px",
+    letterSpacing: "-0.4px",
     maxWidth: "560px",
     marginBottom: "12px",
     color: "#e6edf3",
@@ -245,10 +247,11 @@ const useStyles = makeStyles({
     border: "1px solid #30363d",
     borderRadius: "8px",
     overflow: "hidden",
-    transitionProperty: "box-shadow",
+    transitionProperty: "box-shadow, transform",
     transitionDuration: "0.15s",
     ":hover": {
-      boxShadow: "0 0 0 1px #3fb68b, 0 4px 12px rgba(0,0,0,0.3)",
+      boxShadow: "0 0 0 1px #3fb68b, 0 8px 24px rgba(0,0,0,0.35)",
+      transform: "translateY(-2px)",
     },
   },
   cardAccent: {
