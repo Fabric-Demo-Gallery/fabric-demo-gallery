@@ -2207,7 +2207,7 @@ export default function DemoDetailPage() {
                     <div className={styles.flowGroupLabel}>AI Agent · Microsoft Foundry</div>
                     <div className={styles.flowSubRow}>
                       <FlowSteps steps={[
-                        { label: "Foundry", value: "gpt-4o-mini", color: "#8957e5" },
+                        { label: "Foundry", value: "gpt-5-mini", color: "#8957e5" },
                         { label: "AI Search", value: "Knowledge Base", color: "#bb8009" },
                         { label: "Agent", value: "Grounded on Data", color: "#da3633" },
                       ]} />
@@ -2223,7 +2223,7 @@ export default function DemoDetailPage() {
                     <div className={styles.groupLabel}>Azure &amp; Foundry Resources</div>
                     {[
                       { type: "FoundryAccount", name: "Microsoft Foundry Account + Project", description: "AI Foundry (AIServices) account with a project and system-assigned identity", badge: "Azure" },
-                      { type: "ModelDeployment", name: "gpt-4o-mini", description: "OpenAI model deployment that powers the grounded agent", badge: "Azure" },
+                      { type: "ModelDeployment", name: "gpt-5-mini", description: "OpenAI model deployment that powers the grounded agent", badge: "Azure" },
                       { type: "SearchService", name: "Azure AI Search", description: "Search service backing the Foundry IQ knowledge base", badge: "Azure" },
                       { type: "KnowledgeBase", name: "Foundry IQ Knowledge Base", description: "Knowledge source + base built over the Fabric data agent", badge: "Foundry" },
                       { type: "Agent", name: "Grounded Foundry Agent", description: "Conversational agent grounded on your gold data", badge: "Foundry" },
@@ -2908,7 +2908,7 @@ export default function DemoDetailPage() {
                         <MessageBar intent="warning" style={{ marginBottom: 10 }}>
                           <MessageBarBody>
                             <strong>Preview · billable.</strong> This provisions a Microsoft Foundry account
-                            (gpt-4o-mini) and a standing <strong>Azure AI Search</strong> service in your
+                            (gpt-5-mini) and a standing <strong>Azure AI Search</strong> service in your
                             subscription. Both incur Azure cost until deleted — use the cleanup button when done.
                           </MessageBarBody>
                         </MessageBar>
@@ -3010,8 +3010,8 @@ export default function DemoDetailPage() {
                         {selectedScenario?.id === "fabric-foundry-agent" && (
                           <MessageBar intent="warning" style={{ marginTop: 8 }}>
                             <MessageBarBody>
-                              <strong>gpt-4o-mini quota is region-specific and varies by subscription.</strong> East US is
-                              usually a safe choice. If the model step is skipped, your subscription has no gpt-4o-mini quota
+                              <strong>Model quota is region-specific and varies by subscription.</strong> East US is
+                              usually a safe choice. If the model step is skipped, your subscription has no quota for gpt-5-mini (or its fallbacks)
                               in the selected region — pick another (Azure AI Foundry → Management → Quotas).
                             </MessageBarBody>
                           </MessageBar>

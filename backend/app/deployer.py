@@ -2492,9 +2492,18 @@ async def _deploy_fabric_foundry(
     from app.azure_client import AzureError
     from app.foundry_iq_client import FoundryIQClient, FoundryAgentClient, FoundryAgentError
 
-    MODEL_NAME = "gpt-4o-mini"
-    MODEL_VERSION = "2024-07-18"
-    DEPLOYMENT_NAME = "gpt-4o-mini"
+    # Model candidates, newest first. gpt-4o-mini (2024-07-18) is in "Deprecating"
+    # state: subscriptions that deployed it in the past can keep using it, but NEW
+    # subscriptions are refused ("cannot be used for new deployments"). Try the
+    # current GA model first, then fall back — the legacy entries still work for
+    # older subscriptions and regions where the newer models lack quota.
+    MODEL_CANDIDATES: list[tuple[str, str]] = [
+        ("gpt-5-mini", "2025-08-07"),    # GA (retires 2027-02-06)
+        ("gpt-4.1-mini", "2025-04-14"),  # deprecated for new subs; widely quota'd
+        ("gpt-4o-mini", "2024-07-18"),   # legacy — existing subscriptions only
+    ]
+    MODEL_NAME, MODEL_VERSION = MODEL_CANDIDATES[0]
+    DEPLOYMENT_NAME = MODEL_NAME
 
     lakehouses = [i for i in items if i["type"] == "Lakehouse"]
     notebooks = [i for i in items if i["type"] == "Notebook"]
@@ -2733,18 +2742,32 @@ async def _deploy_fabric_foundry(
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
         if foundry_account:
-            try:
-                await azure_client.create_model_deployment(
-                    subscription_id, resource_group, foundry_account,
-                    DEPLOYMENT_NAME, MODEL_NAME, MODEL_VERSION,
-                )
+            deployed_ok = False
+            last_detail = ""
+            for cand_name, cand_version in MODEL_CANDIDATES:
+                try:
+                    await azure_client.create_model_deployment(
+                        subscription_id, resource_group, foundry_account,
+                        cand_name, cand_name, cand_version,
+                    )
+                    # Later steps (knowledge base + agent) reference the deployment,
+                    # so record which candidate actually landed.
+                    MODEL_NAME, MODEL_VERSION = cand_name, cand_version
+                    DEPLOYMENT_NAME = cand_name
+                    deployed_ok = True
+                    break
+                except (AzureError, Exception) as e:  # noqa: BLE001
+                    last_detail = e.detail if isinstance(e, AzureError) else str(e)
+                    logger.warning(
+                        "[foundry] model %s (%s) failed, trying next candidate: %s",
+                        cand_name, cand_version, last_detail,
+                    )
+            if deployed_ok:
                 step.status = "completed"
-                step.detail = f"{DEPLOYMENT_NAME} ({MODEL_NAME})"
-            except (AzureError, Exception) as e:  # noqa: BLE001
-                logger.warning("[foundry] model deployment skipped: %s", e)
+                step.detail = f"{DEPLOYMENT_NAME} ({MODEL_NAME} {MODEL_VERSION})"
+            else:
                 step.status = "skipped"
-                detail = e.detail if isinstance(e, AzureError) else str(e)
-                step.detail = f"Model deployment skipped: {detail[:140]}" + (f" — {qwarn}" if qwarn else "")
+                step.detail = f"Model deployment skipped: {last_detail[:140]}" + (f" — {qwarn}" if qwarn else "")
                 next_steps.append(f"Deploy '{MODEL_NAME}' in the Foundry project.")
         else:
             step.status = "skipped"
