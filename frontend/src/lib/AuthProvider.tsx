@@ -214,13 +214,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // the deploy then reads each token silently with no further popup.
   const ensureFoundryConsent = useCallback(async (): Promise<void> => {
     if (IS_DEV_MODE || !account) return;
+    // Remember a completed consent per account. Some tenants grant the consent
+    // but still refuse SILENT ai.azure.com tokens afterwards (CA policies,
+    // guest accounts). Gating the popup on silent-acquire alone then re-prompts
+    // on EVERY deploy — and each popup burns the click's activation window, so
+    // any later token popup in the deploy gets blocked and escalates to a
+    // full-page redirect that kills the deploy UI.
+    const consentKey = `foundry_consent_${account.homeAccountId}`;
     try {
       // Already consented (e.g. a prior deploy)? Gate on the AGENT scope — it's the
       // one that actually blocks agent creation, and it's granted together with
       // Search in the popup below, so a missing agent scope must re-trigger consent.
       await msalInstance.acquireTokenSilent({ scopes: agentScopes, account });
+      localStorage.setItem(consentKey, "1");
       return;
     } catch {
+      // Silent failed — but if this account already completed the consent popup
+      // once, don't re-prompt: the deploy degrades the KB/agent steps to manual
+      // follow-ups instead (by design), which beats a popup storm.
+      if (localStorage.getItem(consentKey) === "1") return;
       // One interactive consent: Search (primary token) + Foundry Agent
       // (extraScopesToConsent) so both can subsequently be acquired silently.
       await msalInstance.acquireTokenPopup({
@@ -228,6 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         extraScopesToConsent: agentScopes,
         redirectUri: popupRedirectUri,
       });
+      localStorage.setItem(consentKey, "1");
     }
   }, [account]);
 

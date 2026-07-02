@@ -1515,9 +1515,13 @@ export default function DemoDetailPage() {
         // returns cached access tokens until they actually expire, so a near-expiry
         // cached token (especially the management token used late for Azure
         // provisioning) would otherwise expire mid-deploy and fail that step.
+        // allowRedirect:false — a full-page redirect mid-deploy unloads the app and
+        // silently discards the deployment (it looked like a random page refresh).
+        // If a token truly needs interaction, fail visibly and let the user retry
+        // from a fresh click instead.
         [fabricToken, storageToken] = await Promise.all([
-          getFabricToken({ forceRefresh: true }),
-          getStorageToken({ forceRefresh: true }),
+          getFabricToken({ forceRefresh: true, allowRedirect: false }),
+          getStorageToken({ forceRefresh: true, allowRedirect: false }),
         ]);
         try {
           const res = await msalInstance.acquireTokenSilent({ scopes: oneLakeScopes, account, forceRefresh: true });
@@ -1542,7 +1546,7 @@ export default function DemoDetailPage() {
       }
       if (selectedScenario?.requiresAzure) {
         try {
-          const mgmtTok = await getManagementToken({ forceRefresh: true });
+          const mgmtTok = await getManagementToken({ forceRefresh: true, allowRedirect: false });
           if (mgmtTok) headers["X-Management-Token"] = mgmtTok;
         } catch { /* continue without management token */ }
       }
