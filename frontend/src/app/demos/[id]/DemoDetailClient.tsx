@@ -2917,7 +2917,11 @@ export default function DemoDetailPage() {
                       {/* Subscription */}
                       <div style={{ marginBottom: 10 }}>
                         <label className={styles.formLabel}>Subscription</label>
-                        {loadingSubs ? (
+                        {!account ? (
+                          // Signed out — mirror the Capacity field instead of flashing the
+                          // "no subscriptions / consent" error, which is misleading pre-auth.
+                          <Caption1>Sign in to choose a subscription.</Caption1>
+                        ) : loadingSubs ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Spinner size="tiny" /><Caption1>Loading subscriptions…</Caption1></div>
                         ) : azureSubs.length > 0 ? (
                           <Select value={selectedSub} onChange={(_, data) => setSelectedSub(data.value)} style={{ width: "100%" }}>

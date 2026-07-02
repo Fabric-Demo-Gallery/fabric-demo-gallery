@@ -4,5 +4,10 @@
   },
   "mimeTypes": {
     ".mp4": "video/mp4"
+  },
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html"
+    }
   }
 }
