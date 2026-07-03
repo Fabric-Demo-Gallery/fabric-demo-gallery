@@ -1524,24 +1524,36 @@ export default function DemoDetailPage() {
       return;
     }
 
+    // Show the deploying state BEFORE any token/consent awaits. ensureFoundryConsent
+    // below can block for up to ~60s (MSAL waits for a popup that a popup blocker may
+    // have eaten) — with no UI change until then, the click looked dead and users
+    // clicked Deploy again.
+    setDeploying(true);
+    setError(null);
+    setCompleted(false);
+    setSteps([]);
+
     // Fabric + Foundry: pre-acquire the Search + Foundry Agent data-plane consent in
     // ONE popup, fired NOW within the Deploy click's activation window. Browsers
     // block popups requested later (after the token awaits below), which is why the
     // agent step silently fell back to the backend managed identity and 403'd for
-    // users who hadn't consented. Non-fatal: if consent is declined or the tenant
-    // rejects the scope, the KB/agent steps degrade to the manual Foundry-portal finish.
+    // users who hadn't consented. Non-fatal: if consent is declined, blocked, or the
+    // tenant rejects the scope, the KB/agent steps degrade to the manual Foundry-portal
+    // finish. A synthetic step keeps the wait visible (and tells the user to look for
+    // the popup, which browsers may hide behind a blocked-popup icon in the URL bar).
     if (selectedScenario?.id === "fabric-foundry-agent") {
+      setSteps([{
+        name: "foundry_consent",
+        description: "Authorizing Foundry access — approve the sign-in popup if one appears",
+        status: "running",
+      }]);
       try {
         await ensureFoundryConsent();
       } catch {
         /* non-fatal — agent/KB become a manual follow-up */
       }
+      setSteps([]);
     }
-
-    setDeploying(true);
-    setError(null);
-    setCompleted(false);
-    setSteps([]);
 
     const controller = new AbortController();
     abortRef.current = controller;
