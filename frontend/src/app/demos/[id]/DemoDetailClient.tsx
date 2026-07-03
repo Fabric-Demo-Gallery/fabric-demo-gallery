@@ -253,7 +253,7 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
     Dashboard: "dashboard_24_item.svg",
     Eventhouse: "eventhouse_24_item.svg",
     KQLDatabase: "kql_database_24_item.svg",
-    KQLDashboard: "kql_dashboard_24_item.svg",
+    KQLDashboard: "real_time_dashboard_24_item.svg",
     Eventstream: "eventstream_24_item.svg",
     KQLQueryset: "kql_queryset_24_item.svg",
     Reflex: "bolt.svg",
