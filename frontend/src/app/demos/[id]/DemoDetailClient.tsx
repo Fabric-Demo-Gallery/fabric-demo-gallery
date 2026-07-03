@@ -242,6 +242,12 @@ type SampleDataItem = {
    item SVGs (@fabric-msft/svg-icons); Azure resources use the official Azure
    architecture icons. No lookalike glyphs — the letter fallback survives only
    for unknown future types. */
+
+// The Fabric REST API still calls the Activator item type "Reflex" — show users
+// the current product name while keeping the API type internally.
+const TYPE_DISPLAY: Record<string, string> = { Reflex: "Activator" };
+const displayType = (t: string) => TYPE_DISPLAY[t] ?? t;
+
 function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
   const FILE_MAP: Record<string, string> = {
     // Fabric items — official Fabric item icons
@@ -2259,7 +2265,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <TagBadge label={item.type} />
+                        <TagBadge label={displayType(item.type)} />
                       </div>
                     ))}
                   </div>
@@ -2344,7 +2350,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <TagBadge label={item.type} />
+                        <TagBadge label={displayType(item.type)} />
                       </div>
                     ))}
                   </div>
@@ -2409,7 +2415,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <TagBadge label={item.type} />
+                        <TagBadge label={displayType(item.type)} />
                       </div>
                     ))}
                   </div>
@@ -2544,7 +2550,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <TagBadge label={item.type} />
+                        <TagBadge label={displayType(item.type)} />
                       </div>
                     ))}
                   </div>
@@ -2611,7 +2617,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <TagBadge label={item.type} />
+                        <TagBadge label={displayType(item.type)} />
                       </div>
                     ));
                     })()}
@@ -2706,7 +2712,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <TagBadge label={item.type} />
+                        <TagBadge label={displayType(item.type)} />
                       </div>
                     ))}
                   </div>
@@ -2766,7 +2772,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.desc}</Caption1></div>
                           </div>
                         </div>
-                        <TagBadge label={item.type} />
+                        <TagBadge label={displayType(item.type)} />
                       </div>
                     ))}
                   </div>
@@ -3121,11 +3127,12 @@ export default function DemoDetailPage() {
                       {isCustomMode ? "← Back" : "Cancel"}
                     </Button>
                   </div>
-                  {account && (loadingCapacities || !selectedCapacity || !!storAcctNameError || (!!selectedScenario?.requiresAzure && (!selectedSub || !selectedRG))) && (
+                  {/* Why-is-Deploy-disabled hint. While capacities load, the Capacity
+                      field already shows a spinner + "Loading capacities…" — repeating
+                      it here read like two different things were loading. */}
+                  {account && !loadingCapacities && (!selectedCapacity || !!storAcctNameError || (!!selectedScenario?.requiresAzure && (!selectedSub || !selectedRG))) && (
                     <Caption1 style={{ display: "block", marginTop: 8, color: storAcctNameError ? "#f85149" : "#8b949e" }}>
-                      {loadingCapacities
-                        ? "Loading capacities…"
-                        : !selectedCapacity
+                      {!selectedCapacity
                         ? "Select a Fabric capacity to deploy."
                         : storAcctNameError
                         ? `Fix the storage account name: ${storAcctNameError}`

@@ -56,6 +56,16 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     };
   }
 
+  // Rate limit (the backend allows 20 deploys/hour per client)
+  if (m.includes("429") || m.includes("rate limit") || m.includes("too many requests")) {
+    return {
+      title: "Slow down a moment",
+      guidance:
+        "You've hit the deployment rate limit (20 per hour). Wait a few minutes and try again — existing deployments keep running.",
+      retryable: true,
+    };
+  }
+
   // Invalid / too-long name (validation, not a conflict)
   if (
     m.includes("invalid character") ||

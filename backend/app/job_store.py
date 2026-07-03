@@ -1,18 +1,37 @@
-"""In-memory job state store for deployment jobs."""
+"""Job state store for deployment jobs — in-memory with JSON-file persistence.
+
+Job history previously lived only in memory, so every backend restart (App
+Service deploys, scale events) silently wiped the monitoring page — users
+thought their deployments had vanished. Terminal jobs are now snapshotted to a
+JSON file (App Service's /home persists across restarts) and reloaded on boot.
+Running jobs are NOT restored — their asyncio task died with the old process —
+they're marked failed on load so the UI tells the truth.
+"""
 
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
+import os
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
 MAX_JOBS_PER_USER = 200
+
+# App Service (Linux) persists /home across restarts; anywhere else fall back to
+# a local data dir next to the app (dev) so behaviour is identical.
+def _default_persist_path() -> Path:
+    base = Path("/home/data") if Path("/home").is_dir() and os.access("/home", os.W_OK) else Path(__file__).resolve().parent.parent / "data"
+    return base / "jobs.json"
+
+PERSIST_PATH = Path(os.environ.get("JOB_STORE_PATH", str(_default_persist_path())))
 
 
 @dataclass
@@ -67,6 +86,70 @@ class JobState:
 class JobStore:
     def __init__(self) -> None:
         self._jobs: dict[str, JobState] = {}
+        self._load()
+
+    # ── persistence ────────────────────────────────────────────────────────
+    def _load(self) -> None:
+        try:
+            if not PERSIST_PATH.exists():
+                return
+            raw = json.loads(PERSIST_PATH.read_text(encoding="utf-8"))
+            for rec in raw:
+                try:
+                    status = rec["status"]
+                    # A job that was mid-flight when the process died can never
+                    # resume — surface that instead of a forever-"running" row.
+                    if status in ("pending", "running"):
+                        status = "failed"
+                        rec["error"] = rec.get("error") or "Interrupted by a service restart."
+                    job = JobState(
+                        job_id=rec["job_id"],
+                        demo_id=rec["demo_id"],
+                        workspace_name=rec["workspace_name"],
+                        user_id=rec["user_id"],
+                        status=status,
+                        steps=rec.get("steps") or [],
+                        error=rec.get("error"),
+                        workspace_id=rec.get("workspace_id"),
+                        scenario_id=rec.get("scenario_id"),
+                        azure_resources=rec.get("azure_resources"),
+                        created_at=datetime.fromisoformat(rec["created_at"]),
+                        updated_at=datetime.fromisoformat(rec["updated_at"]),
+                    )
+                    self._jobs[job.job_id] = job
+                except (KeyError, ValueError) as e:
+                    logger.warning("Skipping corrupt persisted job record: %s", e)
+            logger.info("Restored %d persisted jobs from %s", len(self._jobs), PERSIST_PATH)
+        except Exception as e:
+            # Persistence is best-effort — never block startup on a bad file.
+            logger.warning("Could not load persisted jobs (%s); starting empty", e)
+
+    def _save(self) -> None:
+        try:
+            PERSIST_PATH.parent.mkdir(parents=True, exist_ok=True)
+            records = []
+            for j in self._jobs.values():
+                records.append({
+                    "job_id": j.job_id,
+                    "demo_id": j.demo_id,
+                    "workspace_name": j.workspace_name,
+                    "user_id": j.user_id,
+                    "status": j.status,
+                    "steps": j.steps,
+                    "error": j.error,
+                    "workspace_id": j.workspace_id,
+                    "scenario_id": j.scenario_id,
+                    "azure_resources": j.azure_resources,
+                    "created_at": j.created_at.isoformat(),
+                    "updated_at": j.updated_at.isoformat(),
+                })
+            # Atomic replace so a crash mid-write can't corrupt the file.
+            fd, tmp = tempfile.mkstemp(dir=str(PERSIST_PATH.parent), suffix=".tmp")
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(records, f)
+            os.replace(tmp, PERSIST_PATH)
+        except Exception as e:
+            logger.warning("Could not persist jobs: %s", e)
 
     def create_job(
         self, demo_id: str, workspace_name: str, user_id: str, scenario_id: str | None = None
@@ -81,6 +164,7 @@ class JobStore:
         )
         self._jobs[job_id] = job
         self._evict_old_jobs(user_id)
+        self._save()
         return job
 
     def get_job(self, job_id: str) -> JobState | None:
@@ -135,6 +219,12 @@ class JobStore:
             if data.get("azure"):
                 job.azure_resources = data["azure"]
 
+        # Snapshot on the events that change what the monitoring page shows.
+        # Terminal transitions come through set_status; the "done"/"workspace"
+        # steps carry the workspace id — cheap enough to save on every step.
+        if event_type in ("plan", "step", "error"):
+            self._save()
+
         # Notify all subscribers (non-blocking)
         for queue in list(job._subscribers):
             try:
@@ -162,6 +252,15 @@ class JobStore:
         if job:
             job.status = status
             job.updated_at = datetime.now(timezone.utc)
+            self._save()
+
+    def clear_workspace(self, job_id: str) -> None:
+        """Forget a job's workspace after it was deleted in Fabric."""
+        job = self._jobs.get(job_id)
+        if job:
+            job.workspace_id = None
+            job.updated_at = datetime.now(timezone.utc)
+            self._save()
 
     def subscribe(self, job_id: str) -> asyncio.Queue | None:
         job = self._jobs.get(job_id)

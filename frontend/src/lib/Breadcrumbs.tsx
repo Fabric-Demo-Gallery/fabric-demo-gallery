@@ -15,7 +15,10 @@ export function Breadcrumbs({
   pageName?: string;
 }) {
   const crumbs: Array<{ label: string; href?: string }> = [
-    { label: "Industries", href: "/" },
+    // Same label as the top-nav link that points to the same place — the root
+    // was previously "Industries" while the nav said "Demos", two names for one
+    // destination.
+    { label: "Demos", href: "/" },
   ];
   if (industrySlug) {
     const industry = industries.find((i) => i.slug === industrySlug);

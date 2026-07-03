@@ -14,6 +14,14 @@ import {
   Spinner,
   Text,
   makeStyles,
+  Dialog,
+  DialogSurface,
+  DialogBody,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  MessageBar,
+  MessageBarBody,
 } from "@fluentui/react-components";
 import {
   CheckmarkCircleFilled,
@@ -156,6 +164,10 @@ export default function MonitoringClient() {
   const [error, setError] = useState<string | null>(null);
   const [deletingJob, setDeletingJob] = useState<string | null>(null);
   const [cancellingJob, setCancellingJob] = useState<string | null>(null);
+  // Fluent dialogs replace the native confirm()/alert() — styled, focus-trapped,
+  // and they say WHICH workspace is affected.
+  const [confirmAction, setConfirmAction] = useState<{ kind: "delete" | "cancel"; job: JobSummary } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async () => {
     try {
@@ -187,14 +199,14 @@ export default function MonitoringClient() {
   }, [jobs, account, fetchJobs]);
 
   const handleDelete = async (job: JobSummary) => {
-    if (!confirm(`Delete the workspace “${job.workspace_name}” and all its items? This cannot be undone.`)) return;
     setDeletingJob(job.job_id);
+    setActionError(null);
     try {
       const token = await getFabricToken();
       await deleteJobWorkspace(token, job.job_id);
       await fetchJobs();
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "Delete failed");
+      setActionError(e instanceof Error ? e.message : "Delete failed");
     } finally {
       setDeletingJob(null);
     }
@@ -203,14 +215,14 @@ export default function MonitoringClient() {
   // Cancel a stuck running/pending job so it stops showing as active. Does not
   // delete any workspace that may have been partially created.
   const handleCancel = async (job: JobSummary) => {
-    if (!confirm("Cancel this deployment? It will be marked cancelled.")) return;
     setCancellingJob(job.job_id);
+    setActionError(null);
     try {
       const token = await getFabricToken();
       await cancelJob(token, job.job_id);
       await fetchJobs();
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "Cancel failed");
+      setActionError(e instanceof Error ? e.message : "Cancel failed");
     } finally {
       setCancellingJob(null);
     }
@@ -272,6 +284,12 @@ export default function MonitoringClient() {
           </div>
         );
       })()}
+
+      {!loading && !error && actionError && (
+        <MessageBar intent="error" style={{ marginBottom: 12 }}>
+          <MessageBarBody>{actionError}</MessageBarBody>
+        </MessageBar>
+      )}
 
       {!loading && !error && jobs.length === 0 && (
         <div className={styles.empty}>
@@ -373,7 +391,7 @@ export default function MonitoringClient() {
                           appearance="subtle"
                           size="small"
                           icon={<DismissRegular />}
-                          onClick={() => handleCancel(job)}
+                          onClick={() => setConfirmAction({ kind: "cancel", job })}
                           disabled={cancellingJob === job.job_id}
                         >
                           {cancellingJob === job.job_id ? "..." : "Cancel"}
@@ -397,7 +415,7 @@ export default function MonitoringClient() {
                             appearance="subtle"
                             size="small"
                             icon={<DeleteRegular />}
-                            onClick={() => handleDelete(job)}
+                            onClick={() => setConfirmAction({ kind: "delete", job })}
                             disabled={deletingJob === job.job_id}
                           >
                             {deletingJob === job.job_id ? "..." : "Delete"}
@@ -412,6 +430,40 @@ export default function MonitoringClient() {
         </table>
       )}
       </div>
+
+      {/* Confirmation dialog — replaces the native confirm() so it's styled,
+          focus-trapped, and names the workspace it affects. */}
+      <Dialog open={confirmAction !== null} onOpenChange={(_, d) => { if (!d.open) setConfirmAction(null); }}>
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>
+              {confirmAction?.kind === "delete" ? "Delete workspace?" : "Cancel deployment?"}
+            </DialogTitle>
+            <DialogContent>
+              {confirmAction?.kind === "delete"
+                ? <>This permanently deletes the workspace <strong>“{confirmAction.job.workspace_name}”</strong> and every item in it. This can&apos;t be undone.</>
+                : <>The deployment of <strong>“{confirmAction?.job.workspace_name}”</strong> will be marked cancelled. Anything already created is kept.</>}
+            </DialogContent>
+            <DialogActions>
+              <Button appearance="secondary" onClick={() => setConfirmAction(null)}>
+                Keep it
+              </Button>
+              <Button
+                appearance="primary"
+                onClick={async () => {
+                  const a = confirmAction;
+                  setConfirmAction(null);
+                  if (!a) return;
+                  if (a.kind === "delete") await handleDelete(a.job);
+                  else await handleCancel(a.job);
+                }}
+              >
+                {confirmAction?.kind === "delete" ? "Delete" : "Cancel deployment"}
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
     </>
   );
 }

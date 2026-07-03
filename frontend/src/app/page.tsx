@@ -488,7 +488,9 @@ export default function Home() {
 
                       {demo && (
                         <div className={styles.cardMetaRow}>
-                          <span className={styles.metaItem}>{demo.estimatedTime}</span>
+                          {/* The estimate is for the STANDARD demo — custom scenarios
+                              range from 3 to 30 min, so say which one this is. */}
+                          <span className={styles.metaItem}>Standard demo · {demo.estimatedTime}</span>
                         </div>
                       )}
                     </div>
