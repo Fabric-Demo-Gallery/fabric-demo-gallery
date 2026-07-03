@@ -165,6 +165,13 @@ class JobStore:
         self._jobs[job_id] = job
         self._evict_old_jobs(user_id)
         self._save()
+        # Usage analytics — deferred import to avoid a circular dependency
+        # (analytics reads PERSIST_PATH from this module).
+        from app.analytics import record_deployment_event
+        record_deployment_event(
+            "deploy_started", demo_id=demo_id, scenario_id=scenario_id,
+            job_id=job_id, user_id=user_id,
+        )
         return job
 
     def get_job(self, job_id: str) -> JobState | None:
@@ -250,9 +257,18 @@ class JobStore:
     def set_status(self, job_id: str, status: str) -> None:
         job = self._jobs.get(job_id)
         if job:
+            was_terminal = job.status in ("completed", "failed", "cancelled")
             job.status = status
             job.updated_at = datetime.now(timezone.utc)
             self._save()
+            # Usage analytics on the FIRST transition into a terminal state.
+            if status in ("completed", "failed", "cancelled") and not was_terminal:
+                from app.analytics import record_deployment_event
+                record_deployment_event(
+                    f"deploy_{status}", demo_id=job.demo_id, scenario_id=job.scenario_id,
+                    job_id=job.job_id, user_id=job.user_id,
+                    duration_s=(job.updated_at - job.created_at).total_seconds(),
+                )
 
     def clear_workspace(self, job_id: str) -> None:
         """Forget a job's workspace after it was deleted in Fabric."""

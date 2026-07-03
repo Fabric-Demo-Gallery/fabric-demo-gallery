@@ -11,7 +11,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
-from app.routers import azure, demos, deploy, jobs, stream, workspaces
+from app.routers import azure, demos, deploy, jobs, stats, stream, workspaces
 
 # ── File logging ─────────────────────────────────────────────────────────────
 _log_file = os.path.join(os.path.dirname(__file__), "..", "app.log")
@@ -81,6 +81,7 @@ app.include_router(deploy.router)
 app.include_router(azure.router)
 app.include_router(jobs.router)
 app.include_router(stream.router)
+app.include_router(stats.router)
 
 
 @app.get("/api/health")
