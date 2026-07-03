@@ -56,11 +56,19 @@ const useStyles = makeStyles({
     paddingLeft: "24px",
     paddingRight: "24px",
     borderBottom: "1px solid #21262d",
+    "@media (max-width: 640px)": {
+      paddingLeft: "12px",
+      paddingRight: "12px",
+    },
   },
   leftGroup: {
     display: "flex",
     alignItems: "center",
     gap: "16px",
+    minWidth: 0,
+    "@media (max-width: 640px)": {
+      gap: "8px",
+    },
   },
   brandLink: {
     display: "flex",
@@ -70,7 +78,14 @@ const useStyles = makeStyles({
     color: "#e6edf3",
     fontSize: "14px",
     fontWeight: 600,
+    whiteSpace: "nowrap" as const,
     ":hover": { textDecoration: "none", color: "#ffffff" },
+  },
+  // Brand wordmark — logo-only on phones so the nav links fit.
+  brandText: {
+    "@media (max-width: 640px)": {
+      display: "none",
+    },
   },
   separator: {
     width: "1px",
@@ -97,10 +112,26 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: "8px",
+    minWidth: 0,
   },
   userName: {
     color: "#8b949e",
     fontSize: "13px",
+    // Long UPNs (first-run enterprise accounts) forced the whole page to
+    // scroll horizontally on phones — truncate, and hide below tablet width.
+    maxWidth: "260px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap" as const,
+    "@media (max-width: 900px)": {
+      display: "none",
+    },
+  },
+  // "Sign out" label — icon-only button on phones.
+  signOutLabel: {
+    "@media (max-width: 640px)": {
+      display: "none",
+    },
   },
   main: {
     minHeight: "calc(100vh - 48px)",
@@ -125,7 +156,7 @@ function Navbar() {
       <div className={styles.leftGroup}>
         <NextLink href="/" className={styles.brandLink}>
           <FabricLogo size={22} />
-          Demo Gallery
+          <span className={styles.brandText}>Demo Gallery</span>
         </NextLink>
         <div className={styles.separator} />
         <NextLink
@@ -172,8 +203,9 @@ function Navbar() {
                 icon={<SignOutRegular />}
                 onClick={logout}
                 style={{ color: "#8b949e" }}
+                aria-label="Sign out"
               >
-                Sign out
+                <span className={styles.signOutLabel}>Sign out</span>
               </Button>
             </>
           ) : (

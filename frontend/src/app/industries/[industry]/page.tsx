@@ -48,8 +48,9 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
     gap: "24px",
+    alignItems: "stretch",
   },
   card: {
     backgroundColor: "#161b22",
@@ -60,6 +61,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "flex-start",
     minHeight: "140px",
+    height: "100%",
     cursor: "pointer",
     transition: "box-shadow 0.15s",
   },

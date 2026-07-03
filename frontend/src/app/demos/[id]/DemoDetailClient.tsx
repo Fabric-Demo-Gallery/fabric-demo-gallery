@@ -3076,7 +3076,7 @@ export default function DemoDetailPage() {
                           </Select>
                         )}
                         <Caption1 style={{ color: "#484f58" }}>
-                          Some subscriptions restrict Azure SQL in certain regions — the deploy auto-falls back to an available region if needed.
+                          Some subscriptions restrict certain Azure services by region — the deploy auto-falls back to an available region if needed.
                         </Caption1>
                         {selectedScenario?.id === "fabric-foundry-agent" && (
                           <MessageBar intent="warning" style={{ marginTop: 8 }}>

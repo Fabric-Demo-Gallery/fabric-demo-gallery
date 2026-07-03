@@ -237,7 +237,9 @@ const useStyles = makeStyles({
   /* ---- Cards ---- */
   cardGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))",
+    // min(480px, 100%) — a hard 480px minimum forced horizontal page scroll on
+    // phones; min() lets the single column shrink to the viewport.
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(480px, 100%), 1fr))",
     gap: "16px",
     marginBottom: "40px",
   },
@@ -344,6 +346,9 @@ const useStyles = makeStyles({
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
     gap: "12px",
+    "@media (max-width: 720px)": {
+      gridTemplateColumns: "repeat(2, 1fr)",
+    },
   },
   stepCard: {
     backgroundColor: "#161b22",
