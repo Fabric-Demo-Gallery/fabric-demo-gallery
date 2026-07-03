@@ -452,6 +452,27 @@ const ML_DETAILS: Record<string, { target: string; featureCount: string; feature
   },
 };
 
+// Slim themed scrollbar shared by every scrollable container — the native OS
+// bar (bright track + arrow buttons) reads as a broken element on the dark
+// theme. NOTE: scrollbar-width/scrollbar-color make Chromium ignore
+// ::-webkit-scrollbar styling entirely, so the Firefox-only props are scoped
+// behind @supports.
+const slimScrollbar = {
+  "@supports not selector(::-webkit-scrollbar)": {
+    scrollbarWidth: "thin" as const,
+    scrollbarColor: "#30363d transparent",
+  },
+  "::-webkit-scrollbar": { width: "6px", height: "5px" },
+  "::-webkit-scrollbar-track": { backgroundColor: "transparent" },
+  "::-webkit-scrollbar-thumb": {
+    backgroundColor: "#30363d",
+    borderRadius: "999px",
+  },
+  "::-webkit-scrollbar-thumb:hover": { backgroundColor: "#484f58" },
+  "::-webkit-scrollbar-button": { display: "none", width: 0, height: 0 },
+  "::-webkit-scrollbar-corner": { backgroundColor: "transparent" },
+};
+
 const useStyles = makeStyles({
   page: {
     minHeight: "100vh",
@@ -684,22 +705,8 @@ const useStyles = makeStyles({
     flexWrap: "nowrap" as const,
     overflowX: "auto" as const,
     // Slim themed scrollbar — the default OS bar reads as a broken element
-    // slicing through the pipeline. NOTE: scrollbar-width/scrollbar-color make
-    // Chromium IGNORE ::-webkit-scrollbar styling entirely (and render native
-    // thin arrows), so the Firefox-only props are scoped behind @supports.
-    "@supports not selector(::-webkit-scrollbar)": {
-      scrollbarWidth: "thin" as const,
-      scrollbarColor: "#30363d transparent",
-    },
-    // WebKit/Chromium:
-    "::-webkit-scrollbar": { height: "5px" },
-    "::-webkit-scrollbar-track": { backgroundColor: "transparent" },
-    "::-webkit-scrollbar-thumb": {
-      backgroundColor: "#30363d",
-      borderRadius: "999px",
-    },
-    "::-webkit-scrollbar-thumb:hover": { backgroundColor: "#484f58" },
-    "::-webkit-scrollbar-button": { display: "none", width: 0, height: 0 },
+    // slicing through the pipeline.
+    ...slimScrollbar,
   },
   flowBox: {
     borderRadius: "6px",
@@ -745,21 +752,7 @@ const useStyles = makeStyles({
     overflowX: "auto" as const,
     // Room between chips and the scrollbar so the thumb doesn't hug the boxes.
     paddingBottom: "6px",
-    // Slim themed scrollbar (see flowRow — Firefox props scoped so Chromium
-    // keeps the ::-webkit-scrollbar styling).
-    "@supports not selector(::-webkit-scrollbar)": {
-      scrollbarWidth: "thin" as const,
-      scrollbarColor: "#30363d transparent",
-    },
-    // WebKit/Chromium:
-    "::-webkit-scrollbar": { height: "5px" },
-    "::-webkit-scrollbar-track": { backgroundColor: "transparent" },
-    "::-webkit-scrollbar-thumb": {
-      backgroundColor: "#30363d",
-      borderRadius: "999px",
-    },
-    "::-webkit-scrollbar-thumb:hover": { backgroundColor: "#484f58" },
-    "::-webkit-scrollbar-button": { display: "none", width: 0, height: 0 },
+    ...slimScrollbar,
   },
   itemRow: {
     display: "flex",
@@ -858,6 +851,7 @@ const useStyles = makeStyles({
     border: "1px solid #30363d",
     borderRadius: "6px",
     backgroundColor: "#161b22",
+    ...slimScrollbar,
   },
   previewTable: {
     width: "100%",
@@ -937,6 +931,7 @@ const useStyles = makeStyles({
     overflowY: "auto" as const,
     backgroundColor: "#0d1117",
     padding: "8px 0",
+    ...slimScrollbar,
   },
   modalSidebarItem: {
     padding: "8px 16px",
@@ -967,6 +962,7 @@ const useStyles = makeStyles({
     flex: 1,
     overflow: "auto",
     backgroundColor: "#161b22",
+    ...slimScrollbar,
   },
   modalTable: {
     width: "100%",
