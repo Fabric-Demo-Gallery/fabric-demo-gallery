@@ -187,7 +187,7 @@ export default function MonitoringClient() {
   }, [jobs, account, fetchJobs]);
 
   const handleDelete = async (job: JobSummary) => {
-    if (!confirm("Delete the workspace and all its items?")) return;
+    if (!confirm(`Delete the workspace “${job.workspace_name}” and all its items? This cannot be undone.`)) return;
     setDeletingJob(job.job_id);
     try {
       const token = await getFabricToken();

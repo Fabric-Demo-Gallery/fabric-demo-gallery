@@ -2904,6 +2904,9 @@ export default function DemoDetailPage() {
                       onChange={(_, data) => setWorkspaceName(data.value)}
                       placeholder={defaultWorkspaceName(demo.industry, isCustomMode, selectedScenario?.title ?? demo.title, selectedScenario?.feature)}
                       style={{ width: "100%" }}
+                      // Fabric rejects workspace names over 256 chars — cap here so the
+                      // failure can't happen mid-deploy after the job already started.
+                      maxLength={256}
                     />
                   </div>
                   <div className={styles.formField}>
