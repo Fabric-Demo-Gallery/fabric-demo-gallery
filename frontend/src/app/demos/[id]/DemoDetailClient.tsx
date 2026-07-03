@@ -1137,6 +1137,31 @@ function FlowSteps({ steps }: { steps: { label?: string; value: string; color: s
   );
 }
 
+// Quiet pill markers for the right edge of item rows — same tinted language as
+// the flow chips (accent at low alpha + hairline border) instead of Fluent's
+// saturated badge palette. Azure = blue, Foundry = purple, everything else neutral.
+const TAG_ACCENTS: Record<string, string> = {
+  Azure: "#4493f8",
+  Foundry: "#a371f7",
+};
+function TagBadge({ label }: { label: string }) {
+  const c = TAG_ACCENTS[label] ?? "#8b949e";
+  return (
+    <span style={{
+      flexShrink: 0,
+      whiteSpace: "nowrap",
+      padding: "2px 9px",
+      borderRadius: "999px",
+      fontSize: 11,
+      fontWeight: 600,
+      lineHeight: "16px",
+      color: c,
+      backgroundColor: `${c}14`,
+      border: `1px solid ${c}4d`,
+    }}>{label}</span>
+  );
+}
+
 export default function DemoDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -1997,7 +2022,7 @@ export default function DemoDetailPage() {
               style={index === items.length - 1 ? { borderBottom: "none" } : undefined}
             >
               <div className={styles.dataLeft}>
-                <Badge appearance="tint" color="informative" size="small">{dataset.format}</Badge>
+                <TagBadge label={dataset.format} />
                 <div style={{ minWidth: 0 }}>
                   <Text weight="medium" size={200}>{dataset.fileName}</Text>
                   <div><Caption1>{dataset.description}</Caption1></div>
@@ -2176,7 +2201,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="warning">{item.badge}</Badge>
+                        <TagBadge label={item.badge} />
                       </div>
                     ))}
                     <div className={styles.groupLabel}>Fabric Resources</div>
@@ -2199,7 +2224,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                        <TagBadge label={item.type} />
                       </div>
                     ))}
                   </div>
@@ -2262,7 +2287,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="warning">{item.badge}</Badge>
+                        <TagBadge label={item.badge} />
                       </div>
                     ))}
                     <div className={styles.groupLabel}>Fabric Resources</div>
@@ -2284,7 +2309,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                        <TagBadge label={item.type} />
                       </div>
                     ))}
                   </div>
@@ -2349,7 +2374,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                        <TagBadge label={item.type} />
                       </div>
                     ))}
                   </div>
@@ -2460,7 +2485,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="warning">{item.badge}</Badge>
+                        <TagBadge label={item.badge} />
                       </div>
                     ))}
                     <div className={styles.groupLabel}>Fabric Resources</div>
@@ -2484,7 +2509,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                        <TagBadge label={item.type} />
                       </div>
                     ))}
                   </div>
@@ -2551,7 +2576,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                        <TagBadge label={item.type} />
                       </div>
                     ));
                     })()}
@@ -2646,7 +2671,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.description}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                        <TagBadge label={item.type} />
                       </div>
                     ))}
                   </div>
@@ -2706,7 +2731,7 @@ export default function DemoDetailPage() {
                             <div><Caption1>{item.desc}</Caption1></div>
                           </div>
                         </div>
-                        <Badge appearance="tint" size="small" color="informative">{item.type}</Badge>
+                        <TagBadge label={item.type} />
                       </div>
                     ))}
                   </div>
