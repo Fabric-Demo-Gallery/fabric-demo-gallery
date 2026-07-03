@@ -282,11 +282,15 @@ async def delete_job_workspace(
     try:
         await client.delete_workspace(job.workspace_id)
         result: dict = {"status": "deleted", "workspaceId": job.workspace_id}
+        # Clear the workspace reference so the monitoring list stops offering a
+        # dead "Open" link and a second "Delete" for a workspace that's gone.
+        job.workspace_id = None
     except Exception as e:
         from app.fabric_client import FabricError
         if isinstance(e, FabricError):
             if e.status == 404:
                 result = {"status": "already_deleted", "workspaceId": job.workspace_id}
+                job.workspace_id = None
             elif e.status == 403:
                 raise HTTPException(status_code=403, detail="Cannot delete workspace: you need Owner permissions.")
             else:
