@@ -7,14 +7,13 @@ import { getJobs, deleteJobWorkspace, cancelJob } from "@/lib/api";
 import type { JobSummary } from "@/lib/api";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { explainError } from "@/lib/errorHelp";
+import { TagBadge } from "@/lib/TagBadge";
 import {
   Button,
-  Badge,
   Caption1,
   Spinner,
   Text,
   makeStyles,
-  tokens,
 } from "@fluentui/react-components";
 import {
   CheckmarkCircleFilled,
@@ -123,38 +122,28 @@ function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case "running":
       return (
-        <Badge appearance="tint" color="informative" size="small">
-          <Spinner size="extra-tiny" style={{ marginRight: 4 }} /> Running
-        </Badge>
+        <TagBadge label="Running" color="#4493f8">
+          <Spinner size="extra-tiny" />
+        </TagBadge>
       );
     case "completed":
       return (
-        <Badge appearance="tint" color="success" size="small">
-          <CheckmarkCircleFilled fontSize={12} style={{ marginRight: 4, color: tokens.colorPaletteGreenForeground1 }} />
-          Completed
-        </Badge>
+        <TagBadge label="Completed" color="#3fb68b">
+          <CheckmarkCircleFilled fontSize={12} />
+        </TagBadge>
       );
     case "failed":
       return (
-        <Badge appearance="tint" color="danger" size="small">
-          <DismissCircleFilled fontSize={12} style={{ marginRight: 4, color: tokens.colorPaletteRedForeground1 }} />
-          Failed
-        </Badge>
+        <TagBadge label="Failed" color="#f85149">
+          <DismissCircleFilled fontSize={12} />
+        </TagBadge>
       );
     case "pending":
-      return (
-        <Badge appearance="tint" color="warning" size="small">
-          Pending
-        </Badge>
-      );
+      return <TagBadge label="Pending" color="#d29922" />;
     case "cancelled":
-      return (
-        <Badge appearance="tint" color="subtle" size="small">
-          Cancelled
-        </Badge>
-      );
+      return <TagBadge label="Cancelled" />;
     default:
-      return <Badge appearance="tint" size="small">{status}</Badge>;
+      return <TagBadge label={status} />;
   }
 }
 

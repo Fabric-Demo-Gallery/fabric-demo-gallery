@@ -17,7 +17,6 @@ import { useDeployment } from "@/lib/DeploymentContext";
 import {
   Button,
   Card,
-  Badge,
   Input,
   Select,
   Spinner,
@@ -518,8 +517,14 @@ const useStyles = makeStyles({
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "1fr 340px",
+    // minmax(0, 1fr) lets the content column SHRINK below its intrinsic width
+    // (plain 1fr = minmax(auto, 1fr) can't) — otherwise mid-width windows get
+    // horizontal overflow and the cards' right edge (item tags) is clipped.
+    gridTemplateColumns: "minmax(0, 1fr) 340px",
     gap: "24px",
+    "@media (max-width: 960px)": {
+      gridTemplateColumns: "minmax(0, 1fr)",
+    },
   },
   leftCol: {
     display: "flex",
@@ -751,6 +756,14 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: "12px",
+    // Shrink + wrap long unbroken names (professional_services_realtime_dashboard…)
+    // instead of pushing the right-edge tag out of the card.
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: "0%",
+    minWidth: 0,
+    overflowWrap: "anywhere" as const,
+    paddingRight: "12px",
   },
   itemIconWrap: {
     width: "28px",
@@ -1074,8 +1087,11 @@ const useStyles = makeStyles({
   },
   scenarioGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
     gap: "12px",
+    "@media (max-width: 700px)": {
+      gridTemplateColumns: "minmax(0, 1fr)",
+    },
   },
   scenarioCard: {
     borderRadius: "8px",
@@ -1138,29 +1154,8 @@ function FlowSteps({ steps }: { steps: { label?: string; value: string; color: s
 }
 
 // Quiet pill markers for the right edge of item rows — same tinted language as
-// the flow chips (accent at low alpha + hairline border) instead of Fluent's
-// saturated badge palette. Azure = blue, Foundry = purple, everything else neutral.
-const TAG_ACCENTS: Record<string, string> = {
-  Azure: "#4493f8",
-  Foundry: "#a371f7",
-};
-function TagBadge({ label }: { label: string }) {
-  const c = TAG_ACCENTS[label] ?? "#8b949e";
-  return (
-    <span style={{
-      flexShrink: 0,
-      whiteSpace: "nowrap",
-      padding: "2px 9px",
-      borderRadius: "999px",
-      fontSize: 11,
-      fontWeight: 600,
-      lineHeight: "16px",
-      color: c,
-      backgroundColor: `${c}14`,
-      border: `1px solid ${c}4d`,
-    }}>{label}</span>
-  );
-}
+// the flow chips. Shared site-wide component (also used by Monitoring).
+import { TagBadge } from "@/lib/TagBadge";
 
 export default function DemoDetailPage() {
   const params = useParams();
@@ -2057,9 +2052,7 @@ export default function DemoDetailPage() {
           <div className={styles.titleRow}>
             <div className={styles.titleLeft}>
               <div className={styles.metaRow}>
-                <Badge appearance="filled" color="brand" size="small">
-                  {demo.industry}
-                </Badge>
+                <TagBadge label={demo.industry} color="#3fb68b" />
                 <Caption1>{isCustomMode && selectedScenario ? selectedScenario.estimatedTime : demo.estimatedTime}</Caption1>
                 {isCustomMode && selectedScenario
                   ? (selectedScenario.feature ? <Caption1>{selectedScenario.feature}</Caption1> : null)
@@ -2134,9 +2127,9 @@ export default function DemoDetailPage() {
                           <div style={{ fontSize: 14, fontWeight: 700, color: sc.enabled ? "#e6edf3" : "#484f58", marginBottom: 4 }}>{sc.title}</div>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>
                             {sc.enabled ? (
-                              <Badge appearance="tint" color="success" size="small">Active</Badge>
+                              <TagBadge label="Active" color="#3fb68b" />
                             ) : (
-                              <Badge appearance="tint" color="subtle" size="small">Coming soon</Badge>
+                              <TagBadge label="Coming soon" />
                             )}
                             <Caption1 style={{ color: sc.enabled ? "#8b949e" : "#484f58" }}>{sc.estimatedTime}</Caption1>
                           </div>
