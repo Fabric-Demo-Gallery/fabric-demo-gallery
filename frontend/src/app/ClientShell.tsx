@@ -177,6 +177,14 @@ function Navbar() {
             Monitoring
           </NextLink>
         )}
+        <NextLink
+          href="/stats"
+          className={styles.navLink}
+          aria-current={pathname === "/stats" ? "page" : undefined}
+          style={pathname === "/stats" ? { color: "#e6edf3" } : undefined}
+        >
+          Usage
+        </NextLink>
         <a
           href="https://github.com/Fabric-Demo-Gallery/fabric-demo-gallery"
           target="_blank"

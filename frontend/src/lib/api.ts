@@ -84,6 +84,23 @@ export async function fetchDatasetPreview(
   return res.json();
 }
 
+export interface UsageStats {
+  total_deployments: number;
+  distinct_users: number;
+  by_demo: Record<string, number>;
+  by_scenario: Record<string, number>;
+  outcomes: Record<string, number>;
+  success_rate: number | null;
+  median_duration_s: number | null;
+  per_day: Record<string, number>;
+}
+
+export async function fetchStats(): Promise<UsageStats> {
+  const res = await fetch(`${API_BASE}/api/stats`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch usage stats");
+  return res.json();
+}
+
 export async function fetchWorkspaces(token: string): Promise<Workspace[]> {
   const res = await fetch(`${API_BASE}/api/workspaces`, {
     headers: { Authorization: `Bearer ${token}` },
