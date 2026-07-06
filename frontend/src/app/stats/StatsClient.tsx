@@ -20,6 +20,30 @@ function demoTitle(id: string): string {
   return DEMOS[id]?.title ?? id;
 }
 
+function scenarioLabel(id: string): string {
+  if (id === "standard") return "Standard";
+  return id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const EVENT_LABEL: Record<string, { label: string; color: string }> = {
+  deploy_started: { label: "Started", color: "#58a6ff" },
+  deploy_completed: { label: "Completed", color: "#3fb950" },
+  deploy_failed: { label: "Failed", color: "#f85149" },
+  deploy_cancelled: { label: "Cancelled", color: "#8b949e" },
+};
+
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 function formatDuration(s: number | null): string {
   if (s === null) return "—";
   if (s < 90) return `${Math.round(s)}s`;
@@ -172,6 +196,39 @@ const useStyles = makeStyles({
   },
   legend: { display: "flex", flexWrap: "wrap" as const, gap: "16px", fontSize: "12px", color: "#8b949e" },
   legendDot: { display: "inline-block", width: "9px", height: "9px", borderRadius: "50%", marginRight: "6px" },
+  // ── Detail tables ──
+  table: { width: "100%", borderCollapse: "collapse" as const },
+  th: {
+    textAlign: "left" as const,
+    padding: "8px 10px",
+    fontSize: "11px",
+    fontWeight: 600,
+    color: "#484f58",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+    borderBottom: "1px solid #21262d",
+    whiteSpace: "nowrap" as const,
+  },
+  td: {
+    padding: "9px 10px",
+    borderBottom: "1px solid #161b22",
+    fontSize: "13px",
+    color: "#e6edf3",
+    verticalAlign: "middle" as const,
+  },
+  tdMuted: { color: "#8b949e" },
+  num: { textAlign: "right" as const, fontVariantNumeric: "tabular-nums" },
+  tableWrap: { overflowX: "auto" as const },
+  // ── Small hour/weekday charts ──
+  miniChartsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))",
+    gap: "16px",
+  },
+  percRow: { display: "flex", flexWrap: "wrap" as const, gap: "24px" },
+  percItem: { textAlign: "center" as const },
+  percLabel: { fontSize: "11px", fontWeight: 600, color: "#484f58", textTransform: "uppercase" as const, letterSpacing: "0.5px" },
+  percValue: { fontSize: "18px", fontWeight: 700, color: "#e6edf3", marginTop: "4px" },
   empty: { textAlign: "center" as const, padding: "48px 0", color: "#484f58", fontSize: "13px" },
   error: { textAlign: "center" as const, padding: "48px 0", color: "#f85149", fontSize: "13px" },
   loading: { display: "flex", justifyContent: "center", padding: "96px 0" },
@@ -256,7 +313,12 @@ export default function StatsClient() {
               <div className={styles.card}>
                 <div className={styles.cardLabel}><PeopleRegular fontSize={14} aria-hidden />Unique users</div>
                 <div className={styles.cardValue}>{stats.distinct_users}</div>
-                <div className={styles.cardSub}>anonymised</div>
+                <div className={styles.cardSub}>all time</div>
+              </div>
+              <div className={styles.card}>
+                <div className={styles.cardLabel}><PeopleRegular fontSize={14} aria-hidden />Active users</div>
+                <div className={styles.cardValue}>{stats.distinct_users_7d ?? "—"}</div>
+                <div className={styles.cardSub}>last 7 days · {stats.distinct_users_30d ?? "—"} in 30 days</div>
               </div>
               <div className={styles.card}>
                 <div className={styles.cardLabel}><CheckmarkCircleRegular fontSize={14} aria-hidden />Success rate</div>
@@ -340,6 +402,177 @@ export default function StatsClient() {
                             {OUTCOME_COLORS[k].label}: <strong style={{ color: "#e6edf3" }}>{n}</strong>
                           </span>
                         ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Per-demo outcome detail ── */}
+                {stats.demo_detail && Object.keys(stats.demo_detail).length > 0 && (
+                  <>
+                    <div className={styles.sectionTitle}>Per-demo details</div>
+                    <div className={styles.panel}>
+                      <div className={styles.tableWrap}>
+                        <table className={styles.table}>
+                          <thead>
+                            <tr>
+                              <th className={styles.th}>Demo</th>
+                              <th className={`${styles.th} ${styles.num}`}>Deployments</th>
+                              <th className={`${styles.th} ${styles.num}`}>Completed</th>
+                              <th className={`${styles.th} ${styles.num}`}>Failed</th>
+                              <th className={`${styles.th} ${styles.num}`}>Success</th>
+                              <th className={`${styles.th} ${styles.num}`}>Median</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(stats.demo_detail).map(([id, d]) => (
+                              <tr key={id}>
+                                <td className={styles.td}>{demoTitle(id)}</td>
+                                <td className={`${styles.td} ${styles.num}`}>{d.started}</td>
+                                <td className={`${styles.td} ${styles.num}`} style={{ color: "#3fb950" }}>{d.completed}</td>
+                                <td className={`${styles.td} ${styles.num}`} style={{ color: d.failed ? "#f85149" : undefined }}>{d.failed}</td>
+                                <td className={`${styles.td} ${styles.num}`}>{d.success_rate === null ? "—" : `${Math.round(d.success_rate * 100)}%`}</td>
+                                <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`}>{formatDuration(d.median_duration_s)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Per-scenario outcome detail ── */}
+                {stats.scenario_detail && Object.keys(stats.scenario_detail).length > 0 && (
+                  <>
+                    <div className={styles.sectionTitle}>Per-scenario details</div>
+                    <div className={styles.panel}>
+                      <div className={styles.tableWrap}>
+                        <table className={styles.table}>
+                          <thead>
+                            <tr>
+                              <th className={styles.th}>Scenario</th>
+                              <th className={`${styles.th} ${styles.num}`}>Deployments</th>
+                              <th className={`${styles.th} ${styles.num}`}>Completed</th>
+                              <th className={`${styles.th} ${styles.num}`}>Failed</th>
+                              <th className={`${styles.th} ${styles.num}`}>Success</th>
+                              <th className={`${styles.th} ${styles.num}`}>Median</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(stats.scenario_detail).map(([id, d]) => (
+                              <tr key={id}>
+                                <td className={styles.td}>{scenarioLabel(id)}</td>
+                                <td className={`${styles.td} ${styles.num}`}>{d.started}</td>
+                                <td className={`${styles.td} ${styles.num}`} style={{ color: "#3fb950" }}>{d.completed}</td>
+                                <td className={`${styles.td} ${styles.num}`} style={{ color: d.failed ? "#f85149" : undefined }}>{d.failed}</td>
+                                <td className={`${styles.td} ${styles.num}`}>{d.success_rate === null ? "—" : `${Math.round(d.success_rate * 100)}%`}</td>
+                                <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`}>{formatDuration(d.median_duration_s)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Duration percentiles ── */}
+                {stats.duration_percentiles_s && stats.duration_percentiles_s.median !== null && (
+                  <>
+                    <div className={styles.sectionTitle}>Deployment duration</div>
+                    <div className={styles.panel}>
+                      <div className={styles.percRow}>
+                        {(["min", "p25", "median", "p75", "p90", "max"] as const).map((k) => (
+                          <div key={k} className={styles.percItem}>
+                            <div className={styles.percLabel}>{k}</div>
+                            <div className={styles.percValue}>{formatDuration(stats.duration_percentiles_s?.[k] ?? null)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Activity patterns ── */}
+                {(stats.by_hour_utc || stats.by_weekday) && (
+                  <>
+                    <div className={styles.sectionTitle}>Activity patterns</div>
+                    <div className={styles.miniChartsRow}>
+                      {stats.by_hour_utc && (
+                        <div className={styles.panel}>
+                          <div className={styles.percLabel} style={{ marginBottom: 10 }}>By hour (UTC)</div>
+                          <div className={styles.chart} style={{ height: 80 }} role="img" aria-label="Deployments by hour of day (UTC)">
+                            {Array.from({ length: 24 }, (_, h) => {
+                              const n = stats.by_hour_utc?.[String(h)] ?? 0;
+                              const max = Math.max(1, ...Object.values(stats.by_hour_utc ?? {}));
+                              return (
+                                <div key={h} className={styles.chartCol} title={`${String(h).padStart(2, "0")}:00 UTC — ${n}`}>
+                                  <div className={styles.chartBar} style={{ height: `${(n / max) * 100}%`, backgroundColor: n === 0 ? "#21262d" : undefined }} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className={styles.chartAxis}><span>00</span><span>12</span><span>23</span></div>
+                        </div>
+                      )}
+                      {stats.by_weekday && (
+                        <div className={styles.panel}>
+                          <div className={styles.percLabel} style={{ marginBottom: 10 }}>By weekday</div>
+                          <div className={styles.chart} style={{ height: 80 }} role="img" aria-label="Deployments by weekday">
+                            {WEEKDAYS.map((label, d) => {
+                              const n = stats.by_weekday?.[String(d)] ?? 0;
+                              const max = Math.max(1, ...Object.values(stats.by_weekday ?? {}));
+                              return (
+                                <div key={d} className={styles.chartCol} title={`${label} — ${n}`}>
+                                  <div className={styles.chartBar} style={{ height: `${(n / max) * 100}%`, backgroundColor: n === 0 ? "#21262d" : undefined }} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className={styles.chartAxis}><span>Mon</span><span>Sun</span></div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* ── Recent activity (no identities — truncated hash only) ── */}
+                {stats.recent && stats.recent.length > 0 && (
+                  <>
+                    <div className={styles.sectionTitle}>Recent activity</div>
+                    <div className={styles.panel}>
+                      <div className={styles.tableWrap}>
+                        <table className={styles.table}>
+                          <thead>
+                            <tr>
+                              <th className={styles.th}>When</th>
+                              <th className={styles.th}>Event</th>
+                              <th className={styles.th}>Demo</th>
+                              <th className={styles.th}>Scenario</th>
+                              <th className={`${styles.th} ${styles.num}`}>Duration</th>
+                              <th className={styles.th}>User</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {stats.recent.map((e, i) => {
+                              const ev = EVENT_LABEL[e.event] ?? { label: e.event, color: "#8b949e" };
+                              return (
+                                <tr key={i}>
+                                  <td className={`${styles.td} ${styles.tdMuted}`} title={e.ts}>{timeAgo(e.ts)}</td>
+                                  <td className={styles.td}>
+                                    <span className={styles.legendDot} style={{ backgroundColor: ev.color }} />
+                                    {ev.label}
+                                  </td>
+                                  <td className={styles.td}>{demoTitle(e.demo_id)}</td>
+                                  <td className={`${styles.td} ${styles.tdMuted}`}>{scenarioLabel(e.scenario_id)}</td>
+                                  <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`}>{e.duration_s !== undefined ? formatDuration(e.duration_s) : "—"}</td>
+                                  <td className={`${styles.td} ${styles.tdMuted}`} style={{ fontFamily: "Consolas, monospace", fontSize: 12 }}>#{e.user}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </>

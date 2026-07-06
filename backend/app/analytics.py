@@ -127,8 +127,18 @@ def aggregate_stats() -> dict:
     by_scenario: Counter = Counter()
     by_outcome: Counter = Counter()
     by_day: dict[str, int] = defaultdict(int)
+    by_hour: dict[int, int] = defaultdict(int)
+    by_weekday: dict[int, int] = defaultdict(int)
     users: set[str] = set()
+    users_7d: set[str] = set()
+    users_30d: set[str] = set()
     durations: list[float] = []
+    # Per-demo / per-scenario outcome detail: {key: {started, completed, failed, cancelled, durations}}
+    demo_detail: dict[str, dict] = defaultdict(lambda: {"started": 0, "completed": 0, "failed": 0, "cancelled": 0, "durations": []})
+    scenario_detail: dict[str, dict] = defaultdict(lambda: {"started": 0, "completed": 0, "failed": 0, "cancelled": 0, "durations": []})
+    recent: list[dict] = []
+
+    now = datetime.now(timezone.utc)
 
     try:
         if ANALYTICS_PATH.exists():
@@ -139,27 +149,95 @@ def aggregate_stats() -> dict:
                     except json.JSONDecodeError:
                         continue
                     ev = rec.get("event", "")
+                    demo = rec.get("demo_id", "?")
+                    scenario = rec.get("scenario_id", "?")
+                    ts_raw = rec.get("ts", "")
+                    try:
+                        ts = datetime.fromisoformat(ts_raw)
+                    except ValueError:
+                        ts = None
                     if ev == "deploy_started":
                         total_started += 1
-                        by_demo[rec.get("demo_id", "?")] += 1
-                        by_scenario[rec.get("scenario_id", "?")] += 1
-                        by_day[rec.get("ts", "")[:10]] += 1
+                        by_demo[demo] += 1
+                        by_scenario[scenario] += 1
+                        by_day[ts_raw[:10]] += 1
                         users.add(rec.get("user", "?"))
+                        demo_detail[demo]["started"] += 1
+                        scenario_detail[scenario]["started"] += 1
+                        if ts:
+                            by_hour[ts.hour] += 1
+                            by_weekday[ts.weekday()] += 1
+                            age_days = (now - ts).total_seconds() / 86400
+                            if age_days <= 7:
+                                users_7d.add(rec.get("user", "?"))
+                            if age_days <= 30:
+                                users_30d.add(rec.get("user", "?"))
                     elif ev in ("deploy_completed", "deploy_failed", "deploy_cancelled"):
-                        by_outcome[ev.removeprefix("deploy_")] += 1
+                        outcome = ev.removeprefix("deploy_")
+                        by_outcome[outcome] += 1
+                        demo_detail[demo][outcome] += 1
+                        scenario_detail[scenario][outcome] += 1
                         if "duration_s" in rec:
                             durations.append(rec["duration_s"])
+                            demo_detail[demo]["durations"].append(rec["duration_s"])
+                            scenario_detail[scenario]["durations"].append(rec["duration_s"])
+                    # Public recent-activity feed — deliberately NO email and only a
+                    # truncated user hash (enough to see "same person", not who).
+                    recent.append({
+                        "ts": ts_raw,
+                        "event": ev,
+                        "demo_id": demo,
+                        "scenario_id": scenario,
+                        "user": (rec.get("user") or "")[:6],
+                        **({"duration_s": rec["duration_s"]} if "duration_s" in rec else {}),
+                    })
     except Exception as e:
         logger.warning("Analytics aggregation failed: %s", e)
+
+    def _percentile(vals: list[float], p: float) -> float | None:
+        if not vals:
+            return None
+        s = sorted(vals)
+        idx = min(len(s) - 1, max(0, round(p * (len(s) - 1))))
+        return s[idx]
+
+    def _detail_out(detail: dict[str, dict]) -> dict:
+        out = {}
+        for key, d in detail.items():
+            finished_k = d["completed"] + d["failed"] + d["cancelled"]
+            out[key] = {
+                "started": d["started"],
+                "completed": d["completed"],
+                "failed": d["failed"],
+                "cancelled": d["cancelled"],
+                "success_rate": round(d["completed"] / finished_k, 3) if finished_k else None,
+                "median_duration_s": _percentile(d["durations"], 0.5),
+            }
+        return dict(sorted(out.items(), key=lambda kv: kv[1]["started"], reverse=True))
 
     finished = sum(by_outcome.values())
     return {
         "total_deployments": total_started,
         "distinct_users": len(users),
+        "distinct_users_7d": len(users_7d),
+        "distinct_users_30d": len(users_30d),
         "by_demo": dict(by_demo.most_common()),
         "by_scenario": dict(by_scenario.most_common()),
+        "demo_detail": _detail_out(demo_detail),
+        "scenario_detail": _detail_out(scenario_detail),
         "outcomes": dict(by_outcome),
         "success_rate": round(by_outcome.get("completed", 0) / finished, 3) if finished else None,
-        "median_duration_s": sorted(durations)[len(durations) // 2] if durations else None,
+        "median_duration_s": _percentile(durations, 0.5),
+        "duration_percentiles_s": {
+            "min": _percentile(durations, 0.0),
+            "p25": _percentile(durations, 0.25),
+            "median": _percentile(durations, 0.5),
+            "p75": _percentile(durations, 0.75),
+            "p90": _percentile(durations, 0.9),
+            "max": _percentile(durations, 1.0),
+        },
         "per_day": dict(sorted(by_day.items())),
+        "by_hour_utc": {str(h): by_hour.get(h, 0) for h in range(24)},
+        "by_weekday": {str(d): by_weekday.get(d, 0) for d in range(7)},  # 0=Mon
+        "recent": recent[-30:][::-1],
     }

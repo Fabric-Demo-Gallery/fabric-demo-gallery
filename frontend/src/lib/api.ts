@@ -84,15 +84,41 @@ export async function fetchDatasetPreview(
   return res.json();
 }
 
+export interface UsageOutcomeDetail {
+  started: number;
+  completed: number;
+  failed: number;
+  cancelled: number;
+  success_rate: number | null;
+  median_duration_s: number | null;
+}
+
+export interface UsageRecentEvent {
+  ts: string;
+  event: string;
+  demo_id: string;
+  scenario_id: string;
+  user: string;
+  duration_s?: number;
+}
+
 export interface UsageStats {
   total_deployments: number;
   distinct_users: number;
+  distinct_users_7d?: number;
+  distinct_users_30d?: number;
   by_demo: Record<string, number>;
   by_scenario: Record<string, number>;
+  demo_detail?: Record<string, UsageOutcomeDetail>;
+  scenario_detail?: Record<string, UsageOutcomeDetail>;
   outcomes: Record<string, number>;
   success_rate: number | null;
   median_duration_s: number | null;
+  duration_percentiles_s?: Record<string, number | null>;
   per_day: Record<string, number>;
+  by_hour_utc?: Record<string, number>;
+  by_weekday?: Record<string, number>;
+  recent?: UsageRecentEvent[];
 }
 
 export async function fetchStats(): Promise<UsageStats> {
