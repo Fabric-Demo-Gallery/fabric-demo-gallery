@@ -40,6 +40,7 @@ class JobState:
     demo_id: str
     workspace_name: str
     user_id: str
+    user_email: str | None = None  # sign-in name, for usage analytics only
     status: str = "pending"  # pending | running | completed | failed | cancelled
     steps: list[dict] = field(default_factory=list)
     error: str | None = None
@@ -107,6 +108,7 @@ class JobStore:
                         demo_id=rec["demo_id"],
                         workspace_name=rec["workspace_name"],
                         user_id=rec["user_id"],
+                        user_email=rec.get("user_email"),
                         status=status,
                         steps=rec.get("steps") or [],
                         error=rec.get("error"),
@@ -134,6 +136,7 @@ class JobStore:
                     "demo_id": j.demo_id,
                     "workspace_name": j.workspace_name,
                     "user_id": j.user_id,
+                    "user_email": j.user_email,
                     "status": j.status,
                     "steps": j.steps,
                     "error": j.error,
@@ -152,7 +155,8 @@ class JobStore:
             logger.warning("Could not persist jobs: %s", e)
 
     def create_job(
-        self, demo_id: str, workspace_name: str, user_id: str, scenario_id: str | None = None
+        self, demo_id: str, workspace_name: str, user_id: str, scenario_id: str | None = None,
+        user_email: str | None = None,
     ) -> JobState:
         job_id = str(uuid4())
         job = JobState(
@@ -160,6 +164,7 @@ class JobStore:
             demo_id=demo_id,
             workspace_name=workspace_name,
             user_id=user_id,
+            user_email=user_email,
             scenario_id=scenario_id,
         )
         self._jobs[job_id] = job
@@ -170,7 +175,7 @@ class JobStore:
         from app.analytics import record_deployment_event
         record_deployment_event(
             "deploy_started", demo_id=demo_id, scenario_id=scenario_id,
-            job_id=job_id, user_id=user_id,
+            job_id=job_id, user_id=user_id, email=user_email,
         )
         return job
 
@@ -266,7 +271,7 @@ class JobStore:
                 from app.analytics import record_deployment_event
                 record_deployment_event(
                     f"deploy_{status}", demo_id=job.demo_id, scenario_id=job.scenario_id,
-                    job_id=job.job_id, user_id=job.user_id,
+                    job_id=job.job_id, user_id=job.user_id, email=job.user_email,
                     duration_s=(job.updated_at - job.created_at).total_seconds(),
                 )
 

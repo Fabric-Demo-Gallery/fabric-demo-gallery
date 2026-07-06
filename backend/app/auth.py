@@ -107,3 +107,22 @@ def get_user_id(token: str) -> str:
         return claims.get("oid") or claims.get("sub") or "dev-user"
     except Exception:
         return "dev-user"
+
+
+def get_user_email(token: str) -> str | None:
+    """Extract the user's sign-in name (UPN/email) from a JWT token without verification.
+
+    Used only for usage analytics — never exposed through public endpoints.
+    Returns None for az CLI tokens or on parse failure.
+    """
+    try:
+        parts = token.split(".")
+        if len(parts) < 2:
+            return None
+        payload = parts[1]
+        payload += "=" * (4 - len(payload) % 4)
+        decoded = base64.urlsafe_b64decode(payload)
+        claims = json.loads(decoded)
+        return claims.get("preferred_username") or claims.get("upn") or claims.get("unique_name") or claims.get("email")
+    except Exception:
+        return None

@@ -12,8 +12,9 @@ Two sinks, both best-effort (analytics must never break a deploy):
    Gives portal charts, KQL, alerting, and correlation with other telemetry.
    Enabled only when APPLICATIONINSIGHTS_CONNECTION_STRING is set.
 
-User ids are one-way hashed — usage analytics needs distinct-user counts, not
-identities.
+User ids are one-way hashed for the public aggregate endpoint. The sign-in
+name (UPN) is ALSO recorded server-side (JSONL + App Insights) so admins can
+see who is using the gallery — it is never exposed through /api/stats.
 """
 
 from __future__ import annotations
@@ -58,6 +59,7 @@ def record_deployment_event(
     scenario_id: str | None,
     job_id: str,
     user_id: str,
+    email: str | None = None,
     duration_s: float | None = None,
 ) -> None:
     """Record a deployment lifecycle event (deploy_started/completed/failed/cancelled)."""
@@ -69,6 +71,8 @@ def record_deployment_event(
         "job_id": job_id,
         "user": _user_hash(user_id),
     }
+    if email:
+        rec["email"] = email
     if duration_s is not None:
         rec["duration_s"] = round(duration_s, 1)
 
@@ -103,6 +107,7 @@ async def _send_app_insights(rec: dict) -> None:
                     "scenario_id": rec["scenario_id"],
                     "job_id": rec["job_id"],
                     "user": rec["user"],
+                    **({"email": rec["email"]} if "email" in rec else {}),
                     **({"duration_s": str(rec["duration_s"])} if "duration_s" in rec else {}),
                 },
             },

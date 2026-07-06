@@ -235,7 +235,7 @@ export default function StatsClient() {
           )}
         </div>
         <div className={styles.subtitle}>
-          Live deployment activity across the gallery. Counts are anonymous — no names or emails are stored.
+          Live deployment activity across the gallery. This page shows aggregates only — no individual names appear here.
         </div>
 
         {error && <div className={styles.error}>{error}</div>}

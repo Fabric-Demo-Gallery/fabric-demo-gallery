@@ -8,7 +8,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sse_starlette.sse import EventSourceResponse
 
-from app.auth import get_user_token, get_storage_token, get_user_id, get_kusto_token
+from app.auth import get_user_token, get_storage_token, get_user_id, get_kusto_token, get_user_email
 from app.fabric_client import FabricClient
 from app.job_runner import run_job
 from app.job_store import job_store
@@ -103,6 +103,7 @@ async def create_job(
         workspace_name=workspace_name,
         user_id=user_id,
         scenario_id=body.scenario_id,
+        user_email=get_user_email(token),
     )
 
     management_tok = request.headers.get("x-management-token", "")

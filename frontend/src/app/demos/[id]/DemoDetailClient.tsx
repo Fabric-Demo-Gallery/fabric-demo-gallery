@@ -3140,6 +3140,14 @@ export default function DemoDetailPage() {
                     </Caption1>
                   )}
 
+                  {/* Usage-tracking disclosure — deployments are attributed to the
+                      signed-in account in the internal analytics log. */}
+                  {account && (
+                    <Caption1 style={{ display: "block", marginTop: 8, color: "#484f58" }}>
+                      Deployments are logged with your sign-in name for usage tracking.
+                    </Caption1>
+                  )}
+
                   {/* Fabric IQ: query cheat-sheet below the deploy button */}
                   {selectedScenario?.id === "genai-applications" && FABRICIQ_QUERIES[id] && (
                     <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid #21262d" }}>
