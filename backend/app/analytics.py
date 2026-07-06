@@ -61,6 +61,8 @@ def record_deployment_event(
     user_id: str,
     email: str | None = None,
     duration_s: float | None = None,
+    error: str | None = None,
+    failed_step: str | None = None,
 ) -> None:
     """Record a deployment lifecycle event (deploy_started/completed/failed/cancelled)."""
     rec = {
@@ -75,6 +77,12 @@ def record_deployment_event(
         rec["email"] = email
     if duration_s is not None:
         rec["duration_s"] = round(duration_s, 1)
+    # Failure diagnostics — private sinks only (JSONL + App Insights), never
+    # surfaced through the public /api/stats aggregates.
+    if error:
+        rec["error"] = error[:1000]
+    if failed_step:
+        rec["failed_step"] = failed_step
 
     # Sink 1 — append-only JSONL (permanent tally)
     try:
@@ -109,6 +117,8 @@ async def _send_app_insights(rec: dict) -> None:
                     "user": rec["user"],
                     **({"email": rec["email"]} if "email" in rec else {}),
                     **({"duration_s": str(rec["duration_s"])} if "duration_s" in rec else {}),
+                    **({"error": rec["error"]} if "error" in rec else {}),
+                    **({"failed_step": rec["failed_step"]} if "failed_step" in rec else {}),
                 },
             },
         },

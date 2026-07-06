@@ -269,10 +269,16 @@ class JobStore:
             # Usage analytics on the FIRST transition into a terminal state.
             if status in ("completed", "failed", "cancelled") and not was_terminal:
                 from app.analytics import record_deployment_event
+                # Which step broke? First failed step in the plan (best effort).
+                failed_step = next(
+                    (s.get("name") for s in job.steps if s.get("status") == "failed"), None
+                ) if status == "failed" else None
                 record_deployment_event(
                     f"deploy_{status}", demo_id=job.demo_id, scenario_id=job.scenario_id,
                     job_id=job.job_id, user_id=job.user_id, email=job.user_email,
                     duration_s=(job.updated_at - job.created_at).total_seconds(),
+                    error=job.error if status == "failed" else None,
+                    failed_step=failed_step,
                 )
 
     def clear_workspace(self, job_id: str) -> None:
