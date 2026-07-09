@@ -378,6 +378,110 @@ function FabricIqQueryRow({ item, i }: { item: { q: string; expect: string; leve
   );
 }
 
+// ── Fabric IQ: "library way" install (early peek, manufacturing-qc only) ────
+// The same deployment this site performs, but run by the Fabric Jumpstart
+// library from a notebook in the user's own tenant — under their identity,
+// with no permissions granted to this website. Preview build from the
+// FabricIQ jumpstart submission (microsoft/fabric-jumpstart, in review).
+const JUMPSTART_PIP_SNIPPET =
+  "%pip install https://github.com/omerizm47/fabric-jumpstart-fabriciq-ontology/releases/download/v0.4.0/fabric_jumpstart-0.1.9-py3-none-any.whl";
+const JUMPSTART_INSTALL_SNIPPET = `import fabric_jumpstart as jumpstart
+
+jumpstart.install(
+    "fabricdemogallery-fabriciq",
+    install_option="manufacturing-qc",
+)`;
+
+function CopyableCode({ code, label }: { code: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = useCallback(() => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  }, [code]);
+  return (
+    <div style={{ position: "relative", marginTop: 6 }}>
+      <pre
+        style={{
+          margin: 0,
+          padding: "10px 12px",
+          paddingRight: 64,
+          background: "#161b22",
+          border: "1px solid #21262d",
+          borderRadius: 6,
+          fontSize: 11.5,
+          lineHeight: "17px",
+          color: "#e6edf3",
+          overflowX: "auto",
+          whiteSpace: "pre",
+          fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace",
+        }}
+      >
+        {code}
+      </pre>
+      <Button
+        size="small"
+        appearance="secondary"
+        onClick={copy}
+        aria-label={`Copy code: ${label}`}
+        style={{ position: "absolute", top: 6, right: 6, minWidth: 0, height: 22, fontSize: 10, padding: "0 8px" }}
+      >
+        {copied ? "Copied ✓" : "Copy"}
+      </Button>
+    </div>
+  );
+}
+
+function FabricIqLibraryWay() {
+  const steps: { text: string; code?: { snippet: string; label: string } }[] = [
+    { text: "In Microsoft Fabric, open any workspace and create a new Notebook." },
+    {
+      text: "Install the Fabric Jumpstart library (preview build) — paste and run:",
+      code: { snippet: JUMPSTART_PIP_SNIPPET, label: "pip install" },
+    },
+    {
+      text: "Deploy this demo — paste and run:",
+      code: { snippet: JUMPSTART_INSTALL_SNIPPET, label: "jumpstart install" },
+    },
+    {
+      text: "Watch the live progress (~5 min). A new workspace is created with the Lakehouse, Eventhouse, ontology, and both Data Agents — sample data loaded, nothing else to run. Then try the questions above.",
+    },
+  ];
+  return (
+    <div style={{ marginTop: 16, padding: 14, border: "1px solid #21262d", borderRadius: 8, background: "#0d1117" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#e6edf3" }}>
+          {"Don't want to give permissions to our website? Here is the library way"}
+        </div>
+        <span
+          style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase", color: "#d29922", border: "1px solid #d2992255", borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}
+        >
+          Preview
+        </span>
+      </div>
+      <Caption1 style={{ display: "block", color: "#8b949e", marginBottom: 10 }}>
+        The exact same deployment, run by the Fabric Jumpstart library from a notebook in your own
+        tenant — everything happens under your identity, and this website never sees your data.
+        Two cells, one command.
+      </Caption1>
+      {steps.map((step, i) => (
+        <div key={i} style={{ padding: "8px 0", borderTop: i > 0 ? "1px solid #161b22" : undefined }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+            <span style={{ color: "#a371f7", fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{i + 1}</span>
+            <span style={{ fontSize: 12, color: "#e6edf3", lineHeight: "16px" }}>{step.text}</span>
+          </div>
+          {step.code && <CopyableCode code={step.code.snippet} label={step.code.label} />}
+        </div>
+      ))}
+      <Caption1 style={{ display: "block", color: "#484f58", marginTop: 8 }}>
+        Early peek at the upcoming Fabric Jumpstart flow (submission in review) — preview build,
+        manufacturing demo only for now. Requires the Fabric IQ / Ontology preview enabled in your tenant.
+      </Caption1>
+    </div>
+  );
+}
+
 
 // Per-sector AI/ML pipeline details, shown in the "ML Pipeline" section of the
 // AI & Machine Learning scenario. Target variables and feature counts are taken
@@ -3163,6 +3267,12 @@ export default function DemoDetailPage() {
                         <FabricIqQueryRow key={i} item={item} i={i} />
                       ))}
                     </div>
+                  )}
+
+                  {/* Fabric IQ: notebook/library install alternative — early peek on the
+                      manufacturing page only (jumpstart submission in review). */}
+                  {selectedScenario?.id === "genai-applications" && id === "manufacturing-qc" && (
+                    <FabricIqLibraryWay />
                   )}
                 </div>
               )}
