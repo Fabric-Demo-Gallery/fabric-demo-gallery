@@ -393,6 +393,7 @@ jumpstart.install(
 )`;
 
 function CopyableCode({ code, label }: { code: string; label: string }) {
+  const styles = useStyles();
   const [copied, setCopied] = useState(false);
   const copy = useCallback(() => {
     navigator.clipboard.writeText(code).then(() => {
@@ -403,6 +404,7 @@ function CopyableCode({ code, label }: { code: string; label: string }) {
   return (
     <div style={{ position: "relative", marginTop: 6 }}>
       <pre
+        className={styles.codeBlock}
         style={{
           margin: 0,
           padding: "10px 12px",
@@ -579,7 +581,7 @@ const slimScrollbar = {
     borderRadius: "999px",
   },
   "::-webkit-scrollbar-thumb:hover": { backgroundColor: "#484f58" },
-  "::-webkit-scrollbar-button": { display: "none", width: 0, height: 0 },
+  "::-webkit-scrollbar-button": { display: "none", width: "0px", height: "0px" },
   "::-webkit-scrollbar-corner": { backgroundColor: "transparent" },
 };
 
@@ -588,6 +590,9 @@ const useStyles = makeStyles({
     minHeight: "100vh",
     backgroundColor: "#0d1117",
   },
+  // Themed slim scrollbar for the copy-pastable code blocks so the native OS
+  // horizontal bar (bright/white) doesn't read as a broken element.
+  codeBlock: { ...slimScrollbar },
   headerBar: {
     backgroundColor: "#0d1117",
     borderBottom: "1px solid #21262d",
