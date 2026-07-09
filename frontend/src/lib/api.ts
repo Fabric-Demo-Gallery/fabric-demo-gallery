@@ -1,5 +1,11 @@
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
+// The public Usage dashboard reads aggregate-only stats (no PII). Deployment
+// history lives in a per-backend JSONL on each App Service's disk, so the dev
+// site points its stats fetch at a dedicated backend (defaults to API_BASE)
+// to surface the real, pre-existing aggregates instead of an empty dev store.
+const STATS_API_BASE = process.env.NEXT_PUBLIC_STATS_BACKEND_URL || API_BASE;
+
 export interface Demo {
   id: string;
   industry: string;
@@ -122,7 +128,7 @@ export interface UsageStats {
 }
 
 export async function fetchStats(): Promise<UsageStats> {
-  const res = await fetch(`${API_BASE}/api/stats`, { cache: "no-store" });
+  const res = await fetch(`${STATS_API_BASE}/api/stats`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch usage stats");
   return res.json();
 }
