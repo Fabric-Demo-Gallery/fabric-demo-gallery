@@ -8,7 +8,7 @@ import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 import {
   fetchSubscriptions, fetchResourceGroups, fetchLocations, fetchDatasetPreview,
-  startLiveStream, stopLiveStream, getStreamStatus,
+  startLiveStream, stopLiveStream, getStreamStatus, recordDemoView,
 } from "@/lib/api";
 import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, AzureLocation, DatasetPreview, StreamSession } from "@/lib/api";
 import NextLink from "next/link";
@@ -1332,6 +1332,15 @@ export default function DemoDetailPage() {
   const streamPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const currentJobIdRef = useRef<string | null>(null);
+
+  // Usage analytics — count one anonymous page view per demo visit. Ref guard
+  // stops React StrictMode's double-effect from counting twice in dev.
+  const viewRecordedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!demo || viewRecordedRef.current === id) return;
+    viewRecordedRef.current = id;
+    recordDemoView(id);
+  }, [id, demo]);
 
   // ── Scenario state — derived from URL (?scenario=<id>) ──────────────────
   const selectedScenario = ALL_SCENARIOS.find(s => s.id === searchParams.get("scenario")) ?? null;

@@ -110,6 +110,8 @@ export interface UsageRecentEvent {
 
 export interface UsageStats {
   total_deployments: number;
+  total_views?: number;
+  views_by_demo?: Record<string, number>;
   distinct_users: number;
   distinct_users_7d?: number;
   distinct_users_30d?: number;
@@ -132,7 +134,17 @@ export async function fetchStats(): Promise<UsageStats> {
   if (!res.ok) throw new Error("Failed to fetch usage stats");
   return res.json();
 }
-
+/** Fire-and-forget anonymous page-view beacon for usage analytics. */
+export function recordDemoView(demoId: string): void {
+  try {
+    void fetch(`${API_BASE}/api/stats/view`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ demo_id: demoId }),
+      keepalive: true,
+    }).catch(() => { /* analytics must never affect the page */ });
+  } catch { /* ignore */ }
+}
 export async function fetchWorkspaces(token: string): Promise<Workspace[]> {
   const res = await fetch(`${API_BASE}/api/workspaces`, {
     headers: { Authorization: `Bearer ${token}` },

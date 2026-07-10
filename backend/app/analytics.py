@@ -100,6 +100,26 @@ def record_deployment_event(
             pass  # no running loop (e.g. tests) — file sink already has it
 
 
+def record_view_event(demo_id: str) -> None:
+    """Record an anonymous demo page view (no identity — views happen pre-sign-in)."""
+    rec = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "event": "demo_viewed",
+        "demo_id": demo_id,
+    }
+    try:
+        ANALYTICS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with ANALYTICS_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(rec) + "\n")
+    except Exception as e:
+        logger.warning("Analytics file write failed: %s", e)
+    if _AI_IKEY and _AI_ENDPOINT:
+        try:
+            asyncio.get_running_loop().create_task(_send_app_insights(rec))
+        except RuntimeError:
+            pass
+
+
 async def _send_app_insights(rec: dict) -> None:
     envelope = {
         "name": f"Microsoft.ApplicationInsights.{_AI_IKEY.replace('-', '')}.Event",
@@ -111,14 +131,10 @@ async def _send_app_insights(rec: dict) -> None:
                 "ver": 2,
                 "name": rec["event"],
                 "properties": {
-                    "demo_id": rec["demo_id"],
-                    "scenario_id": rec["scenario_id"],
-                    "job_id": rec["job_id"],
-                    "user": rec["user"],
-                    **({"email": rec["email"]} if "email" in rec else {}),
-                    **({"duration_s": str(rec["duration_s"])} if "duration_s" in rec else {}),
-                    **({"error": rec["error"]} if "error" in rec else {}),
-                    **({"failed_step": rec["failed_step"]} if "failed_step" in rec else {}),
+                    # Defensive .get — view events carry only demo_id.
+                    key: str(rec[key])
+                    for key in ("demo_id", "scenario_id", "job_id", "user", "email", "duration_s", "error", "failed_step")
+                    if key in rec
                 },
             },
         },
@@ -146,6 +162,8 @@ def aggregate_stats() -> dict:
     # Per-demo / per-scenario outcome detail: {key: {started, completed, failed, cancelled, durations}}
     demo_detail: dict[str, dict] = defaultdict(lambda: {"started": 0, "completed": 0, "failed": 0, "cancelled": 0, "durations": []})
     scenario_detail: dict[str, dict] = defaultdict(lambda: {"started": 0, "completed": 0, "failed": 0, "cancelled": 0, "durations": []})
+    views_by_demo: Counter = Counter()
+    total_views = 0
     recent: list[dict] = []
 
     now = datetime.now(timezone.utc)
@@ -162,6 +180,11 @@ def aggregate_stats() -> dict:
                     demo = rec.get("demo_id", "?")
                     scenario = rec.get("scenario_id", "?")
                     ts_raw = rec.get("ts", "")
+                    # Page views: count and skip — they'd flood the deployment feed.
+                    if ev == "demo_viewed":
+                        total_views += 1
+                        views_by_demo[demo] += 1
+                        continue
                     try:
                         ts = datetime.fromisoformat(ts_raw)
                     except ValueError:
@@ -228,6 +251,8 @@ def aggregate_stats() -> dict:
     finished = sum(by_outcome.values())
     return {
         "total_deployments": total_started,
+        "total_views": total_views,
+        "views_by_demo": dict(views_by_demo.most_common()),
         "distinct_users": len(users),
         "distinct_users_7d": len(users_7d),
         "distinct_users_30d": len(users_30d),

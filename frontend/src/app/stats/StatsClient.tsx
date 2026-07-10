@@ -12,6 +12,7 @@ import {
   CheckmarkCircleRegular,
   TimerRegular,
   ArrowClockwiseRegular,
+  EyeRegular,
 } from "@fluentui/react-icons";
 
 const REFRESH_MS = 60_000;
@@ -311,6 +312,11 @@ export default function StatsClient() {
                 <div className={styles.cardSub}>all time</div>
               </div>
               <div className={styles.card}>
+                <div className={styles.cardLabel}><EyeRegular fontSize={14} aria-hidden />Demo views</div>
+                <div className={styles.cardValue}>{stats.total_views ?? "—"}</div>
+                <div className={styles.cardSub}>demo pages opened</div>
+              </div>
+              <div className={styles.card}>
                 <div className={styles.cardLabel}><PeopleRegular fontSize={14} aria-hidden />Unique users</div>
                 <div className={styles.cardValue}>{stats.distinct_users}</div>
                 <div className={styles.cardSub}>all time</div>
@@ -378,6 +384,27 @@ export default function StatsClient() {
                     </div>
                   ))}
                 </div>
+
+                {/* ── Most viewed demos (anonymous page views) ── */}
+                {stats.views_by_demo && Object.keys(stats.views_by_demo).length > 0 && (
+                  <>
+                    <div className={styles.sectionTitle}>Most viewed demos</div>
+                    <div className={styles.panel}>
+                      {Object.entries(stats.views_by_demo).map(([id, n]) => {
+                        const viewMax = Math.max(1, ...Object.values(stats.views_by_demo ?? {}));
+                        return (
+                          <div key={id} className={styles.barRow}>
+                            <span className={styles.barLabel} title={demoTitle(id)}>{demoTitle(id)}</span>
+                            <div className={styles.barTrack}>
+                              <div className={styles.barFill} style={{ width: `${(n / viewMax) * 100}%`, background: "linear-gradient(90deg, #8957e5, #a371f7)" }} />
+                            </div>
+                            <span className={styles.barCount}>{n}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
                 {outcomeTotal > 0 && (
                   <>
