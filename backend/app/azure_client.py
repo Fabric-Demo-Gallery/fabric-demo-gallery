@@ -727,6 +727,27 @@ class AzureClient:
         body = {"properties": {"startIpAddress": start_ip, "endIpAddress": end_ip}}
         await self._arm_request("PUT", url, json=body)
 
+    async def set_sql_public_network_access(
+        self,
+        subscription_id: str,
+        resource_group: str,
+        server_name: str,
+        enabled: bool = True,
+    ) -> None:
+        """(Re-)enable public network access on a logical SQL server.
+
+        Some governed subscriptions carry a Modify policy that silently flips
+        publicNetworkAccess to Disabled at creation even though we request
+        Enabled — which then 400s the firewall-rule call. A direct PATCH after
+        creation usually sticks (unless a Deny policy blocks the property)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Sql/servers/{server_name}"
+            f"?api-version={SQL_API_VERSION}"
+        )
+        body = {"properties": {"publicNetworkAccess": "Enabled" if enabled else "Disabled"}}
+        await self._arm_request("PATCH", url, json=body)
+
     async def create_sql_database(
         self,
         subscription_id: str,

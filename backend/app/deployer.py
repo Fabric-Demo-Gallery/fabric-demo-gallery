@@ -2167,10 +2167,37 @@ async def _deploy_mirroring(
         try:
             sami_principal_id = (srv.get("identity") or {}).get("principalId", "")
             # 'Allow Azure services' — required by both Fabric Spark and the mirroring service
-            await azure_client.create_sql_firewall_rule(
-                subscription_id, resource_group, sql_server,
-                "AllowAllWindowsAzureIps", "0.0.0.0", "0.0.0.0",
-            )
+            try:
+                await azure_client.create_sql_firewall_rule(
+                    subscription_id, resource_group, sql_server,
+                    "AllowAllWindowsAzureIps", "0.0.0.0", "0.0.0.0",
+                )
+            except AzureError as e:
+                # Governed subscriptions (seen live: MngEnvMCAP035102, 2026-07-10) can
+                # carry a Modify policy that flips publicNetworkAccess to Disabled at
+                # creation even though we request Enabled — the firewall PUT then 400s
+                # with "public network interface for the server is disabled". Re-enable
+                # once and retry; if a Deny policy blocks even that, fail with guidance.
+                if "public network" in (e.detail or "").lower():
+                    try:
+                        await azure_client.set_sql_public_network_access(
+                            subscription_id, resource_group, sql_server, enabled=True
+                        )
+                        await azure_client.create_sql_firewall_rule(
+                            subscription_id, resource_group, sql_server,
+                            "AllowAllWindowsAzureIps", "0.0.0.0", "0.0.0.0",
+                        )
+                    except AzureError:
+                        raise FabricError(
+                            403,
+                            "Azure SQL provisioning failed: your subscription has a policy that "
+                            "disables public network access on SQL servers, which this demo "
+                            "requires (Fabric Mirroring connects over the public endpoint). "
+                            "Options: use a different subscription, or ask your Azure admin for "
+                            "a policy exemption on the resource group, then retry.",
+                        )
+                else:
+                    raise
             await azure_client.create_sql_database(
                 subscription_id, resource_group, sql_server, sql_database, sql_location
             )
