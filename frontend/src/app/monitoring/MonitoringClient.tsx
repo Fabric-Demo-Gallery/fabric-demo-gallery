@@ -368,24 +368,22 @@ export default function MonitoringClient() {
                   </td>
                   <td className={styles.td}>
                     <div className={styles.actions}>
-                      {(job.status === "running" || job.status === "pending") && (
-                        <Button
-                          appearance="subtle"
-                          size="small"
-                          icon={<EyeRegular />}
-                          onClick={() =>
-                            router.push(
-                              `/demos/${job.demo_id}?job_id=${job.job_id}${
-                                job.scenario_id
-                                  ? `&mode=custom&scenario=${job.scenario_id}`
-                                  : ""
-                              }`
-                            )
-                          }
-                        >
-                          View
-                        </Button>
-                      )}
+                      <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<EyeRegular />}
+                        onClick={() =>
+                          router.push(
+                            `/demos/${job.demo_id}?job_id=${job.job_id}${
+                              job.scenario_id
+                                ? `&mode=custom&scenario=${job.scenario_id}`
+                                : ""
+                            }`
+                          )
+                        }
+                      >
+                        View
+                      </Button>
                       {(job.status === "running" || job.status === "pending") && (
                         <Button
                           appearance="subtle"

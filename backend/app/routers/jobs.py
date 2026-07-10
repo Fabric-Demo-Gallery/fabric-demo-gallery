@@ -208,7 +208,7 @@ async def stream_job(
 
             # If job is already terminal, we're done after replay
             current = job_store.get_job(job_id)
-            if current and current.status in ("completed", "failed"):
+            if current and current.status in ("completed", "failed", "cancelled"):
                 return
 
             # Phase 2: Tail live updates from queue

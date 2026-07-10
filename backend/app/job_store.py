@@ -304,7 +304,25 @@ class JobStore:
 
     def get_events(self, job_id: str) -> list[dict]:
         job = self._jobs.get(job_id)
-        return list(job._events) if job else []
+        if not job:
+            return []
+        if job._events:
+            return list(job._events)
+        # The in-memory event log doesn't survive restarts, but the persisted
+        # steps carry the full outcome — rebuild a replay so the deployment
+        # progress page still works for finished jobs.
+        if not job.steps:
+            return []
+        events: list[dict] = [{"event": "plan", "data": job.steps}]
+        for s in job.steps:
+            if s.get("status") and s.get("status") != "pending":
+                events.append({"event": "step", "data": s})
+        if job.status == "failed" and job.error:
+            data: dict = {"message": job.error}
+            if job.workspace_id:
+                data["workspaceId"] = job.workspace_id
+            events.append({"event": "error", "data": data})
+        return events
 
     def _evict_old_jobs(self, user_id: str) -> None:
         user_jobs = [
