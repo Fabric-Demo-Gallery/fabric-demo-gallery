@@ -1719,10 +1719,12 @@ export default function DemoDetailPage() {
         // silently discards the deployment (it looked like a random page refresh).
         // If a token truly needs interaction, fail visibly and let the user retry
         // from a fresh click instead.
-        [fabricToken, storageToken] = await Promise.all([
-          getFabricToken({ forceRefresh: true, allowRedirect: false }),
-          getStorageToken({ forceRefresh: true, allowRedirect: false }),
-        ]);
+        // SEQUENTIAL, not Promise.all: if both tokens need interaction (first-time
+        // users), two concurrent acquireTokenPopup calls collide inside MSAL and
+        // the second throws interaction_in_progress — killing the deploy with an
+        // error that looked like it needed a page refresh.
+        fabricToken = await getFabricToken({ forceRefresh: true, allowRedirect: false });
+        storageToken = await getStorageToken({ forceRefresh: true, allowRedirect: false });
         try {
           const res = await msalInstance.acquireTokenSilent({ scopes: oneLakeScopes, account, forceRefresh: true });
           oneLakeToken = res.accessToken;
@@ -1938,7 +1940,20 @@ export default function DemoDetailPage() {
       if (e instanceof DOMException && e.name === "AbortError") {
         setError("Deployment stopped by user. The workspace may be partially created.");
       } else {
-        setError(e instanceof Error ? e.message : "Connection failed");
+        // Auth failures during the token phase read like crashes ("interaction_in_progress",
+        // "popup_window_error") and made users refresh or re-sign-in. Map them to
+        // plain guidance — a fresh Deploy click is all that's actually needed.
+        const raw = e instanceof Error ? e.message : "Connection failed";
+        const msg = /interaction_in_progress/i.test(raw)
+          ? "A sign-in window is still open or didn't finish. Close any sign-in popups, then click Deploy again."
+          : /popup_window_error|empty_window_error|monitor_window_timeout/i.test(raw)
+          ? "The browser blocked the sign-in popup. Allow popups for this site (look for the blocked-popup icon in the address bar), then click Deploy again."
+          : /user_cancelled/i.test(raw)
+          ? "The sign-in popup was closed before finishing. Click Deploy and approve the popup to continue."
+          : /interaction_required|consent_required|login_required/i.test(raw)
+          ? "Your session needs a quick re-authorization. Click Deploy again and approve the sign-in popup."
+          : raw;
+        setError(msg);
       }
     } finally {
       abortRef.current = null;

@@ -233,11 +233,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // once, don't re-prompt: the deploy degrades the KB/agent steps to manual
       // follow-ups instead (by design), which beats a popup storm.
       if (localStorage.getItem(consentKey) === "1") return;
-      // One interactive consent: Search (primary token) + Foundry Agent
-      // (extraScopesToConsent) so both can subsequently be acquired silently.
+      // One interactive consent covering EVERY resource the deploy needs: Search
+      // (primary token) + Foundry Agent + Storage + ARM via extraScopesToConsent.
+      // First-time users previously consented only Search+Agent here, so the
+      // storage/management tokens later in the deploy still needed interaction —
+      // but the click's popup-activation window was already spent, the second
+      // popup got blocked, and the deploy died with a cryptic auth error that
+      // looked like it needed a refresh/re-sign-in. Consenting everything in
+      // this one popup makes every later acquire silent.
       await msalInstance.acquireTokenPopup({
         scopes: searchScopes,
-        extraScopesToConsent: agentScopes,
+        extraScopesToConsent: [...agentScopes, ...storageScopes, ...managementScopes],
         redirectUri: popupRedirectUri,
       });
       localStorage.setItem(consentKey, "1");
