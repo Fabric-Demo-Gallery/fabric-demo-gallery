@@ -316,7 +316,14 @@ class AzureClient:
         existing = await self._arm_client.get(url)
         if existing.status_code == 200:
             return existing.json()
-        resp = await self._arm_request("PUT", url, json={"location": location})
+        # SecurityControl=Ignore exempts resources in this RG from MCAPS/SFI
+        # governance policies (e.g. AzureSQL_PublicNetwork_Modify force-disables
+        # public network access on SQL servers, which breaks Fabric Mirroring).
+        # The tag is inert in tenants without those policies. Only set on RGs WE
+        # create — existing RGs are never modified.
+        resp = await self._arm_request(
+            "PUT", url, json={"location": location, "tags": {"SecurityControl": "Ignore"}}
+        )
         return resp.json()
 
     # ── storage accounts ─────────────────────────────────────────────────
@@ -612,6 +619,12 @@ class AzureClient:
         body = {
             "location": location,
             "identity": {"type": "SystemAssigned"},  # SAMI required by mirroring
+            # MCAPS/SFI governance (MCAPSGovDeployPolicies → AzureSQL_PublicNetwork_Modify,
+            # verified live 2026-07-13) force-disables public network access on new SQL
+            # servers UNLESS the server or its RG carries SecurityControl=Ignore. Fabric
+            # Mirroring needs the public endpoint, so tag the server itself — covers
+            # user-provided RGs we don't own. Inert outside MCAPS-governed tenants.
+            "tags": {"SecurityControl": "Ignore"},
             "properties": {
                 # Microsoft Entra-only authentication — no administratorLogin/password.
                 "administrators": {

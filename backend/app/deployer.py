@@ -2193,8 +2193,9 @@ async def _deploy_mirroring(
                             "Azure SQL provisioning failed: your subscription has a policy that "
                             "disables public network access on SQL servers, which this demo "
                             "requires (Fabric Mirroring connects over the public endpoint). "
-                            "Options: use a different subscription, or ask your Azure admin for "
-                            "a policy exemption on the resource group, then retry.",
+                            "Fix: add the tag SecurityControl=Ignore to your resource group "
+                            "(exempts it from MCAPS governance policies), or use a different "
+                            "subscription, then retry.",
                         )
                 else:
                     raise
