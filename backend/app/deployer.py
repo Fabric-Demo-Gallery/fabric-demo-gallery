@@ -3326,6 +3326,17 @@ async def _deploy_fabric_iq(
                 da = json.loads(pr.text)
                 onto_agent = da.get("ontologyAgent", {}) or {}
                 direct_agent = da.get("directAgent", {}) or {}
+                # The notebook verifies the graph model's first refresh and
+                # re-publishes the ontology to self-heal a failed one. If it
+                # STILL isn't Completed, the ontology agent will answer with
+                # "The Graph Model is not ready" — tell the user what to do.
+                if da.get("graphRefreshOk") is False:
+                    next_steps.append(
+                        "The ontology's graph model refresh did not complete — the ontology "
+                        "agent may report 'Graph Model is not ready'. Open the ontology in the "
+                        "Fabric portal and re-save it (or re-run the create-ontology notebook) "
+                        "to trigger a new graph refresh."
+                    )
                 if onto_agent.get("dataAgentId"):
                     created_ids[ontology_agent_name] = onto_agent["dataAgentId"]
                 if direct_agent.get("dataAgentId"):
