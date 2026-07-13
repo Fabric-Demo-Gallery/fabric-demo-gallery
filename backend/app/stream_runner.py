@@ -17,7 +17,6 @@ import json
 import logging
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 
 from app.deployer import DEMOS_DIR
 

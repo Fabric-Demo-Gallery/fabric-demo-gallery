@@ -8,11 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  InteractionRequiredAuthError,
-  BrowserUtils,
-  type AccountInfo,
-} from "@azure/msal-browser";
+import { type AccountInfo } from "@azure/msal-browser";
 import { msalInstance, popupRedirectUri, fabricScopes, storageScopes, managementScopes, searchScopes, agentScopes, kustoScopes } from "@/lib/msal";
 
 // Local dev mode: when no AZURE_CLIENT_ID is configured, skip MSAL entirely.

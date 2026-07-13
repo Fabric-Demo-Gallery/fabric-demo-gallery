@@ -9,7 +9,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sse_starlette.sse import EventSourceResponse
 
-from app.auth import get_user_token, get_storage_token, get_management_token
+from app.auth import get_user_token, get_storage_token
 from app.azure_client import AzureClient
 from app.deployer import deploy_demo, load_scenario
 from app.fabric_client import FabricClient

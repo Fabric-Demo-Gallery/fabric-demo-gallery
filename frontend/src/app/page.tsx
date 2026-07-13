@@ -384,15 +384,6 @@ const useStyles = makeStyles({
   },
 });
 
-const STEP_COLORS = ["#3fb68b", "#2da882", "#1a9b80", "#117865"];
-
-const STEPS = [
-  { n: 1, t: "Browse", d: "Choose an industry demo" },
-  { n: 2, t: "Authenticate", d: "Sign in with Microsoft Entra" },
-  { n: 3, t: "Configure", d: "Name workspace & pick capacity" },
-  { n: 4, t: "Deploy", d: "Watch real-time provisioning" },
-];
-
 // Hero product-demo video. Self-hosted native <video> — no third-party player,
 // no embed/referrer/bot-check issues. preload="metadata" + the #t fragment shows
 // a first-frame poster without downloading the whole file until the user plays.

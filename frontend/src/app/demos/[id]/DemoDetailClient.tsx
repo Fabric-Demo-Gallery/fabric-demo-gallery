@@ -11,8 +11,6 @@ import {
   startLiveStream, stopLiveStream, getStreamStatus, recordDemoView,
 } from "@/lib/api";
 import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, AzureLocation, DatasetPreview, StreamSession } from "@/lib/api";
-import NextLink from "next/link";
-import { useDeployment } from "@/lib/DeploymentContext";
 // import type { DeployStep } from "@/lib/DeploymentContext";
 import {
   Button,
@@ -22,14 +20,10 @@ import {
   Spinner,
   Text,
   Title2,
-  Title3,
-  Subtitle2,
-  Body1,
   Caption1,
   Divider,
   MessageBar,
   MessageBarBody,
-  MessageBarActions,
   MessageBarTitle,
   Checkbox,
   ToggleButton,
@@ -1324,6 +1318,8 @@ export default function DemoDetailPage() {
   const [deployedWorkspaceId, setDeployedWorkspaceId] = useState("");
   const [cleaning, setCleaning] = useState(false);
   const [cleaned, setCleaned] = useState(false);
+  // Which delete is pending confirmation (drives the Fluent confirm dialog).
+  const [confirmDelete, setConfirmDelete] = useState<null | "full" | "partial">(null);
   // ── Live Eventstream replay (RTI demo) ──────────────────────────────────
   const [streamConnStr, setStreamConnStr] = useState("");
   const [streamSession, setStreamSession] = useState<StreamSession | null>(null);
@@ -2043,9 +2039,6 @@ export default function DemoDetailPage() {
       setCleaning(false);
     }
   };
-
-  // Which delete is pending confirmation (drives the Fluent dialog below).
-  const [confirmDelete, setConfirmDelete] = useState<null | "full" | "partial">(null);
 
   const handleCleanup = async () => {
     await deleteWorkspace(false);

@@ -3120,15 +3120,11 @@ async def _deploy_fabric_iq(
     preview-API hiccup degrades that step to "skipped" with a manual follow-up
     while the ontology + notebooks still succeed.
     """
-    lakehouses = [i for i in items if i["type"] == "Lakehouse"]
-    eventhouses = [i for i in items if i["type"] == "Eventhouse"]
     notebooks = [i for i in items if i["type"] == "Notebook"]
     run_notebooks = sorted(
         (nb for nb in notebooks if nb.get("order") is not None),
         key=lambda n: n["order"],
     )
-    ontologies = [i for i in items if i["type"] == "Ontology"]
-    data_agents = [i for i in items if i["type"] == "DataAgent"]
 
     # Derive per-industry names from the demo id so one shared scenario template
     # serves every industry (e.g. "retail-sales" → retail_sales_lakehouse,

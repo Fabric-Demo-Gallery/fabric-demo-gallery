@@ -143,7 +143,7 @@ async def _send_app_insights(rec: dict) -> None:
         async with httpx.AsyncClient(timeout=5) as client:
             await client.post(f"{_AI_ENDPOINT}/v2/track", json=[envelope])
     except Exception as e:
-        logger.debug("App Insights send failed (non-fatal): %s", e)
+        logger.warning("App Insights send failed (non-fatal): %s", e)
 
 
 def aggregate_stats() -> dict:
