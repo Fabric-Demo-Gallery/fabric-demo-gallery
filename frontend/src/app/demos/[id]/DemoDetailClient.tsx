@@ -24,6 +24,7 @@ import {
   Divider,
   MessageBar,
   MessageBarBody,
+  MessageBarActions,
   MessageBarTitle,
   Checkbox,
   ToggleButton,
@@ -1303,7 +1304,7 @@ export default function DemoDetailPage() {
   const id = params.id as string;
   const demo = DEMOS[id];
   const isCustomMode = searchParams.get("mode") === "custom";
-  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, ensureFoundryConsent } = useAuth();
+  const { account, authError, login, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, ensureFoundryConsent, resetFoundryConsent } = useAuth();
   const styles = useStyles();
 
   const [showDeploy, setShowDeploy] = useState(false);
@@ -1323,6 +1324,31 @@ export default function DemoDetailPage() {
   // Non-fatal authorization warning (e.g. the Foundry consent popup failed) — the
   // deploy continues on backend fallbacks but the reason stays visible.
   const [authWarning, setAuthWarning] = useState<AuthError | null>(null);
+  const [reauthBusy, setReauthBusy] = useState(false);
+
+  // "Try authorization again" inside the warning: clear the per-account
+  // consent-completed flag (so the popup is allowed to re-fire) and run the
+  // consent flow within THIS click's popup-activation window.
+  const handleRetryAuthorization = async () => {
+    setReauthBusy(true);
+    resetFoundryConsent();
+    try {
+      await ensureFoundryConsent();
+      setAuthWarning(null);
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e);
+      const friendly: AuthError = classifyAuthError(raw) ?? {
+        code: "foundry_consent_failed",
+        title: "Authorization still didn't complete",
+        guidance: "The permission popup didn't finish. Allow popups for this site and try again.",
+        retryable: true,
+      };
+      recordAuthError(friendly.code, selectedScenario?.id);
+      setAuthWarning(friendly);
+    } finally {
+      setReauthBusy(false);
+    }
+  };
   // ── Live Eventstream replay (RTI demo) ──────────────────────────────────
   const [streamConnStr, setStreamConnStr] = useState("");
   const [streamSession, setStreamSession] = useState<StreamSession | null>(null);
@@ -3528,8 +3554,13 @@ export default function DemoDetailPage() {
                     <MessageBar intent="warning" style={{ marginTop: 16 }}>
                       <MessageBarBody>
                         <MessageBarTitle>{authWarning.title}</MessageBarTitle>
-                        {authWarning.guidance} The deployment continued with backend credentials — if the knowledge-base or agent steps were skipped, fix the above and deploy again.
+                        {authWarning.guidance} The deployment continued with backend credentials — if the knowledge-base or agent steps were skipped, re-authorize below and deploy again.
                       </MessageBarBody>
+                      <MessageBarActions>
+                        <Button size="small" onClick={handleRetryAuthorization} disabled={reauthBusy || deploying}>
+                          {reauthBusy ? "Waiting for popup…" : "Try authorization again"}
+                        </Button>
+                      </MessageBarActions>
                     </MessageBar>
                   )}
 
