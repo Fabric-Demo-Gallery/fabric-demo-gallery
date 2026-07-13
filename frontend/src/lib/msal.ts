@@ -72,8 +72,13 @@ export const fabricScopes = [
 // Separate OneLake scope — needs its own token for shortcut creation (OneLake.ReadWrite.All)
 export const oneLakeScopes = ["https://api.fabric.microsoft.com/OneLake.ReadWrite.All"];
 
-// Scopes needed for OneLake (storage)
-export const storageScopes = ["https://storage.azure.com/.default"];
+// Scopes needed for OneLake (storage). user_impersonation (NOT .default):
+// this scope is mixed with resource-specific scopes in the ensureFoundryConsent
+// popup's extraScopesToConsent, and Entra rejects any authorize request that
+// combines `.default` with named scopes (AADSTS70011). The token audience is
+// identical either way, and user_impersonation is Storage's only delegated
+// permission, so silent flows are unaffected.
+export const storageScopes = ["https://storage.azure.com/user_impersonation"];
 
 // Scopes needed for Azure Resource Manager (ARM) — used for ADLS Gen2 provisioning
 export const managementScopes = ["https://management.azure.com/user_impersonation"];
