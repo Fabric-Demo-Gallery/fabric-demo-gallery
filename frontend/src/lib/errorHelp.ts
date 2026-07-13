@@ -9,9 +9,119 @@ export interface FriendlyError {
   retryable: boolean;
 }
 
+export interface AuthError extends FriendlyError {
+  /** Stable short code for anonymous telemetry (e.g. "AADSTS65001", "popup_blocked"). */
+  code: string;
+}
+
+// Classifies Microsoft Entra (AADSTSnnnnn) and MSAL.js (snake_case) sign-in /
+// authorization failures into actionable guidance. Returns null when the string
+// isn't an auth error so explainError can try its deployment patterns instead.
+export function classifyAuthError(raw: string | null | undefined): AuthError | null {
+  const msg = (raw ?? "").toString();
+  const m = msg.toLowerCase();
+  if (!m) return null;
+
+  if (m.includes("aadsts70011") || (m.includes(".default") && m.includes("scope") && m.includes("not valid"))) {
+    return {
+      code: "AADSTS70011",
+      title: "Outdated app version cached",
+      guidance:
+        "Your browser is running an old cached version of this site. Hard-refresh the page (Ctrl+Shift+R), then click Deploy again.",
+      retryable: true,
+    };
+  }
+  if (m.includes("aadsts65001") || m.includes("aadsts90094") || m.includes("consent_required") || m.includes("need admin approval")) {
+    return {
+      code: "consent_required",
+      title: "Admin approval needed",
+      guidance:
+        "Your organization requires an admin to approve this app's permissions. Use \u201cHow to approve\u201d in the blue banner (or send it to your admin) \u2014 a one-time approval unblocks your whole tenant. Then retry.",
+      retryable: false,
+    };
+  }
+  if (m.includes("aadsts53003") || m.includes("conditional access")) {
+    return {
+      code: "conditional_access",
+      title: "Blocked by a Conditional Access policy",
+      guidance:
+        "Your organization's Conditional Access policy blocked the authorization (device, location, or MFA requirements). Sign in from a compliant device/network, then retry.",
+      retryable: false,
+    };
+  }
+  if (m.includes("aadsts50011")) {
+    return {
+      code: "AADSTS50011",
+      title: "Sign-in configuration issue",
+      guidance:
+        "The sign-in reply URL isn't registered for this site \u2014 a site configuration problem, not something you can fix. Please report it via the GitHub link in the header.",
+      retryable: false,
+    };
+  }
+  if (m.includes("aadsts700016")) {
+    return {
+      code: "AADSTS700016",
+      title: "App not available in your organization",
+      guidance:
+        "This app isn't provisioned in your Microsoft Entra tenant yet. Sign out and sign in again (which registers it), or ask your admin to approve the app, then retry.",
+      retryable: true,
+    };
+  }
+  if (/popup_window_error|empty_window_error|monitor_window_timeout/.test(m)) {
+    return {
+      code: "popup_blocked",
+      title: "Sign-in popup blocked",
+      guidance:
+        "The browser blocked the sign-in popup. Allow popups for this site (look for the blocked-popup icon in the address bar), then click Deploy again.",
+      retryable: true,
+    };
+  }
+  if (m.includes("user_cancelled")) {
+    return {
+      code: "user_cancelled",
+      title: "Sign-in popup closed",
+      guidance: "The sign-in popup was closed before finishing. Click Deploy again and approve the popup to continue.",
+      retryable: true,
+    };
+  }
+  if (m.includes("interaction_in_progress")) {
+    return {
+      code: "interaction_in_progress",
+      title: "Another sign-in window is open",
+      guidance: "A sign-in window is still open or didn't finish. Close any sign-in popups, then click Deploy again.",
+      retryable: true,
+    };
+  }
+  if (m.includes("interaction_required") || m.includes("login_required") || m.includes("no_account_error")) {
+    return {
+      code: "interaction_required",
+      title: "Quick re-authorization needed",
+      guidance: "Your session needs a quick re-authorization. Click Deploy again and approve the sign-in popup.",
+      retryable: true,
+    };
+  }
+  if (m.includes("aadsts")) {
+    // Any other Entra error \u2014 surface the code so it's diagnosable.
+    const codeMatch = msg.match(/AADSTS\d+/i);
+    return {
+      code: codeMatch ? codeMatch[0].toUpperCase() : "aadsts_other",
+      title: "Microsoft Entra sign-in error",
+      guidance:
+        "Microsoft Entra returned an error during authorization. Click Deploy to try again; if it persists, copy the technical details and report them via the GitHub link.",
+      retryable: true,
+    };
+  }
+  return null;
+}
+
 export function explainError(raw: string | null | undefined): FriendlyError {
   const msg = (raw ?? "").toString();
   const m = msg.toLowerCase();
+
+  // Sign-in / authorization failures first — the Entra & MSAL codes are precise
+  // and must not fall through to the generic 401/permission buckets below.
+  const auth = classifyAuthError(msg);
+  if (auth) return auth;
 
   // Capacity paused / not active / none found
   if (

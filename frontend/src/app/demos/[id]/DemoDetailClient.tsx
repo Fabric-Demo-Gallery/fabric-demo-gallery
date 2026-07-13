@@ -8,7 +8,7 @@ import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { industries } from "@/lib/industryCatalog";
 import {
   fetchSubscriptions, fetchResourceGroups, fetchLocations, fetchDatasetPreview,
-  startLiveStream, stopLiveStream, getStreamStatus, recordDemoView,
+  startLiveStream, stopLiveStream, getStreamStatus, recordDemoView, recordAuthError,
 } from "@/lib/api";
 import type { ScenarioInfo, AzureSubscription, AzureResourceGroup, AzureLocation, DatasetPreview, StreamSession } from "@/lib/api";
 // import type { DeployStep } from "@/lib/DeploymentContext";
@@ -60,7 +60,7 @@ import {
 import type { FluentIcon } from "@fluentui/react-icons";
 import { DEMOS } from "@/lib/demoCatalog";
 import { PRESENTER } from "@/lib/presenterContent";
-import { explainError } from "@/lib/errorHelp";
+import { explainError, classifyAuthError, type AuthError } from "@/lib/errorHelp";
 
 // Coerce an SSE error payload's `message` into a readable string. The backend
 // usually sends a string, but some failure paths send a nested object (e.g.
@@ -1320,6 +1320,9 @@ export default function DemoDetailPage() {
   const [cleaned, setCleaned] = useState(false);
   // Which delete is pending confirmation (drives the Fluent confirm dialog).
   const [confirmDelete, setConfirmDelete] = useState<null | "full" | "partial">(null);
+  // Non-fatal authorization warning (e.g. the Foundry consent popup failed) — the
+  // deploy continues on backend fallbacks but the reason stays visible.
+  const [authWarning, setAuthWarning] = useState<AuthError | null>(null);
   // ── Live Eventstream replay (RTI demo) ──────────────────────────────────
   const [streamConnStr, setStreamConnStr] = useState("");
   const [streamSession, setStreamSession] = useState<StreamSession | null>(null);
@@ -1680,6 +1683,7 @@ export default function DemoDetailPage() {
     // clicked Deploy again.
     setDeploying(true);
     setError(null);
+    setAuthWarning(null);
     setCompleted(false);
     setSteps([]);
 
@@ -1699,8 +1703,20 @@ export default function DemoDetailPage() {
       }]);
       try {
         await ensureFoundryConsent();
-      } catch {
-        /* non-fatal — agent/KB become a manual follow-up */
+      } catch (e) {
+        // Surface the failure instead of silently degrading: the deploy continues
+        // (the backend falls back to ARM admin keys / its managed identity for the
+        // KB + agent steps), but the user sees WHY and how to fix it for next time.
+        const raw = e instanceof Error ? e.message : String(e);
+        const friendly: AuthError = classifyAuthError(raw) ?? {
+          code: "foundry_consent_failed",
+          title: "Foundry authorization didn't complete",
+          guidance:
+            "The authorization popup didn't finish. To use your own identity for the AI agent, click Deploy again and approve the popup.",
+          retryable: true,
+        };
+        recordAuthError(friendly.code, selectedScenario.id);
+        setAuthWarning(friendly);
       }
       setSteps([]);
     }
@@ -1752,10 +1768,19 @@ export default function DemoDetailPage() {
         headers["X-OneLake-Token"] = oneLakeToken;
       }
       if (selectedScenario?.requiresAzure) {
+        // Azure-provisioning scenarios REQUIRE the ARM token — without it the
+        // backend fails mid-deploy with a confusing error. Fail fast with clear
+        // guidance instead of silently continuing.
         try {
           const mgmtTok = await getManagementToken({ forceRefresh: true, allowRedirect: false });
           if (mgmtTok) headers["X-Management-Token"] = mgmtTok;
-        } catch { /* continue without management token */ }
+        } catch (e) {
+          const raw = e instanceof Error ? e.message : String(e);
+          recordAuthError(classifyAuthError(raw)?.code ?? "mgmt_token_failed", selectedScenario.id);
+          setError(raw || "Azure authorization failed — this scenario provisions Azure resources and needs management access.");
+          setDeploying(false);
+          return;
+        }
       }
       // Fabric + Foundry scenario also needs Azure AI Search + Foundry agent
       // data-plane tokens so the deploy can build the Foundry IQ knowledge base
@@ -1946,19 +1971,13 @@ export default function DemoDetailPage() {
         setError("Deployment stopped by user. The workspace may be partially created.");
       } else {
         // Auth failures during the token phase read like crashes ("interaction_in_progress",
-        // "popup_window_error") and made users refresh or re-sign-in. Map them to
-        // plain guidance — a fresh Deploy click is all that's actually needed.
+        // "popup_window_error"). classifyAuthError (via explainError in the error
+        // renderer) maps them to plain guidance and keeps the raw message under
+        // "Technical details". Beacon the code so auth breakage shows in analytics.
         const raw = e instanceof Error ? e.message : "Connection failed";
-        const msg = /interaction_in_progress/i.test(raw)
-          ? "A sign-in window is still open or didn't finish. Close any sign-in popups, then click Deploy again."
-          : /popup_window_error|empty_window_error|monitor_window_timeout/i.test(raw)
-          ? "The browser blocked the sign-in popup. Allow popups for this site (look for the blocked-popup icon in the address bar), then click Deploy again."
-          : /user_cancelled/i.test(raw)
-          ? "The sign-in popup was closed before finishing. Click Deploy and approve the popup to continue."
-          : /interaction_required|consent_required|login_required/i.test(raw)
-          ? "Your session needs a quick re-authorization. Click Deploy again and approve the sign-in popup."
-          : raw;
-        setError(msg);
+        const authInfo = classifyAuthError(raw);
+        if (authInfo) recordAuthError(authInfo.code, selectedScenario?.id);
+        setError(raw);
       }
     } finally {
       abortRef.current = null;
@@ -3503,6 +3522,15 @@ export default function DemoDetailPage() {
                         </Button>
                       )}
                     </div>
+                  )}
+
+                  {authWarning && (
+                    <MessageBar intent="warning" style={{ marginTop: 16 }}>
+                      <MessageBarBody>
+                        <MessageBarTitle>{authWarning.title}</MessageBarTitle>
+                        {authWarning.guidance} The deployment continued with backend credentials — if the knowledge-base or agent steps were skipped, fix the above and deploy again.
+                      </MessageBarBody>
+                    </MessageBar>
                   )}
 
                   {error && (() => {

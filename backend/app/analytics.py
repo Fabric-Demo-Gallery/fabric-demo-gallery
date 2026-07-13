@@ -120,6 +120,29 @@ def record_view_event(demo_id: str) -> None:
             pass
 
 
+def record_auth_error_event(code: str, scenario_id: str | None = None) -> None:
+    """Record an anonymous sign-in/consent failure (error code only — no identity).
+    Makes client-side auth breakage visible in App Insights instead of silent."""
+    rec = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "event": "auth_error",
+        "error": code,
+    }
+    if scenario_id:
+        rec["scenario_id"] = scenario_id
+    try:
+        ANALYTICS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with ANALYTICS_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(rec) + "\n")
+    except Exception as e:
+        logger.warning("Analytics file write failed: %s", e)
+    if _AI_IKEY and _AI_ENDPOINT:
+        try:
+            asyncio.get_running_loop().create_task(_send_app_insights(rec))
+        except RuntimeError:
+            pass
+
+
 async def _send_app_insights(rec: dict) -> None:
     envelope = {
         "name": f"Microsoft.ApplicationInsights.{_AI_IKEY.replace('-', '')}.Event",
@@ -184,6 +207,10 @@ def aggregate_stats() -> dict:
                     if ev == "demo_viewed":
                         total_views += 1
                         views_by_demo[demo] += 1
+                        continue
+                    # Auth failures: diagnostics only (JSONL + App Insights) — keep
+                    # them out of the public aggregate/recent feed entirely.
+                    if ev == "auth_error":
                         continue
                     try:
                         ts = datetime.fromisoformat(ts_raw)

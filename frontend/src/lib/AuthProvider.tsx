@@ -47,6 +47,10 @@ interface AuthState {
   getKustoToken: () => Promise<string>;
   /** Pre-consent the Foundry data-plane resources (Search + Agent) in one popup. */
   ensureFoundryConsent: () => Promise<void>;
+  /** Clear the per-account "consent completed" flag so the next deploy re-runs the
+   * consent popup — escape hatch for tenants whose CA policies block silent tokens
+   * (they'd otherwise be stuck in degraded agent deploys forever). */
+  resetFoundryConsent: () => void;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -62,6 +66,7 @@ const AuthContext = createContext<AuthState>({
   getAgentToken: async () => "",
   getKustoToken: async () => "",
   ensureFoundryConsent: async () => {},
+  resetFoundryConsent: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -246,9 +251,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [account]);
 
+  const resetFoundryConsent = useCallback(() => {
+    if (!account) return;
+    localStorage.removeItem(`foundry_consent_${account.homeAccountId}`);
+  }, [account]);
+
   return (
     <AuthContext.Provider
-      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, getKustoToken, ensureFoundryConsent }}
+      value={{ initialized, account, authError, login, logout, getFabricToken, getStorageToken, getManagementToken, getSearchToken, getAgentToken, getKustoToken, ensureFoundryConsent, resetFoundryConsent }}
     >
       {children}
     </AuthContext.Provider>

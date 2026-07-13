@@ -145,6 +145,18 @@ export function recordDemoView(demoId: string): void {
     }).catch(() => { /* analytics must never affect the page */ });
   } catch { /* ignore */ }
 }
+/** Fire-and-forget auth-failure beacon — anonymous error code only (no PII), so
+ * sign-in/consent breakage is visible in analytics instead of silent. */
+export function recordAuthError(code: string, scenarioId?: string): void {
+  try {
+    void fetch(`${API_BASE}/api/stats/auth-error`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, ...(scenarioId ? { scenario_id: scenarioId } : {}) }),
+      keepalive: true,
+    }).catch(() => { /* analytics must never affect the page */ });
+  } catch { /* ignore */ }
+}
 export async function fetchWorkspaces(token: string): Promise<Workspace[]> {
   const res = await fetch(`${API_BASE}/api/workspaces`, {
     headers: { Authorization: `Bearer ${token}` },

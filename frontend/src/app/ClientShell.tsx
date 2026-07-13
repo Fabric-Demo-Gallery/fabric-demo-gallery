@@ -146,9 +146,11 @@ const useStyles = makeStyles({
 });
 
 function Navbar() {
-  const { account, login, logout, initialized } = useAuth();
+  const { account, login, logout, initialized, resetFoundryConsent } = useAuth();
   const styles = useStyles();
   const pathname = usePathname();
+  // Brief "done" feedback after clicking Re-authorize (no toast infra in the shell).
+  const [reauthDone, setReauthDone] = useState(false);
 
   return (
     <header className={styles.topBar}>
@@ -206,6 +208,21 @@ function Navbar() {
                 color="colorful"
               />
               <span className={styles.userName}>{account.username}</span>
+              <Button
+                appearance="subtle"
+                size="small"
+                icon={<ShieldKeyholeRegular />}
+                onClick={() => {
+                  resetFoundryConsent();
+                  setReauthDone(true);
+                  setTimeout(() => setReauthDone(false), 4000);
+                }}
+                style={{ color: reauthDone ? "#3fb950" : "#8b949e" }}
+                title="Re-authorize access — clears the saved authorization so your next deploy asks for permissions again. Use this if AI agent steps keep getting skipped."
+                aria-label="Re-authorize access"
+              >
+                <span className={styles.signOutLabel}>{reauthDone ? "Will re-ask ✓" : "Re-authorize"}</span>
+              </Button>
               <Button
                 appearance="subtle"
                 size="small"
