@@ -41,8 +41,6 @@
     { "type": "Notebook",      "name": "01_bronze_ingest",      "definitionPath": "notebooks/01_bronze_ingest.ipynb",    "order": 1 },
     { "type": "Notebook",      "name": "02_silver_transform",   "definitionPath": "notebooks/02_silver_transform.ipynb", "order": 2 },
     { "type": "Notebook",      "name": "03_gold_aggregate",     "definitionPath": "notebooks/03_gold_aggregate.ipynb",   "order": 3 },
-    { "type": "DataAgent",     "name": "analytics_data_agent" },
-    { "type": "SemanticModel", "name": "analytics_model",       "definitionPath": "tmdl" },
-    { "type": "Report",        "name": "analytics_report" }
+    { "type": "DataAgent",     "name": "analytics_data_agent" }
   ]
 }

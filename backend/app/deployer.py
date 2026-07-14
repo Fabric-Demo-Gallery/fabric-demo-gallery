@@ -2538,10 +2538,20 @@ async def _deploy_fabric_foundry(
     run_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
     data_agents = [i for i in items if i["type"] == "DataAgent"]
     agent_name = data_agents[0]["name"] if data_agents else "analytics_data_agent"
+    # Derive the data-agent instructions from THIS demo's manifest — the scenario
+    # deploys for all industries, so hardcoded domain wording would mislead the
+    # agent on every demo but one.
+    try:
+        _mani = load_manifest(demo_id)
+        _domain = _mani.get("industry") or _mani.get("title") or demo_id
+        _desc = (_mani.get("description") or "").strip().rstrip(".")
+    except Exception:  # noqa: BLE001 — never let manifest quirks block a deploy
+        _domain, _desc = demo_id, ""
     da_instructions = (
-        "You answer questions about manufacturing quality-control data "
-        "(production batches, sensor readings, equipment, defects). "
-        "Prefer the gold tables in the lakehouse."
+        f"You answer questions about {_domain} data in this lakehouse"
+        + (f" ({_desc})" if _desc else "")
+        + ". Prefer the pre-aggregated gold_* tables; fall back to the silver "
+        "tables only when the gold tables lack the needed detail."
     )
     data_files = list((demo_dir / "data").glob("*")) if (demo_dir / "data").exists() else []
 
