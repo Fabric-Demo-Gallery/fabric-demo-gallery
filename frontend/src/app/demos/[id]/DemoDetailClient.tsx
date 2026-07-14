@@ -1335,7 +1335,7 @@ export default function DemoDetailPage() {
     setReauthBusy(true);
     resetFoundryConsent();
     try {
-      await ensureFoundryConsent();
+      await ensureFoundryConsent(); // flag cleared above ⇒ "cached-skip" is impossible here
       setAuthWarning(null);
     } catch (e) {
       const raw = e instanceof Error ? e.message : String(e);
@@ -1730,7 +1730,22 @@ export default function DemoDetailPage() {
         status: "running",
       }]);
       try {
-        await ensureFoundryConsent();
+        const consent = await ensureFoundryConsent();
+        if (consent === "cached-skip") {
+          // A prior consent exists but silent tokens are blocked (CA policy /
+          // guest account). The deploy continues on backend fallbacks — but say
+          // so, and offer the re-authorize action; otherwise there is NO visible
+          // way out of the degraded mode.
+          const friendly: AuthError = {
+            code: "foundry_consent_stale",
+            title: "Deploying with backend credentials for the AI steps",
+            guidance:
+              "Your earlier Foundry authorization can't be refreshed silently, so the knowledge-base and agent steps will use the service's own credentials. To use your identity instead, click 'Try authorization again' and approve the popup.",
+            retryable: true,
+          };
+          recordAuthError(friendly.code, selectedScenario.id);
+          setAuthWarning(friendly);
+        }
       } catch (e) {
         // Surface the failure instead of silently degrading: the deploy continues
         // (the backend falls back to ARM admin keys / its managed identity for the
@@ -1747,6 +1762,40 @@ export default function DemoDetailPage() {
         setAuthWarning(friendly);
       }
       setSteps([]);
+    }
+
+    // Azure scenarios OTHER than Foundry (e.g. SQL Mirroring) need storage + ARM
+    // tokens. First-time users need interactive consent for BOTH — but two
+    // sequential popups can't work: the first consumes the click's activation
+    // window and the browser blocks the second, failing the deploy until a second
+    // click. Same fix as the Foundry consent: if the ARM token can't be acquired
+    // silently, fire ONE popup now (within this click's activation window) that
+    // consents storage + management together, so every later acquire is silent.
+    if (selectedScenario?.requiresAzure && selectedScenario.id !== "fabric-foundry-agent" && account) {
+      try {
+        const { msalInstance, storageScopes, managementScopes, popupRedirectUri: popupUri } = await import("@/lib/msal");
+        try {
+          await msalInstance.acquireTokenSilent({ scopes: managementScopes, account });
+        } catch {
+          await msalInstance.acquireTokenPopup({
+            scopes: storageScopes,
+            extraScopesToConsent: managementScopes,
+            redirectUri: popupUri,
+          });
+        }
+      } catch (e) {
+        // Fail fast with clear guidance — this scenario cannot run without ARM.
+        const raw = e instanceof Error ? e.message : String(e);
+        const friendly = classifyAuthError(raw);
+        recordAuthError(friendly?.code ?? "mgmt_consent_failed", selectedScenario.id);
+        setError(
+          friendly
+            ? `${friendly.title}. ${friendly.guidance}`
+            : "Azure authorization didn't complete — this scenario provisions Azure resources. Click Deploy again and approve the permission popup."
+        );
+        setDeploying(false);
+        return;
+      }
     }
 
     const controller = new AbortController();

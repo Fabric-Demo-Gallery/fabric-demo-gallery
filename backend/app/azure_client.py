@@ -242,15 +242,33 @@ class AzureClient:
                 "principalType": principal_type,
             }
         }
-        try:
-            await self._arm_request("PUT", url, json=body)
-        except AzureError as e:
-            if e.status == 409:
-                return  # already assigned
-            # ARM sometimes 400s briefly while a just-created identity propagates.
-            if e.status == 400 and "does not exist" in (e.detail or "").lower():
-                raise AzureError(400, "Principal not yet replicated in Microsoft Entra; retry shortly.")
-            raise
+        # A just-created managed identity can take up to ~1 min to replicate in
+        # Microsoft Entra; until then ARM rejects the assignment with a 400
+        # "principal ... does not exist". Retry through that window — giving up
+        # skips the whole RBAC step and the knowledge base then breaks at RUNTIME
+        # (the Search identity can't call Foundry) even though the deploy shows
+        # success.
+        for attempt in range(6):
+            try:
+                await self._arm_request("PUT", url, json=body)
+                return
+            except AzureError as e:
+                if e.status == 409:
+                    return  # already assigned
+                detail = (e.detail or "").lower()
+                propagating = e.status == 400 and (
+                    "does not exist" in detail or "principalnotfound" in detail
+                )
+                if propagating and attempt < 5:
+                    logger.info(
+                        "Role assignment principal %s not yet replicated (attempt %d/6) — retrying in 12s",
+                        principal_id, attempt + 1,
+                    )
+                    await asyncio.sleep(12)
+                    continue
+                if propagating:
+                    raise AzureError(400, "Principal not yet replicated in Microsoft Entra; retry shortly.")
+                raise
 
     async def list_subscriptions(self) -> list[dict]:
         """List all Azure subscriptions visible to the current user."""

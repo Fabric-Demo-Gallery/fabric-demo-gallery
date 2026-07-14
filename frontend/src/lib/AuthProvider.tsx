@@ -45,8 +45,12 @@ interface AuthState {
   getSearchToken: (options?: TokenOptions) => Promise<string>;
   getAgentToken: (options?: TokenOptions) => Promise<string>;
   getKustoToken: () => Promise<string>;
-  /** Pre-consent the Foundry data-plane resources (Search + Agent) in one popup. */
-  ensureFoundryConsent: () => Promise<void>;
+  /** Pre-consent the Foundry data-plane resources (Search + Agent) in one popup.
+   * Resolves "ok" when tokens are silently available or consent just completed;
+   * "cached-skip" when a prior consent exists but silent acquisition is blocked
+   * (CA policies / guest accounts) — the deploy proceeds on backend fallbacks and
+   * the UI should offer the re-authorize action. */
+  ensureFoundryConsent: () => Promise<"ok" | "cached-skip">;
   /** Clear the per-account "consent completed" flag so the next deploy re-runs the
    * consent popup — escape hatch for tenants whose CA policies block silent tokens
    * (they'd otherwise be stuck in degraded agent deploys forever). */
@@ -65,7 +69,7 @@ const AuthContext = createContext<AuthState>({
   getSearchToken: async () => "",
   getAgentToken: async () => "",
   getKustoToken: async () => "",
-  ensureFoundryConsent: async () => {},
+  ensureFoundryConsent: async () => "ok" as const,
   resetFoundryConsent: () => {},
 });
 
@@ -213,8 +217,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // knowledge-base + agent steps silently skipped. Calling this first, straight
   // off the Deploy click, fires a single consent popup covering BOTH resources;
   // the deploy then reads each token silently with no further popup.
-  const ensureFoundryConsent = useCallback(async (): Promise<void> => {
-    if (IS_DEV_MODE || !account) return;
+  const ensureFoundryConsent = useCallback(async (): Promise<"ok" | "cached-skip"> => {
+    if (IS_DEV_MODE || !account) return "ok";
     // Remember a completed consent per account. Some tenants grant the consent
     // but still refuse SILENT ai.azure.com tokens afterwards (CA policies,
     // guest accounts). Gating the popup on silent-acquire alone then re-prompts
@@ -228,12 +232,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Search in the popup below, so a missing agent scope must re-trigger consent.
       await msalInstance.acquireTokenSilent({ scopes: agentScopes, account });
       localStorage.setItem(consentKey, "1");
-      return;
+      return "ok";
     } catch {
       // Silent failed — but if this account already completed the consent popup
       // once, don't re-prompt: the deploy degrades the KB/agent steps to manual
-      // follow-ups instead (by design), which beats a popup storm.
-      if (localStorage.getItem(consentKey) === "1") return;
+      // follow-ups instead (by design), which beats a popup storm. Report it so
+      // the UI can surface the re-authorize action (otherwise the user has no
+      // visible path out of the degraded mode).
+      if (localStorage.getItem(consentKey) === "1") return "cached-skip";
       // One interactive consent covering EVERY resource the deploy needs: Search
       // (primary token) + Foundry Agent + Storage + ARM via extraScopesToConsent.
       // First-time users previously consented only Search+Agent here, so the
@@ -248,6 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         redirectUri: popupRedirectUri,
       });
       localStorage.setItem(consentKey, "1");
+      return "ok";
     }
   }, [account]);
 
