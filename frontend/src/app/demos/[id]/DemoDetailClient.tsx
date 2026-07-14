@@ -288,71 +288,73 @@ const LAYER_COLORS = ["#db8a5f", "#9ba6b0", "#e3b341"];
 
 // Fabric IQ — verified comparison queries per industry (2 medium-hard + 1 hard).
 // Medium-hard = a two-dimension Lakehouse join (the fact filtered through two
-// related entities). Hard = filter a Lakehouse attribute → join the Eventhouse
-// time-series → aggregate (sum/avg). The Ontology agent traverses the defined
-// relationships (and the Lakehouse↔Eventhouse binding); the Direct agent must
-// guess the joins and tends to fail. Answers computed from each demo's ACTUAL
-// deployed (capped) data.
+// related entities). Hard = relationship traversal + filter + group-by + top-1
+// (single-row answer). The Ontology agent traverses the defined relationships;
+// the Direct agent must guess the joins and tends to fail. NOTE: sums/averages
+// of Eventhouse time-series measures are deliberately NOT used — the data agent
+// runtime (Standard AND Preview, checked 2026-07-14) cannot aggregate ontology
+// time-series to a grand total (it counts rows or sums a truncated table).
+// Answers computed from each demo's ACTUAL deployed (capped) package data.
 const FABRICIQ_QUERIES: Record<string, { q: string; expect: string; hint: string; level: "Medium-hard" | "Hard" }[]> = {
   "retail-sales": [
     { level: "Medium-hard", q: "How many point-of-sale transactions were for Electronics products sold at stores in the West region?", expect: "1,001 transactions", hint: "PosTransaction → Product (category=Electronics) AND → Store (region=West)" },
     { level: "Medium-hard", q: "How many transactions were for BrandB products in the Apparel category?", expect: "4,268 transactions", hint: "PosTransaction → Product (brand=BrandB AND category=Apparel)" },
-    { level: "Hard", q: "What is the total sales revenue (unit price × quantity) for Electronics products?", expect: "≈ $2,834,504", hint: "Filter Product (category=Electronics) → SUM PosTransaction price × qty (Eventhouse)" },
+    { level: "Hard", q: "Which product category has the most POS transactions at West-region stores?", expect: "Grocery — 1,438 transactions", hint: "PosTransaction → Store (region=West) AND → Product, group by category, top 1" },
   ],
   "manufacturing-qc": [
     { level: "Medium-hard", q: "How many batches with a failure event ran on Injection Molder machines on Line-B?", expect: "69 batches", hint: "ProductionBatch → Machine (type=Injection Molder) + filter line=Line-B AND failure_event" },
     { level: "Medium-hard", q: "How many batches of product Gear-X ran on Injection Molder machines?", expect: "138 batches", hint: "ProductionBatch → Machine (type=Injection Molder) + filter product=Gear-X" },
-    { level: "Hard", q: "What is the total downtime (minutes) for batches run on Injection Molder machines?", expect: "≈ 43,914 minutes (≈ 732 hours)", hint: "Filter Machine (type=Injection Molder) → SUM ProductionBatch downtime (Eventhouse)" },
+    { level: "Hard", q: "Which machine type had the most production batches with a failure event?", expect: "Stamping Press — 225 batches", hint: "ProductionBatch (failure_event) → Machine, group by machine_type, top 1" },
   ],
   "energy-grid": [
     { level: "Medium-hard", q: "How many grid-sensor readings are at North-region substations that had a high-severity power event?", expect: "4,020 readings", hint: "GridSensor → Substation ← PowerEvent (region=North + severity=high)" },
     { level: "Medium-hard", q: "How many renewable readings came from solar plants during overcast weather?", expect: "1,531 readings", hint: "RenewableReading → GenerationPlant (type=solar) + filter weather=overcast" },
-    { level: "Hard", q: "What is the average load (MW) recorded by grid sensors at North-region substations?", expect: "≈ 28.11 MW", hint: "Filter Substation (region=North) → AVG GridSensor load (Eventhouse)" },
+    { level: "Hard", q: "Which plant type produced the most renewable readings during overcast weather?", expect: "Solar — 1,531 readings", hint: "RenewableReading (weather=overcast) → GenerationPlant, group by plant_type, top 1" },
   ],
   "healthcare": [
     { level: "Medium-hard", q: "How many clinical records were recorded by Afternoon-shift staff for emergency Oncology admissions?", expect: "293 records", hint: "ClinicalRecord → Staff (shift=Afternoon) AND → Admission → Department (Oncology + Emergency)" },
     { level: "Medium-hard", q: "How many NHS-insured admissions were there in Oncology?", expect: "2,056 admissions", hint: "Admission → Department (Oncology) + filter insurance_type=NHS" },
-    { level: "Hard", q: "What is the average length of stay for emergency admissions in Oncology?", expect: "≈ 6.83 days", hint: "Filter Department=Oncology + Emergency → AVG Admission length_of_stay (Eventhouse)" },
+    { level: "Hard", q: "Which staff shift recorded the most clinical records for Emergency admissions?", expect: "Morning — 3,281 records", hint: "ClinicalRecord → Staff AND → Admission (type=Emergency), group by shift, top 1" },
   ],
   "financial-services": [
     { level: "Medium-hard", q: "How many flagged-fraud transactions were made by High risk-tier customers in the Corporate segment?", expect: "95 fraud-flagged transactions", hint: "Transaction → Customer (risk_tier=High AND segment=Corporate) + filter is_flagged_fraud" },
     { level: "Medium-hard", q: "How many Credit Card accounts are held by High risk-tier customers?", expect: "84 accounts", hint: "Account (type=Credit Card) → Customer (risk_tier=High)" },
-    { level: "Hard", q: "What is the total transaction amount by High risk-tier customers?", expect: "≈ £622,430", hint: "Filter Customer (risk_tier=High) → SUM Transaction amount (Eventhouse)" },
+    { level: "Hard", q: "Which merchant category has the most flagged-fraud transactions by High risk-tier customers?", expect: "Wire Transfer — 159 transactions", hint: "Transaction (is_flagged_fraud) → Customer (risk_tier=High), group by merchant_category, top 1" },
   ],
   "transportation": [
     { level: "Medium-hard", q: "How many late deliveries by HGV vehicles were on Standard routes?", expect: "636 late deliveries", hint: "Delivery → Vehicle (type=HGV) AND → Route (type=Standard) + filter is_late" },
     { level: "Medium-hard", q: "How many deliveries were made by HGV vehicles based at the Birmingham depot?", expect: "1,572 deliveries", hint: "Delivery → Vehicle (type=HGV AND depot=Birmingham)" },
-    { level: "Hard", q: "What is the total load (tonnes) delivered by HGV vehicles?", expect: "≈ 87,988 tonnes", hint: "Filter Vehicle (type=HGV) → SUM Delivery load_tonnes (Eventhouse)" },
+    { level: "Hard", q: "Which depot's vehicles recorded the most late deliveries?", expect: "London — 1,018 late deliveries", hint: "Delivery (is_late) → Vehicle, group by depot, top 1" },
   ],
   "technology": [
     { level: "Medium-hard", q: "How many High-priority SLA-breached tickets did churned Enterprise accounts have?", expect: "1 ticket", hint: "SupportTicket → Account (is_churned + plan=Enterprise) + filter priority=High AND is_sla_breached" },
     { level: "Medium-hard", q: "How many Admin users are on Enterprise accounts?", expect: "204 users", hint: "User (role=Admin) → Account (plan=Enterprise)" },
-    { level: "Hard", q: "What is the total feature-usage time (hours) for Enterprise accounts?", expect: "≈ 97 hours", hint: "Filter Account (plan=Enterprise) → SUM UsageEvent duration (Eventhouse)" },
+    { level: "Hard", q: "Which feature was used most by Enterprise accounts?", expect: "Billing — 329 usage events", hint: "UsageEvent → Account (plan=Enterprise), group by feature, top 1" },
   ],
   "media": [
     { level: "Medium-hard", q: "How many completed views of Action-genre content came from Latin America subscribers?", expect: "210 completed views", hint: "ViewingEvent → Content (genre=Action) AND → Subscriber (region=Latin America) + filter is_completed" },
     { level: "Medium-hard", q: "How many Action-genre titles are Series?", expect: "82 titles", hint: "Content (genre=Action AND content_type=Series)" },
-    { level: "Hard", q: "What is the total ad revenue generated by Action-genre content?", expect: "≈ $112,424", hint: "Filter Content (genre=Action) → SUM AdImpression revenue (Eventhouse)" },
+    { level: "Hard", q: "Which genre has the most completed views?", expect: "Comedy — 1,064 completed views", hint: "ViewingEvent (is_completed) → Content, group by genre, top 1" },
   ],
   "hospitality": [
     { level: "Medium-hard", q: "How many bookings at 5-star properties by Platinum-tier guests were cancelled?", expect: "76 cancelled bookings", hint: "Booking → Property (star_rating=5) AND → Guest (loyalty_tier=Platinum) + filter is_cancelled" },
     { level: "Medium-hard", q: "How many bookings were made at 5-star properties in the UK?", expect: "4,076 bookings", hint: "Booking → Property (star_rating=5 AND country=UK)" },
-    { level: "Hard", q: "What is the total booking revenue (room rate × nights) at 5-star properties?", expect: "≈ £7,954,477", hint: "Filter Property (star_rating=5) → SUM Booking room_rate × nights (Eventhouse)" },
+    { level: "Hard", q: "Which city's properties received the most bookings from Platinum-tier guests?", expect: "Manchester — 205 bookings", hint: "Booking → Guest (loyalty_tier=Platinum) AND → Property, group by city, top 1" },
   ],
   "professional-services": [
     { level: "Medium-hard", q: "How many over-budget engagements for Strategic-tier clients were led by Partner-grade consultants?", expect: "5 over-budget engagements", hint: "Engagement → Client (tier=Strategic) AND → Consultant (grade=Partner) + filter is_over_budget" },
     { level: "Medium-hard", q: "How many engagements are there for Strategic-tier clients in the Retail industry?", expect: "203 engagements", hint: "Engagement → Client (tier=Strategic AND industry=Retail)" },
-    { level: "Hard", q: "What is the total actual spend on engagements for Strategic-tier clients?", expect: "≈ £487.8M", hint: "Filter Client (tier=Strategic) → SUM Engagement actual_spend (Eventhouse)" },
+    { level: "Hard", q: "Which client industry has the most over-budget engagements?", expect: "Healthcare — 650 engagements", hint: "Engagement (is_over_budget) → Client, group by industry, top 1" },
   ],
   "construction": [
     { level: "Medium-hard", q: "How many delayed tasks on Commercial projects were assigned to MEP-trade subcontractors?", expect: "99 delayed tasks", hint: "Task → Project (type=Commercial) AND → Subcontractor (trade=MEP) + filter is_delayed" },
     { level: "Medium-hard", q: "How many tasks are on Commercial projects in Scotland?", expect: "370 tasks", hint: "Task → Project (type=Commercial AND region=Scotland)" },
-    { level: "Hard", q: "What is the total actual cost logged for Commercial projects?", expect: "≈ £887.7M", hint: "Filter Project (type=Commercial) → SUM CostEntry actual_cost (Eventhouse)" },
+    { level: "Hard", q: "Which subcontractor trade has the most delayed tasks?", expect: "Roofing — 1,048 delayed tasks", hint: "Task (is_delayed) → Subcontractor, group by trade, top 1" },
   ],
   "education": [
     { level: "Medium-hard", q: "How many failed assessments are there for postgraduate enrolments in the Law School?", expect: "67 failed assessments", hint: "Assessment → Enrolment (level=Postgraduate AND department=Law School) + filter not is_pass" },
     { level: "Medium-hard", q: "How many postgraduate enrolments were withdrawn?", expect: "2,115 withdrawn enrolments", hint: "Enrolment (level=Postgraduate + is_withdrawn)" },
-    { level: "Hard", q: "What is the average assessment score for postgraduate enrolments?", expect: "≈ 60.7", hint: "Filter Enrolment (level=Postgraduate) → AVG Assessment score (Eventhouse)" },
+    { level: "Hard", q: "Which department has the most failed assessments for postgraduate enrolments?", expect: "Medical School — 99 failed assessments", hint: "Assessment (not is_pass) → Enrolment (level=Postgraduate), group by department, top 1" },
   ],
 };
 
