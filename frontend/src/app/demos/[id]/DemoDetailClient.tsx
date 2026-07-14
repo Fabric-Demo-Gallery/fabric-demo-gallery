@@ -2102,9 +2102,10 @@ export default function DemoDetailPage() {
         alert("Could not get a Fabric sign-in token. Please sign in again, then retry the delete.");
         return;
       }
-      // Mirroring deployments also created an Azure SQL server — the backend
-      // deletes it too when the request carries a management token.
-      if (selectedScenario?.id === "external-data-integration") {
+      // Azure-provisioning deployments (mirroring SQL server, Foundry account +
+      // AI Search) — the backend deletes those resources too when the request
+      // carries a management token.
+      if (selectedScenario?.requiresAzure) {
         try {
           const mgmt = await getManagementToken();
           if (mgmt) headers["X-Management-Token"] = mgmt;

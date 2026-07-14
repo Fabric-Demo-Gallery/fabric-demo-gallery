@@ -1233,6 +1233,40 @@ class AzureClient:
             raise AzureError(resp.status_code, resp.text[:300])
         return True
 
+    async def cleanup_demo_azure_resources(self, az: dict) -> dict:
+        """Best-effort delete of every billable Azure resource a demo deploy
+        recorded in the job's ``azure_resources`` metadata: the mirroring SQL
+        server plus the Foundry account and Azure AI Search service (both
+        standing-cost). Returns a per-resource status dict — never raises, so a
+        partial cleanup still reports what happened to each resource."""
+        out: dict = {}
+        sub = az.get("subscriptionId")
+        rg = az.get("resourceGroup")
+        if not (sub and rg):
+            return out
+        if az.get("sqlServer"):
+            try:
+                deleted = await self.delete_sql_server(sub, rg, az["sqlServer"])
+                out["sqlServer"] = "deleted" if deleted else "already_deleted"
+            except Exception as e:  # noqa: BLE001
+                detail = e.detail if isinstance(e, AzureError) else str(e)
+                out["sqlServer"] = f"delete_failed: {detail[:150]}"
+        if az.get("searchService"):
+            try:
+                deleted = await self.delete_search_service(sub, rg, az["searchService"])
+                out["searchService"] = "deleted" if deleted else "already_deleted"
+            except Exception as e:  # noqa: BLE001
+                detail = e.detail if isinstance(e, AzureError) else str(e)
+                out["searchService"] = f"delete_failed: {detail[:150]}"
+        if az.get("foundryAccount"):
+            try:
+                deleted = await self.delete_foundry_account(sub, rg, az["foundryAccount"])
+                out["foundryAccount"] = "deleted" if deleted else "already_deleted"
+            except Exception as e:  # noqa: BLE001
+                detail = e.detail if isinstance(e, AzureError) else str(e)
+                out["foundryAccount"] = f"delete_failed: {detail[:150]}"
+        return out
+
     # ── Foundry project connection (RemoteTool MCP → knowledge base) ──────
     # The agent reaches the knowledge base through a project connection that
     # targets the KB's MCP endpoint, authenticating with the project's managed

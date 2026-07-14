@@ -409,11 +409,16 @@ export async function getJob(
 
 export async function deleteJobWorkspace(
   token: string,
-  jobId: string
+  jobId: string,
+  managementToken?: string
 ): Promise<void> {
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  // Lets the backend also delete Azure resources the deploy provisioned
+  // (mirroring SQL server, Foundry account, AI Search service).
+  if (managementToken) headers["X-Management-Token"] = managementToken;
   const res = await fetch(`${API_BASE}/api/jobs/${jobId}/workspace`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+    headers,
   });
   if (!res.ok) {
     const text = await res.text();

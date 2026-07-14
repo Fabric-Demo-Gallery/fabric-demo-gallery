@@ -156,7 +156,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function MonitoringClient() {
-  const { account, login, getFabricToken, initialized } = useAuth();
+  const { account, login, getFabricToken, getManagementToken, initialized } = useAuth();
   const router = useRouter();
   const styles = useStyles();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
@@ -203,7 +203,13 @@ export default function MonitoringClient() {
     setActionError(null);
     try {
       const token = await getFabricToken();
-      await deleteJobWorkspace(token, job.job_id);
+      // Best-effort management token so the backend can also delete Azure
+      // resources the deploy provisioned (SQL server, Foundry, AI Search).
+      let mgmt: string | undefined;
+      try {
+        mgmt = (await getManagementToken()) || undefined;
+      } catch { /* non-fatal — workspace still gets deleted */ }
+      await deleteJobWorkspace(token, job.job_id, mgmt);
       await fetchJobs();
     } catch (e: unknown) {
       setActionError(e instanceof Error ? e.message : "Delete failed");

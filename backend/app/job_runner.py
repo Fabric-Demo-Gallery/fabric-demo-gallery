@@ -77,9 +77,9 @@ async def run_job(
     kusto_token: str | None = None,
 ) -> None:
     """Run a deployment job in the background, updating the job store with events."""
+    az_client: AzureClient | None = None
     try:
         # Build optional AzureClient
-        az_client: AzureClient | None = None
         if management_token and subscription_id:
             az_client = AzureClient(management_token)
 
@@ -188,6 +188,11 @@ async def run_job(
         job_store.set_status(job_id, "failed")
     finally:
         await client.close()
+        if az_client is not None:
+            try:
+                await az_client.close()
+            except Exception:  # noqa: BLE001 — closing must never mask the job outcome
+                pass
 
         # Push a sentinel so stream subscribers know the job is done
         job = job_store.get_job(job_id)

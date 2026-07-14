@@ -301,23 +301,20 @@ async def delete_job_workspace(
     finally:
         await client.close()
 
-    # Mirroring jobs also provisioned an Azure SQL server — clean it up too.
+    # Azure resources provisioned alongside the workspace (mirroring SQL server,
+    # Foundry account, AI Search service — the latter two are standing-cost) are
+    # deleted too when the request carries a management token.
     az = job.azure_resources or {}
-    if az.get("sqlServer") and az.get("subscriptionId") and az.get("resourceGroup"):
+    if any(az.get(k) for k in ("sqlServer", "foundryAccount", "searchService")):
         mgmt_token = request.headers.get("x-management-token", "")
         if mgmt_token:
-            from app.azure_client import AzureClient, AzureError
+            from app.azure_client import AzureClient
             az_client = AzureClient(mgmt_token)
             try:
-                deleted = await az_client.delete_sql_server(
-                    az["subscriptionId"], az["resourceGroup"], az["sqlServer"]
-                )
-                result["sqlServer"] = "deleted" if deleted else "already_deleted"
-            except AzureError as e:
-                result["sqlServer"] = f"delete_failed: {e.detail[:150]}"
+                result.update(await az_client.cleanup_demo_azure_resources(az))
             finally:
                 await az_client.close()
         else:
-            result["sqlServer"] = "skipped_no_management_token"
+            result["azureResources"] = "skipped_no_management_token"
 
     return result
