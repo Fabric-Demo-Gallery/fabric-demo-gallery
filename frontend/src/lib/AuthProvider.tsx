@@ -160,7 +160,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!interactive) {
           throw e;
         }
-        // Any failure (interaction required, timeout, etc.) → use popup
+        // A missing first-party service principal (AADSTS650052) is a TENANT
+        // configuration problem — a popup would fail with the exact same error
+        // (and can hang the deploy on MSAL's popup monitor). Fail fast instead
+        // so the UI can show the admin fix immediately.
+        const silentMsg = e instanceof Error ? e.message : String(e);
+        if (/aadsts650052|lacks a service principal/i.test(silentMsg)) {
+          throw e;
+        }
+        // Any other failure (interaction required, timeout, etc.) → use popup
         try {
           const result = await msalInstance.acquireTokenPopup({ scopes, redirectUri: popupRedirectUri });
           return result.accessToken;

@@ -100,6 +100,20 @@ export function classifyAuthError(raw: string | null | undefined): AuthError | n
       retryable: true,
     };
   }
+  if (m.includes("aadsts650052") || m.includes("lacks a service principal")) {
+    // The tenant is missing a first-party Microsoft service principal (usually
+    // 'Azure Storage' in fresh sandbox tenants) — no consent or retry can fix
+    // it; a tenant admin must provision the SP once.
+    const svcId = msg.match(/access a service '([0-9a-fA-F-]{36})'/)?.[1] ?? "e406a681-f3d4-42a8-90b6-c2b029497af1";
+    const svcName = msg.match(/\(([^)]+)\)/)?.[1] ?? "Azure Storage";
+    return {
+      code: "AADSTS650052",
+      title: `Your organization is missing the '${svcName}' service`,
+      guidance:
+        `Your Microsoft Entra tenant doesn't have the '${svcName}' service principal, so no sign-in can grant access to it — retrying won't help. A tenant admin must provision it once by running: az ad sp create --id ${svcId} — in Microsoft-internal sandbox tenants (MngEnv…/MCAP…) you are usually that admin: run az login --tenant <your-tenant> --allow-no-subscriptions first, then the command above, then retry the deploy.`,
+      retryable: false,
+    };
+  }
   if (m.includes("aadsts")) {
     // Any other Entra error \u2014 surface the code so it's diagnosable.
     const codeMatch = msg.match(/AADSTS\d+/i);
