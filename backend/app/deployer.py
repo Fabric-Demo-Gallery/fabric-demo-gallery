@@ -1385,6 +1385,7 @@ async def deploy_demo(
         cleanup_note, ws_remaining = await _best_effort_teardown(
             client, azure_client, ws_id, subscription_id, resource_group,
             storage_account=created_storage_account,
+            workspace_created=not workspace_id,
         )
         error_msg = str(e)
         if cleanup_note:
@@ -1401,6 +1402,7 @@ async def deploy_demo(
         cleanup_note, ws_remaining = await _best_effort_teardown(
             client, azure_client, ws_id, subscription_id, resource_group,
             storage_account=created_storage_account,
+            workspace_created=not workspace_id,
         )
         error_msg = f"Azure provisioning error: {e.detail}"
         if cleanup_note:
@@ -1419,6 +1421,7 @@ async def deploy_demo(
         cleanup_note, ws_remaining = await _best_effort_teardown(
             client, azure_client, ws_id, subscription_id, resource_group,
             storage_account=created_storage_account,
+            workspace_created=not workspace_id,
         )
         error_msg = f"Unexpected error: {type(e).__name__}: {e}"
         if cleanup_note:
@@ -1462,9 +1465,14 @@ async def _best_effort_teardown(
     storage_account: str | None = None,
     foundry_account: str | None = None,
     search_service: str | None = None,
+    workspace_created: bool = True,
 ) -> tuple[str, bool]:
     """Best-effort removal of resources a failed deploy created, so nothing is
     left orphaned (and an Azure SQL server doesn't keep billing).
+
+    ``workspace_created`` must be False when the deploy targeted a PRE-EXISTING
+    workspace (workspace reuse) — the user's workspace and everything already in
+    it must never be auto-deleted; only resources this deploy created are.
 
     Never raises. Returns ``(note, ws_still_exists)`` where ``note`` is a short
     human-readable summary to append to the error message, and
@@ -1510,7 +1518,12 @@ async def _best_effort_teardown(
             logger.warning("[teardown] storage account '%s' delete failed: %s", storage_account, te)
             failed.append(f"storage account '{storage_account}'")
 
-    if ws_id:
+    if ws_id and not workspace_created:
+        # Pre-existing workspace (reuse deploy) — never auto-delete it; the demo
+        # items it now contains are left for the user to review/remove.
+        logger.info("[teardown] workspace %s pre-existed — skipping delete", ws_id)
+        ws_still_exists = True
+    elif ws_id:
         try:
             await client.delete_workspace(ws_id)
             cleaned.append("Fabric workspace")
@@ -2400,6 +2413,7 @@ async def _deploy_mirroring(
         cleanup_note, ws_remaining = await _best_effort_teardown(
             client, azure_client, ws_id, subscription_id, resource_group,
             sql_server=sql_server or None,
+            workspace_created=not workspace_id,
         )
         error_msg = str(e)
         if cleanup_note:
@@ -2421,6 +2435,7 @@ async def _deploy_mirroring(
         cleanup_note, ws_remaining = await _best_effort_teardown(
             client, azure_client, ws_id, subscription_id, resource_group,
             sql_server=sql_server or None,
+            workspace_created=not workspace_id,
         )
         error_msg = f"Azure error: {e.detail}"
         if cleanup_note:
@@ -2441,6 +2456,7 @@ async def _deploy_mirroring(
         cleanup_note, ws_remaining = await _best_effort_teardown(
             client, azure_client, ws_id, subscription_id, resource_group,
             sql_server=sql_server or None,
+            workspace_created=not workspace_id,
         )
         error_msg = f"Unexpected error: {str(e)[:300]}"
         if cleanup_note:
@@ -3088,6 +3104,7 @@ async def _deploy_fabric_foundry(
             client, azure_client, ws_id, subscription_id, resource_group,
             foundry_account=foundry_account or None,
             search_service=search_service or None,
+            workspace_created=not workspace_id,
         )
         if is_azure:
             error_msg = f"Azure error: {e.detail}"
