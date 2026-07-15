@@ -1562,66 +1562,134 @@ export default function DemoDetailPage() {
     (async () => {
       try {
         const token = await getFabricToken();
-        const streamResp = await fetch(`${API}/api/jobs/${jobIdParam}/stream`, {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        });
-        if (!streamResp.ok) {
-          if (!cancelled) setError(`Could not reconnect to job: ${streamResp.status}`);
-          return;
-        }
-
-        const reader = streamResp.body?.getReader();
-        const decoder = new TextDecoder();
-        if (!reader) { return; }
-
-        let buffer = "";
-        let currentEvent = "";
+        // Same resilience contract as the main deploy stream: the job runs
+        // server-side, the stream replays past events on every connect, and
+        // ONLY a 'done' step or an 'error' event is terminal. A dropped
+        // connection reconnects; a stream that closes without a terminal event
+        // (e.g. a cancelled job replays neither) falls back to the job status.
+        let sawDone = false;
         let streamHadError = false;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECTS = 150;
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            if (line.startsWith("event: ")) {
-              currentEvent = line.slice(7).trim();
-            } else if (line.startsWith("data: ")) {
-              try {
-                const data = JSON.parse(line.slice(6));
-                if (currentEvent === "plan") {
-                  setSteps(data as DeployStep[]);
-                } else if (currentEvent === "step") {
-                  const step = data as DeployStep;
-                  setSteps((prev) =>
-                    prev.map((s) => (s.name === step.name ? { ...s, ...step } : s))
-                  );
-                  if (step.name === "done" && step.status === "completed") {
-                    setCompleted(true);
-                    if (step.detail) {
-                      try {
-                        const info = JSON.parse(step.detail as string);
-                        if (info.workspaceId) setDeployedWorkspaceId(info.workspaceId);
-                      } catch { /* not JSON */ }
-                    }
-                  }
-                  if (step.name === "workspace" && step.itemId) {
-                    setDeployedWorkspaceId(step.itemId);
-                  }
-                } else if (currentEvent === "error") {
-                  streamHadError = true;
-                  setError(coerceErrorMessage(data.message));
-                  if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
-                }
-              } catch { /* ignore malformed lines */ }
-              currentEvent = "";
-            }
+        while (!cancelled && !sawDone && !streamHadError) {
+          let streamResp: Response;
+          try {
+            streamResp = await fetch(`${API}/api/jobs/${jobIdParam}/stream`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: controller.signal,
+            });
+          } catch {
+            if (controller.signal.aborted || cancelled) return;
+            if (++reconnectAttempts > MAX_RECONNECTS) break;
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
           }
+          if (streamResp.status === 404) {
+            if (!cancelled) setError("This deployment no longer exists on the server (it may have been cleared by a service restart). Check the Monitoring page.");
+            return;
+          }
+          if (!streamResp.ok || !streamResp.body) {
+            if (++reconnectAttempts > MAX_RECONNECTS) break;
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+
+          const reader = streamResp.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          let currentEvent = "";
+          let gotData = false;
+
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              gotData = true;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                if (line.startsWith("event: ")) {
+                  currentEvent = line.slice(7).trim();
+                } else if (line.startsWith("data: ")) {
+                  try {
+                    const data = JSON.parse(line.slice(6));
+                    if (currentEvent === "plan") {
+                      setSteps(data as DeployStep[]);
+                    } else if (currentEvent === "step") {
+                      const step = data as DeployStep;
+                      setSteps((prev) =>
+                        prev.map((s) => (s.name === step.name ? { ...s, ...step } : s))
+                      );
+                      if (step.name === "done" && step.status === "completed") {
+                        sawDone = true;
+                        setCompleted(true);
+                        if (step.detail) {
+                          try {
+                            const info = JSON.parse(step.detail as string);
+                            if (info.workspaceId) setDeployedWorkspaceId(info.workspaceId);
+                          } catch { /* not JSON */ }
+                        }
+                      }
+                      if (step.name === "workspace" && step.itemId) {
+                        setDeployedWorkspaceId(step.itemId);
+                      }
+                    } else if (currentEvent === "error") {
+                      streamHadError = true;
+                      setError(coerceErrorMessage(data.message));
+                      if (data.workspaceId) setDeployedWorkspaceId(data.workspaceId);
+                    }
+                  } catch { /* ignore malformed lines */ }
+                  currentEvent = "";
+                }
+              }
+              if (sawDone || streamHadError) break;
+            }
+          } catch {
+            // Mid-stream read failure = dropped connection — reconnect below.
+            if (controller.signal.aborted || cancelled) return;
+          }
+          if (sawDone || streamHadError || cancelled) break;
+
+          // Stream closed without a terminal event. Either the job finished in
+          // a state that emits none (cancelled), or the connection dropped —
+          // ask the job status before deciding.
+          try {
+            const jr = await fetch(`${API}/api/jobs/${jobIdParam}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (jr.ok) {
+              const job = await jr.json();
+              const st = (job.status || "").toLowerCase();
+              if (st === "completed") {
+                sawDone = true;
+                if (job.workspace_id) setDeployedWorkspaceId(job.workspace_id);
+                break;
+              }
+              if (st === "failed") {
+                streamHadError = true;
+                if (!cancelled) setError("Deployment failed — open the Monitoring page for details.");
+                break;
+              }
+              if (st === "cancelled") {
+                if (!cancelled) setError("This deployment was cancelled.");
+                return;
+              }
+            }
+          } catch { /* transient — fall through to reconnect */ }
+          if (gotData) reconnectAttempts = 0;
+          if (++reconnectAttempts > MAX_RECONNECTS) break;
+          await new Promise((r) => setTimeout(r, 1500));
         }
-        if (!cancelled && !streamHadError) setCompleted((prev) => prev || true);
+
+        if (cancelled) return;
+        if (sawDone) {
+          setCompleted(true);
+        } else if (!streamHadError) {
+          setError("Lost connection to the deployment server after several retries. The deploy may still be running — check the Monitoring page.");
+        }
       } catch (e: unknown) {
         if (!(e instanceof DOMException && e.name === "AbortError") && !cancelled) {
           setError(e instanceof Error ? e.message : "Connection failed");
@@ -2030,7 +2098,28 @@ export default function DemoDetailPage() {
         }
 
         if (sawDone || streamHadError) break;
-        // Stream ended/dropped before the deploy finished — reconnect & resume.
+        // Stream ended/dropped before the deploy finished. Either the job hit a
+        // terminal state that emits no done/error event (cancelled), or the
+        // connection dropped — ask the job status before blindly reconnecting.
+        try {
+          const jr = await fetch(`${API}/api/jobs/${job_id}`, {
+            headers: fabricToken ? { Authorization: `Bearer ${fabricToken}` } : {},
+          });
+          if (jr.ok) {
+            const job = await jr.json();
+            const st = (job.status || "").toLowerCase();
+            if (st === "completed") {
+              sawDone = true;
+              if (job.workspace_id) setDeployedWorkspaceId(job.workspace_id);
+              break;
+            }
+            if (st === "cancelled") {
+              streamHadError = true;
+              setError("Deployment was cancelled.");
+              break;
+            }
+          }
+        } catch { /* transient — fall through to reconnect */ }
         if (gotData) reconnectAttempts = 0;
         if (++reconnectAttempts > MAX_RECONNECTS) { connectionLost = true; break; }
         await new Promise((r) => setTimeout(r, 1500));

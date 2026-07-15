@@ -28,6 +28,10 @@ _MAX_ROWS = 50_000
 _MIN_INTERVAL = 0.2
 _MAX_INTERVAL = 10.0
 _MAX_BATCH = 50
+# Hard stop for abandoned sessions (browser closed without Stop) — otherwise a
+# replay loops forever, pushing events into the user's Eventhouse and consuming
+# their Fabric capacity until the app restarts.
+_MAX_DURATION_S = 2 * 60 * 60
 
 
 def _coerce(value: str):
@@ -115,9 +119,15 @@ async def _run(session: StreamSession, conn_str: str, rows: list[dict], timestam
 
     idx = 0
     n = len(rows)
+    _loop = asyncio.get_running_loop()
+    _deadline = _loop.time() + _MAX_DURATION_S
     try:
         async with producer:
             while session.running:
+                if _loop.time() >= _deadline:
+                    session.error = "Stream auto-stopped after the 2-hour session limit."
+                    logger.info("Live stream session %s hit the max duration — auto-stopping", session.id)
+                    break
                 batch = await producer.create_batch()
                 for _ in range(session.batch_size):
                     raw = rows[idx % n]
