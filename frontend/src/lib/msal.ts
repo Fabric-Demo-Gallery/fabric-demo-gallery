@@ -64,6 +64,13 @@ export const popupRedirectUri =
 export const fabricScopes = [
   "https://api.fabric.microsoft.com/Workspace.ReadWrite.All",
   "https://api.fabric.microsoft.com/Item.ReadWrite.All",
+  // REQUIRED for Run On Demand Item Job (notebook execution during deploys).
+  // Regression history: the original sign-in used /.default (all registration
+  // permissions incl. Item.Execute.All); the switch to named scopes dropped it.
+  // Users who consented back then are grandfathered (consent grants persist),
+  // but NEW users' tokens lacked execute rights → every notebook-running deploy
+  // failed with "403: caller does not have sufficient scopes" at run:01_*.
+  "https://api.fabric.microsoft.com/Item.Execute.All",
   "https://api.fabric.microsoft.com/Connection.ReadWrite.All",
   "https://api.fabric.microsoft.com/OneLake.ReadWrite.All",
   "https://api.fabric.microsoft.com/Capacity.Read.All",
