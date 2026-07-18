@@ -130,6 +130,25 @@ export function generateStaticParams() {
   return industries.filter((i) => i.enabled).map((i) => ({ industry: i.slug }));
 }
 
+// Per-industry title/description for browser tabs, search results, and shared links.
+export async function generateMetadata({ params }: { params: Promise<{ industry: string }> }) {
+  const { industry: industrySlug } = await params;
+  const industry = industries.find((i) => i.slug === industrySlug && i.enabled);
+  if (!industry) return {};
+  return {
+    title: `${industry.title} demos`,
+    description: industry.description,
+    openGraph: {
+      title: `${industry.title} demos | Fabric Demo Gallery`,
+      description: industry.description,
+      url: `https://www.fabricdemogallery.com/industries/${industry.slug}/`,
+      siteName: "Fabric Demo Gallery",
+      type: "website",
+      images: [{ url: "/og-card.png", width: 1200, height: 630, alt: "Fabric Demo Gallery" }],
+    },
+  };
+}
+
 export default async function IndustryPage({ params }: { params: Promise<{ industry: string }> }) {
   const { industry: industrySlug } = await params;
   const industry = industries.find((i) => i.slug === industrySlug && i.enabled);

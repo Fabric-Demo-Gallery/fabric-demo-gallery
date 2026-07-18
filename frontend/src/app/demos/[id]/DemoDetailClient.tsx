@@ -1760,6 +1760,27 @@ export default function DemoDetailPage() {
     // Capacities will be fetched by the useEffect watching selectedScenario
   };
 
+  // OS notification when a long deploy finishes and the user has tabbed away.
+  // Silent no-op when permission wasn't granted or the tab is visible.
+  const notifyDeployOutcome = (ok: boolean, demoTitle: string) => {
+    try {
+      if (typeof Notification === "undefined") return;
+      if (Notification.permission !== "granted") return;
+      if (document.visibilityState === "visible") return; // user is watching — no ping needed
+      const n = new Notification(
+        ok ? "✅ Deployment complete" : "❌ Deployment failed",
+        {
+          body: ok
+            ? `${demoTitle} is ready in your Fabric workspace.`
+            : `${demoTitle} hit an error — open the tab for details.`,
+          icon: "/pwa-192.png",
+          tag: "fdg-deploy",
+        }
+      );
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch { /* best-effort */ }
+  };
+
   const handleDeploy = async () => {
     // Guard: never POST a deploy with required fields missing (would send an
     // undefined capacity/subscription to the backend). The Deploy button is
@@ -1772,6 +1793,16 @@ export default function DemoDetailPage() {
       setError("Select an Azure subscription and resource group for this scenario before deploying.");
       return;
     }
+
+    // Deploys run 5–20 min and users tab away — ask for notification permission
+    // NOW (inside the click's user activation, later requests are ignored by
+    // Chromium) so we can ping them when it finishes. Fire-and-forget: denial
+    // changes nothing about the deploy.
+    try {
+      if (typeof Notification !== "undefined" && Notification.permission === "default") {
+        void Notification.requestPermission();
+      }
+    } catch { /* Notification API unavailable (embedded webview) */ }
 
     // Show the deploying state BEFORE any token/consent awaits. ensureFoundryConsent
     // below can block for up to ~60s (MSAL waits for a popup that a popup blocker may
@@ -2127,8 +2158,10 @@ export default function DemoDetailPage() {
 
       if (sawDone) {
         setCompleted(true);
+        notifyDeployOutcome(true, demo?.title || "Your demo");
       } else if (streamHadError) {
         // Error already surfaced via setError from the "error" event.
+        notifyDeployOutcome(false, demo?.title || "Your demo");
       } else if (connectionLost) {
         setError("Lost connection to the deployment server after several retries. The deploy may still be running — check the Monitoring page.");
       }
