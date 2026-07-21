@@ -322,7 +322,10 @@ function AdminConsentNote() {
   }, []);
   if (account || dismissed) return null;
   return (
-    <div className={s.bar}>
+    // data-nosnippet: tells Google not to use this banner text as the search
+    // snippet (it's sign-in guidance, not page content). Bing ignores the
+    // attribute but prefers the (now richer) meta description anyway.
+    <div className={s.bar} data-nosnippet="">
       <div className={s.inner}>
         <span className={s.iconWrap}><ShieldKeyholeRegular fontSize={18} /></span>
         <div className={s.content}>

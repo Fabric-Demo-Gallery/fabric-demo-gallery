@@ -8,8 +8,11 @@ export const metadata: Metadata = {
     default: "Fabric Demo Gallery",
     template: "%s | Fabric Demo Gallery",
   },
+  // ~160 chars — a description this rich makes Bing/Google use it as the
+  // search snippet instead of scraping the first DOM text (which was the
+  // admin-consent banner).
   description:
-    "One-click deployable industry demos for Microsoft Fabric",
+    "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
   manifest: "/site.webmanifest",
   // Canonical host: the same build is served on 5 hostnames (apex, www, the
   // SWA default hostname, preview, dev) — without a canonical, search engines
@@ -22,7 +25,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Fabric Demo Gallery",
-    description: "One-click deployable industry demos for Microsoft Fabric",
+    description:
+      "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
     url: "https://www.fabricdemogallery.com",
     siteName: "Fabric Demo Gallery",
     type: "website",
@@ -31,7 +35,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Fabric Demo Gallery",
-    description: "One-click deployable industry demos for Microsoft Fabric",
+    description:
+      "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
     images: ["/og-card.png"],
   },
 };
