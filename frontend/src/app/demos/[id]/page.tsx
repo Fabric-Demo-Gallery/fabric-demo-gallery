@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title,
     description,
+    alternates: { canonical: `/demos/${id}/` },
     openGraph: {
       title: `${title} | Fabric Demo Gallery`,
       description,

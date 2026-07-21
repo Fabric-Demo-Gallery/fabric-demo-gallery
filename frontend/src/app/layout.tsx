@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   description:
     "One-click deployable industry demos for Microsoft Fabric",
   manifest: "/site.webmanifest",
+  // Canonical host: the same build is served on 5 hostnames (apex, www, the
+  // SWA default hostname, preview, dev) — without a canonical, search engines
+  // treat them as duplicates and can split ranking signals or index the wrong
+  // host. metadataBase + relative canonical makes every page point at www.
+  alternates: { canonical: "/" },
   icons: {
     icon: "/pwa-192.png",
     apple: "/apple-touch-icon.png",
