@@ -152,6 +152,44 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     };
   }
 
+  // Stale consent: the signed-in token was granted before the app added a newer
+  // permission (seen live 3x after the Item.Execute.All regression). Must be
+  // checked BEFORE the generic 403 bucket, whose "ask your Fabric admin"
+  // guidance is wrong for this — a fresh sign-in fixes it, an admin can't.
+  if (m.includes("sufficient scopes")) {
+    return {
+      title: "App permissions out of date",
+      guidance:
+        "Your sign-in was authorized before this app added a newer permission it now needs. Hard-refresh the page (Ctrl+Shift+R), sign out (top right), sign back in and approve the popup \u2014 that refreshes the app's permissions \u2014 then retry the deploy.",
+      retryable: true,
+    };
+  }
+
+  // Azure SQL blocked by a subscription policy (common in Microsoft sandbox
+  // tenants: the MCAPS 'SFI' policy flips public network access off at server
+  // creation). Must be checked BEFORE the 403 and network buckets — the 400
+  // variant contains the word "network" and would misclassify as a transient
+  // "Network hiccup", and retrying can never fix a policy.
+  if (m.includes("sql") && (m.includes("public network") || m.includes("firewall rules"))) {
+    return {
+      title: "Subscription policy blocks SQL public access",
+      guidance:
+        "Your Azure subscription has a policy (standard in Microsoft sandbox/MCAPS subscriptions) that disables public network access on new SQL servers, which this demo needs. Fix: deploy again with a NEW resource group name \u2014 the app tags new resource groups with SecurityControl=Ignore, which exempts them from the policy. For an existing resource group, tag it yourself: az tag update --resource-id /subscriptions/<sub-id>/resourceGroups/<rg-name> --operation merge --tags SecurityControl=Ignore \u2014 then retry.",
+      retryable: true,
+    };
+  }
+
+  // Deploy watchdog 504: notebooks ran past the allowed window. The workspace
+  // and items exist and notebook jobs may still finish server-side.
+  if (m.includes("504") || m.includes("didn't finish in time") || m.includes("did not finish in time")) {
+    return {
+      title: "Deployment timed out while notebooks were running",
+      guidance:
+        "The workspace and all items were created, but the data-loading notebooks ran past the allowed time \u2014 usually a slow/busy capacity. The notebook jobs may still finish on their own: open the workspace in Fabric and check the notebook run status in ~10\u201315 minutes. If data or reports look incomplete after that, delete the workspace and redeploy on a less busy capacity.",
+      retryable: true,
+    };
+  }
+
   // Capacity paused / not active / none found
   if (
     m.includes("capacity") &&
