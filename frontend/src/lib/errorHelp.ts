@@ -137,6 +137,21 @@ export function explainError(raw: string | null | undefined): FriendlyError {
   const auth = classifyAuthError(msg);
   if (auth) return auth;
 
+  // Fabric items disabled for the tenant/capacity. Workspace creation succeeds
+  // (a legacy Power BI operation) but the FIRST Fabric item (lakehouse) is
+  // rejected with 403 "The feature is not available" — meaning the tenant
+  // setting 'Users can create Fabric items' is off, or the chosen capacity
+  // isn't Fabric-enabled (e.g. Premium Per User). Deterministic — retrying
+  // can't help until an admin/capacity change. Seen live: colakings.org 4×.
+  if (m.includes("feature is not available") || m.includes("featurenotavailable")) {
+    return {
+      title: "Your organization or capacity doesn't allow Fabric items",
+      guidance:
+        "The workspace was created, but creating Fabric items (lakehouses, notebooks) was rejected by your tenant. Two common causes: (1) a Fabric admin needs to enable \u201cUsers can create Fabric items\u201d in the Fabric Admin portal \u2192 Tenant settings (or add you to its allowed security group); (2) the capacity you selected isn't Fabric-enabled \u2014 Premium Per User doesn't support Fabric items; pick an F-SKU capacity or start a free Fabric trial (app.fabric.microsoft.com \u2192 account menu \u2192 Start trial), then retry.",
+      retryable: false,
+    };
+  }
+
   // Capacity paused / not active / none found
   if (
     m.includes("capacity") &&
