@@ -106,6 +106,9 @@ export interface UsageRecentEvent {
   scenario_id: string;
   user: string;
   duration_s?: number;
+  /** deploy_failed only: fault domain classified server-side from the full
+   * error text ("user" = input/tenant/quota issue, "app" = product/platform). */
+  fault?: "user" | "app";
   /** deploy_failed only: truncated error message + the step that failed. */
   error?: string;
   failed_step?: string;

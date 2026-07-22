@@ -72,6 +72,7 @@ app.add_middleware(
         "X-Search-Token",
         "X-Agent-Token",
         "X-Kusto-Token",
+        "X-Stats-Detail",
     ],
 )
 

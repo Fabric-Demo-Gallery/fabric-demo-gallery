@@ -606,7 +606,10 @@ export default function StatsClient() {
                               // User-side failures (name conflicts, tenant/consent/quota
                               // issues) aren't product failures — amber + explicit label
                               // so they read differently from app/platform failures.
-                              const fault = e.event === "deploy_failed" ? classifyFault(e.error) : null;
+                              // The server classifies from the FULL error text (which the
+                              // public API omits); client classification is only a
+                              // fallback for older API responses.
+                              const fault = e.event === "deploy_failed" ? (e.fault ?? classifyFault(e.error)) : null;
                               const ev =
                                 fault === "user"
                                   ? { label: "Failed · user side", color: "#d29922" }

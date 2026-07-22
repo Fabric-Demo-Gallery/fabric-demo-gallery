@@ -48,6 +48,27 @@ for part in _conn.split(";"):
         _AI_ENDPOINT = v.strip().rstrip("/")
 
 
+# Fault-domain classifier for failed deploys — runs server-side because the
+# public API never carries raw error text. Distinguishes failures the USER must
+# resolve (input conflicts, tenant settings, consent, quota — not product bugs)
+# from app/platform failures. Unknown errors default to app-side so real
+# problems are never hidden behind a "user error" label.
+_USER_FAULT_PATTERNS = [
+    "already exists", "choose a different name", "invalid character",  # input
+    "feature is not available",  # tenant can't create Fabric items
+    "lacks a service principal", "aadsts", "consent", "conditional access",  # tenant auth
+    "sufficient scopes",  # stale consent — re-sign-in fixes
+    "quota", "not registered", "disallowed by policy", "public network",  # subscription
+    "paused", "no active fabric capacity",  # capacity state
+    "unauthorized", "sign-in expired",  # session
+]
+
+
+def _classify_fault(error: str) -> str:
+    m = error.lower()
+    return "user" if any(p in m for p in _USER_FAULT_PATTERNS) else "app"
+
+
 def _user_hash(user_id: str) -> str:
     return hashlib.sha256(user_id.encode("utf-8")).hexdigest()[:12]
 
@@ -250,6 +271,10 @@ def aggregate_stats(include_detail: bool = False) -> dict:
                         "scenario_id": scenario,
                         "user": (rec.get("user") or "")[:6],
                         **({"duration_s": rec["duration_s"]} if "duration_s" in rec else {}),
+                        # Fault domain ("user" | "app") is classified server-side from
+                        # the FULL error text and is safe to expose publicly — it's a
+                        # bare label carrying no message content.
+                        **({"fault": _classify_fault(str(rec.get("error") or ""))} if ev == "deploy_failed" else {}),
                         # Failure diagnostics — privacy-gated: only for requests that
                         # proved knowledge of STATS_DETAIL_SECRET (the internal dev
                         # dashboard). The public feed never carries error text.
