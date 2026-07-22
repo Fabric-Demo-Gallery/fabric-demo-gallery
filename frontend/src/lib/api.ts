@@ -106,6 +106,9 @@ export interface UsageRecentEvent {
   scenario_id: string;
   user: string;
   duration_s?: number;
+  /** deploy_failed only: truncated error message + the step that failed. */
+  error?: string;
+  failed_step?: string;
 }
 
 export interface UsageStats {

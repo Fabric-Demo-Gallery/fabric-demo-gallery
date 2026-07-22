@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { fetchStats } from "@/lib/api";
 import type { UsageStats } from "@/lib/api";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
@@ -584,18 +584,33 @@ export default function StatsClient() {
                           <tbody>
                             {stats.recent.map((e, i) => {
                               const ev = EVENT_LABEL[e.event] ?? { label: e.event, color: "#8b949e" };
+                              // When a failure message follows, drop this row's bottom
+                              // border so the message reads as part of the same entry.
+                              const joined = e.error ? { borderBottom: "none" } : undefined;
                               return (
-                                <tr key={i}>
-                                  <td className={`${styles.td} ${styles.tdMuted}`} title={e.ts}>{timeAgo(e.ts)}</td>
-                                  <td className={styles.td}>
-                                    <span className={styles.legendDot} style={{ backgroundColor: ev.color }} />
-                                    {ev.label}
-                                  </td>
-                                  <td className={styles.td}>{demoTitle(e.demo_id)}</td>
-                                  <td className={`${styles.td} ${styles.tdMuted}`}>{scenarioLabel(e.scenario_id)}</td>
-                                  <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`}>{e.duration_s !== undefined ? formatDuration(e.duration_s) : "—"}</td>
-                                  <td className={`${styles.td} ${styles.tdMuted}`} style={{ fontFamily: "Consolas, monospace", fontSize: 12 }}>#{e.user}</td>
-                                </tr>
+                                <Fragment key={i}>
+                                  <tr>
+                                    <td className={`${styles.td} ${styles.tdMuted}`} style={joined} title={e.ts}>{timeAgo(e.ts)}</td>
+                                    <td className={styles.td} style={joined}>
+                                      <span className={styles.legendDot} style={{ backgroundColor: ev.color }} />
+                                      {ev.label}
+                                    </td>
+                                    <td className={styles.td} style={joined}>{demoTitle(e.demo_id)}</td>
+                                    <td className={`${styles.td} ${styles.tdMuted}`} style={joined}>{scenarioLabel(e.scenario_id)}</td>
+                                    <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`} style={joined}>{e.duration_s !== undefined ? formatDuration(e.duration_s) : "—"}</td>
+                                    <td className={`${styles.td} ${styles.tdMuted}`} style={{ fontFamily: "Consolas, monospace", fontSize: 12, ...joined }}>#{e.user}</td>
+                                  </tr>
+                                  {e.error && (
+                                    <tr>
+                                      <td colSpan={6} style={{ padding: "0 10px 10px 26px", borderBottom: "1px solid #161b22", color: "rgba(248,81,73,0.85)", fontSize: 12, lineHeight: 1.45 }}>
+                                        {e.failed_step && (
+                                          <span style={{ fontFamily: "Consolas, monospace", color: "#8b949e" }}>{e.failed_step} · </span>
+                                        )}
+                                        {e.error}
+                                      </td>
+                                    </tr>
+                                  )}
+                                </Fragment>
                               );
                             })}
                           </tbody>

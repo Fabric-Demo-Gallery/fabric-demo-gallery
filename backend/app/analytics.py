@@ -250,6 +250,10 @@ def aggregate_stats() -> dict:
                         "scenario_id": scenario,
                         "user": (rec.get("user") or "")[:6],
                         **({"duration_s": rec["duration_s"]} if "duration_s" in rec else {}),
+                        # Failure diagnostics for the dashboard — the classified error
+                        # string carries no identities (emails stay in raw JSONL/AI only).
+                        **({"error": str(rec["error"])[:200]} if ev == "deploy_failed" and rec.get("error") else {}),
+                        **({"failed_step": str(rec["failed_step"])[:80]} if ev == "deploy_failed" and rec.get("failed_step") else {}),
                     })
     except Exception as e:
         logger.warning("Analytics aggregation failed: %s", e)
