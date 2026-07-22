@@ -3287,13 +3287,34 @@ export default function DemoDetailPage() {
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         <MessageBar intent="error">
                           <MessageBarBody>
-                            {error || "No active Fabric capacity found for your account. Start (or get assigned to) an F-SKU, Trial, or PPU capacity in the Fabric admin portal, then retry."}
+                            {error || "No active Fabric capacity found for your account. Start (or get assigned to) an F-SKU or Trial capacity, then retry."}
                           </MessageBarBody>
                         </MessageBar>
                         <Button size="small" appearance="subtle" onClick={() => { void loadCapacities(); }}>
                           Retry
                         </Button>
                       </div>
+                    )}
+                    {/* Capacity visibility is Fabric data-plane permission (admin or
+                        contributor ON the capacity) — Azure RBAC on the resource does
+                        NOT grant it. Regularly surprises users whose teammate created
+                        the capacity, so explain it for both the populated and empty
+                        list states. */}
+                    {account && !loadingCapacities && (
+                      <details style={{ marginTop: 6 }}>
+                        <summary style={{ fontSize: 12, color: "#8b949e", cursor: "pointer" }}>
+                          Don&apos;t see your capacity?
+                        </summary>
+                        <Caption1 style={{ display: "block", color: "#8b949e", marginTop: 4, lineHeight: 1.5 }}>
+                          This list only shows capacities where your account is an{" "}
+                          <strong>admin or contributor</strong> — owning or managing the Azure resource isn&apos;t
+                          enough, and trial capacities are personal (only your own appears). Ask the capacity&apos;s
+                          admin (usually whoever created it) to add you: Azure portal → the capacity →{" "}
+                          <strong>Settings → Capacity administrators</strong>, or Fabric Admin portal → Capacity
+                          settings → <strong>Users with contributor permissions</strong>. Then reselect the scenario
+                          to reload this list.
+                        </Caption1>
+                      </details>
                     )}
                     {/* Data-agent scenarios: warn when the chosen capacity is Trial
                         (Fabric Data Agents require a paid F2+ SKU; FT1/Trial is rejected). */}
