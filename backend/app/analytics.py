@@ -169,7 +169,7 @@ async def _send_app_insights(rec: dict) -> None:
         logger.warning("App Insights send failed (non-fatal): %s", e)
 
 
-def aggregate_stats() -> dict:
+def aggregate_stats(include_detail: bool = False) -> dict:
     """Aggregate the JSONL log into dashboard-ready counts."""
     total_started = 0
     by_demo: Counter = Counter()
@@ -250,10 +250,11 @@ def aggregate_stats() -> dict:
                         "scenario_id": scenario,
                         "user": (rec.get("user") or "")[:6],
                         **({"duration_s": rec["duration_s"]} if "duration_s" in rec else {}),
-                        # Failure diagnostics for the dashboard — the classified error
-                        # string carries no identities (emails stay in raw JSONL/AI only).
-                        **({"error": str(rec["error"])[:200]} if ev == "deploy_failed" and rec.get("error") else {}),
-                        **({"failed_step": str(rec["failed_step"])[:80]} if ev == "deploy_failed" and rec.get("failed_step") else {}),
+                        # Failure diagnostics — privacy-gated: only for requests that
+                        # proved knowledge of STATS_DETAIL_SECRET (the internal dev
+                        # dashboard). The public feed never carries error text.
+                        **({"error": str(rec["error"])[:200]} if include_detail and ev == "deploy_failed" and rec.get("error") else {}),
+                        **({"failed_step": str(rec["failed_step"])[:80]} if include_detail and ev == "deploy_failed" and rec.get("failed_step") else {}),
                     })
     except Exception as e:
         logger.warning("Analytics aggregation failed: %s", e)

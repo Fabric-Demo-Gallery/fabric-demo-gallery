@@ -1,8 +1,10 @@
 """Public usage statistics — aggregated deployment counts (no PII)."""
 
+import os
 import re
+import secrets
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
 from app.analytics import aggregate_stats, record_view_event, record_auth_error_event
@@ -12,11 +14,20 @@ router = APIRouter(prefix="/api/stats", tags=["stats"])
 
 
 @router.get("")
-async def get_stats():
+async def get_stats(x_stats_detail: str | None = Header(default=None)):
     """Aggregate deployment usage: totals, per-demo/scenario counts, outcomes,
     success rate, median duration, and deploys per day. Contains only hashed
-    user identifiers aggregated to a distinct count — no personal data."""
-    return aggregate_stats()
+    user identifiers aggregated to a distinct count — no personal data.
+
+    Failure error strings are privacy-gated: included only when the request
+    carries the X-Stats-Detail header matching the STATS_DETAIL_SECRET app
+    setting (sent only by the internal dev dashboard build). The public
+    response never contains error text."""
+    secret = os.environ.get("STATS_DETAIL_SECRET", "")
+    include_detail = bool(
+        secret and x_stats_detail and secrets.compare_digest(x_stats_detail, secret)
+    )
+    return aggregate_stats(include_detail=include_detail)
 
 
 class ViewEvent(BaseModel):

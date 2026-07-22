@@ -133,7 +133,14 @@ export interface UsageStats {
 }
 
 export async function fetchStats(): Promise<UsageStats> {
-  const res = await fetch(`${STATS_API_BASE}/api/stats`, { cache: "no-store" });
+  // The failure-detail secret is baked in ONLY for the internal dev-dashboard
+  // build (set at build time, never in .env files) — public builds send no
+  // header and the API omits error text entirely.
+  const detailSecret = process.env.NEXT_PUBLIC_STATS_DETAIL_SECRET;
+  const res = await fetch(`${STATS_API_BASE}/api/stats`, {
+    cache: "no-store",
+    ...(detailSecret ? { headers: { "X-Stats-Detail": detailSecret } } : {}),
+  });
   if (!res.ok) throw new Error("Failed to fetch usage stats");
   return res.json();
 }
