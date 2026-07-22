@@ -33,6 +33,26 @@ const EVENT_LABEL: Record<string, { label: string; color: string }> = {
   deploy_cancelled: { label: "Cancelled", color: "#8b949e" },
 };
 
+// Fault-domain classifier for failed deploys: distinguishes failures the USER
+// must resolve (input conflicts, tenant settings, consent, quota — not product
+// bugs) from app/platform failures. Patterns mirror errorHelp.ts's non-retryable
+// user-environment cases. Unknown errors default to app-side so real problems
+// are never hidden behind a "user error" label.
+const USER_FAULT_PATTERNS = [
+  "already exists", "choose a different name", "invalid character", // input
+  "feature is not available", // tenant can't create Fabric items
+  "lacks a service principal", "aadsts", "consent", "conditional access", // tenant auth
+  "sufficient scopes", // stale consent — re-sign-in fixes
+  "quota", "not registered", "disallowed by policy", "public network", // subscription
+  "paused", "no active fabric capacity", // capacity state
+  "unauthorized", "sign-in expired", // session
+];
+function classifyFault(error?: string): "user" | "app" {
+  if (!error) return "app";
+  const m = error.toLowerCase();
+  return USER_FAULT_PATTERNS.some((p) => m.includes(p)) ? "user" : "app";
+}
+
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function timeAgo(iso: string): string {
@@ -583,7 +603,16 @@ export default function StatsClient() {
                           </thead>
                           <tbody>
                             {stats.recent.map((e, i) => {
-                              const ev = EVENT_LABEL[e.event] ?? { label: e.event, color: "#8b949e" };
+                              // User-side failures (name conflicts, tenant/consent/quota
+                              // issues) aren't product failures — amber + explicit label
+                              // so they read differently from app/platform failures.
+                              const fault = e.event === "deploy_failed" ? classifyFault(e.error) : null;
+                              const ev =
+                                fault === "user"
+                                  ? { label: "Failed · user side", color: "#d29922" }
+                                  : fault === "app"
+                                  ? { label: "Failed · app side", color: "#f85149" }
+                                  : EVENT_LABEL[e.event] ?? { label: e.event, color: "#8b949e" };
                               // When a failure message follows, drop this row's bottom
                               // border so the message reads as part of the same entry.
                               const joined = e.error ? { borderBottom: "none" } : undefined;
@@ -602,7 +631,7 @@ export default function StatsClient() {
                                   </tr>
                                   {e.error && (
                                     <tr>
-                                      <td colSpan={6} style={{ padding: "0 10px 10px 26px", borderBottom: "1px solid #161b22", color: "rgba(248,81,73,0.85)", fontSize: 12, lineHeight: 1.45 }}>
+                                      <td colSpan={6} style={{ padding: "0 10px 10px 26px", borderBottom: "1px solid #161b22", color: fault === "user" ? "rgba(210,153,34,0.9)" : "rgba(248,81,73,0.85)", fontSize: 12, lineHeight: 1.45 }}>
                                         {e.failed_step && (
                                           <span style={{ fontFamily: "Consolas, monospace", color: "#8b949e" }}>{e.failed_step} · </span>
                                         )}
