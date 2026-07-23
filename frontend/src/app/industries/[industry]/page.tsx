@@ -131,17 +131,25 @@ export function generateStaticParams() {
 }
 
 // Per-industry title/description for browser tabs, search results, and shared links.
+// Titles/descriptions are deliberately verbose — Bing flags short titles and short
+// meta descriptions. The visible UI text (industry.description) stays unchanged;
+// only the meta description is enriched with the deployable demo.
 export async function generateMetadata({ params }: { params: Promise<{ industry: string }> }) {
   const { industry: industrySlug } = await params;
   const industry = industries.find((i) => i.slug === industrySlug && i.enabled);
   if (!industry) return {};
+  const demo = industry.demoId ? DEMOS[industry.demoId] : undefined;
+  const title = `${industry.title} Demos for Microsoft Fabric`;
+  const description = demo
+    ? `${industry.description} Deploy the ${demo.title} demo to your Microsoft Fabric tenant in one click — no setup required.`
+    : `${industry.description} One-click deployable Microsoft Fabric demos — no setup required.`;
   return {
-    title: `${industry.title} demos`,
-    description: industry.description,
+    title,
+    description,
     alternates: { canonical: `/industries/${industry.slug}/` },
     openGraph: {
-      title: `${industry.title} demos | Fabric Demo Gallery`,
-      description: industry.description,
+      title: `${title} | Fabric Demo Gallery`,
+      description,
       url: `https://www.fabricdemogallery.com/industries/${industry.slug}/`,
       siteName: "Fabric Demo Gallery",
       type: "website",

@@ -5,7 +5,9 @@ import ClientShell from "./ClientShell";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.fabricdemogallery.com"),
   title: {
-    default: "Fabric Demo Gallery",
+    // Descriptive default (home + any page without its own title) — bare
+    // "Fabric Demo Gallery" was flagged by Bing as too short/duplicated.
+    default: "Fabric Demo Gallery — Deploy Microsoft Fabric Demos in One Click",
     template: "%s | Fabric Demo Gallery",
   },
   // ~160 chars — a description this rich makes Bing/Google use it as the
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Fabric Demo Gallery",
+    title: "Fabric Demo Gallery — Deploy Microsoft Fabric Demos in One Click",
     description:
       "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
     url: "https://www.fabricdemogallery.com",
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fabric Demo Gallery",
+    title: "Fabric Demo Gallery — Deploy Microsoft Fabric Demos in One Click",
     description:
       "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
     images: ["/og-card.png"],
