@@ -442,7 +442,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
       <AdminConsentNote />
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
-        <Text size={200} style={{ color: "#484f58" }}>
+        {/* #8b949e: #484f58 on #010409 was 2.2:1 contrast — Lighthouse WCAG AA flag */}
+        <Text size={200} style={{ color: "#8b949e" }}>
           Built with Microsoft Fabric REST APIs
         </Text>
       </footer>

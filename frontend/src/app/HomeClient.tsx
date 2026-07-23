@@ -324,7 +324,9 @@ const useStyles = makeStyles({
     alignItems: "center",
     gap: "4px",
     fontSize: "12px",
-    color: "#484f58",
+    // #8b949e (not #484f58): 12px text on #161b22 needs ≥4.5:1 contrast (WCAG AA,
+    // flagged by Lighthouse) — #484f58 was 2.08:1.
+    color: "#8b949e",
   },
   tagRow: {
     display: "flex",
