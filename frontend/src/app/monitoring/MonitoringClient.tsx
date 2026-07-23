@@ -237,6 +237,11 @@ export default function MonitoringClient() {
   if (!initialized) {
     return (
       <div className={styles.page}>
+        {/* h1 renders in every auth state — the prerendered HTML and Bingbot's
+            signed-out render were both missing it (flagged by Bing). */}
+        <div className={styles.header}>
+          <h1 className={styles.title} style={{ margin: 0 }}>Deployment Monitoring</h1>
+        </div>
         <div style={{ textAlign: "center", padding: "80px 0" }}>
           <Spinner size="medium" />
         </div>
@@ -247,6 +252,9 @@ export default function MonitoringClient() {
   if (!account) {
     return (
       <div className={styles.page}>
+        <div className={styles.header}>
+          <h1 className={styles.title} style={{ margin: 0 }}>Deployment Monitoring</h1>
+        </div>
         <div className={styles.signIn}>
           <Text size={400} style={{ display: "block", marginBottom: 16, color: "#e6edf3" }}>
             Sign in to view your deployments
