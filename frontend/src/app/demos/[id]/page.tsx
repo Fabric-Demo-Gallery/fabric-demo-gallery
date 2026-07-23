@@ -16,7 +16,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const demo = DEMOS[id];
   if (!demo) return {};
   const title = `${demo.title} — ${demo.industry}`;
-  const description = demo.description.length > 200 ? `${demo.description.slice(0, 197)}…` : demo.description;
+  // Bing flags descriptions under ~150 chars; catalog blurbs are short, so
+  // append the deploy CTA (same pattern as industry pages). UI text untouched.
+  // Skip the CTA when the blurb is already long enough on its own.
+  const enriched = `${demo.description} Deploy this demo to your Microsoft Fabric tenant in one click — no setup required.`;
+  const description =
+    enriched.length <= 200
+      ? enriched
+      : demo.description.length > 200
+        ? `${demo.description.slice(0, 197)}…`
+        : demo.description;
   return {
     title,
     description,
