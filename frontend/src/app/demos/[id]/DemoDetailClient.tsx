@@ -2451,7 +2451,8 @@ export default function DemoDetailPage() {
                   ? (selectedScenario.feature ? <Caption1>{selectedScenario.feature}</Caption1> : null)
                   : <Caption1>{demo.fabricItems.length} Fabric items</Caption1>}
               </div>
-              <div className={styles.title}>{isCustomMode && selectedScenario ? selectedScenario.title : demo.title}</div>
+              {/* h1 (not div): search engines weight the page's single H1 heavily. */}
+              <h1 className={styles.title} style={{ marginTop: 0 }}>{isCustomMode && selectedScenario ? selectedScenario.title : demo.title}</h1>
               <div className={styles.longDesc}>{isCustomMode && selectedScenario ? selectedScenario.description : demo.longDescription}</div>
             </div>
           </div>

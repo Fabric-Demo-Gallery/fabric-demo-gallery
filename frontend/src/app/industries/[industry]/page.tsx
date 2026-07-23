@@ -168,8 +168,19 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
     ? Array.from(new Set(demo.fabricItems.map((i) => i.type)))
     : [];
 
+  // Breadcrumb structured data mirroring the visible trail (Bing rich results).
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Demos", item: "https://www.fabricdemogallery.com/" },
+      { "@type": "ListItem", position: 2, name: industry.title },
+    ],
+  };
+
   return (
     <div style={styles.page}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <Breadcrumbs industrySlug={industry.slug} />
       <div style={styles.inner}>
         <h1 style={{ ...styles.title, marginTop: 0 }}>{industry.title}</h1>
