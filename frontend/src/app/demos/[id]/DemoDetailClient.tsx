@@ -1756,7 +1756,9 @@ export default function DemoDetailPage() {
   }
 
   const handleSelectScenario = (sc: ScenarioInfo) => {
-    router.replace(`/demos/${id}?mode=custom&scenario=${sc.id}`);
+    // push (not replace): keep the scenario picker in history so the browser
+    // Back button returns to "all custom scenarios", not the industry page.
+    router.push(`/demos/${id}?mode=custom&scenario=${sc.id}`);
     // Capacities will be fetched by the useEffect watching selectedScenario
   };
 
@@ -3072,22 +3074,79 @@ export default function DemoDetailPage() {
             {/* === CUSTOM MODE: AI & Machine Learning scenario selected === */}
             {isCustomMode && selectedScenario?.id === "ai-ml" && (
               <>
-                {/* Data Flow */}
+                {/* Presenter Guide — talking track for solution engineers */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <CheckmarkCircleFilled fontSize={16} /> Presenter Guide
+                  </div>
+                  <div className={styles.presenterBody}>
+                    <div className={styles.presenterValue}>
+                      The full ML lifecycle — features, training, evaluation, and batch scoring — runs where the data already lives. No separate ML platform, no data movement. The deploy already ran the pipeline, so your job is to <strong style={{ color: "#e6edf3" }}>walk the story</strong>.
+                    </div>
+
+                    <div>
+                      <div className={styles.presenterSubhead}>Talking points</div>
+                      <ul className={styles.pointList}>
+                        <li className={styles.pointItem}>Feature engineering, training, and scoring are just notebooks on the lakehouse — one copy of the data, end to end.</li>
+                        <li className={styles.pointItem}>SynapseML LightGBM trains distributed on Fabric Spark. No cluster setup, no environment management.</li>
+                        <li className={styles.pointItem}>Evaluation is built in: confusion matrix, detailed metrics, and feature importance for explainability.</li>
+                        <li className={styles.pointItem}>Batch scoring writes risk rankings (critical/high/medium/low) straight back to gold Delta tables — Power BI reads them via Direct Lake.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <div className={styles.presenterSubhead}>Suggested demo flow</div>
+                      <div className={styles.flowList}>
+                        {[
+                          { step: "Start with the outcome", detail: "Open predictions_report → Risk Overview. The business sees scored, ranked entities before any code." },
+                          { step: "Show the features", detail: "Open 03_feature_engineering — daily feature vectors aggregated from Bronze/Silver into gold_ml_features." },
+                          { step: "Train & explain", detail: "Walk 04_model_training (SynapseML LightGBM on Spark), then 05_model_evaluation for the confusion matrix and feature importance." },
+                          { step: "Land the message", detail: "06_batch_scoring wrote every prediction back to the lakehouse. The whole lifecycle ran without data ever leaving Fabric." },
+                        ].map((f, i) => (
+                          <div key={i} className={styles.flowStep}>
+                            <span className={styles.flowStepNum}>{i + 1}</span>
+                            <div className={styles.flowStepText}>
+                              <strong style={{ color: "#e6edf3" }}>{f.step}</strong>: {f.detail}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className={styles.presenterSubhead}>Before you start</div>
+                      <ul className={styles.pointList}>
+                        <li className={styles.pointItem}>Notebooks 01–06 already ran during deploy — model, metrics, and predictions are ready to show.</li>
+                        <li className={styles.pointItem}>Retraining live (04) is the long step — budget a few minutes if you run it on stage.</li>
+                        <li className={styles.pointItem}>Feature importance in 05 is the slide non-technical stakeholders remember — end on it or screenshot it.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Flow — 2-row labeled pipeline (single row overflowed and
+                    clipped the last chip on typical widths) */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <ArrowRightRegular fontSize={16} /> Data Flow
                   </div>
-                  <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 12 }}>
-                    End-to-end ML pipeline: Bronze/Silver data → Feature engineering → LightGBM training → Batch scoring
-                  </div>
-                  <div className={styles.flowRow}>
-                    <FlowSteps steps={[
-                      { label: "Bronze", value: "Raw Ingest", color: "#db8a5f" },
-                      { label: "Silver", value: "Clean & Enrich", color: "#9ba6b0" },
-                      { label: "Features", value: "ML Feature Table", color: "#4493f8" },
-                      { label: "Train", value: "LightGBM", color: "#a371f7" },
-                      { label: "Score", value: "Predictions & Risk", color: "#db6d28" },
-                    ]} />
+                  <div style={{ padding: "20px" }}>
+                    <div className={styles.flowGroupLabel}>Prepare &amp; Featurize</div>
+                    <div className={styles.flowSubRow} style={{ marginBottom: 16 }}>
+                      <FlowSteps steps={[
+                        { label: "Bronze", value: "Raw Ingest", color: "#db8a5f" },
+                        { label: "Silver", value: "Clean & Enrich", color: "#9ba6b0" },
+                        { label: "Features", value: "ML Feature Table", color: "#4493f8" },
+                      ]} />
+                    </div>
+                    <div className={styles.flowGroupLabel}>Train &amp; Score</div>
+                    <div className={styles.flowSubRow}>
+                      <FlowSteps steps={[
+                        { label: "Train", value: "LightGBM", color: "#a371f7" },
+                        { label: "Evaluate", value: "Metrics & Importance", color: "#d29922" },
+                        { label: "Score", value: "Predictions & Risk", color: "#db6d28" },
+                      ]} />
+                    </div>
                   </div>
                 </div>
 
