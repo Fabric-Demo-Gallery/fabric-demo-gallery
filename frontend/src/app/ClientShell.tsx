@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FluentProvider,
   webDarkTheme,
@@ -8,7 +8,12 @@ import {
   Avatar,
   Text,
   makeStyles,
+  RendererProvider,
+  SSRProvider,
+  createDOMRenderer,
+  renderToStyleElements,
 } from "@fluentui/react-components";
+import { useServerInsertedHTML } from "next/navigation";
 
 const fabricFont = "'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif";
 const fabricTheme = {
@@ -317,10 +322,15 @@ function AdminConsentNote() {
   const s = useNoteStyles();
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  // mounted gate: keep this sign-in guidance OUT of the prerendered HTML — it was
+  // once scraped as the search snippet (Bing ignores data-nosnippet). Server and
+  // first client render both return null, so hydration stays consistent.
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
     setDismissed(typeof window !== "undefined" && localStorage.getItem("fdg_admin_consent_note") === "dismissed");
   }, []);
-  if (account || dismissed) return null;
+  if (!mounted || account || dismissed) return null;
   return (
     // data-nosnippet: tells Google not to use this banner text as the search
     // snippet (it's sign-in guidance, not page content). Bing ignores the
@@ -363,23 +373,16 @@ function AdminConsentNote() {
 }
 
 export default function ClientShell({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) {
-    return (
-      <div style={{ backgroundColor: "#0d1117", minHeight: "100vh" }}>
-        <div style={{ backgroundColor: "#010409", height: 48, borderBottom: "1px solid #21262d" }} />
-      </div>
-    );
-  }
-
   // If this document is the MSAL sign-in/consent popup (or a hidden auth iframe) —
   // i.e. the redirect target after auth — do NOT mount the app here. The window that
   // opened the popup owns the handshake: it reads the auth response off this popup's
   // URL and closes it. Mounting the SPA (a second MSAL instance) in the popup consumes
   // that response first and strands the popup on the homepage (the bug we saw).
-  if (BrowserUtils.isInPopup() || BrowserUtils.isInIframe()) {
+  // typeof window guard: this also runs during static prerender (Node), where
+  // BrowserUtils would throw. NOTE: there is deliberately NO "mounted" gate here —
+  // an earlier gate returned an empty shell during prerender, which stripped every
+  // page's content (h1s, text, JSON-LD) from the static export and tanked SEO.
+  if (typeof window !== "undefined" && (BrowserUtils.isInPopup() || BrowserUtils.isInIframe())) {
     return (
       <div
         style={{
@@ -402,21 +405,47 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 }
 
 function ClientShellInner({ children }: { children: ReactNode }) {
+  // SSR style extraction (Fluent UI / griffel App Router recipe): collect the
+  // CSS of every makeStyles class rendered during prerender and inline it into
+  // the exported HTML. Without this the static pages contain content but no
+  // styles until hydration (flash of unstyled content + hydration mismatches).
+  const [renderer] = useState(() => createDOMRenderer());
+  const insertedRef = useRef(false);
+  useServerInsertedHTML(() => {
+    if (insertedRef.current) return null;
+    insertedRef.current = true;
+    return <>{renderToStyleElements(renderer)}</>;
+  });
+  return (
+    <RendererProvider renderer={renderer}>
+      <SSRProvider>
+        <FluentProvider theme={fabricTheme}>
+          <AuthProvider>
+            <DeploymentProvider>
+              <ShellChrome>{children}</ShellChrome>
+            </DeploymentProvider>
+          </AuthProvider>
+        </FluentProvider>
+      </SSRProvider>
+    </RendererProvider>
+  );
+}
+
+// Separate component so its useStyles() call runs INSIDE RendererProvider —
+// styles requested before the provider mounts would go to the default renderer
+// and be missed by the SSR extraction above.
+function ShellChrome({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return (
-    <FluentProvider theme={fabricTheme}>
-      <AuthProvider>
-        <DeploymentProvider>
-        <Navbar />
-        <AdminConsentNote />
-        <main className={styles.main}>{children}</main>
-        <footer className={styles.footer}>
-          <Text size={200} style={{ color: "#484f58" }}>
-            Built with Microsoft Fabric REST APIs
-          </Text>
-        </footer>
-      </DeploymentProvider>
-      </AuthProvider>
-    </FluentProvider>
+    <>
+      <Navbar />
+      <AdminConsentNote />
+      <main className={styles.main}>{children}</main>
+      <footer className={styles.footer}>
+        <Text size={200} style={{ color: "#484f58" }}>
+          Built with Microsoft Fabric REST APIs
+        </Text>
+      </footer>
+    </>
   );
 }

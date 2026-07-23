@@ -105,6 +105,23 @@ const styles = {
     backgroundColor: "#21262d",
     border: "1px solid #30363d",
   },
+  about: {
+    marginTop: "40px",
+    paddingTop: "24px",
+    borderTop: "1px solid #21262d",
+  },
+  aboutTitle: {
+    fontSize: "16px",
+    fontWeight: 600,
+    color: "#e6edf3",
+    marginBottom: "8px",
+  },
+  aboutText: {
+    color: "#8b949e",
+    fontSize: "14px",
+    lineHeight: 1.6,
+    margin: "0 0 10px 0",
+  },
 } as const;
 
 // A deployment option card. When there's no demo (coming soon) we render a
@@ -216,6 +233,25 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
             </div>
           </DeployOption>
         </div>
+        {/* Server-rendered supporting copy — Bing flagged industry pages as
+            "insufficient content" (only a heading + two card labels). Real,
+            useful text about what actually deploys. */}
+        {demo && (
+          <div style={styles.about}>
+            <h2 style={{ ...styles.aboutTitle, marginTop: 0 }}>About the {demo.title} demo</h2>
+            <p style={styles.aboutText}>{demo.description}</p>
+            <p style={styles.aboutText}>
+              One click provisions everything in your own Microsoft Fabric tenant
+              {uniqueTypes.length > 0
+                ? ` — including ${uniqueTypes
+                    .map((t) => t.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^KQLDatabase$/, "KQL Database"))
+                    .join(", ")
+                    .replace(/, ([^,]*)$/, " and $1")} items — `
+                : " — "}
+              preloaded with realistic sample data, so you can explore, present, or extend the solution right away. No manual setup required.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
