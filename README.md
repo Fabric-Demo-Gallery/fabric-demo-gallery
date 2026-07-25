@@ -4,6 +4,8 @@ One-click deployable industry demos for Microsoft Fabric. Browse industry-specif
 
 **Live site:** [https://www.fabricdemogallery.com](https://www.fabricdemogallery.com)
 
+![One-click deploy: pick a demo, click Deploy, get a full Fabric workspace with data, notebooks, and reports](docs/media/readme.gif)
+
 ## Demos
 
 Twelve industries are available, each with a ready-to-deploy **Standard** demo plus a set of **Custom** deployment scenarios:
@@ -19,15 +21,18 @@ Twelve industries are available, each with a ready-to-deploy **Standard** demo p
 
 Every industry can be deployed as a **Standard** medallion demo, or via a **Custom** scenario:
 
+- **Real-Time Intelligence** — Eventhouse + Eventstream for live data ingestion, KQL analytics, a Real-Time Dashboard, and an Activator for threshold-based alerts. You can even replay sample events into the Eventstream live from the site.
 - **AI & Machine Learning** — feature engineering, SynapseML LightGBM training, evaluation, and batch scoring with risk rankings
 - **External Database Integration (Mirroring)** — provisions an Azure SQL Database (Microsoft Entra-only auth), seeds it with operational data, and mirrors it live into Fabric OneLake (zero-ETL)
 - **Data Virtualization & Batch Analytics (Shortcuts)** — provisions ADLS Gen2, connects external data in place via Fabric Shortcuts, then processes Bronze → Silver → Gold
+- **Fabric IQ** — builds a semantic ontology over the industry's data spanning a Lakehouse and an Eventhouse, binds it to real tables, and exposes it through a Fabric Data Agent for natural-language analytics over business entities and relationships
+- **Fabric & Foundry AI Agent** — deploys a Fabric data foundation, publishes a Fabric data agent over it, then provisions a Microsoft Foundry agent grounded on that data (preview; provisions billable Azure Foundry + AI Search resources in your subscription)
 
 ## Features
 
 - **One-click deployment** — Select an industry and scenario, pick your capacity, click Deploy
 - **Live progress streaming** — Real-time SSE updates as each Fabric item is provisioned
-- **12 industries + custom scenarios** — Standard medallion demos plus AI/ML, Mirroring, and Shortcuts
+- **12 industries + 6 custom scenarios** — Standard medallion demos plus RTI, AI/ML, Mirroring, Shortcuts, Fabric IQ, and Foundry AI Agent
 - **Secure mirroring** — Azure SQL with Microsoft Entra-only auth and a secret-less Fabric Workspace Identity
 - **Auto-teardown on failure** — A failed deploy best-effort removes the workspace and any Azure SQL server it created, so nothing is left orphaned
 - **Capacity pre-flight** — Fails fast with a clear message if the target Fabric capacity is paused
@@ -35,6 +40,27 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 - **Workspace cleanup** — One-click delete of a deployed workspace (and its Azure SQL server, for mirroring)
 - **Multi-tenant auth** — Works across Microsoft Entra tenants with MSAL redirect login
 - **Custom client ID support** — Users from restricted tenants can use `?clientId=THEIR_APP_ID` to bring their own app registration
+
+## How it works
+
+1. **Sign in with Microsoft Entra.** The site is a static Next.js app using MSAL in the browser. Sign-in and all consent happen against your own tenant; some organizations require a one-time admin approval (the site shows a banner with instructions, and `?clientId=` lets you bring your own app registration instead).
+2. **Your tokens, your tenant.** When you click Deploy, the browser acquires delegated Microsoft Entra tokens (Fabric, OneLake, and, for Azure scenarios, ARM) and passes them to the backend for the duration of the deployment. The backend orchestrates Fabric REST API calls with your identity. Tokens are held in memory for the running job only and are never stored.
+3. **Watch it build.** The backend streams every provisioning step back to the page over SSE: workspace, lakehouse, data upload, notebooks, semantic model, report, and scenario-specific items. A typical Standard demo lands in about 5 to 10 minutes.
+4. **Everything lands in YOUR tenant.** The result is a normal Fabric workspace on your capacity, fully yours to open, modify, present, or delete. The Monitoring page tracks your deployments and offers one-click cleanup, which also removes any Azure resources a scenario created.
+
+### What it needs
+
+- A Microsoft Entra account and a Microsoft Fabric capacity you can assign workspaces to (any paid F-SKU or a Fabric trial)
+- Permission to create Fabric items (tenant setting "Users can create Fabric items")
+- For the Azure-provisioning scenarios (Mirroring, Shortcuts, Foundry AI Agent): an Azure subscription where you can create resources
+- Cost awareness: deployed items consume capacity units on your Fabric capacity, and the Azure scenarios create billable resources (Azure SQL DB, ADLS Gen2, or Foundry + AI Search). Delete the workspace from the Monitoring page when you are done; the cleanup removes the Azure resources too.
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Gallery home with 12 industries](docs/media/home.png) | ![Custom scenario picker](docs/media/scenario-picker.png) |
+| ![Deployment complete next to the resulting Fabric workspace](docs/media/deploy-complete.png) | ![Live events streaming into the deployed Eventhouse](docs/media/eventhouse-live.png) |
 
 ## Architecture
 
@@ -75,6 +101,7 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 │  - Azure SQL Database (Entra-only)  │
 │  - Workspace Identity auth          │
 │  - ADLS Gen2 (shortcuts scenario)   │
+│  - Foundry + AI Search (AI agent)   │
 └─────────────────────────────────────┘
 ```
 
@@ -160,7 +187,7 @@ fabric-demo-gallery/
 │   ├── src/lib/                 # MSAL, auth provider, error mapping
 │   └── public/                  # Fabric icons, demo video, SWA config
 ├── tools/                       # validate_mirroring_specs.py and other helpers
-├── docs/                        # Pre-demo checklist and notes
+├── docs/                        # Pre-demo checklist, README media
 └── CONTRIBUTING.md              # Detailed contributor guide
 ```
 
