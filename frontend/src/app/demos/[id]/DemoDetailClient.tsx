@@ -1345,7 +1345,7 @@ export default function DemoDetailPage() {
         guidance: "The permission popup didn't finish. Allow popups for this site and try again.",
         retryable: true,
       };
-      recordAuthError(friendly.code, selectedScenario?.id);
+      recordAuthError(friendly.code, selectedScenario?.id, { detail: raw });
       setAuthWarning(friendly);
     } finally {
       setReauthBusy(false);
@@ -1859,7 +1859,7 @@ export default function DemoDetailPage() {
             "The authorization popup didn't finish. To use your own identity for the AI agent, click Deploy again and approve the popup.",
           retryable: true,
         };
-        recordAuthError(friendly.code, selectedScenario.id);
+        recordAuthError(friendly.code, selectedScenario.id, { detail: raw });
         setAuthWarning(friendly);
       }
       setSteps([]);
@@ -1888,7 +1888,7 @@ export default function DemoDetailPage() {
         // Fail fast with clear guidance — this scenario cannot run without ARM.
         const raw = e instanceof Error ? e.message : String(e);
         const friendly = classifyAuthError(raw);
-        recordAuthError(friendly?.code ?? "mgmt_consent_failed", selectedScenario.id);
+        recordAuthError(friendly?.code ?? "mgmt_consent_failed", selectedScenario.id, { detail: raw, stage: "deploy" });
         setError(
           friendly
             ? `${friendly.title}. ${friendly.guidance}`
@@ -1954,7 +1954,7 @@ export default function DemoDetailPage() {
           if (mgmtTok) headers["X-Management-Token"] = mgmtTok;
         } catch (e) {
           const raw = e instanceof Error ? e.message : String(e);
-          recordAuthError(classifyAuthError(raw)?.code ?? "mgmt_token_failed", selectedScenario.id);
+          recordAuthError(classifyAuthError(raw)?.code ?? "mgmt_token_failed", selectedScenario.id, { detail: raw, stage: "deploy" });
           setError(raw || "Azure authorization failed — this scenario provisions Azure resources and needs management access.");
           setDeploying(false);
           return;
@@ -2174,10 +2174,16 @@ export default function DemoDetailPage() {
         // Auth failures during the token phase read like crashes ("interaction_in_progress",
         // "popup_window_error"). classifyAuthError (via explainError in the error
         // renderer) maps them to plain guidance and keeps the raw message under
-        // "Technical details". Beacon the code so auth breakage shows in analytics.
+        // "Technical details". Beacon the failure so auth breakage shows in
+        // analytics — as deploy_auth_failed WITH the raw error, and even when
+        // classification fails (the AADSTS650052 incident was invisible exactly
+        // because only classified codes were beaconed).
         const raw = e instanceof Error ? e.message : "Connection failed";
         const authInfo = classifyAuthError(raw);
-        if (authInfo) recordAuthError(authInfo.code, selectedScenario?.id);
+        const looksLikeAuth = !!authInfo || /aadsts|msal|invalid_client|interaction|popup|consent|silent|token/i.test(raw);
+        if (looksLikeAuth) {
+          recordAuthError(authInfo?.code ?? "auth_unclassified", selectedScenario?.id, { detail: raw, stage: "deploy" });
+        }
         setError(raw);
       }
     } finally {

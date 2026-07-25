@@ -100,17 +100,23 @@ export function classifyAuthError(raw: string | null | undefined): AuthError | n
       retryable: true,
     };
   }
-  if (m.includes("aadsts650052") || m.includes("lacks a service principal")) {
+  if (m.includes("aadsts650052") || m.includes("lacks a service principal") || m.includes("invalid_client")) {
     // The tenant is missing a first-party Microsoft service principal (usually
     // 'Azure Storage' in fresh sandbox tenants) — no consent or retry can fix
-    // it; a tenant admin must provision the SP once.
+    // it; a tenant admin must provision the SP once. Entra surfaces this as
+    // error=invalid_client, sometimes WITHOUT the AADSTS650052 description
+    // reaching MSAL (seen live 2026-07-24: cryptic invalid_client popup, zero
+    // telemetry) — so bare invalid_client maps here too, with Azure Storage as
+    // the by-far-most-likely missing service (its token is acquired on every
+    // deploy; the other audiences are best-effort and swallowed).
+    const is650052 = m.includes("aadsts650052") || m.includes("lacks a service principal");
     const svcId = msg.match(/access a service '([0-9a-fA-F-]{36})'/)?.[1] ?? "e406a681-f3d4-42a8-90b6-c2b029497af1";
-    const svcName = msg.match(/\(([^)]+)\)/)?.[1] ?? "Azure Storage";
+    const svcName = (is650052 ? msg.match(/\(([^)]+)\)/)?.[1] : undefined) ?? "Azure Storage";
     return {
-      code: "AADSTS650052",
+      code: is650052 ? "AADSTS650052" : "invalid_client",
       title: `Your organization is missing the '${svcName}' service`,
       guidance:
-        `Your Microsoft Entra tenant doesn't have the '${svcName}' service principal, so no sign-in can grant access to it — retrying won't help. A tenant admin must provision it once by running: az ad sp create --id ${svcId} — in Microsoft-internal sandbox tenants (MngEnv…/MCAP…) you are usually that admin: run az login --tenant <your-tenant> --allow-no-subscriptions first, then the command above, then retry the deploy.`,
+        `Your Microsoft Entra tenant doesn't have the '${svcName}' service principal, so no sign-in can grant access to it — retrying won't help. A tenant admin must provision it once by running: az ad sp create --id ${svcId} — in Microsoft-internal sandbox tenants (MngEnv…/MCAP…) you are usually that admin: run az login --tenant <your-tenant> --allow-no-subscriptions first, then the command above, then sign out and back in and retry the deploy.`,
       retryable: false,
     };
   }

@@ -24,6 +24,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -141,16 +142,41 @@ def record_view_event(demo_id: str) -> None:
             pass
 
 
-def record_auth_error_event(code: str, scenario_id: str | None = None) -> None:
+# Raw MSAL/AADSTS error text can theoretically embed a signed-in UPN (e.g.
+# AADSTS50020) — redact anything email-shaped and strip control chars before
+# it touches a sink. The detail is diagnostics-only and never leaves the
+# private sinks (JSONL + App Insights).
+_EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_CTRL_RE = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def _sanitize_detail(detail: str) -> str:
+    return _EMAIL_RE.sub("[redacted]", _CTRL_RE.sub(" ", detail))[:500]
+
+
+def record_auth_error_event(
+    code: str,
+    scenario_id: str | None = None,
+    detail: str | None = None,
+    stage: str | None = None,
+) -> None:
     """Record an anonymous sign-in/consent failure (error code only — no identity).
-    Makes client-side auth breakage visible in App Insights instead of silent."""
+    Makes client-side auth breakage visible in App Insights instead of silent.
+
+    stage="deploy" marks failures that killed a deploy BEFORE the backend was
+    ever called (token acquisition in the browser) — recorded as a distinct
+    "deploy_auth_failed" event so the AADSTS650052 class of incident (deploy
+    dies client-side with zero backend telemetry) is visible. `detail` carries
+    the sanitized raw MSAL/AADSTS message for diagnosis."""
     rec = {
         "ts": datetime.now(timezone.utc).isoformat(),
-        "event": "auth_error",
+        "event": "deploy_auth_failed" if stage == "deploy" else "auth_error",
         "error": code,
     }
     if scenario_id:
         rec["scenario_id"] = scenario_id
+    if detail:
+        rec["error_detail"] = _sanitize_detail(detail)
     try:
         ANALYTICS_PATH.parent.mkdir(parents=True, exist_ok=True)
         with ANALYTICS_PATH.open("a", encoding="utf-8") as f:
@@ -177,7 +203,7 @@ async def _send_app_insights(rec: dict) -> None:
                 "properties": {
                     # Defensive .get — view events carry only demo_id.
                     key: str(rec[key])
-                    for key in ("demo_id", "scenario_id", "job_id", "user", "email", "duration_s", "error", "failed_step")
+                    for key in ("demo_id", "scenario_id", "job_id", "user", "email", "duration_s", "error", "failed_step", "error_detail")
                     if key in rec
                 },
             },
@@ -231,7 +257,7 @@ def aggregate_stats(include_detail: bool = False) -> dict:
                         continue
                     # Auth failures: diagnostics only (JSONL + App Insights) — keep
                     # them out of the public aggregate/recent feed entirely.
-                    if ev == "auth_error":
+                    if ev in ("auth_error", "deploy_auth_failed"):
                         continue
                     try:
                         ts = datetime.fromisoformat(ts_raw)

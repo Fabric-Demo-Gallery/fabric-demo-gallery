@@ -47,11 +47,18 @@ async def record_view(body: ViewEvent):
 
 _AUTH_CODE_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
 _SCENARIO_RE = re.compile(r"^[a-z0-9-]{1,64}$")
+_AUTH_STAGES = {"deploy"}
 
 
 class AuthErrorEvent(BaseModel):
     code: str
     scenario_id: str | None = None
+    # Raw MSAL/AADSTS error text for diagnosis — sanitized (control chars,
+    # email-shaped tokens) and truncated server-side; private sinks only.
+    detail: str | None = None
+    # "deploy" = the failure killed a deploy before the backend was called;
+    # recorded as a distinct deploy_auth_failed event.
+    stage: str | None = None
 
 
 @router.post("/auth-error", status_code=204)
@@ -63,4 +70,8 @@ async def record_auth_error(body: AuthErrorEvent):
         raise HTTPException(status_code=400, detail="Invalid error code")
     if body.scenario_id is not None and not _SCENARIO_RE.match(body.scenario_id):
         raise HTTPException(status_code=400, detail="Invalid scenario id")
-    record_auth_error_event(body.code, body.scenario_id)
+    if body.stage is not None and body.stage not in _AUTH_STAGES:
+        raise HTTPException(status_code=400, detail="Invalid stage")
+    if body.detail is not None and len(body.detail) > 2000:
+        raise HTTPException(status_code=400, detail="Detail too long")
+    record_auth_error_event(body.code, body.scenario_id, body.detail, body.stage)

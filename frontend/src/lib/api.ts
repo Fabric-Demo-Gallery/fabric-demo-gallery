@@ -159,13 +159,26 @@ export function recordDemoView(demoId: string): void {
   } catch { /* ignore */ }
 }
 /** Fire-and-forget auth-failure beacon — anonymous error code only (no PII), so
- * sign-in/consent breakage is visible in analytics instead of silent. */
-export function recordAuthError(code: string, scenarioId?: string): void {
+ * sign-in/consent breakage is visible in analytics instead of silent.
+ * opts.detail carries the raw MSAL/AADSTS message (sanitized + truncated
+ * server-side, private sinks only); opts.stage "deploy" marks failures that
+ * killed a deploy before the backend was ever called — recorded as a distinct
+ * deploy_auth_failed event so client-side auth failures are never invisible. */
+export function recordAuthError(
+  code: string,
+  scenarioId?: string,
+  opts?: { detail?: string; stage?: "deploy" },
+): void {
   try {
     void fetch(`${API_BASE}/api/stats/auth-error`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, ...(scenarioId ? { scenario_id: scenarioId } : {}) }),
+      body: JSON.stringify({
+        code,
+        ...(scenarioId ? { scenario_id: scenarioId } : {}),
+        ...(opts?.detail ? { detail: opts.detail.slice(0, 1000) } : {}),
+        ...(opts?.stage ? { stage: opts.stage } : {}),
+      }),
       keepalive: true,
     }).catch(() => { /* analytics must never affect the page */ });
   } catch { /* ignore */ }
