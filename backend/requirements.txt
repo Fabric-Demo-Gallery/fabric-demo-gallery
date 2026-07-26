@@ -1,7 +1,9 @@
-fastapi==0.115.6
+fastapi==0.116.2
+starlette==0.47.3
 uvicorn[standard]==0.34.0
 httpx==0.28.1
 msal==1.31.1
+PyJWT[crypto]==2.13.0
 python-dotenv==1.2.2
 pydantic==2.10.4
 pydantic-settings==2.7.1
