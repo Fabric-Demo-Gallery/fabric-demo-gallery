@@ -2180,7 +2180,9 @@ export default function DemoDetailPage() {
         // because only classified codes were beaconed).
         const raw = e instanceof Error ? e.message : "Connection failed";
         const authInfo = classifyAuthError(raw);
-        const looksLikeAuth = !!authInfo || /aadsts|msal|invalid_client|interaction|popup|consent|silent|token/i.test(raw);
+        // NOTE: no bare "token" here — JSON.parse failures throw "Unexpected
+        // token ..." and would false-positive as auth failures.
+        const looksLikeAuth = !!authInfo || /aadsts|msal|invalid_client|interaction|popup|consent|silent|no_tokens|acquiretoken|login_required|token renewal/i.test(raw);
         if (looksLikeAuth) {
           recordAuthError(authInfo?.code ?? "auth_unclassified", selectedScenario?.id, { detail: raw, stage: "deploy" });
         }

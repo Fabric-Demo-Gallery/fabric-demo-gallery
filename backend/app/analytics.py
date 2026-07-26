@@ -116,10 +116,22 @@ def record_deployment_event(
 
     # Sink 2 — Application Insights customEvent (fire-and-forget)
     if _AI_IKEY and _AI_ENDPOINT:
-        try:
-            asyncio.get_running_loop().create_task(_send_app_insights(rec))
-        except RuntimeError:
-            pass  # no running loop (e.g. tests) — file sink already has it
+        _fire_app_insights(rec)
+
+
+# Fire-and-forget App Insights sends: asyncio only holds a WEAK reference to
+# tasks, so an unreferenced create_task() can be garbage-collected mid-send and
+# the event silently dropped. Keep a strong reference until each task finishes.
+_pending_sends: set[asyncio.Task] = set()
+
+
+def _fire_app_insights(rec: dict) -> None:
+    try:
+        task = asyncio.get_running_loop().create_task(_send_app_insights(rec))
+        _pending_sends.add(task)
+        task.add_done_callback(_pending_sends.discard)
+    except RuntimeError:
+        pass  # no running loop (e.g. tests) — file sink already has it
 
 
 def record_view_event(demo_id: str) -> None:
@@ -136,10 +148,7 @@ def record_view_event(demo_id: str) -> None:
     except Exception as e:
         logger.warning("Analytics file write failed: %s", e)
     if _AI_IKEY and _AI_ENDPOINT:
-        try:
-            asyncio.get_running_loop().create_task(_send_app_insights(rec))
-        except RuntimeError:
-            pass
+        _fire_app_insights(rec)
 
 
 # Raw MSAL/AADSTS error text can theoretically embed a signed-in UPN (e.g.
@@ -184,10 +193,7 @@ def record_auth_error_event(
     except Exception as e:
         logger.warning("Analytics file write failed: %s", e)
     if _AI_IKEY and _AI_ENDPOINT:
-        try:
-            asyncio.get_running_loop().create_task(_send_app_insights(rec))
-        except RuntimeError:
-            pass
+        _fire_app_insights(rec)
 
 
 async def _send_app_insights(rec: dict) -> None:

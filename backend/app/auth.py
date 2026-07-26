@@ -17,6 +17,11 @@ logger = logging.getLogger(__name__)
 _bearer = HTTPBearer(auto_error=False)
 _is_production = os.getenv("WEBSITE_SITE_NAME") is not None
 
+
+def is_production() -> bool:
+    """Whether the app is running on Azure App Service (vs local dev)."""
+    return _is_production
+
 # ── Entra JWT signature verification ─────────────────────────────────────────
 # The backend never makes authorization decisions beyond keying the per-user
 # job store (list/cancel/delete of job METADATA) — the Fabric API is the real

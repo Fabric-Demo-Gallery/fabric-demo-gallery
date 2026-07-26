@@ -8,7 +8,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sse_starlette.sse import EventSourceResponse
 
-from app.auth import get_user_token, get_storage_token, get_user_id, get_kusto_token, get_user_email
+from app.auth import get_user_token, get_storage_token, get_user_id, get_kusto_token, get_user_email, is_production
 from app.fabric_client import FabricClient
 from app.job_runner import run_job
 from app.job_store import job_store
@@ -16,6 +16,19 @@ from app.models import DeployRequest, SAFE_ID, UUID_RE
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 limiter = Limiter(key_func=get_remote_address)
+
+
+def _owns_job(job, user_id: str) -> bool:
+    """Whether the caller may see/cancel/delete this job.
+
+    The "dev-user" fallback owner exists only for local development (az CLI
+    tokens). It must NEVER match in production: builds that predate token
+    signature verification could persist "dev-user"-owned jobs from garbage
+    tokens, and honoring that owner would let ANY signed-in user read or
+    cancel them."""
+    if job.user_id == user_id:
+        return True
+    return not is_production() and job.user_id == "dev-user"
 
 
 @router.post("")
@@ -171,7 +184,7 @@ async def get_job(
         raise HTTPException(status_code=404, detail="Job not found")
     # Verify user owns this job
     user_id = get_user_id(token)
-    if job.user_id != user_id and job.user_id != "dev-user":
+    if not _owns_job(job, user_id):
         raise HTTPException(status_code=404, detail="Job not found")
     return job.to_detail()
 
@@ -189,7 +202,7 @@ async def stream_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     user_id = get_user_id(token)
-    if job.user_id != user_id and job.user_id != "dev-user":
+    if not _owns_job(job, user_id):
         raise HTTPException(status_code=404, detail="Job not found")
 
     queue = job_store.subscribe(job_id)
@@ -249,7 +262,7 @@ async def cancel_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     user_id = get_user_id(token)
-    if job.user_id != user_id and job.user_id != "dev-user":
+    if not _owns_job(job, user_id):
         raise HTTPException(status_code=404, detail="Job not found")
     if job.status in ("completed", "failed", "cancelled"):
         return {"status": job.status, "message": "Job already finished"}
@@ -272,7 +285,7 @@ async def delete_job_workspace(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     user_id = get_user_id(token)
-    if job.user_id != user_id and job.user_id != "dev-user":
+    if not _owns_job(job, user_id):
         raise HTTPException(status_code=404, detail="Job not found")
     if not job.workspace_id:
         raise HTTPException(status_code=400, detail="No workspace to delete")
