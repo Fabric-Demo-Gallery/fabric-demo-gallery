@@ -183,9 +183,9 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     azureParams: [],
     feature: "Fabric IQ",
     prerequisites: [
-      "Fabric IQ / Ontology (preview) enabled in the tenant (Fabric Admin portal → Tenant settings). Without it the deploy fails at the create-ontology step.",
-      "Paid Fabric capacity (F2+) for the two data agents; Trial (FT1) deploys everything else but skips them.",
-      "Copilot / AI and Data agent item types enabled in the tenant.",
+      "Tenant setting \"Enable Ontology item (preview)\" turned on (Fabric Admin portal → Tenant settings). Without it the deploy fails at the create-ontology step.",
+      "Paid F2+ (or P1+) capacity for the two data agents. Trial (FT1) deploys the ontology, lakehouse and eventhouse but skips the agents.",
+      "Copilot tenant setting \"Users can use Copilot and other features powered by Azure OpenAI\" plus the Data agent item type enabled. Capacities outside the US/EU also need the cross-geo Azure OpenAI processing setting.",
     ],
   },
   {

@@ -6,9 +6,9 @@
   "estimatedTime": "15-20 min",
   "tags": ["fabric-iq", "ontology", "data-agent", "knowledge-graph", "eventhouse"],
   "prerequisites": [
-    "Paid Fabric capacity (F2+) for the data agents — Trial/FT1 SKUs are not supported",
-    "Fabric IQ / Ontology (preview) enabled in the tenant",
-    "Data agent item type + Copilot/AI enabled in the tenant"
+    "Tenant setting 'Enable Ontology item (preview)' turned on (Fabric Admin portal > Tenant settings); without it the deploy fails at the create-ontology step",
+    "Paid F2+ (or P1+) capacity for the two data agents; Trial (FT1) deploys the ontology, lakehouse and eventhouse but skips the agents",
+    "Copilot tenant setting 'Users can use Copilot and other features powered by Azure OpenAI' plus the Data agent item type enabled; capacities outside the US/EU also need the cross-geo Azure OpenAI processing setting"
   ],
   "azureParams": [],
   "fabricItemTemplate": [
