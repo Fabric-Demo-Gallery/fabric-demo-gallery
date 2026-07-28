@@ -3550,8 +3550,10 @@ export default function DemoDetailPage() {
                   )}
 
                   {/* Fabric IQ: notebook/library install alternative — early peek on the
-                      manufacturing page only (jumpstart submission in review). */}
-                  {selectedScenario?.id === "genai-applications" && id === "manufacturing-qc" && (
+                      manufacturing page only (jumpstart submission in review).
+                      Dev build only until the jumpstart submission is approved. */}
+                  {process.env.NEXT_PUBLIC_STATS_ENABLED === "1" &&
+                    selectedScenario?.id === "genai-applications" && id === "manufacturing-qc" && (
                     <FabricIqLibraryWay />
                   )}
                 </div>
