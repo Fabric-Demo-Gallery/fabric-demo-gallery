@@ -351,6 +351,8 @@ export interface ScenarioInfo {
   /** Scenario-specific "What to show next" pointers shown after a successful
    *  deploy. When set, these override the demo-level post-deploy guidance. */
   postDeploy?: { label: string; detail: string }[];
+  /** Tenant/capacity requirements shown in the deploy panel before deploying. */
+  prerequisites?: string[];
 }
 
 export async function fetchScenarios(demoId: string): Promise<ScenarioInfo[]> {

@@ -143,6 +143,19 @@ export function explainError(raw: string | null | undefined): FriendlyError {
   const auth = classifyAuthError(msg);
   if (auth) return auth;
 
+  // Fabric IQ (Ontology items, preview) not enabled for the tenant/capacity.
+  // The create-ontology notebook fails with a crafted message containing
+  // "Fabric IQ". Must precede the generic "feature is not available" bucket,
+  // whose 'Users can create Fabric items' guidance is wrong for this case.
+  if (m.includes("fabric iq") && (m.includes("not enabled") || m.includes("rejected"))) {
+    return {
+      title: "Fabric IQ (preview) isn't enabled for this tenant",
+      guidance:
+        "This scenario creates an Ontology item, which requires Fabric IQ (preview). Ask a Fabric admin to enable Fabric IQ / Ontology (preview) in the Fabric Admin portal (Tenant settings), confirm the capacity's region supports it, then delete the partially-created workspace and redeploy.",
+      retryable: false,
+    };
+  }
+
   // Fabric items disabled for the tenant/capacity. Workspace creation succeeds
   // (a legacy Power BI operation) but the FIRST Fabric item (lakehouse) is
   // rejected with 403 "The feature is not available" — meaning the tenant

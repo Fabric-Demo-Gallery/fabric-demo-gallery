@@ -182,6 +182,11 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
     requiresAzure: false,
     azureParams: [],
     feature: "Fabric IQ",
+    prerequisites: [
+      "Fabric IQ / Ontology (preview) enabled in the tenant (Fabric Admin portal → Tenant settings). Without it the deploy fails at the create-ontology step.",
+      "Paid Fabric capacity (F2+) for the two data agents; Trial (FT1) deploys everything else but skips them.",
+      "Copilot / AI and Data agent item types enabled in the tenant.",
+    ],
   },
   {
     id: "fabric-foundry-agent",
@@ -3334,6 +3339,18 @@ export default function DemoDetailPage() {
                         </Caption1>
                       </details>
                     )}
+                    {/* Scenario prerequisites: tenant/capacity requirements the
+                        deploy depends on (e.g. Fabric IQ preview enabled). */}
+                    {selectedScenario?.prerequisites && selectedScenario.prerequisites.length > 0 && (
+                      <MessageBar intent="info" style={{ marginTop: 8 }}>
+                        <MessageBarBody>
+                          <strong>Prerequisites.</strong>
+                          {selectedScenario.prerequisites.map((p, i) => (
+                            <span key={i} style={{ display: "block", marginTop: 3 }}>• {p}</span>
+                          ))}
+                        </MessageBarBody>
+                      </MessageBar>
+                    )}
                     {/* Data-agent scenarios: warn when the chosen capacity is Trial
                         (Fabric Data Agents require a paid F2+ SKU; FT1/Trial is rejected). */}
                     {(selectedScenario?.id === "genai-applications" || selectedScenario?.id === "fabric-foundry-agent") &&
@@ -3652,6 +3669,30 @@ export default function DemoDetailPage() {
                           </FluentLink>
                         </MessageBarBody>
                       </MessageBar>
+                      {(() => {
+                        // Follow-ups the backend attached to the done step (e.g. a
+                        // skipped data agent). Previously these were never rendered,
+                        // so a partly-degraded deploy looked fully green.
+                        const done = steps.find((s) => s.name === "done");
+                        if (!done?.detail) return null;
+                        try {
+                          const info = JSON.parse(done.detail);
+                          const ns = info?.fabricIq?.nextSteps ?? info?.foundry?.nextSteps ?? info?.nextSteps;
+                          if (!Array.isArray(ns) || ns.length === 0) return null;
+                          return (
+                            <MessageBar intent="warning" style={{ marginBottom: 12 }}>
+                              <MessageBarBody>
+                                <strong>Completed with follow-ups.</strong>
+                                {ns.map((n, i) => (
+                                  <span key={i} style={{ display: "block", marginTop: 4 }}>• {String(n)}</span>
+                                ))}
+                              </MessageBarBody>
+                            </MessageBar>
+                          );
+                        } catch {
+                          return null;
+                        }
+                      })()}
                       {selectedScenario?.id === "external-data-integration" && (
                         <MessageBar intent="info" style={{ marginBottom: 12 }}>
                           <MessageBarBody>

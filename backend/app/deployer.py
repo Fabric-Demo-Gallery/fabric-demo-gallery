@@ -3336,8 +3336,26 @@ async def _deploy_fabric_iq(
                         yield {"event": "step", "data": step.to_dict()}
                         await asyncio.sleep(wait)
                         continue
-                    raise
+                    break
             if last_err is not None:
+                # Notebook 2 persists the real failure reason (e.g. "Fabric IQ is
+                # not enabled for this tenant") to Files/data_agent_result.json
+                # before raising; the Fabric job failureReason is only a generic
+                # Spark message. Prefer the precise reason when it exists.
+                if i == 1:
+                    precise = None
+                    try:
+                        mr = await client._storage_client.get(
+                            f"{ONELAKE_API}/{ws_id}/{lakehouse_id}/Files/data_agent_result.json"
+                        )
+                        if mr.status_code < 400:
+                            marker = json.loads(mr.text)
+                            if marker.get("ontologyCreateFailed") and marker.get("error"):
+                                precise = str(marker["error"])[:700]
+                    except Exception:  # noqa: BLE001 - marker read is best-effort
+                        pass
+                    if precise:
+                        raise FabricError(500, precise) from last_err
                 raise last_err
             step.status = "completed"
             yield {"event": "step", "data": step.to_dict()}
