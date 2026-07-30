@@ -23,13 +23,13 @@
     },
     {
       "fileName": "products.csv",
-      "description": "Product catalog — SKU, name, category, subcategory, brand, unit cost",
+      "description": "Product catalog - SKU, name, category, subcategory, brand, unit cost",
       "format": "csv",
       "rows": 500
     },
     {
       "fileName": "stores.csv",
-      "description": "Store locations — store ID, name, city, state, region, format (mall/street/outlet)",
+      "description": "Store locations - store ID, name, city, state, region, format (mall/street/outlet)",
       "format": "csv",
       "rows": 30
     },
@@ -71,7 +71,7 @@
       "type": "SemanticModel",
       "name": "retail_analytics_model",
       "definitionPath": "tmdl",
-      "description": "Direct Lake model — sales & inventory tables with revenue, margin, and stockout measures"
+      "description": "Direct Lake model - sales & inventory tables with revenue, margin, and stockout measures"
     },
     {
       "type": "Report",

@@ -23,7 +23,7 @@ import { industries } from "@/lib/industryCatalog";
 import { DEMOS } from "@/lib/demoCatalog";
 
 // Self-hosted product demo video, served from /public (same-origin). This avoids
-// YouTube's embed referrer/bot-check gates entirely — it just plays for everyone.
+// YouTube's embed referrer/bot-check gates entirely - it just plays for everyone.
 // Set to "" to hide the player and show a "coming soon" placeholder.
 const DEMO_VIDEO_SRC = "/demo.mp4";
 
@@ -237,7 +237,7 @@ const useStyles = makeStyles({
   /* ---- Cards ---- */
   cardGrid: {
     display: "grid",
-    // min(480px, 100%) — a hard 480px minimum forced horizontal page scroll on
+    // min(480px, 100%) - a hard 480px minimum forced horizontal page scroll on
     // phones; min() lets the single column shrink to the viewport.
     gridTemplateColumns: "repeat(auto-fill, minmax(min(480px, 100%), 1fr))",
     gap: "16px",
@@ -325,7 +325,7 @@ const useStyles = makeStyles({
     gap: "4px",
     fontSize: "12px",
     // #8b949e (not #484f58): 12px text on #161b22 needs ≥4.5:1 contrast (WCAG AA,
-    // flagged by Lighthouse) — #484f58 was 2.08:1.
+    // flagged by Lighthouse) - #484f58 was 2.08:1.
     color: "#8b949e",
   },
   tagRow: {
@@ -386,7 +386,7 @@ const useStyles = makeStyles({
   },
 });
 
-// Hero product-demo video. Self-hosted native <video> — no third-party player,
+// Hero product-demo video. Self-hosted native <video> - no third-party player,
 // no embed/referrer/bot-check issues. preload="metadata" + the #t fragment shows
 // a first-frame poster without downloading the whole file until the user plays.
 function HeroVideo() {
@@ -481,7 +481,7 @@ export default function HomeClient() {
 
                       {demo && (
                         <div className={styles.cardMetaRow}>
-                          {/* The estimate is for the STANDARD demo — custom scenarios
+                          {/* The estimate is for the STANDARD demo - custom scenarios
                               range from 3 to 30 min, so say which one this is. */}
                           <span className={styles.metaItem}>Standard demo · {demo.estimatedTime}</span>
                         </div>

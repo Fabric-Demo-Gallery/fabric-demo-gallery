@@ -1,20 +1,20 @@
-"""Deployment usage analytics — permanent JSONL tally + Application Insights events.
+"""Deployment usage analytics - permanent JSONL tally + Application Insights events.
 
 Two sinks, both best-effort (analytics must never break a deploy):
 
-1. deployments.jsonl — append-only, one line per deployment lifecycle event,
+1. deployments.jsonl - append-only, one line per deployment lifecycle event,
    never evicted (unlike the job store's 200/user cap). Lives next to the job
    store on the App Service's persistent /home disk. This is the permanent
    source of truth for "how many times has each demo been deployed".
 
-2. Application Insights customEvents — the same events pushed to Azure Monitor
+2. Application Insights customEvents - the same events pushed to Azure Monitor
    via the REST ingestion endpoint (no SDK dependency; we already ship httpx).
    Gives portal charts, KQL, alerting, and correlation with other telemetry.
    Enabled only when APPLICATIONINSIGHTS_CONNECTION_STRING is set.
 
 User ids are one-way hashed for the public aggregate endpoint. The sign-in
 name (UPN) is ALSO recorded server-side (JSONL + App Insights) so admins can
-see who is using the gallery — it is never exposed through /api/stats.
+see who is using the gallery - it is never exposed through /api/stats.
 """
 
 from __future__ import annotations
@@ -49,16 +49,16 @@ for part in _conn.split(";"):
         _AI_ENDPOINT = v.strip().rstrip("/")
 
 
-# Fault-domain classifier for failed deploys — runs server-side because the
+# Fault-domain classifier for failed deploys - runs server-side because the
 # public API never carries raw error text. Distinguishes failures the USER must
-# resolve (input conflicts, tenant settings, consent, quota — not product bugs)
+# resolve (input conflicts, tenant settings, consent, quota - not product bugs)
 # from app/platform failures. Unknown errors default to app-side so real
 # problems are never hidden behind a "user error" label.
 _USER_FAULT_PATTERNS = [
     "already exists", "choose a different name", "invalid character",  # input
     "feature is not available",  # tenant can't create Fabric items
     "lacks a service principal", "aadsts", "consent", "conditional access",  # tenant auth
-    "sufficient scopes",  # stale consent — re-sign-in fixes
+    "sufficient scopes",  # stale consent - re-sign-in fixes
     "quota", "not registered", "disallowed by policy", "public network",  # subscription
     "paused", "no active fabric capacity",  # capacity state
     "unauthorized", "sign-in expired",  # session
@@ -99,14 +99,14 @@ def record_deployment_event(
         rec["email"] = email
     if duration_s is not None:
         rec["duration_s"] = round(duration_s, 1)
-    # Failure diagnostics — private sinks only (JSONL + App Insights), never
+    # Failure diagnostics - private sinks only (JSONL + App Insights), never
     # surfaced through the public /api/stats aggregates.
     if error:
         rec["error"] = error[:1000]
     if failed_step:
         rec["failed_step"] = failed_step
 
-    # Sink 1 — append-only JSONL (permanent tally)
+    # Sink 1 - append-only JSONL (permanent tally)
     try:
         ANALYTICS_PATH.parent.mkdir(parents=True, exist_ok=True)
         with ANALYTICS_PATH.open("a", encoding="utf-8") as f:
@@ -114,7 +114,7 @@ def record_deployment_event(
     except Exception as e:
         logger.warning("Analytics file write failed: %s", e)
 
-    # Sink 2 — Application Insights customEvent (fire-and-forget)
+    # Sink 2 - Application Insights customEvent (fire-and-forget)
     if _AI_IKEY and _AI_ENDPOINT:
         _fire_app_insights(rec)
 
@@ -131,11 +131,11 @@ def _fire_app_insights(rec: dict) -> None:
         _pending_sends.add(task)
         task.add_done_callback(_pending_sends.discard)
     except RuntimeError:
-        pass  # no running loop (e.g. tests) — file sink already has it
+        pass  # no running loop (e.g. tests) - file sink already has it
 
 
 def record_view_event(demo_id: str) -> None:
-    """Record an anonymous demo page view (no identity — views happen pre-sign-in)."""
+    """Record an anonymous demo page view (no identity - views happen pre-sign-in)."""
     rec = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "event": "demo_viewed",
@@ -152,7 +152,7 @@ def record_view_event(demo_id: str) -> None:
 
 
 # Raw MSAL/AADSTS error text can theoretically embed a signed-in UPN (e.g.
-# AADSTS50020) — redact anything email-shaped and strip control chars before
+# AADSTS50020) - redact anything email-shaped and strip control chars before
 # it touches a sink. The detail is diagnostics-only and never leaves the
 # private sinks (JSONL + App Insights).
 _EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
@@ -169,11 +169,11 @@ def record_auth_error_event(
     detail: str | None = None,
     stage: str | None = None,
 ) -> None:
-    """Record an anonymous sign-in/consent failure (error code only — no identity).
+    """Record an anonymous sign-in/consent failure (error code only - no identity).
     Makes client-side auth breakage visible in App Insights instead of silent.
 
     stage="deploy" marks failures that killed a deploy BEFORE the backend was
-    ever called (token acquisition in the browser) — recorded as a distinct
+    ever called (token acquisition in the browser) - recorded as a distinct
     "deploy_auth_failed" event so the AADSTS650052 class of incident (deploy
     dies client-side with zero backend telemetry) is visible. `detail` carries
     the sanitized raw MSAL/AADSTS message for diagnosis."""
@@ -207,7 +207,7 @@ async def _send_app_insights(rec: dict) -> None:
                 "ver": 2,
                 "name": rec["event"],
                 "properties": {
-                    # Defensive .get — view events carry only demo_id.
+                    # Defensive .get - view events carry only demo_id.
                     key: str(rec[key])
                     for key in ("demo_id", "scenario_id", "job_id", "user", "email", "duration_s", "error", "failed_step", "error_detail")
                     if key in rec
@@ -256,12 +256,12 @@ def aggregate_stats(include_detail: bool = False) -> dict:
                     demo = rec.get("demo_id", "?")
                     scenario = rec.get("scenario_id", "?")
                     ts_raw = rec.get("ts", "")
-                    # Page views: count and skip — they'd flood the deployment feed.
+                    # Page views: count and skip - they'd flood the deployment feed.
                     if ev == "demo_viewed":
                         total_views += 1
                         views_by_demo[demo] += 1
                         continue
-                    # Auth failures: diagnostics only (JSONL + App Insights) — keep
+                    # Auth failures: diagnostics only (JSONL + App Insights) - keep
                     # them out of the public aggregate/recent feed entirely.
                     if ev in ("auth_error", "deploy_auth_failed"):
                         continue
@@ -294,7 +294,7 @@ def aggregate_stats(include_detail: bool = False) -> dict:
                             durations.append(rec["duration_s"])
                             demo_detail[demo]["durations"].append(rec["duration_s"])
                             scenario_detail[scenario]["durations"].append(rec["duration_s"])
-                    # Public recent-activity feed — deliberately NO email and only a
+                    # Public recent-activity feed - deliberately NO email and only a
                     # truncated user hash (enough to see "same person", not who).
                     recent.append({
                         "ts": ts_raw,
@@ -304,10 +304,10 @@ def aggregate_stats(include_detail: bool = False) -> dict:
                         "user": (rec.get("user") or "")[:6],
                         **({"duration_s": rec["duration_s"]} if "duration_s" in rec else {}),
                         # Fault domain ("user" | "app") is classified server-side from
-                        # the FULL error text and is safe to expose publicly — it's a
+                        # the FULL error text and is safe to expose publicly - it's a
                         # bare label carrying no message content.
                         **({"fault": _classify_fault(str(rec.get("error") or ""))} if ev == "deploy_failed" else {}),
-                        # Failure diagnostics — privacy-gated: only for requests that
+                        # Failure diagnostics - privacy-gated: only for requests that
                         # proved knowledge of STATS_DETAIL_SECRET (the internal dev
                         # dashboard). The public feed never carries error text.
                         **({"error": str(rec["error"])[:200]} if include_detail and ev == "deploy_failed" and rec.get("error") else {}),

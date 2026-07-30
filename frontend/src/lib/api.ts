@@ -137,7 +137,7 @@ export interface UsageStats {
 
 export async function fetchStats(): Promise<UsageStats> {
   // The failure-detail secret is baked in ONLY for the internal dev-dashboard
-  // build (set at build time, never in .env files) — public builds send no
+  // build (set at build time, never in .env files) - public builds send no
   // header and the API omits error text entirely.
   const detailSecret = process.env.NEXT_PUBLIC_STATS_DETAIL_SECRET;
   const res = await fetch(`${STATS_API_BASE}/api/stats`, {
@@ -158,11 +158,11 @@ export function recordDemoView(demoId: string): void {
     }).catch(() => { /* analytics must never affect the page */ });
   } catch { /* ignore */ }
 }
-/** Fire-and-forget auth-failure beacon — anonymous error code only (no PII), so
+/** Fire-and-forget auth-failure beacon - anonymous error code only (no PII), so
  * sign-in/consent breakage is visible in analytics instead of silent.
  * opts.detail carries the raw MSAL/AADSTS message (sanitized + truncated
  * server-side, private sinks only); opts.stage "deploy" marks failures that
- * killed a deploy before the backend was ever called — recorded as a distinct
+ * killed a deploy before the backend was ever called - recorded as a distinct
  * deploy_auth_failed event so client-side auth failures are never invisible. */
 export function recordAuthError(
   code: string,
@@ -455,7 +455,7 @@ export async function deleteJobWorkspace(
 }
 
 // Cancel a running/pending job (clears a stuck deployment from the list). Does
-// NOT delete any workspace — use deleteJobWorkspace for that.
+// NOT delete any workspace - use deleteJobWorkspace for that.
 export async function cancelJob(token: string, jobId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/jobs/${jobId}`, {
     method: "DELETE",

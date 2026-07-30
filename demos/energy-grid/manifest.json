@@ -69,7 +69,7 @@
       "type": "Notebook",
       "name": "03_simulate_realtime",
       "definitionPath": "notebooks/03_simulate_realtime.ipynb",
-      "description": "Real-time simulator — generates fresh sensor readings with current timestamps and appends to KQL Database. Runs automatically via scheduled pipeline."
+      "description": "Real-time simulator - generates fresh sensor readings with current timestamps and appends to KQL Database. Runs automatically via scheduled pipeline."
     },
     {
       "type": "SemanticModel",

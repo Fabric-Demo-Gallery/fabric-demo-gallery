@@ -85,7 +85,7 @@ const useStyles = makeStyles({
     whiteSpace: "nowrap" as const,
     ":hover": { textDecoration: "none", color: "#ffffff" },
   },
-  // Brand wordmark — logo-only on phones so the nav links fit.
+  // Brand wordmark - logo-only on phones so the nav links fit.
   brandText: {
     "@media (max-width: 640px)": {
       display: "none",
@@ -122,7 +122,7 @@ const useStyles = makeStyles({
     color: "#8b949e",
     fontSize: "13px",
     // Long UPNs (first-run enterprise accounts) forced the whole page to
-    // scroll horizontally on phones — truncate, and hide below tablet width.
+    // scroll horizontally on phones - truncate, and hide below tablet width.
     maxWidth: "260px",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -131,7 +131,7 @@ const useStyles = makeStyles({
       display: "none",
     },
   },
-  // "Sign out" label — icon-only button on phones.
+  // "Sign out" label - icon-only button on phones.
   signOutLabel: {
     "@media (max-width: 640px)": {
       display: "none",
@@ -322,7 +322,7 @@ function AdminConsentNote() {
   const s = useNoteStyles();
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  // mounted gate: keep this sign-in guidance OUT of the prerendered HTML — it was
+  // mounted gate: keep this sign-in guidance OUT of the prerendered HTML - it was
   // once scraped as the search snippet (Bing ignores data-nosnippet). Server and
   // first client render both return null, so hydration stays consistent.
   const [mounted, setMounted] = useState(false);
@@ -373,13 +373,13 @@ function AdminConsentNote() {
 }
 
 export default function ClientShell({ children }: { children: ReactNode }) {
-  // If this document is the MSAL sign-in/consent popup (or a hidden auth iframe) —
-  // i.e. the redirect target after auth — do NOT mount the app here. The window that
+  // If this document is the MSAL sign-in/consent popup (or a hidden auth iframe) -
+  // i.e. the redirect target after auth - do NOT mount the app here. The window that
   // opened the popup owns the handshake: it reads the auth response off this popup's
   // URL and closes it. Mounting the SPA (a second MSAL instance) in the popup consumes
   // that response first and strands the popup on the homepage (the bug we saw).
   // typeof window guard: this also runs during static prerender (Node), where
-  // BrowserUtils would throw. NOTE: there is deliberately NO "mounted" gate here —
+  // BrowserUtils would throw. NOTE: there is deliberately NO "mounted" gate here -
   // an earlier gate returned an empty shell during prerender, which stripped every
   // page's content (h1s, text, JSON-LD) from the static export and tanked SEO.
   if (typeof window !== "undefined" && (BrowserUtils.isInPopup() || BrowserUtils.isInIframe())) {
@@ -431,7 +431,7 @@ function ClientShellInner({ children }: { children: ReactNode }) {
   );
 }
 
-// Separate component so its useStyles() call runs INSIDE RendererProvider —
+// Separate component so its useStyles() call runs INSIDE RendererProvider -
 // styles requested before the provider mounts would go to the default renderer
 // and be missed by the SSR extraction above.
 function ShellChrome({ children }: { children: ReactNode }) {
@@ -442,7 +442,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       <AdminConsentNote />
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
-        {/* #8b949e: #484f58 on #010409 was 2.2:1 contrast — Lighthouse WCAG AA flag */}
+        {/* #8b949e: #484f58 on #010409 was 2.2:1 contrast - Lighthouse WCAG AA flag */}
         <Text size={200} style={{ color: "#8b949e" }}>
           Built with Microsoft Fabric REST APIs
         </Text>

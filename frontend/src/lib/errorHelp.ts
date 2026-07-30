@@ -36,7 +36,7 @@ export function classifyAuthError(raw: string | null | undefined): AuthError | n
       code: "consent_required",
       title: "Admin approval needed",
       guidance:
-        "Your organization requires an admin to approve this app's permissions. Use \u201cHow to approve\u201d in the blue banner (or send it to your admin) \u2014 a one-time approval unblocks your whole tenant. Then retry.",
+        "Your organization requires an admin to approve this app's permissions. Use \u201cHow to approve\u201d in the blue banner (or send it to your admin) - a one-time approval unblocks your whole tenant. Then retry.",
       retryable: false,
     };
   }
@@ -54,7 +54,7 @@ export function classifyAuthError(raw: string | null | undefined): AuthError | n
       code: "AADSTS50011",
       title: "Sign-in configuration issue",
       guidance:
-        "The sign-in reply URL isn't registered for this site \u2014 a site configuration problem, not something you can fix. Please report it via the GitHub link in the header.",
+        "The sign-in reply URL isn't registered for this site - a site configuration problem, not something you can fix. Please report it via the GitHub link in the header.",
       retryable: false,
     };
   }
@@ -102,11 +102,11 @@ export function classifyAuthError(raw: string | null | undefined): AuthError | n
   }
   if (m.includes("aadsts650052") || m.includes("lacks a service principal") || m.includes("invalid_client")) {
     // The tenant is missing a first-party Microsoft service principal (usually
-    // 'Azure Storage' in fresh sandbox tenants) — no consent or retry can fix
+    // 'Azure Storage' in fresh sandbox tenants) - no consent or retry can fix
     // it; a tenant admin must provision the SP once. Entra surfaces this as
     // error=invalid_client, sometimes WITHOUT the AADSTS650052 description
     // reaching MSAL (seen live 2026-07-24: cryptic invalid_client popup, zero
-    // telemetry) — so bare invalid_client maps here too, with Azure Storage as
+    // telemetry) - so bare invalid_client maps here too, with Azure Storage as
     // the by-far-most-likely missing service (its token is acquired on every
     // deploy; the other audiences are best-effort and swallowed).
     const is650052 = m.includes("aadsts650052") || m.includes("lacks a service principal");
@@ -116,12 +116,12 @@ export function classifyAuthError(raw: string | null | undefined): AuthError | n
       code: is650052 ? "AADSTS650052" : "invalid_client",
       title: `Your organization is missing the '${svcName}' service`,
       guidance:
-        `Your Microsoft Entra tenant doesn't have the '${svcName}' service principal, so no sign-in can grant access to it — retrying won't help. A tenant admin must provision it once by running: az ad sp create --id ${svcId} — in Microsoft-internal sandbox tenants (MngEnv…/MCAP…) you are usually that admin: run az login --tenant <your-tenant> --allow-no-subscriptions first, then the command above, then sign out and back in and retry the deploy.`,
+        `Your Microsoft Entra tenant doesn't have the '${svcName}' service principal, so no sign-in can grant access to it - retrying won't help. A tenant admin must provision it once by running: az ad sp create --id ${svcId} - in Microsoft-internal sandbox tenants (MngEnv…/MCAP…) you are usually that admin: run az login --tenant <your-tenant> --allow-no-subscriptions first, then the command above, then sign out and back in and retry the deploy.`,
       retryable: false,
     };
   }
   if (m.includes("aadsts")) {
-    // Any other Entra error \u2014 surface the code so it's diagnosable.
+    // Any other Entra error - surface the code so it's diagnosable.
     const codeMatch = msg.match(/AADSTS\d+/i);
     return {
       code: codeMatch ? codeMatch[0].toUpperCase() : "aadsts_other",
@@ -138,7 +138,7 @@ export function explainError(raw: string | null | undefined): FriendlyError {
   const msg = (raw ?? "").toString();
   const m = msg.toLowerCase();
 
-  // Sign-in / authorization failures first — the Entra & MSAL codes are precise
+  // Sign-in / authorization failures first - the Entra & MSAL codes are precise
   // and must not fall through to the generic 401/permission buckets below.
   const auth = classifyAuthError(msg);
   if (auth) return auth;
@@ -158,15 +158,15 @@ export function explainError(raw: string | null | undefined): FriendlyError {
 
   // Fabric items disabled for the tenant/capacity. Workspace creation succeeds
   // (a legacy Power BI operation) but the FIRST Fabric item (lakehouse) is
-  // rejected with 403 "The feature is not available" — meaning the tenant
+  // rejected with 403 "The feature is not available" - meaning the tenant
   // setting 'Users can create Fabric items' is off, or the chosen capacity
-  // isn't Fabric-enabled (e.g. Premium Per User). Deterministic — retrying
+  // isn't Fabric-enabled (e.g. Premium Per User). Deterministic - retrying
   // can't help until an admin/capacity change. Seen live: colakings.org 4×.
   if (m.includes("feature is not available") || m.includes("featurenotavailable")) {
     return {
       title: "Your organization or capacity doesn't allow Fabric items",
       guidance:
-        "The workspace was created, but creating Fabric items (lakehouses, notebooks) was rejected by your tenant. Two common causes: (1) a Fabric admin needs to enable \u201cUsers can create Fabric items\u201d in the Fabric Admin portal \u2192 Tenant settings (or add you to its allowed security group); (2) the capacity you selected isn't Fabric-enabled \u2014 Premium Per User doesn't support Fabric items; pick an F-SKU capacity or start a free Fabric trial (app.fabric.microsoft.com \u2192 account menu \u2192 Start trial), then retry.",
+        "The workspace was created, but creating Fabric items (lakehouses, notebooks) was rejected by your tenant. Two common causes: (1) a Fabric admin needs to enable \u201cUsers can create Fabric items\u201d in the Fabric Admin portal \u2192 Tenant settings (or add you to its allowed security group); (2) the capacity you selected isn't Fabric-enabled - Premium Per User doesn't support Fabric items; pick an F-SKU capacity or start a free Fabric trial (app.fabric.microsoft.com \u2192 account menu \u2192 Start trial), then retry.",
       retryable: false,
     };
   }
@@ -174,26 +174,26 @@ export function explainError(raw: string | null | undefined): FriendlyError {
   // Stale consent: the signed-in token was granted before the app added a newer
   // permission (seen live 3x after the Item.Execute.All regression). Must be
   // checked BEFORE the generic 403 bucket, whose "ask your Fabric admin"
-  // guidance is wrong for this — a fresh sign-in fixes it, an admin can't.
+  // guidance is wrong for this - a fresh sign-in fixes it, an admin can't.
   if (m.includes("sufficient scopes")) {
     return {
       title: "App permissions out of date",
       guidance:
-        "Your sign-in was authorized before this app added a newer permission it now needs. Hard-refresh the page (Ctrl+Shift+R), sign out (top right), sign back in and approve the popup \u2014 that refreshes the app's permissions \u2014 then retry the deploy.",
+        "Your sign-in was authorized before this app added a newer permission it now needs. Hard-refresh the page (Ctrl+Shift+R), sign out (top right), sign back in and approve the popup - that refreshes the app's permissions - then retry the deploy.",
       retryable: true,
     };
   }
 
   // Azure SQL blocked by a subscription policy (common in Microsoft sandbox
   // tenants: the MCAPS 'SFI' policy flips public network access off at server
-  // creation). Must be checked BEFORE the 403 and network buckets — the 400
+  // creation). Must be checked BEFORE the 403 and network buckets - the 400
   // variant contains the word "network" and would misclassify as a transient
   // "Network hiccup", and retrying can never fix a policy.
   if (m.includes("sql") && (m.includes("public network") || m.includes("firewall rules"))) {
     return {
       title: "Subscription policy blocks SQL public access",
       guidance:
-        "Your Azure subscription has a policy (standard in Microsoft sandbox/MCAPS subscriptions) that disables public network access on new SQL servers, which this demo needs. Fix: deploy again with a NEW resource group name \u2014 the app tags new resource groups with SecurityControl=Ignore, which exempts them from the policy. For an existing resource group, tag it yourself: az tag update --resource-id /subscriptions/<sub-id>/resourceGroups/<rg-name> --operation merge --tags SecurityControl=Ignore \u2014 then retry.",
+        "Your Azure subscription has a policy (standard in Microsoft sandbox/MCAPS subscriptions) that disables public network access on new SQL servers, which this demo needs. Fix: deploy again with a NEW resource group name - the app tags new resource groups with SecurityControl=Ignore, which exempts them from the policy. For an existing resource group, tag it yourself: az tag update --resource-id /subscriptions/<sub-id>/resourceGroups/<rg-name> --operation merge --tags SecurityControl=Ignore - then retry.",
       retryable: true,
     };
   }
@@ -204,7 +204,7 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     return {
       title: "Deployment timed out while notebooks were running",
       guidance:
-        "The workspace and all items were created, but the data-loading notebooks ran past the allowed time \u2014 usually a slow/busy capacity. The notebook jobs may still finish on their own: open the workspace in Fabric and check the notebook run status in ~10\u201315 minutes. If data or reports look incomplete after that, delete the workspace and redeploy on a less busy capacity.",
+        "The workspace and all items were created, but the data-loading notebooks ran past the allowed time - usually a slow/busy capacity. The notebook jobs may still finish on their own: open the workspace in Fabric and check the notebook run status in ~10\u201315 minutes. If data or reports look incomplete after that, delete the workspace and redeploy on a less busy capacity.",
       retryable: true,
     };
   }
@@ -222,12 +222,12 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     };
   }
 
-  // Spark / Livy cold-start — transient
+  // Spark / Livy cold-start - transient
   if (m.includes("livy") || (m.includes("spark") && (m.includes("session") || m.includes("start")))) {
     return {
       title: "Spark is warming up",
       guidance:
-        "The Spark pool was cold-starting — this is transient. Wait ~30 seconds and retry; it usually succeeds on the next attempt.",
+        "The Spark pool was cold-starting - this is transient. Wait ~30 seconds and retry; it usually succeeds on the next attempt.",
       retryable: true,
     };
   }
@@ -257,7 +257,7 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     return {
       title: "Slow down a moment",
       guidance:
-        "You've hit the deployment rate limit (20 per hour). Wait a few minutes and try again — existing deployments keep running.",
+        "You've hit the deployment rate limit (20 per hour). Wait a few minutes and try again - existing deployments keep running.",
       retryable: true,
     };
   }
@@ -271,7 +271,7 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     return {
       title: "That name isn't allowed",
       guidance:
-        "The name has unsupported characters or is too long (max 100 — letters, numbers, spaces, and , & _ - ( ) . only). Enter a shorter, simpler name and retry.",
+        "The name has unsupported characters or is too long (max 100 - letters, numbers, spaces, and , & _ - ( ) . only). Enter a shorter, simpler name and retry.",
       retryable: true,
     };
   }
@@ -345,7 +345,7 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     return {
       title: "Capacity is busy",
       guidance:
-        "The capacity is throttling requests right now. Wait a minute and retry — or use a less busy capacity.",
+        "The capacity is throttling requests right now. Wait a minute and retry - or use a less busy capacity.",
       retryable: true,
     };
   }
@@ -355,7 +355,7 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     return {
       title: "Semantic model still syncing",
       guidance:
-        "The SQL endpoint was still syncing the freshly-written tables. This usually self-resolves — retry the deploy in a moment.",
+        "The SQL endpoint was still syncing the freshly-written tables. This usually self-resolves - retry the deploy in a moment.",
       retryable: true,
     };
   }
@@ -375,12 +375,12 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     return {
       title: "Fabric service error",
       guidance:
-        "Fabric returned a server error. This is often transient — retry shortly. If it persists, check Fabric service health.",
+        "Fabric returned a server error. This is often transient - retry shortly. If it persists, check Fabric service health.",
       retryable: true,
     };
   }
 
-  // Fallback — no specific pattern matched. Show the (coerced, readable) detail
+  // Fallback - no specific pattern matched. Show the (coerced, readable) detail
   // so nothing is hidden, with actionable guidance when there's no detail.
   return {
     title: "Deployment failed",

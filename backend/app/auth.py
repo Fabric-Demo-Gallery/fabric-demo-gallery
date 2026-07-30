@@ -24,7 +24,7 @@ def is_production() -> bool:
 
 # ── Entra JWT signature verification ─────────────────────────────────────────
 # The backend never makes authorization decisions beyond keying the per-user
-# job store (list/cancel/delete of job METADATA) — the Fabric API is the real
+# job store (list/cancel/delete of job METADATA) - the Fabric API is the real
 # authz boundary for everything else. But an unverified decode would let a
 # forged token enumerate or cancel another user's job metadata, so tokens are
 # verified against Microsoft's published signing keys before any claim is
@@ -72,7 +72,7 @@ def _verify_token(token: str) -> dict:
 
 
 def _unverified_claims(token: str) -> dict:
-    """Best-effort claim extraction WITHOUT verification — dev fallback only."""
+    """Best-effort claim extraction WITHOUT verification - dev fallback only."""
     parts = token.split(".")
     if len(parts) < 2:
         return {}
@@ -119,7 +119,7 @@ async def get_user_token(
     """Extract Bearer token or fall back to az CLI token (dev mode)."""
     if credentials and credentials.credentials:
         return credentials.credentials
-    logger.info("No Bearer token — using az CLI token (dev mode)")
+    logger.info("No Bearer token - using az CLI token (dev mode)")
     return _get_az_cli_token("https://api.fabric.microsoft.com")
 
 
@@ -145,7 +145,7 @@ async def get_kusto_token(request: Request) -> str:
     """Get a token for Eventhouse/KQL data-plane (Kusto) REST calls.
 
     The Eventhouse query endpoint (``*.kusto.fabric.microsoft.com``) requires a
-    token whose audience is ``https://kusto.fabric.microsoft.com`` — the
+    token whose audience is ``https://kusto.fabric.microsoft.com`` - the
     api.fabric.microsoft.com token is rejected with 401. The frontend acquires
     this with the ``https://kusto.fabric.microsoft.com/.default`` scope; in dev we
     fall back to the az CLI (requires ``az login --scope
@@ -185,7 +185,7 @@ def get_user_id(token: str) -> str:
 def get_user_email(token: str) -> str | None:
     """Extract the user's sign-in name (UPN/email) from a JWT token.
 
-    Used only for usage analytics — never exposed through public endpoints,
+    Used only for usage analytics - never exposed through public endpoints,
     and never used for authorization. Callers always invoke get_user_id first
     (which enforces verification in production), so a cheap unverified parse
     is safe here and keeps analytics from ever failing a request.

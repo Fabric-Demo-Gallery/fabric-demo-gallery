@@ -1,7 +1,7 @@
 {
   "id": "data-virtualization",
   "title": "Data Virtualization (ADLS Shortcut)",
-  "description": "Read external ADLS Gen2 data in-place via a Fabric Shortcut — no copy, no ETL. Provision storage, upload sample data, create shortcut, and run analytics.",
+  "description": "Read external ADLS Gen2 data in-place via a Fabric Shortcut - no copy, no ETL. Provision storage, upload sample data, create shortcut, and run analytics.",
   "icon": "🔗",
   "estimatedTime": "15-20 min",
   "tags": ["shortcut", "adls", "lakehouse", "data-virtualization"],

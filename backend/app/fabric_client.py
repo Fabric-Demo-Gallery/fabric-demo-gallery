@@ -1,4 +1,4 @@
-"""Fabric REST API client — wraps workspace, item, and job operations."""
+"""Fabric REST API client - wraps workspace, item, and job operations."""
 
 from __future__ import annotations
 
@@ -59,7 +59,7 @@ class FabricClient:
 
     async def _send(self, method: str, url: str, **kwargs) -> httpx.Response:
         """Issue a request, retrying transient network errors for idempotent GETs
-        only. POST/PUT/DELETE are never auto-retried — a lost response after the
+        only. POST/PUT/DELETE are never auto-retried - a lost response after the
         server already acted would otherwise create duplicate resources."""
         attempts = 0
         while True:
@@ -102,10 +102,10 @@ class FabricClient:
                 resp = await self._client.get(location)
             except (httpx.ConnectError, httpx.ReadError, httpx.ConnectTimeout,
                     httpx.ReadTimeout, httpx.RemoteProtocolError) as e:
-                # Transient network blip (DNS hiccup, dropped connection) — keep polling.
+                # Transient network blip (DNS hiccup, dropped connection) - keep polling.
                 transient_failures += 1
                 if transient_failures > 12:
-                    raise FabricError(503, f"Lost network connection while tracking the operation: {e}. The item may still be provisioning — check the workspace in Fabric portal.")
+                    raise FabricError(503, f"Lost network connection while tracking the operation: {e}. The item may still be provisioning - check the workspace in Fabric portal.")
                 logger.warning("Transient network error while polling LRO (%s/12): %s", transient_failures, e)
                 await asyncio.sleep(5)
                 continue
@@ -118,7 +118,7 @@ class FabricClient:
                 if status in ("failed", "cancelled", "deduped"):
                     # Surface the most specific error available. For RunNotebook
                     # jobs the cause lives in failureReason.errorCode (e.g.
-                    # System_Cancelled_Session_State) — put it at the FRONT so it
+                    # System_Cancelled_Session_State) - put it at the FRONT so it
                     # survives downstream truncation and transient-retry detection.
                     err = body.get("error") or {}
                     fr = body.get("failureReason") or {}
@@ -127,16 +127,16 @@ class FabricClient:
                     detail = " ".join(p for p in (err_code, err_msg) if p) or json.dumps(body)[:300]
                     # Log the full terminal body so the true root cause is captured
                     # in app.log (the SSE stream only reaches the browser).
-                    logger.warning("[lro] operation %s — errorCode=%r message=%r full=%s",
+                    logger.warning("[lro] operation %s - errorCode=%r message=%r full=%s",
                                    status, err_code, err_msg, json.dumps(body)[:1000])
                     raise FabricError(500, f"Operation {status}: {detail}")
                 logger.debug("LRO status: %s", status)
             elif resp.status_code == 401:
                 raise FabricError(401, "Authentication expired during operation. Sign out, sign back in, and retry.")
             elif resp.status_code == 404:
-                raise FabricError(404, "Operation tracking lost. The item may have been created — check the workspace.")
+                raise FabricError(404, "Operation tracking lost. The item may have been created - check the workspace.")
             await asyncio.sleep(5)
-        raise FabricError(504, f"Operation did not finish within {timeout}s. It may still be running in Fabric — check the workspace in the Fabric portal.")
+        raise FabricError(504, f"Operation did not finish within {timeout}s. It may still be running in Fabric - check the workspace in the Fabric portal.")
 
     # ── workspaces ───────────────────────────────────────────────────────
 
@@ -190,7 +190,7 @@ class FabricClient:
         """Provision a Fabric workspace identity (a managed Entra service
         principal owned by the workspace). Required so the Mirrored Database
         connection can authenticate to the source Azure SQL Database with
-        WorkspaceIdentity credentials — secret-less and non-interactive.
+        WorkspaceIdentity credentials - secret-less and non-interactive.
 
         The workspace must already be assigned to a Fabric capacity. The
         identity's service-principal display name equals the workspace name,
@@ -199,7 +199,7 @@ class FabricClient:
 
         Robust against the known first-time-in-tenant flakiness: Fabric's
         long-running provisioning operation can report 'failed' even though the
-        identity was actually created. So when the LRO fails we don't give up —
+        identity was actually created. So when the LRO fails we don't give up -
         we re-issue the request, and a 'WorkspaceIdentityAlreadyExists' response
         confirms the identity exists (idempotent success).
         """
@@ -219,7 +219,7 @@ class FabricClient:
                     await self._poll_lro(location, timeout=300)
                     return "ok"
                 except FabricError as e:
-                    # LRO false-negative is common here — verify via re-POST.
+                    # LRO false-negative is common here - verify via re-POST.
                     logger.warning("[ws-identity] provisioning LRO reported failure (%s); will verify", e.detail[:120])
                     return "pending"
             detail = resp.text[:400]
@@ -242,7 +242,7 @@ class FabricClient:
             logger.info("[ws-identity] provisioned for workspace %s (%s)", workspace_id, result)
             return
 
-        # LRO reported failure — re-check whether the identity actually exists.
+        # LRO reported failure - re-check whether the identity actually exists.
         for _ in range(4):
             await asyncio.sleep(10)
             result = await _attempt()
@@ -253,7 +253,7 @@ class FabricClient:
         raise FabricError(
             500,
             "Failed to provision the workspace identity. This can happen the first "
-            "time an identity is created in a tenant — wait a few minutes and retry "
+            "time an identity is created in a tenant - wait a few minutes and retry "
             "the deployment.",
         )
 
@@ -277,7 +277,7 @@ class FabricClient:
             location = resp.headers.get("Location")
             if location:
                 await self._poll_lro(location)
-            # LRO result doesn't always contain item details — find the item by name
+            # LRO result doesn't always contain item details - find the item by name
             # Try with type filter first, then without
             for attempt in range(3):
                 if attempt > 0:
@@ -294,7 +294,7 @@ class FabricClient:
                     logger.info("Found item '%s' via unfiltered listing", display_name)
                     return item
             logger.warning("Created item '%s' but couldn't find it in listing", display_name)
-            raise FabricError(500, f"'{display_name}' was created but could not be located in the workspace. This is a Fabric API timing issue — retry the deployment.")
+            raise FabricError(500, f"'{display_name}' was created but could not be located in the workspace. This is a Fabric API timing issue - retry the deployment.")
         return resp.json()
 
     async def delete_item(self, workspace_id: str, item_id: str) -> None:
@@ -329,12 +329,12 @@ class FabricClient:
 
     # ── Fabric data agent (headless create + publish via item definition) ──
     # A Fabric DataAgent is created AND published purely through its item
-    # definition — no notebook, no fabric-data-agent-sdk, no %pip. The published
+    # definition - no notebook, no fabric-data-agent-sdk, no %pip. The published
     # state is encoded by including the `published/` parts + publish_info.json.
     # (Verified against the live API: createItem-with-definition for type DataAgent,
     # with regenerated table/column GUIDs, produces a queryable published agent.)
 
-    # OneLake Unity Catalog (schema discovery) — uses the storage-audience token.
+    # OneLake Unity Catalog (schema discovery) - uses the storage-audience token.
     _ONELAKE_TABLE_API = "https://onelake.table.fabric.microsoft.com"
     # Spark/Delta type_name → SQL data_type. data_type is only an NL2SQL hint, so
     # an approximate mapping is fine; unknown types fall back to varchar.
@@ -435,7 +435,7 @@ class FabricClient:
         """
         tables = await self.discover_lakehouse_schema(workspace_id, lakehouse_id, lakehouse_name, schema)
         if not tables:
-            raise FabricError(500, f"No tables found in lakehouse '{lakehouse_name}' — cannot build data agent.")
+            raise FabricError(500, f"No tables found in lakehouse '{lakehouse_name}' - cannot build data agent.")
 
         def b64(obj: dict) -> str:
             return base64.b64encode(json.dumps(obj).encode("utf-8")).decode("ascii")
@@ -508,7 +508,7 @@ class FabricClient:
             try:
                 lh = await self.get_lakehouse(workspace_id, lakehouse_id)
             except FabricError as e:
-                # Tolerate transient network / 5xx blips — keep polling to timeout
+                # Tolerate transient network / 5xx blips - keep polling to timeout
                 # rather than failing the whole deploy on one hiccup.
                 if e.status in (502, 503, 504):
                     logger.warning("Transient error waiting for SQL endpoint, retrying: %s", e.detail[:120])
@@ -747,7 +747,7 @@ class FabricClient:
 
         Uses the Power BI Enhanced Refresh API (api.powerbi.com). The Fabric
         `/semanticModels/{id}/refresh` endpoint returns 404 for these models,
-        so it never actually framed the DirectLake tables — leaving the
+        so it never actually framed the DirectLake tables - leaving the
         'DAX queries may fall back to DirectQuery' warning on every table.
         The Fabric-audience token is accepted by the Power BI API.
 
@@ -778,7 +778,7 @@ class FabricClient:
         last_error = ""
         for attempt in range(1, max_attempts + 1):
             resp = await self._request("POST", refresh_url, json={"type": "full"})
-            # 202 Accepted — poll the refresh history for the result.
+            # 202 Accepted - poll the refresh history for the result.
             if resp.status_code not in (200, 202):
                 return
             start = time.time()
@@ -794,7 +794,7 @@ class FabricClient:
                 if status == "failed":
                     last_error = _extract_error(items[0])
                     # On a fresh post-deploy refresh, a failure is overwhelmingly
-                    # the SQL-endpoint metadata sync lag — retryable even when the
+                    # the SQL-endpoint metadata sync lag - retryable even when the
                     # error message is empty/unknown.
                     if attempt < max_attempts:
                         logger.warning(
@@ -834,7 +834,7 @@ class FabricClient:
             location = resp.headers.get("Location", "")
             if location:
                 await self._poll_lro(location)
-            # Eventhouse may take a moment — list to find it
+            # Eventhouse may take a moment - list to find it
             items = await self.list_items(workspace_id, "Eventhouse")
             for item in items:
                 if item["displayName"] == name:
@@ -895,7 +895,7 @@ class FabricClient:
         schema_kql: str,
     ) -> None:
         """Add a table (DDL only) to an existing KQL database via the Fabric
-        definition API. No Kusto data-plane token is required — Fabric executes
+        definition API. No Kusto data-plane token is required - Fabric executes
         the ``DatabaseSchema.kql`` script under the caller's identity.
         """
         db_props = {
@@ -1018,7 +1018,7 @@ class FabricClient:
         database/table. ``database_item_id`` is the KQL **database** item id (the
         Eventhouse destination resolves the cluster URL from it, not from the
         Eventhouse item id). The endpoint's connection string is retrieved by the
-        user from the Fabric portal — it is not exposed by the public REST API.
+        user from the Fabric portal - it is not exposed by the public REST API.
         """
         stream_name = f"{name}-stream"
         topology = {
@@ -1226,7 +1226,7 @@ class FabricClient:
             "x-ms-blob-type": "BlockBlob",
             "Content-Type": content_type,
         }
-        # Retry up to 5 times — RBAC propagation after role assignment can take ~60s
+        # Retry up to 5 times - RBAC propagation after role assignment can take ~60s
         for attempt in range(5):
             resp = await self._storage_client.put(url, content=data, headers=headers)
             if resp.status_code in (200, 201):
@@ -1246,7 +1246,7 @@ class FabricClient:
     ) -> dict:
         """
         Create a shareable cloud connection using account key.
-        NOTE: blocked when allowSharedKeyAccess=false — use create_connection_oauth() instead.
+        NOTE: blocked when allowSharedKeyAccess=false - use create_connection_oauth() instead.
         """
         body = {
             "connectivityType": "ShareableCloud",
@@ -1273,7 +1273,7 @@ class FabricClient:
     async def _generate_user_delegation_sas(self, account_name: str, container: str) -> str:
         """
         Generate a read-only User Delegation SAS for an ADLS Gen2 container.
-        Uses the storage OAuth2 token — works even when allowSharedKeyAccess=false.
+        Uses the storage OAuth2 token - works even when allowSharedKeyAccess=false.
         """
         import hmac as _hmac
         import hashlib
@@ -1425,8 +1425,8 @@ class FabricClient:
                 },
             )
             if resp.status_code == 409:
-                # Connection with this display name already exists — find and reuse it.
-                logger.info("[connection] 409 DuplicateConnectionName — looking up existing connection '%s'", display_name)
+                # Connection with this display name already exists - find and reuse it.
+                logger.info("[connection] 409 DuplicateConnectionName - looking up existing connection '%s'", display_name)
                 list_resp = await c.get(
                     f"{FABRIC_API}/connections",
                     headers={"Authorization": f"Bearer {self._token}"},
@@ -1481,7 +1481,7 @@ class FabricClient:
                 },
             },
         }
-        # Always use the main Fabric token (self._request) — it includes both
+        # Always use the main Fabric token (self._request) - it includes both
         # Item.ReadWrite.All and OneLake.ReadWrite.All which the Shortcuts REST API requires.
         # The onelake_token (OneLake.ReadWrite.All only) is for OneLake DFS file uploads, not REST.
         resp = await self._request("POST", url, json=body)
@@ -1504,7 +1504,7 @@ class FabricClient:
         Prerequisites: the workspace identity must already be provisioned and
         mapped to a database user with ALTER ANY EXTERNAL MIRROR on the source
         database (done by the seed notebook). The connection is test-validated on
-        creation (the SQL connector doesn't allow skipping the test) — which also
+        creation (the SQL connector doesn't allow skipping the test) - which also
         confirms the workspace-identity grant landed before mirroring starts.
 
         Reused (409-dedup) if a connection with the same display name exists."""
@@ -1530,7 +1530,7 @@ class FabricClient:
         }
         resp = await self._client.post(f"{FABRIC_API}/connections", json=body)
         if resp.status_code == 409:
-            logger.info("[sql-connection] 409 duplicate name — reusing '%s'", display_name)
+            logger.info("[sql-connection] 409 duplicate name - reusing '%s'", display_name)
             list_resp = await self._request("GET", f"{FABRIC_API}/connections")
             for conn in list_resp.json().get("value", []):
                 if conn.get("displayName") == display_name:
@@ -1641,8 +1641,8 @@ class FabricClient:
 
         A freshly-created mirrored database goes through an 'Initializing' phase
         during which startMirroring is rejected with
-        OperationNotAllowedInCurrentStatus. We therefore retry — waiting out the
-        init phase — and only consider the job done once getMirroringStatus
+        OperationNotAllowedInCurrentStatus. We therefore retry - waiting out the
+        init phase - and only consider the job done once getMirroringStatus
         reports Running/Starting. ('Initializing'/'Initialized' are NOT success:
         the database settles back to 'Initialized' if start never takes.)
         """
@@ -1712,7 +1712,7 @@ class FabricClient:
                 last = []
             except (httpx.ConnectError, httpx.ReadError, httpx.ConnectTimeout,
                     httpx.ReadTimeout, httpx.RemoteProtocolError, httpx.WriteError) as e:
-                # Transient network blip (DNS hiccup, dropped connection) — keep polling.
+                # Transient network blip (DNS hiccup, dropped connection) - keep polling.
                 transient_failures += 1
                 logger.warning("[mirroring] transient network error polling table status (%s): %s",
                                transient_failures, e)

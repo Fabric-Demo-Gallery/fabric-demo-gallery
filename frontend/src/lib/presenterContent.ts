@@ -1,4 +1,4 @@
-// Presenter content for solution engineers — talking track, headline metrics,
+// Presenter content for solution engineers - talking track, headline metrics,
 // suggested live demo flow, and post-deploy "what to show next" pointers.
 // Keyed by demo id. Consumed by DemoDetailClient (Presenter section + post-deploy panel).
 // Kept separate from demoCatalog.ts so the large demo objects stay easy to maintain.

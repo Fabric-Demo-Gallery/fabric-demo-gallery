@@ -15,11 +15,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const demo = DEMOS[id];
   if (!demo) return {};
-  const title = `${demo.title} — ${demo.industry}`;
+  const title = `${demo.title} - ${demo.industry}`;
   // Bing flags descriptions under ~150 chars; catalog blurbs are short, so
   // append the deploy CTA (same pattern as industry pages). UI text untouched.
   // Skip the CTA when the blurb is already long enough on its own.
-  const enriched = `${demo.description} Deploy this demo to your Microsoft Fabric tenant in one click — no setup required.`;
+  const enriched = `${demo.description} Deploy this demo to your Microsoft Fabric tenant in one click - no setup required.`;
   const description =
     enriched.length <= 200
       ? enriched
@@ -51,7 +51,7 @@ export default async function DemoDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const demo = DEMOS[id];
   const industry = industries.find((i) => i.demoId === id);
-  // Breadcrumb structured data mirroring the visible trail — Bing (and Google)
+  // Breadcrumb structured data mirroring the visible trail - Bing (and Google)
   // use it for breadcrumb rich results and AI answers. Purely additive markup.
   const breadcrumbLd = demo
     ? {

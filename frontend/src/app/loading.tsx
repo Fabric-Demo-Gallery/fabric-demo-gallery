@@ -1,4 +1,4 @@
-// Next.js App Router loading.tsx — shown as Suspense fallback during client-side navigation.
+// Next.js App Router loading.tsx - shown as Suspense fallback during client-side navigation.
 // Uses pure CSS so it renders correctly without FluentProvider context.
 export default function Loading() {
   return (

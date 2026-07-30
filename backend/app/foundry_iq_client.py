@@ -1,4 +1,4 @@
-"""Foundry IQ (Azure AI Search) data-plane client — knowledge sources + bases.
+"""Foundry IQ (Azure AI Search) data-plane client - knowledge sources + bases.
 
 The new Microsoft Foundry grounds a Fabric data agent through Foundry IQ, which
 runs on an Azure AI Search service. Grounding requires two data-plane objects on

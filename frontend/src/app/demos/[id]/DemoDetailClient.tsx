@@ -115,7 +115,7 @@ function defaultWorkspaceName(
   return compact.slice(0, 100);
 }
 
-// Universal scenarios — identical across all industries (IDs match backend _scenarios/)
+// Universal scenarios - identical across all industries (IDs match backend _scenarios/)
 const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "data-virtualization-batch",
@@ -191,7 +191,7 @@ const ALL_SCENARIOS: ScenarioInfo[] = [
   {
     id: "fabric-foundry-agent",
     title: "Fabric & Foundry AI Agent",
-    description: "Deploy a Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data — data + AI in one click. (Preview: provisions billable Azure Foundry resources in your subscription.)",
+    description: "Deploy a Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data - data + AI in one click. (Preview: provisions billable Azure Foundry resources in your subscription.)",
     estimatedTime: "20–30 min",
     tags: ["foundry", "ai-agent", "data-agent", "rag", "preview"],
     enabled: true,
@@ -238,19 +238,19 @@ type SampleDataItem = {
   rows: number;
 };
 
-/* Item logos — OFFICIAL icons only. Fabric item types use the official Fabric
+/* Item logos - OFFICIAL icons only. Fabric item types use the official Fabric
    item SVGs (@fabric-msft/svg-icons); Azure resources use the official Azure
-   architecture icons. No lookalike glyphs — the letter fallback survives only
+   architecture icons. No lookalike glyphs - the letter fallback survives only
    for unknown future types. */
 
-// The Fabric REST API still calls the Activator item type "Reflex" — show users
+// The Fabric REST API still calls the Activator item type "Reflex" - show users
 // the current product name while keeping the API type internally.
 const TYPE_DISPLAY: Record<string, string> = { Reflex: "Activator" };
 const displayType = (t: string) => TYPE_DISPLAY[t] ?? t;
 
 function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
   const FILE_MAP: Record<string, string> = {
-    // Fabric items — official Fabric item icons
+    // Fabric items - official Fabric item icons
     Lakehouse: "lakehouse_24_item.svg",
     Notebook: "notebook_24_item.svg",
     SemanticModel: "semantic_model_24_item.svg",
@@ -270,7 +270,7 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
     Ontology: "ontology_24_item.svg",
     SQLDatabase: "sql_database_24_item.svg",
     MirroredDatabase: "mirrored_generic_database_24_item.svg",
-    // Azure resources — official Azure architecture icons
+    // Azure resources - official Azure architecture icons
     FoundryAccount: "azure_foundry.svg",
     KnowledgeBase: "azure_foundry.svg",
     Agent: "azure_foundry.svg",
@@ -288,15 +288,15 @@ function FabricItemIcon({ type, size = 16 }: { type: string; size?: number }) {
   return <span style={{ fontSize: size * 0.65, color: "#8b949e", fontWeight: 700, lineHeight: 1 }}>{type.charAt(0)}</span>;
 }
 
-// Medallion layers rendered as their namesake metals — tinted, not saturated.
+// Medallion layers rendered as their namesake metals - tinted, not saturated.
 const LAYER_COLORS = ["#db8a5f", "#9ba6b0", "#e3b341"];
 
-// Fabric IQ — verified comparison queries per industry (2 medium-hard + 1 hard).
+// Fabric IQ - verified comparison queries per industry (2 medium-hard + 1 hard).
 // Medium-hard = a two-dimension Lakehouse join (the fact filtered through two
 // related entities). Hard = relationship traversal + filter + group-by + top-1
 // (single-row answer). The Ontology agent traverses the defined relationships;
 // the Direct agent must guess the joins and tends to fail. NOTE: sums/averages
-// of Eventhouse time-series measures are deliberately NOT used — the data agent
+// of Eventhouse time-series measures are deliberately NOT used - the data agent
 // runtime (Standard AND Preview, checked 2026-07-14) cannot aggregate ontology
 // time-series to a grand total (it counts rows or sums a truncated table).
 // Answers computed from each demo's ACTUAL deployed (capped) package data.
@@ -304,62 +304,62 @@ const FABRICIQ_QUERIES: Record<string, { q: string; expect: string; hint: string
   "retail-sales": [
     { level: "Medium-hard", q: "How many point-of-sale transactions were for Electronics products sold at stores in the West region?", expect: "1,001 transactions", hint: "PosTransaction → Product (category=Electronics) AND → Store (region=West)" },
     { level: "Medium-hard", q: "How many transactions were for BrandB products in the Apparel category?", expect: "4,268 transactions", hint: "PosTransaction → Product (brand=BrandB AND category=Apparel)" },
-    { level: "Hard", q: "Which product category has the most POS transactions at West-region stores?", expect: "Grocery — 1,438 transactions", hint: "PosTransaction → Store (region=West) AND → Product, group by category, top 1" },
+    { level: "Hard", q: "Which product category has the most POS transactions at West-region stores?", expect: "Grocery - 1,438 transactions", hint: "PosTransaction → Store (region=West) AND → Product, group by category, top 1" },
   ],
   "manufacturing-qc": [
     { level: "Medium-hard", q: "How many batches with a failure event ran on Injection Molder machines on Line-B?", expect: "69 batches", hint: "ProductionBatch → Machine (type=Injection Molder) + filter line=Line-B AND failure_event" },
     { level: "Medium-hard", q: "How many batches of product Gear-X ran on Injection Molder machines?", expect: "138 batches", hint: "ProductionBatch → Machine (type=Injection Molder) + filter product=Gear-X" },
-    { level: "Hard", q: "Which machine type had the most production batches with a failure event?", expect: "Stamping Press — 225 batches", hint: "ProductionBatch (failure_event) → Machine, group by machine_type, top 1" },
+    { level: "Hard", q: "Which machine type had the most production batches with a failure event?", expect: "Stamping Press - 225 batches", hint: "ProductionBatch (failure_event) → Machine, group by machine_type, top 1" },
   ],
   "energy-grid": [
     { level: "Medium-hard", q: "How many grid-sensor readings are at North-region substations that had a high-severity power event?", expect: "4,020 readings", hint: "GridSensor → Substation ← PowerEvent (region=North + severity=high)" },
     { level: "Medium-hard", q: "How many renewable readings came from solar plants during overcast weather?", expect: "1,531 readings", hint: "RenewableReading → GenerationPlant (type=solar) + filter weather=overcast" },
-    { level: "Hard", q: "Which plant type produced the most renewable readings during overcast weather?", expect: "Solar — 1,531 readings", hint: "RenewableReading (weather=overcast) → GenerationPlant, group by plant_type, top 1" },
+    { level: "Hard", q: "Which plant type produced the most renewable readings during overcast weather?", expect: "Solar - 1,531 readings", hint: "RenewableReading (weather=overcast) → GenerationPlant, group by plant_type, top 1" },
   ],
   "healthcare": [
     { level: "Medium-hard", q: "How many clinical records were recorded by Afternoon-shift staff for emergency Oncology admissions?", expect: "293 records", hint: "ClinicalRecord → Staff (shift=Afternoon) AND → Admission → Department (Oncology + Emergency)" },
     { level: "Medium-hard", q: "How many NHS-insured admissions were there in Oncology?", expect: "2,056 admissions", hint: "Admission → Department (Oncology) + filter insurance_type=NHS" },
-    { level: "Hard", q: "Which staff shift recorded the most clinical records for Emergency admissions?", expect: "Morning — 3,281 records", hint: "ClinicalRecord → Staff AND → Admission (type=Emergency), group by shift, top 1" },
+    { level: "Hard", q: "Which staff shift recorded the most clinical records for Emergency admissions?", expect: "Morning - 3,281 records", hint: "ClinicalRecord → Staff AND → Admission (type=Emergency), group by shift, top 1" },
   ],
   "financial-services": [
     { level: "Medium-hard", q: "How many flagged-fraud transactions were made by High risk-tier customers in the Corporate segment?", expect: "95 fraud-flagged transactions", hint: "Transaction → Customer (risk_tier=High AND segment=Corporate) + filter is_flagged_fraud" },
     { level: "Medium-hard", q: "How many Credit Card accounts are held by High risk-tier customers?", expect: "84 accounts", hint: "Account (type=Credit Card) → Customer (risk_tier=High)" },
-    { level: "Hard", q: "Which merchant category has the most flagged-fraud transactions by High risk-tier customers?", expect: "Wire Transfer — 159 transactions", hint: "Transaction (is_flagged_fraud) → Customer (risk_tier=High), group by merchant_category, top 1" },
+    { level: "Hard", q: "Which merchant category has the most flagged-fraud transactions by High risk-tier customers?", expect: "Wire Transfer - 159 transactions", hint: "Transaction (is_flagged_fraud) → Customer (risk_tier=High), group by merchant_category, top 1" },
   ],
   "transportation": [
     { level: "Medium-hard", q: "How many late deliveries by HGV vehicles were on Standard routes?", expect: "636 late deliveries", hint: "Delivery → Vehicle (type=HGV) AND → Route (type=Standard) + filter is_late" },
     { level: "Medium-hard", q: "How many deliveries were made by HGV vehicles based at the Birmingham depot?", expect: "1,572 deliveries", hint: "Delivery → Vehicle (type=HGV AND depot=Birmingham)" },
-    { level: "Hard", q: "Which depot's vehicles recorded the most late deliveries?", expect: "London — 1,018 late deliveries", hint: "Delivery (is_late) → Vehicle, group by depot, top 1" },
+    { level: "Hard", q: "Which depot's vehicles recorded the most late deliveries?", expect: "London - 1,018 late deliveries", hint: "Delivery (is_late) → Vehicle, group by depot, top 1" },
   ],
   "technology": [
     { level: "Medium-hard", q: "How many High-priority SLA-breached tickets did churned Enterprise accounts have?", expect: "1 ticket", hint: "SupportTicket → Account (is_churned + plan=Enterprise) + filter priority=High AND is_sla_breached" },
     { level: "Medium-hard", q: "How many Admin users are on Enterprise accounts?", expect: "204 users", hint: "User (role=Admin) → Account (plan=Enterprise)" },
-    { level: "Hard", q: "Which feature was used most by Enterprise accounts?", expect: "Billing — 329 usage events", hint: "UsageEvent → Account (plan=Enterprise), group by feature, top 1" },
+    { level: "Hard", q: "Which feature was used most by Enterprise accounts?", expect: "Billing - 329 usage events", hint: "UsageEvent → Account (plan=Enterprise), group by feature, top 1" },
   ],
   "media": [
     { level: "Medium-hard", q: "How many completed views of Action-genre content came from Latin America subscribers?", expect: "210 completed views", hint: "ViewingEvent → Content (genre=Action) AND → Subscriber (region=Latin America) + filter is_completed" },
     { level: "Medium-hard", q: "How many Action-genre titles are Series?", expect: "82 titles", hint: "Content (genre=Action AND content_type=Series)" },
-    { level: "Hard", q: "Which genre has the most completed views?", expect: "Comedy — 1,064 completed views", hint: "ViewingEvent (is_completed) → Content, group by genre, top 1" },
+    { level: "Hard", q: "Which genre has the most completed views?", expect: "Comedy - 1,064 completed views", hint: "ViewingEvent (is_completed) → Content, group by genre, top 1" },
   ],
   "hospitality": [
     { level: "Medium-hard", q: "How many bookings at 5-star properties by Platinum-tier guests were cancelled?", expect: "76 cancelled bookings", hint: "Booking → Property (star_rating=5) AND → Guest (loyalty_tier=Platinum) + filter is_cancelled" },
     { level: "Medium-hard", q: "How many bookings were made at 5-star properties in the UK?", expect: "4,076 bookings", hint: "Booking → Property (star_rating=5 AND country=UK)" },
-    { level: "Hard", q: "Which city's properties received the most bookings from Platinum-tier guests?", expect: "Manchester — 205 bookings", hint: "Booking → Guest (loyalty_tier=Platinum) AND → Property, group by city, top 1" },
+    { level: "Hard", q: "Which city's properties received the most bookings from Platinum-tier guests?", expect: "Manchester - 205 bookings", hint: "Booking → Guest (loyalty_tier=Platinum) AND → Property, group by city, top 1" },
   ],
   "professional-services": [
     { level: "Medium-hard", q: "How many over-budget engagements for Strategic-tier clients were led by Partner-grade consultants?", expect: "5 over-budget engagements", hint: "Engagement → Client (tier=Strategic) AND → Consultant (grade=Partner) + filter is_over_budget" },
     { level: "Medium-hard", q: "How many engagements are there for Strategic-tier clients in the Retail industry?", expect: "203 engagements", hint: "Engagement → Client (tier=Strategic AND industry=Retail)" },
-    { level: "Hard", q: "Which client industry has the most over-budget engagements?", expect: "Healthcare — 650 engagements", hint: "Engagement (is_over_budget) → Client, group by industry, top 1" },
+    { level: "Hard", q: "Which client industry has the most over-budget engagements?", expect: "Healthcare - 650 engagements", hint: "Engagement (is_over_budget) → Client, group by industry, top 1" },
   ],
   "construction": [
     { level: "Medium-hard", q: "How many delayed tasks on Commercial projects were assigned to MEP-trade subcontractors?", expect: "99 delayed tasks", hint: "Task → Project (type=Commercial) AND → Subcontractor (trade=MEP) + filter is_delayed" },
     { level: "Medium-hard", q: "How many tasks are on Commercial projects in Scotland?", expect: "370 tasks", hint: "Task → Project (type=Commercial AND region=Scotland)" },
-    { level: "Hard", q: "Which subcontractor trade has the most delayed tasks?", expect: "Roofing — 1,048 delayed tasks", hint: "Task (is_delayed) → Subcontractor, group by trade, top 1" },
+    { level: "Hard", q: "Which subcontractor trade has the most delayed tasks?", expect: "Roofing - 1,048 delayed tasks", hint: "Task (is_delayed) → Subcontractor, group by trade, top 1" },
   ],
   "education": [
     { level: "Medium-hard", q: "How many failed assessments are there for postgraduate enrolments in the Law School?", expect: "67 failed assessments", hint: "Assessment → Enrolment (level=Postgraduate AND department=Law School) + filter not is_pass" },
     { level: "Medium-hard", q: "How many postgraduate enrolments were withdrawn?", expect: "2,115 withdrawn enrolments", hint: "Enrolment (level=Postgraduate + is_withdrawn)" },
-    { level: "Hard", q: "Which department has the most failed assessments for postgraduate enrolments?", expect: "Medical School — 99 failed assessments", hint: "Assessment (not is_pass) → Enrolment (level=Postgraduate), group by department, top 1" },
+    { level: "Hard", q: "Which department has the most failed assessments for postgraduate enrolments?", expect: "Medical School - 99 failed assessments", hint: "Assessment (not is_pass) → Enrolment (level=Postgraduate), group by department, top 1" },
   ],
 };
 
@@ -382,7 +382,7 @@ function FabricIqQueryRow({ item, i }: { item: { q: string; expect: string; leve
 
 // ── Fabric IQ: "library way" install (early peek, manufacturing-qc only) ────
 // The same deployment this site performs, but run by the Fabric Jumpstart
-// library from a notebook in the user's own tenant — under their identity,
+// library from a notebook in the user's own tenant - under their identity,
 // with no permissions granted to this website. Preview build from the
 // FabricIQ jumpstart submission (microsoft/fabric-jumpstart, in review).
 const JUMPSTART_PIP_SNIPPET =
@@ -441,15 +441,15 @@ function FabricIqLibraryWay() {
   const steps: { text: string; code?: { snippet: string; label: string } }[] = [
     { text: "In Microsoft Fabric, open any workspace and create a new Notebook." },
     {
-      text: "Install the Fabric Jumpstart library (preview build) — paste and run:",
+      text: "Install the Fabric Jumpstart library (preview build) - paste and run:",
       code: { snippet: JUMPSTART_PIP_SNIPPET, label: "pip install" },
     },
     {
-      text: "Deploy this demo — paste and run:",
+      text: "Deploy this demo - paste and run:",
       code: { snippet: JUMPSTART_INSTALL_SNIPPET, label: "jumpstart install" },
     },
     {
-      text: "Watch the live progress (~5 min). A new workspace is created with the Lakehouse, Eventhouse, ontology, and both Data Agents — sample data loaded, nothing else to run. Then try the questions above.",
+      text: "Watch the live progress (~5 min). A new workspace is created with the Lakehouse, Eventhouse, ontology, and both Data Agents - sample data loaded, nothing else to run. Then try the questions above.",
     },
   ];
   return (
@@ -466,7 +466,7 @@ function FabricIqLibraryWay() {
       </div>
       <Caption1 style={{ display: "block", color: "#8b949e", marginBottom: 10 }}>
         The exact same deployment, run by the Fabric Jumpstart library from a notebook in your own
-        tenant — everything happens under your identity, and this website never sees your data.
+        tenant - everything happens under your identity, and this website never sees your data.
         Two cells, one command.
       </Caption1>
       {steps.map((step, i) => (
@@ -479,7 +479,7 @@ function FabricIqLibraryWay() {
         </div>
       ))}
       <Caption1 style={{ display: "block", color: "#484f58", marginTop: 8 }}>
-        Early peek at the upcoming Fabric Jumpstart flow (submission in review) — preview build,
+        Early peek at the upcoming Fabric Jumpstart flow (submission in review) - preview build,
         manufacturing demo only for now. Requires the Fabric IQ / Ontology preview enabled in your tenant.
       </Caption1>
     </div>
@@ -566,7 +566,7 @@ const ML_DETAILS: Record<string, { target: string; featureCount: string; feature
   },
 };
 
-// Slim themed scrollbar shared by every scrollable container — the native OS
+// Slim themed scrollbar shared by every scrollable container - the native OS
 // bar (bright track + arrow buttons) reads as a broken element on the dark
 // theme. NOTE: scrollbar-width/scrollbar-color make Chromium ignore
 // ::-webkit-scrollbar styling entirely, so the Firefox-only props are scoped
@@ -656,7 +656,7 @@ const useStyles = makeStyles({
   grid: {
     display: "grid",
     // minmax(0, 1fr) lets the content column SHRINK below its intrinsic width
-    // (plain 1fr = minmax(auto, 1fr) can't) — otherwise mid-width windows get
+    // (plain 1fr = minmax(auto, 1fr) can't) - otherwise mid-width windows get
     // horizontal overflow and the cards' right edge (item tags) is clipped.
     gridTemplateColumns: "minmax(0, 1fr) 340px",
     gap: "24px",
@@ -821,7 +821,7 @@ const useStyles = makeStyles({
     // arrow dangling at a row edge). Scroll horizontally on narrow widths instead.
     flexWrap: "nowrap" as const,
     overflowX: "auto" as const,
-    // Slim themed scrollbar — the default OS bar reads as a broken element
+    // Slim themed scrollbar - the default OS bar reads as a broken element
     // slicing through the pipeline.
     ...slimScrollbar,
   },
@@ -863,7 +863,7 @@ const useStyles = makeStyles({
   flowSubRow: {
     display: "flex",
     alignItems: "center",
-    // Single continuous pipeline row — scroll instead of wrapping so connector
+    // Single continuous pipeline row - scroll instead of wrapping so connector
     // arrows never dangle at a row edge.
     flexWrap: "nowrap" as const,
     overflowX: "auto" as const,
@@ -1277,10 +1277,10 @@ const useStyles = makeStyles({
 
 // Renders a horizontal pipeline of labeled boxes connected by arrows. The arrow
 // LEADS each box (rendered before it) and is grouped with that box, so when the
-// row wraps to a new line the arrow wraps with its box — never left dangling at
+// row wraps to a new line the arrow wraps with its box - never left dangling at
 // the end of a row (the old trailing-arrow layout broke on wrap).
 // Chips are tinted (accent at low alpha + hairline border) rather than solid
-// saturated fills — calmer, and the accent still color-codes each stage.
+// saturated fills - calmer, and the accent still color-codes each stage.
 function FlowSteps({ steps }: { steps: { label?: string; value: string; color: string }[] }) {
   const styles = useStyles();
   return (
@@ -1300,7 +1300,7 @@ function FlowSteps({ steps }: { steps: { label?: string; value: string; color: s
   );
 }
 
-// Quiet pill markers for the right edge of item rows — same tinted language as
+// Quiet pill markers for the right edge of item rows - same tinted language as
 // the flow chips. Shared site-wide component (also used by Monitoring).
 import { TagBadge } from "@/lib/TagBadge";
 
@@ -1328,7 +1328,7 @@ export default function DemoDetailPage() {
   const [cleaned, setCleaned] = useState(false);
   // Which delete is pending confirmation (drives the Fluent confirm dialog).
   const [confirmDelete, setConfirmDelete] = useState<null | "full" | "partial">(null);
-  // Non-fatal authorization warning (e.g. the Foundry consent popup failed) — the
+  // Non-fatal authorization warning (e.g. the Foundry consent popup failed) - the
   // deploy continues on backend fallbacks but the reason stays visible.
   const [authWarning, setAuthWarning] = useState<AuthError | null>(null);
   const [reauthBusy, setReauthBusy] = useState(false);
@@ -1365,7 +1365,7 @@ export default function DemoDetailPage() {
   const abortRef = useRef<AbortController | null>(null);
   const currentJobIdRef = useRef<string | null>(null);
 
-  // Usage analytics — count one anonymous page view per demo visit. Ref guard
+  // Usage analytics - count one anonymous page view per demo visit. Ref guard
   // stops React StrictMode's double-effect from counting twice in dev.
   const viewRecordedRef = useRef<string | null>(null);
   useEffect(() => {
@@ -1374,7 +1374,7 @@ export default function DemoDetailPage() {
     recordDemoView(id);
   }, [id, demo]);
 
-  // ── Scenario state — derived from URL (?scenario=<id>) ──────────────────
+  // ── Scenario state - derived from URL (?scenario=<id>) ──────────────────
   const selectedScenario = ALL_SCENARIOS.find(s => s.id === searchParams.get("scenario")) ?? null;
   const [scenarioFilter, setScenarioFilter] = useState("All");
   // Azure params (used by the data-virtualization shortcut scenario)
@@ -1413,7 +1413,7 @@ export default function DemoDetailPage() {
     const v = storAcctName.trim();
     if (!v) return null; // blank → backend auto-generates a valid name
     if (v.length < 3 || v.length > 24) return "Must be 3–24 characters.";
-    if (!/^[a-z0-9]+$/.test(v)) return "Only lowercase letters (a–z) and numbers (0–9) — no spaces, hyphens, or uppercase.";
+    if (!/^[a-z0-9]+$/.test(v)) return "Only lowercase letters (a–z) and numbers (0–9) - no spaces, hyphens, or uppercase.";
     return null;
   })();
 
@@ -1465,7 +1465,7 @@ export default function DemoDetailPage() {
             const body = await res.json();
             detail = body?.errorCode || body?.message || "";
           } catch {
-            // non-JSON error body — status alone will have to do
+            // non-JSON error body - status alone will have to do
           }
           const hint =
             res.status === 401 || res.status === 403
@@ -1653,13 +1653,13 @@ export default function DemoDetailPage() {
               if (sawDone || streamHadError) break;
             }
           } catch {
-            // Mid-stream read failure = dropped connection — reconnect below.
+            // Mid-stream read failure = dropped connection - reconnect below.
             if (controller.signal.aborted || cancelled) return;
           }
           if (sawDone || streamHadError || cancelled) break;
 
           // Stream closed without a terminal event. Either the job finished in
-          // a state that emits none (cancelled), or the connection dropped —
+          // a state that emits none (cancelled), or the connection dropped -
           // ask the job status before deciding.
           try {
             const jr = await fetch(`${API}/api/jobs/${jobIdParam}`, {
@@ -1675,7 +1675,7 @@ export default function DemoDetailPage() {
               }
               if (st === "failed") {
                 streamHadError = true;
-                if (!cancelled) setError("Deployment failed — open the Monitoring page for details.");
+                if (!cancelled) setError("Deployment failed - open the Monitoring page for details.");
                 break;
               }
               if (st === "cancelled") {
@@ -1683,7 +1683,7 @@ export default function DemoDetailPage() {
                 return;
               }
             }
-          } catch { /* transient — fall through to reconnect */ }
+          } catch { /* transient - fall through to reconnect */ }
           if (gotData) reconnectAttempts = 0;
           if (++reconnectAttempts > MAX_RECONNECTS) break;
           await new Promise((r) => setTimeout(r, 1500));
@@ -1693,7 +1693,7 @@ export default function DemoDetailPage() {
         if (sawDone) {
           setCompleted(true);
         } else if (!streamHadError) {
-          setError("Lost connection to the deployment server after several retries. The deploy may still be running — check the Monitoring page.");
+          setError("Lost connection to the deployment server after several retries. The deploy may still be running - check the Monitoring page.");
         }
       } catch (e: unknown) {
         if (!(e instanceof DOMException && e.name === "AbortError") && !cancelled) {
@@ -1773,13 +1773,13 @@ export default function DemoDetailPage() {
     try {
       if (typeof Notification === "undefined") return;
       if (Notification.permission !== "granted") return;
-      if (document.visibilityState === "visible") return; // user is watching — no ping needed
+      if (document.visibilityState === "visible") return; // user is watching - no ping needed
       const n = new Notification(
         ok ? "✅ Deployment complete" : "❌ Deployment failed",
         {
           body: ok
             ? `${demoTitle} is ready in your Fabric workspace.`
-            : `${demoTitle} hit an error — open the tab for details.`,
+            : `${demoTitle} hit an error - open the tab for details.`,
           icon: "/pwa-192.png",
           tag: "fdg-deploy",
         }
@@ -1791,7 +1791,7 @@ export default function DemoDetailPage() {
   const handleDeploy = async () => {
     // Guard: never POST a deploy with required fields missing (would send an
     // undefined capacity/subscription to the backend). The Deploy button is
-    // also disabled in these cases — this is defense in depth.
+    // also disabled in these cases - this is defense in depth.
     if (!selectedCapacity) {
       setError("Select a Fabric capacity before deploying.");
       return;
@@ -1801,7 +1801,7 @@ export default function DemoDetailPage() {
       return;
     }
 
-    // Deploys run 5–20 min and users tab away — ask for notification permission
+    // Deploys run 5–20 min and users tab away - ask for notification permission
     // NOW (inside the click's user activation, later requests are ignored by
     // Chromium) so we can ping them when it finishes. Fire-and-forget: denial
     // changes nothing about the deploy.
@@ -1813,7 +1813,7 @@ export default function DemoDetailPage() {
 
     // Show the deploying state BEFORE any token/consent awaits. ensureFoundryConsent
     // below can block for up to ~60s (MSAL waits for a popup that a popup blocker may
-    // have eaten) — with no UI change until then, the click looked dead and users
+    // have eaten) - with no UI change until then, the click looked dead and users
     // clicked Deploy again.
     setDeploying(true);
     setError(null);
@@ -1832,14 +1832,14 @@ export default function DemoDetailPage() {
     if (selectedScenario?.id === "fabric-foundry-agent") {
       setSteps([{
         name: "foundry_consent",
-        description: "Authorizing Foundry access — approve the sign-in popup if one appears",
+        description: "Authorizing Foundry access - approve the sign-in popup if one appears",
         status: "running",
       }]);
       try {
         const consent = await ensureFoundryConsent();
         if (consent === "cached-skip") {
           // A prior consent exists but silent tokens are blocked (CA policy /
-          // guest account). The deploy continues on backend fallbacks — but say
+          // guest account). The deploy continues on backend fallbacks - but say
           // so, and offer the re-authorize action; otherwise there is NO visible
           // way out of the degraded mode.
           const friendly: AuthError = {
@@ -1871,7 +1871,7 @@ export default function DemoDetailPage() {
     }
 
     // Azure scenarios OTHER than Foundry (e.g. SQL Mirroring) need storage + ARM
-    // tokens. First-time users need interactive consent for BOTH — but two
+    // tokens. First-time users need interactive consent for BOTH - but two
     // sequential popups can't work: the first consumes the click's activation
     // window and the browser blocks the second, failing the deploy until a second
     // click. Same fix as the Foundry consent: if the ARM token can't be acquired
@@ -1890,14 +1890,14 @@ export default function DemoDetailPage() {
           });
         }
       } catch (e) {
-        // Fail fast with clear guidance — this scenario cannot run without ARM.
+        // Fail fast with clear guidance - this scenario cannot run without ARM.
         const raw = e instanceof Error ? e.message : String(e);
         const friendly = classifyAuthError(raw);
         recordAuthError(friendly?.code ?? "mgmt_consent_failed", selectedScenario.id, { detail: raw, stage: "deploy" });
         setError(
           friendly
             ? `${friendly.title}. ${friendly.guidance}`
-            : "Azure authorization didn't complete — this scenario provisions Azure resources. Click Deploy again and approve the permission popup."
+            : "Azure authorization didn't complete - this scenario provisions Azure resources. Click Deploy again and approve the permission popup."
         );
         setDeploying(false);
         return;
@@ -1919,13 +1919,13 @@ export default function DemoDetailPage() {
         // returns cached access tokens until they actually expire, so a near-expiry
         // cached token (especially the management token used late for Azure
         // provisioning) would otherwise expire mid-deploy and fail that step.
-        // allowRedirect:false — a full-page redirect mid-deploy unloads the app and
+        // allowRedirect:false - a full-page redirect mid-deploy unloads the app and
         // silently discards the deployment (it looked like a random page refresh).
         // If a token truly needs interaction, fail visibly and let the user retry
         // from a fresh click instead.
         // SEQUENTIAL, not Promise.all: if both tokens need interaction (first-time
         // users), two concurrent acquireTokenPopup calls collide inside MSAL and
-        // the second throws interaction_in_progress — killing the deploy with an
+        // the second throws interaction_in_progress - killing the deploy with an
         // error that looked like it needed a page refresh.
         fabricToken = await getFabricToken({ forceRefresh: true, allowRedirect: false });
         storageToken = await getStorageToken({ forceRefresh: true, allowRedirect: false });
@@ -1951,7 +1951,7 @@ export default function DemoDetailPage() {
         headers["X-OneLake-Token"] = oneLakeToken;
       }
       if (selectedScenario?.requiresAzure) {
-        // Azure-provisioning scenarios REQUIRE the ARM token — without it the
+        // Azure-provisioning scenarios REQUIRE the ARM token - without it the
         // backend fails mid-deploy with a confusing error. Fail fast with clear
         // guidance instead of silently continuing.
         try {
@@ -1960,7 +1960,7 @@ export default function DemoDetailPage() {
         } catch (e) {
           const raw = e instanceof Error ? e.message : String(e);
           recordAuthError(classifyAuthError(raw)?.code ?? "mgmt_token_failed", selectedScenario.id, { detail: raw, stage: "deploy" });
-          setError(raw || "Azure authorization failed — this scenario provisions Azure resources and needs management access.");
+          setError(raw || "Azure authorization failed - this scenario provisions Azure resources and needs management access.");
           setDeploying(false);
           return;
         }
@@ -1980,11 +1980,11 @@ export default function DemoDetailPage() {
           // follow-ups (surfaced in the post-deploy guidance).
           const searchTok = await getSearchToken({ interactive: false, forceRefresh: true });
           if (searchTok) headers["X-Search-Token"] = searchTok;
-        } catch { /* continue — knowledge base becomes a manual step */ }
+        } catch { /* continue - knowledge base becomes a manual step */ }
         try {
           const agentTok = await getAgentToken({ interactive: false, forceRefresh: true });
           if (agentTok) headers["X-Agent-Token"] = agentTok;
-        } catch { /* continue — agent becomes a manual step */ }
+        } catch { /* continue - agent becomes a manual step */ }
       }
 
       // Note: the historical data seed (optional) uses the Eventhouse/KQL data
@@ -1994,7 +1994,7 @@ export default function DemoDetailPage() {
       // the live Eventstream is the primary data source; in local dev the backend
       // falls back to an az CLI Kusto token to perform the seed.
 
-      // Step 1: Create the job — returns immediately with a job_id
+      // Step 1: Create the job - returns immediately with a job_id
       const createResp = await fetch(`${API}/api/jobs`, {
         method: "POST",
         headers,
@@ -2039,7 +2039,7 @@ export default function DemoDetailPage() {
       // stream endpoint replays all past events before tailing live updates.
       // So if the connection drops mid-deploy (a transient network blip, proxy
       // idle timeout, Wi-Fi/VPN switch, laptop sleep, etc.) we simply reconnect
-      // and resume — the replay re-syncs the UI — instead of failing the whole
+      // and resume - the replay re-syncs the UI - instead of failing the whole
       // deploy with a scary "network error" while the job is still running.
       // Only a server-sent "error" event or the "done" event is terminal.
       const decoder = new TextDecoder();
@@ -2064,7 +2064,7 @@ export default function DemoDetailPage() {
         }
 
         if (streamResp.status === 404) {
-          // Job no longer exists server-side — nothing left to resume.
+          // Job no longer exists server-side - nothing left to resume.
           connectionLost = true;
           break;
         }
@@ -2138,7 +2138,7 @@ export default function DemoDetailPage() {
         if (sawDone || streamHadError) break;
         // Stream ended/dropped before the deploy finished. Either the job hit a
         // terminal state that emits no done/error event (cancelled), or the
-        // connection dropped — ask the job status before blindly reconnecting.
+        // connection dropped - ask the job status before blindly reconnecting.
         try {
           const jr = await fetch(`${API}/api/jobs/${job_id}`, {
             headers: fabricToken ? { Authorization: `Bearer ${fabricToken}` } : {},
@@ -2157,7 +2157,7 @@ export default function DemoDetailPage() {
               break;
             }
           }
-        } catch { /* transient — fall through to reconnect */ }
+        } catch { /* transient - fall through to reconnect */ }
         if (gotData) reconnectAttempts = 0;
         if (++reconnectAttempts > MAX_RECONNECTS) { connectionLost = true; break; }
         await new Promise((r) => setTimeout(r, 1500));
@@ -2170,7 +2170,7 @@ export default function DemoDetailPage() {
         // Error already surfaced via setError from the "error" event.
         notifyDeployOutcome(false, demo?.title || "Your demo");
       } else if (connectionLost) {
-        setError("Lost connection to the deployment server after several retries. The deploy may still be running — check the Monitoring page.");
+        setError("Lost connection to the deployment server after several retries. The deploy may still be running - check the Monitoring page.");
       }
     } catch (e: unknown) {
       if (e instanceof DOMException && e.name === "AbortError") {
@@ -2180,12 +2180,12 @@ export default function DemoDetailPage() {
         // "popup_window_error"). classifyAuthError (via explainError in the error
         // renderer) maps them to plain guidance and keeps the raw message under
         // "Technical details". Beacon the failure so auth breakage shows in
-        // analytics — as deploy_auth_failed WITH the raw error, and even when
+        // analytics - as deploy_auth_failed WITH the raw error, and even when
         // classification fails (the AADSTS650052 incident was invisible exactly
         // because only classified codes were beaconed).
         const raw = e instanceof Error ? e.message : "Connection failed";
         const authInfo = classifyAuthError(raw);
-        // NOTE: no bare "token" here — JSON.parse failures throw "Unexpected
+        // NOTE: no bare "token" here - JSON.parse failures throw "Unexpected
         // token ..." and would false-positive as auth failures.
         const looksLikeAuth = !!authInfo || /aadsts|msal|invalid_client|interaction|popup|consent|silent|no_tokens|acquiretoken|login_required|token renewal/i.test(raw);
         if (looksLikeAuth) {
@@ -2224,7 +2224,7 @@ export default function DemoDetailPage() {
 
   const deleteWorkspace = async (clearError: boolean) => {
     if (!deployedWorkspaceId) {
-      alert("No workspace to delete \u2014 the workspace ID is missing.");
+      alert("No workspace to delete - the workspace ID is missing.");
       return;
     }
     setCleaning(true);
@@ -2234,19 +2234,19 @@ export default function DemoDetailPage() {
       try {
         const t = await getFabricToken();
         if (t) headers["Authorization"] = `Bearer ${t}`;
-      } catch { /* token fetch failed \u2014 backend will report 401 below */ }
+      } catch { /* token fetch failed - backend will report 401 below */ }
       if (!headers["Authorization"]) {
         alert("Could not get a Fabric sign-in token. Please sign in again, then retry the delete.");
         return;
       }
       // Azure-provisioning deployments (mirroring SQL server, Foundry account +
-      // AI Search) — the backend deletes those resources too when the request
+      // AI Search) - the backend deletes those resources too when the request
       // carries a management token.
       if (selectedScenario?.requiresAzure) {
         try {
           const mgmt = await getManagementToken();
           if (mgmt) headers["X-Management-Token"] = mgmt;
-        } catch { /* non-fatal — workspace still gets deleted */ }
+        } catch { /* non-fatal - workspace still gets deleted */ }
       }
       const res = await fetch(`${API}/api/deploy/${deployedWorkspaceId}`, { method: "DELETE", headers });
       if (res.ok) {
@@ -2261,7 +2261,7 @@ export default function DemoDetailPage() {
         if (body?.detail) msg = body.detail;
       } catch { /* body wasn't JSON */ }
       if (res.status === 404) {
-        // Already gone \u2014 treat as success
+        // Already gone - treat as success
         setCleaned(true);
         if (clearError) setError(null);
         return;
@@ -2452,7 +2452,7 @@ export default function DemoDetailPage() {
   return (
     <>
     <div className={styles.page}>
-      {/* Breadcrumb — rendered client-side so it can read ?mode from URL */}
+      {/* Breadcrumb - rendered client-side so it can read ?mode from URL */}
       {(() => { const ind = industries.find(i => i.demoId === id); return ind ? <Breadcrumbs industrySlug={ind.slug} deploymentType={isCustomMode ? "custom" : "standard"} scenarioTitle={isCustomMode && selectedScenario ? selectedScenario.title : undefined} demoId={id} /> : null; })()}
       {/* Header bar */}
       <div className={styles.headerBar}>
@@ -2554,7 +2554,7 @@ export default function DemoDetailPage() {
             {/* === CUSTOM MODE: External Data Integration scenario selected === */}
             {isCustomMode && selectedScenario?.id === "data-virtualization-batch" && (
               <>
-                {/* Shortcut-specific data flow — 2-row labeled pipeline */}
+                {/* Shortcut-specific data flow - 2-row labeled pipeline */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <ArrowRightRegular fontSize={16} /> Data Flow
@@ -2582,7 +2582,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* What Gets Created — shortcut scenario items */}
+                {/* What Gets Created - shortcut scenario items */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <DatabaseRegular fontSize={16} /> What Gets Created
@@ -2632,7 +2632,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* Sample Data — industry-specific */}
+                {/* Sample Data - industry-specific */}
                 {renderSampleDataSection()}
               </>
             )}
@@ -2758,13 +2758,13 @@ export default function DemoDetailPage() {
                   <div className={styles.sectionBody}>
                     {[
                       { type: "Workspace", name: "New Fabric Workspace", description: "Dedicated workspace for this deployment" },
-                      { type: "Lakehouse", name: `${sid}_lakehouse`, description: "Static entity data — the non-time-series attributes of every ontology entity (Delta tables)" },
-                      { type: "Eventhouse", name: `${sid}_eventhouse`, description: "Time-series data — the streaming/event columns of the time-series entities (KQL tables)" },
+                      { type: "Lakehouse", name: `${sid}_lakehouse`, description: "Static entity data - the non-time-series attributes of every ontology entity (Delta tables)" },
+                      { type: "Eventhouse", name: `${sid}_eventhouse`, description: "Time-series data - the streaming/event columns of the time-series entities (KQL tables)" },
                       { type: "Notebook", name: "01_generate_ontology_data", description: "Loads the ontology package's instance data → Lakehouse Delta tables and events → Eventhouse" },
                       { type: "Notebook", name: "02_create_ontology", description: "Builds the ontology, binds entities to the LH/EH tables, and publishes both data agents" },
                       { type: "Ontology", name: `${pascal}Ontology`, description: "Semantic layer: business entities + relationships bound to the lakehouse and eventhouse" },
-                      { type: "DataAgent", name: `${pascal}OntologyAgent`, description: "Data agent grounded on the ontology (graph) — answers in business terms with relationship context" },
-                      { type: "DataAgent", name: `${pascal}DirectAgent`, description: "Baseline data agent over the raw Lakehouse + Eventhouse tables (no semantic layer) — for comparison" },
+                      { type: "DataAgent", name: `${pascal}OntologyAgent`, description: "Data agent grounded on the ontology (graph) - answers in business terms with relationship context" },
+                      { type: "DataAgent", name: `${pascal}DirectAgent`, description: "Baseline data agent over the raw Lakehouse + Eventhouse tables (no semantic layer) - for comparison" },
                     ].map((item, i, arr) => (
                       <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
                         <div className={styles.itemLeft}>
@@ -2790,7 +2790,7 @@ export default function DemoDetailPage() {
             {/* === EXTERNAL DATABASE INTEGRATION (Mirroring) === */}
             {isCustomMode && selectedScenario?.id === "external-data-integration" && (
               <>
-                {/* Presenter Guide — talking track for solution engineers */}
+                {/* Presenter Guide - talking track for solution engineers */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <CheckmarkCircleFilled fontSize={16} /> Presenter Guide
@@ -2840,7 +2840,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* Mirroring-specific data flow — 2-row labeled pipeline */}
+                {/* Mirroring-specific data flow - 2-row labeled pipeline */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <ArrowRightRegular fontSize={16} /> Data Flow
@@ -2867,7 +2867,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* What Gets Created — mirroring scenario items */}
+                {/* What Gets Created - mirroring scenario items */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <DatabaseRegular fontSize={16} /> What Gets Created
@@ -2917,7 +2917,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* Sample Data — industry-specific */}
+                {/* Sample Data - industry-specific */}
                 {renderSampleDataSection()}
               </>
             )}
@@ -2951,7 +2951,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* What Gets Created — RTI items */}
+                {/* What Gets Created - RTI items */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <DatabaseRegular fontSize={16} /> What Gets Created
@@ -2966,7 +2966,7 @@ export default function DemoDetailPage() {
                         { type: "Eventstream",  name: `${sid}_eventstream`,                description: "Custom endpoint → Eventhouse pipeline for live streaming (push your data after deploy)" },
                         { type: "KQLQueryset",  name: `${sid}_kql_queries`,                description: "Saved KQL queries for analytics and exploration" },
                         { type: "KQLDashboard", name: `${sid}_realtime_dashboard`,         description: "Real-time dashboard with auto-refreshing KQL tiles" },
-                        { type: "Reflex",       name: `${sid}_activator`,                  description: "Activator item — add an alert rule yourself via 'Set alert' on a dashboard tile or queryset" },
+                        { type: "Reflex",       name: `${sid}_activator`,                  description: "Activator item - add an alert rule yourself via 'Set alert' on a dashboard tile or queryset" },
                       ].map((item, i, arr) => (
                       <div key={i} className={i < arr.length - 1 ? styles.itemRow : styles.itemRowLast}>
                         <div className={styles.itemLeft}>
@@ -2985,7 +2985,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* Sample Data — with preview support */}
+                {/* Sample Data - with preview support */}
                 {renderSampleDataSection()}
 
               </>
@@ -2994,7 +2994,7 @@ export default function DemoDetailPage() {
             {/* === STANDARD MODE: Original demo overview === */}
             {!isCustomMode && (
               <>
-                {/* Presenter — talking track for solution engineers */}
+                {/* Presenter - talking track for solution engineers */}
                 {PRESENTER[id] && (
                   <div className={styles.section}>
                     <div className={styles.sectionHeader}>
@@ -3087,7 +3087,7 @@ export default function DemoDetailPage() {
             {/* === CUSTOM MODE: AI & Machine Learning scenario selected === */}
             {isCustomMode && selectedScenario?.id === "ai-ml" && (
               <>
-                {/* Data Flow — 2-row labeled pipeline (single row overflowed and
+                {/* Data Flow - 2-row labeled pipeline (single row overflowed and
                     clipped the last chip on typical widths) */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
@@ -3146,7 +3146,7 @@ export default function DemoDetailPage() {
                   </div>
                 </div>
 
-                {/* Sample Data — uses demo's actual data */}
+                {/* Sample Data - uses demo's actual data */}
                 {renderSampleDataSection()}
 
                 {/* ML Pipeline Details */}
@@ -3188,7 +3188,7 @@ export default function DemoDetailPage() {
             )}
           </div>
 
-          {/* Right sidebar — Deploy */}
+          {/* Right sidebar - Deploy */}
           <div className={styles.sidebar}>
             <div className={styles.sidebarCard}>
               <div className={styles.sidebarHeader}>Deploy</div>
@@ -3278,7 +3278,7 @@ export default function DemoDetailPage() {
                       onChange={(_, data) => setWorkspaceName(data.value)}
                       placeholder={defaultWorkspaceName(demo.industry, isCustomMode, selectedScenario?.title ?? demo.title, selectedScenario?.feature)}
                       style={{ width: "100%" }}
-                      // Fabric rejects workspace names over 256 chars — cap here so the
+                      // Fabric rejects workspace names over 256 chars - cap here so the
                       // failure can't happen mid-deploy after the job already started.
                       maxLength={256}
                     />
@@ -3319,7 +3319,7 @@ export default function DemoDetailPage() {
                       </div>
                     )}
                     {/* Capacity visibility is Fabric data-plane permission (admin or
-                        contributor ON the capacity) — Azure RBAC on the resource does
+                        contributor ON the capacity) - Azure RBAC on the resource does
                         NOT grant it. Regularly surprises users whose teammate created
                         the capacity, so explain it for both the populated and empty
                         list states. */}
@@ -3330,7 +3330,7 @@ export default function DemoDetailPage() {
                         </summary>
                         <Caption1 style={{ display: "block", color: "#8b949e", marginTop: 4, lineHeight: 1.5 }}>
                           This list only shows capacities where your account is an{" "}
-                          <strong>admin or contributor</strong> — owning or managing the Azure resource isn&apos;t
+                          <strong>admin or contributor</strong> - owning or managing the Azure resource isn&apos;t
                           enough, and trial capacities are personal (only your own appears). Ask the capacity&apos;s
                           admin (usually whoever created it) to add you: Azure portal → the capacity →{" "}
                           <strong>Settings → Capacity administrators</strong>, or Fabric Admin portal → Capacity
@@ -3372,7 +3372,7 @@ export default function DemoDetailPage() {
                     )}
                   </div>
 
-                  {/* Azure params — only for shortcut scenarios */}
+                  {/* Azure params - only for shortcut scenarios */}
                   {selectedScenario?.requiresAzure && (
                     <div className={styles.azureSection}>
                       <div className={styles.azureSectionTitle}>{
@@ -3386,7 +3386,7 @@ export default function DemoDetailPage() {
                           <MessageBarBody>
                             <strong>Preview · billable.</strong> This provisions a Microsoft Foundry account
                             (gpt-5-mini) and a standing <strong>Azure AI Search</strong> service in your
-                            subscription. Both incur Azure cost until deleted — use the cleanup button when done.
+                            subscription. Both incur Azure cost until deleted - use the cleanup button when done.
                           </MessageBarBody>
                         </MessageBar>
                       )}
@@ -3395,7 +3395,7 @@ export default function DemoDetailPage() {
                       <div style={{ marginBottom: 10 }}>
                         <label className={styles.formLabel}>Subscription</label>
                         {!account ? (
-                          // Signed out — mirror the Capacity field instead of flashing the
+                          // Signed out - mirror the Capacity field instead of flashing the
                           // "no subscriptions / consent" error, which is misleading pre-auth.
                           <Caption1>Sign in to choose a subscription.</Caption1>
                         ) : loadingSubs ? (
@@ -3411,7 +3411,7 @@ export default function DemoDetailPage() {
                           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             <MessageBar intent="error">
                               <MessageBarBody>
-                                {subscriptionsError || "No Azure subscriptions were returned — usually Azure consent wasn't granted. Retry to trigger the Azure sign-in popup."}
+                                {subscriptionsError || "No Azure subscriptions were returned - usually Azure consent wasn't granted. Retry to trigger the Azure sign-in popup."}
                               </MessageBarBody>
                             </MessageBar>
                             <Button size="small" appearance="subtle" onClick={() => { void loadAzureSubscriptions(true); }}>
@@ -3486,14 +3486,14 @@ export default function DemoDetailPage() {
                           </Select>
                         )}
                         <Caption1 style={{ color: "#484f58" }}>
-                          Some subscriptions restrict certain Azure services by region — the deploy auto-falls back to an available region if needed.
+                          Some subscriptions restrict certain Azure services by region - the deploy auto-falls back to an available region if needed.
                         </Caption1>
                         {selectedScenario?.id === "fabric-foundry-agent" && (
                           <MessageBar intent="warning" style={{ marginTop: 8 }}>
                             <MessageBarBody>
                               <strong>Model quota is region-specific and varies by subscription.</strong> East US is
                               usually a safe choice. If the model step is skipped, your subscription has no quota for gpt-5-mini (or its fallbacks)
-                              in the selected region — pick another (Azure AI Foundry → Management → Quotas).
+                              in the selected region - pick another (Azure AI Foundry → Management → Quotas).
                             </MessageBarBody>
                           </MessageBar>
                         )}
@@ -3529,7 +3529,7 @@ export default function DemoDetailPage() {
                     </Button>
                   </div>
                   {/* Why-is-Deploy-disabled hint. While capacities load, the Capacity
-                      field already shows a spinner + "Loading capacities…" — repeating
+                      field already shows a spinner + "Loading capacities…" - repeating
                       it here read like two different things were loading. */}
                   {account && !loadingCapacities && (!selectedCapacity || !!storAcctNameError || (!!selectedScenario?.requiresAzure && (!selectedSub || !selectedRG))) && (
                     <Caption1 style={{ display: "block", marginTop: 8, color: storAcctNameError ? "#f85149" : "#8b949e" }}>
@@ -3541,7 +3541,7 @@ export default function DemoDetailPage() {
                     </Caption1>
                   )}
 
-                  {/* Usage-tracking disclosure — deployments are attributed to the
+                  {/* Usage-tracking disclosure - deployments are attributed to the
                       signed-in account in the internal analytics log. */}
                   {account && (
                     <Caption1 style={{ display: "block", marginTop: 8, color: "#484f58" }}>
@@ -3566,7 +3566,7 @@ export default function DemoDetailPage() {
                     </div>
                   )}
 
-                  {/* Fabric IQ: notebook/library install alternative — early peek on the
+                  {/* Fabric IQ: notebook/library install alternative - early peek on the
                       manufacturing page only (jumpstart submission in review).
                       Dev build only until the jumpstart submission is approved. */}
                   {process.env.NEXT_PUBLIC_STATS_ENABLED === "1" &&
@@ -3697,7 +3697,7 @@ export default function DemoDetailPage() {
                         <MessageBar intent="info" style={{ marginBottom: 12 }}>
                           <MessageBarBody>
                             <strong>Next:</strong> open the Mirrored Database in the workspace to watch tables replicate
-                            from Azure SQL into OneLake — zero-ETL, no pipeline. The explore &amp; live-change notebooks
+                            from Azure SQL into OneLake - zero-ETL, no pipeline. The explore &amp; live-change notebooks
                             walk through the sync end to end.
                           </MessageBarBody>
                         </MessageBar>
@@ -3746,7 +3746,7 @@ export default function DemoDetailPage() {
                             <>
                               <MessageBar intent="info" style={{ marginBottom: 8 }}>
                                 <MessageBarBody>
-                                  Streaming live — {streamSession.sent.toLocaleString()} events sent to{" "}
+                                  Streaming live - {streamSession.sent.toLocaleString()} events sent to{" "}
                                   <strong>{streamSession.tableName}</strong>.
                                 </MessageBarBody>
                               </MessageBar>
@@ -3810,7 +3810,7 @@ export default function DemoDetailPage() {
                     <MessageBar intent="warning" style={{ marginTop: 16 }}>
                       <MessageBarBody>
                         <MessageBarTitle>{authWarning.title}</MessageBarTitle>
-                        {authWarning.guidance} The deployment continued with backend credentials — if the knowledge-base or agent steps were skipped, re-authorize below and deploy again.
+                        {authWarning.guidance} The deployment continued with backend credentials - if the knowledge-base or agent steps were skipped, re-authorize below and deploy again.
                       </MessageBarBody>
                       <MessageBarActions>
                         <Button size="small" onClick={handleRetryAuthorization} disabled={reauthBusy || deploying}>
@@ -3894,7 +3894,7 @@ export default function DemoDetailPage() {
     </div>
 
     {/* ── Fullscreen data preview modal ───────────────────────────────── */}
-    {/* Delete-confirmation dialog — replaces the native confirm() so it's
+    {/* Delete-confirmation dialog - replaces the native confirm() so it's
         styled, focus-trapped, and screen-reader friendly. */}
     <Dialog open={confirmDelete !== null} onOpenChange={(_, d) => { if (!d.open) setConfirmDelete(null); }}>
       <DialogSurface>
@@ -3956,7 +3956,7 @@ export default function DemoDetailPage() {
 
           {/* Body */}
           <div className={styles.modalBody}>
-            {/* Sidebar — file list */}
+            {/* Sidebar - file list */}
             <div className={styles.modalSidebar}>
               {demo.sampleData.map((dataset) => {
                 const isActive = previewFileName === dataset.fileName;
@@ -3975,7 +3975,7 @@ export default function DemoDetailPage() {
               })}
             </div>
 
-            {/* Main — table */}
+            {/* Main - table */}
             <div className={styles.modalMain}>
               {(() => {
                 const loading = previewLoadingFile === previewFileName;

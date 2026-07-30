@@ -167,7 +167,7 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Stream ended — only mark completed if no error was received
+        // Stream ended - only mark completed if no error was received
         if (!streamHadError) {
           setState((prev) => ({
             ...prev,
@@ -179,7 +179,7 @@ export function DeploymentProvider({ children }: { children: ReactNode }) {
         }
       } catch (e: unknown) {
         if (e instanceof DOMException && e.name === "AbortError") {
-          // User disconnected — deployment continues on backend
+          // User disconnected - deployment continues on backend
           return;
         }
         setState((prev) => ({

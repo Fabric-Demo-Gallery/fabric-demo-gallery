@@ -1,6 +1,6 @@
 "use client";
 
-/* TagBadge — the site-wide pill marker. Same tinted language as the data-flow
+/* TagBadge - the site-wide pill marker. Same tinted language as the data-flow
    chips: accent at ~8% alpha + hairline border, accent-colored text. Known
    labels get a brand accent automatically; pass `color` for semantic states
    (status pills, Active/Coming soon). Everything else falls back to a quiet

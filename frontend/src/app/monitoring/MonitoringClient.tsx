@@ -164,7 +164,7 @@ export default function MonitoringClient() {
   const [error, setError] = useState<string | null>(null);
   const [deletingJob, setDeletingJob] = useState<string | null>(null);
   const [cancellingJob, setCancellingJob] = useState<string | null>(null);
-  // Fluent dialogs replace the native confirm()/alert() — styled, focus-trapped,
+  // Fluent dialogs replace the native confirm()/alert() - styled, focus-trapped,
   // and they say WHICH workspace is affected.
   const [confirmAction, setConfirmAction] = useState<{ kind: "delete" | "cancel"; job: JobSummary } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -208,7 +208,7 @@ export default function MonitoringClient() {
       let mgmt: string | undefined;
       try {
         mgmt = (await getManagementToken()) || undefined;
-      } catch { /* non-fatal — workspace still gets deleted */ }
+      } catch { /* non-fatal - workspace still gets deleted */ }
       await deleteJobWorkspace(token, job.job_id, mgmt);
       await fetchJobs();
     } catch (e: unknown) {
@@ -237,7 +237,7 @@ export default function MonitoringClient() {
   if (!initialized) {
     return (
       <div className={styles.page}>
-        {/* h1 renders in every auth state — the prerendered HTML and Bingbot's
+        {/* h1 renders in every auth state - the prerendered HTML and Bingbot's
             signed-out render were both missing it (flagged by Bing). */}
         <div className={styles.header}>
           <h1 className={styles.title} style={{ margin: 0 }}>Deployment Monitoring</h1>
@@ -443,7 +443,7 @@ export default function MonitoringClient() {
       )}
       </div>
 
-      {/* Confirmation dialog — replaces the native confirm() so it's styled,
+      {/* Confirmation dialog - replaces the native confirm() so it's styled,
           focus-trapped, and names the workspace it affects. */}
       <Dialog open={confirmAction !== null} onOpenChange={(_, d) => { if (!d.open) setConfirmAction(null); }}>
         <DialogSurface>

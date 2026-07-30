@@ -1,4 +1,4 @@
-"""Public usage statistics — aggregated deployment counts (no PII)."""
+"""Public usage statistics - aggregated deployment counts (no PII)."""
 
 import os
 import re
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/stats", tags=["stats"])
 async def get_stats(x_stats_detail: str | None = Header(default=None)):
     """Aggregate deployment usage: totals, per-demo/scenario counts, outcomes,
     success rate, median duration, and deploys per day. Contains only hashed
-    user identifiers aggregated to a distinct count — no personal data.
+    user identifiers aggregated to a distinct count - no personal data.
 
     Failure error strings are privacy-gated: included only when the request
     carries the X-Stats-Detail header matching the STATS_DETAIL_SECRET app
@@ -53,7 +53,7 @@ _AUTH_STAGES = {"deploy"}
 class AuthErrorEvent(BaseModel):
     code: str
     scenario_id: str | None = None
-    # Raw MSAL/AADSTS error text for diagnosis — sanitized (control chars,
+    # Raw MSAL/AADSTS error text for diagnosis - sanitized (control chars,
     # email-shaped tokens) and truncated server-side; private sinks only.
     detail: str | None = None
     # "deploy" = the failure killed a deploy before the backend was called;
@@ -64,7 +64,7 @@ class AuthErrorEvent(BaseModel):
 @router.post("/auth-error", status_code=204)
 async def record_auth_error(body: AuthErrorEvent):
     """Record an anonymous sign-in/consent failure code (e.g. AADSTS65001,
-    popup_blocked). Unauthenticated — these happen exactly when auth is broken —
+    popup_blocked). Unauthenticated - these happen exactly when auth is broken -
     so inputs are strictly pattern-validated to keep junk/PII out of the log."""
     if not _AUTH_CODE_RE.match(body.code):
         raise HTTPException(status_code=400, detail="Invalid error code")

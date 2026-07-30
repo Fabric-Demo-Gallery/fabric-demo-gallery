@@ -1,4 +1,4 @@
-"""Deployment endpoint — streams progress via SSE."""
+"""Deployment endpoint - streams progress via SSE."""
 
 import json
 import re
@@ -31,7 +31,7 @@ async def start_deployment(
     request: Request,
     token: str = Depends(get_user_token),
 ):
-    """Start deploying a demo — returns an SSE stream with progress updates."""
+    """Start deploying a demo - returns an SSE stream with progress updates."""
     if not SAFE_ID.match(demo_id):
         raise HTTPException(status_code=400, detail="Invalid demo_id")
     # Get storage token from header or az CLI fallback
@@ -217,7 +217,7 @@ async def teardown_deployment(
 
     If the deployment also provisioned an Azure SQL server (mirroring scenario)
     and the request carries an x-management-token header, the server is
-    deleted too — the job store is searched by workspace_id for the metadata.
+    deleted too - the job store is searched by workspace_id for the metadata.
     """
     if not UUID_RE.match(workspace_id):
         raise HTTPException(status_code=400, detail="Invalid workspace_id")
@@ -240,8 +240,8 @@ async def teardown_deployment(
         await client.close()
 
     # Azure resources provisioned alongside the workspace (mirroring SQL server,
-    # Foundry account, AI Search service — the latter two are standing-cost) are
-    # deleted too when the request carries a management token — the job store is
+    # Foundry account, AI Search service - the latter two are standing-cost) are
+    # deleted too when the request carries a management token - the job store is
     # searched by workspace_id for the metadata.
     from app.job_store import job_store
     az = None

@@ -5,19 +5,19 @@ import ClientShell from "./ClientShell";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.fabricdemogallery.com"),
   title: {
-    // Descriptive default (home + any page without its own title) — bare
+    // Descriptive default (home + any page without its own title) - bare
     // "Fabric Demo Gallery" was flagged by Bing as too short/duplicated.
-    default: "Fabric Demo Gallery — Deploy Microsoft Fabric Demos in One Click",
+    default: "Fabric Demo Gallery - Deploy Microsoft Fabric Demos in One Click",
     template: "%s | Fabric Demo Gallery",
   },
-  // ~160 chars — a description this rich makes Bing/Google use it as the
+  // ~160 chars - a description this rich makes Bing/Google use it as the
   // search snippet instead of scraping the first DOM text (which was the
   // admin-consent banner).
   description:
-    "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
+    "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click - lakehouses, real-time intelligence, AI agents and Power BI.",
   manifest: "/site.webmanifest",
   // Canonical host: the same build is served on 5 hostnames (apex, www, the
-  // SWA default hostname, preview, dev) — without a canonical, search engines
+  // SWA default hostname, preview, dev) - without a canonical, search engines
   // treat them as duplicates and can split ranking signals or index the wrong
   // host. metadataBase + relative canonical makes every page point at www.
   alternates: { canonical: "/" },
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Fabric Demo Gallery — Deploy Microsoft Fabric Demos in One Click",
+    title: "Fabric Demo Gallery - Deploy Microsoft Fabric Demos in One Click",
     description:
-      "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
+      "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click - lakehouses, real-time intelligence, AI agents and Power BI.",
     url: "https://www.fabricdemogallery.com",
     siteName: "Fabric Demo Gallery",
     type: "website",
@@ -42,9 +42,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fabric Demo Gallery — Deploy Microsoft Fabric Demos in One Click",
+    title: "Fabric Demo Gallery - Deploy Microsoft Fabric Demos in One Click",
     description:
-      "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click — lakehouses, real-time intelligence, AI agents and Power BI.",
+      "Browse production-ready Microsoft Fabric demos by industry and deploy to your tenant in one click - lakehouses, real-time intelligence, AI agents and Power BI.",
     images: ["/og-card.png"],
   },
 };
@@ -53,7 +53,7 @@ export const viewport: Viewport = {
   themeColor: "#0d1117",
 };
 
-// Structured data — helps Bing (Edge) and Google show rich results.
+// Structured data - helps Bing (Edge) and Google show rich results.
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
@@ -62,7 +62,7 @@ const JSON_LD = {
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Web",
   description:
-    "One-click deployable industry demos for Microsoft Fabric — lakehouses, notebooks, real-time intelligence, AI agents and Power BI reports across 12 industries.",
+    "One-click deployable industry demos for Microsoft Fabric - lakehouses, notebooks, real-time intelligence, AI agents and Power BI reports across 12 industries.",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
 

@@ -1,4 +1,4 @@
-"""Background job runner — wraps deploy_demo() and updates JobStore."""
+"""Background job runner - wraps deploy_demo() and updates JobStore."""
 
 from __future__ import annotations
 
@@ -93,7 +93,7 @@ async def run_job(
 
                 if non_shortcut_items:
                     # Scenario defines its own full item set (e.g. Real-Time Intelligence
-                    # or the ML scenarios). Use the scenario items directly — do NOT merge
+                    # or the ML scenarios). Use the scenario items directly - do NOT merge
                     # with the demo's lakehouse manifest. Read per-demo kqlConfig from
                     # manifest.custom.json and inject as extra variables (empty/no-op for
                     # non-RTI scenarios).
@@ -160,7 +160,7 @@ async def run_job(
         ):
             job_store.emit_event(job_id, event)
 
-        # Generator exhausted — mark completed or failed based on whether an error was emitted
+        # Generator exhausted - mark completed or failed based on whether an error was emitted
         job = job_store.get_job(job_id)
         if job:
             if job.error:
@@ -191,7 +191,7 @@ async def run_job(
         if az_client is not None:
             try:
                 await az_client.close()
-            except Exception:  # noqa: BLE001 — closing must never mask the job outcome
+            except Exception:  # noqa: BLE001 - closing must never mask the job outcome
                 pass
 
         # Push a sentinel so stream subscribers know the job is done

@@ -29,7 +29,7 @@ class DeployRequest(BaseModel):
     storage_account_name: str | None = None
     azure_location: str | None = "eastus"
     create_resource_group: bool = False
-    # Mirroring scenario (Azure SQL) — optional; server name auto-generated if blank
+    # Mirroring scenario (Azure SQL) - optional; server name auto-generated if blank
     sql_server_name: str | None = None
 
     @field_validator("demo_id")

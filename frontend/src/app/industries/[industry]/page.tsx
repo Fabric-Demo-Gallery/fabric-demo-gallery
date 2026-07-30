@@ -148,7 +148,7 @@ export function generateStaticParams() {
 }
 
 // Per-industry title/description for browser tabs, search results, and shared links.
-// Titles/descriptions are deliberately verbose — Bing flags short titles and short
+// Titles/descriptions are deliberately verbose - Bing flags short titles and short
 // meta descriptions. The visible UI text (industry.description) stays unchanged;
 // only the meta description is enriched with the deployable demo.
 export async function generateMetadata({ params }: { params: Promise<{ industry: string }> }) {
@@ -158,8 +158,8 @@ export async function generateMetadata({ params }: { params: Promise<{ industry:
   const demo = industry.demoId ? DEMOS[industry.demoId] : undefined;
   const title = `${industry.title} Demos for Microsoft Fabric`;
   const description = demo
-    ? `${industry.description} Deploy the ${demo.title} demo to your Microsoft Fabric tenant in one click — no setup required.`
-    : `${industry.description} One-click deployable Microsoft Fabric demos — no setup required.`;
+    ? `${industry.description} Deploy the ${demo.title} demo to your Microsoft Fabric tenant in one click - no setup required.`
+    : `${industry.description} One-click deployable Microsoft Fabric demos - no setup required.`;
   return {
     title,
     description,
@@ -227,13 +227,13 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
               <h2 style={{ ...styles.cardTitle, marginTop: 0 }}>Custom Deployment</h2>
               <div style={styles.cardDesc}>
                 {industry.demoId
-                  ? "Choose a deployment pattern — shortcut, real-time, AI, and more."
+                  ? "Choose a deployment pattern - shortcut, real-time, AI, and more."
                   : "Customizable deployment (coming soon)."}
               </div>
             </div>
           </DeployOption>
         </div>
-        {/* Server-rendered supporting copy — Bing flagged industry pages as
+        {/* Server-rendered supporting copy - Bing flagged industry pages as
             "insufficient content" (only a heading + two card labels). Real,
             useful text about what actually deploys. */}
         {demo && (
@@ -243,11 +243,11 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
             <p style={styles.aboutText}>
               One click provisions everything in your own Microsoft Fabric tenant
               {uniqueTypes.length > 0
-                ? ` — including ${uniqueTypes
+                ? ` - including ${uniqueTypes
                     .map((t) => t.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^KQLDatabase$/, "KQL Database"))
                     .join(", ")
-                    .replace(/, ([^,]*)$/, " and $1")} items — `
-                : " — "}
+                    .replace(/, ([^,]*)$/, " and $1")} items - `
+                : " - "}
               preloaded with realistic sample data, so you can explore, present, or extend the solution right away. No manual setup required.
             </p>
           </div>

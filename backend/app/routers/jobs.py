@@ -1,4 +1,4 @@
-"""Jobs endpoint — persistent deployment jobs with SSE streaming."""
+"""Jobs endpoint - persistent deployment jobs with SSE streaming."""
 
 import asyncio
 import json
@@ -38,7 +38,7 @@ async def create_job(
     request: Request,
     token: str = Depends(get_user_token),
 ):
-    """Create a deployment job — runs in background, returns job_id immediately."""
+    """Create a deployment job - runs in background, returns job_id immediately."""
     if not SAFE_ID.match(body.demo_id):
         raise HTTPException(status_code=400, detail="Invalid demo_id")
 
@@ -62,7 +62,7 @@ async def create_job(
             resolved_items = scenario_items
 
     # The mirroring path is selected when the resolved manifest has a
-    # MirroredDatabase item — it requires a per-sector mirroring.json spec.
+    # MirroredDatabase item - it requires a per-sector mirroring.json spec.
     if any(i.get("type") == "MirroredDatabase" for i in resolved_items):
         if not (DEMOS_DIR / body.demo_id / "mirroring.json").exists():
             raise HTTPException(
@@ -195,7 +195,7 @@ async def stream_job(
     request: Request,
     token: str = Depends(get_user_token),
 ):
-    """SSE stream — replays past events then tails live updates."""
+    """SSE stream - replays past events then tails live updates."""
     if not UUID_RE.match(job_id):
         raise HTTPException(status_code=400, detail="Invalid job_id")
     job = job_store.get_job(job_id)
@@ -315,7 +315,7 @@ async def delete_job_workspace(
         await client.close()
 
     # Azure resources provisioned alongside the workspace (mirroring SQL server,
-    # Foundry account, AI Search service — the latter two are standing-cost) are
+    # Foundry account, AI Search service - the latter two are standing-cost) are
     # deleted too when the request carries a management token.
     az = job.azure_resources or {}
     if any(az.get(k) for k in ("sqlServer", "foundryAccount", "searchService")):

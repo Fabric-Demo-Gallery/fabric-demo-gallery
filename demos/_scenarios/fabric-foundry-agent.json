@@ -1,13 +1,13 @@
 {
   "id": "fabric-foundry-agent",
   "title": "Fabric & Foundry AI Agent",
-  "description": "Deploy a complete Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data \u2014 the full data + AI story in one click.",
+  "description": "Deploy a complete Fabric data foundation, publish a Fabric data agent over it, then provision a Microsoft Foundry agent grounded on that data - the full data + AI story in one click.",
   "icon": "\ud83e\udde0",
   "estimatedTime": "20-30 min",
   "tags": ["foundry", "ai-agent", "data-agent", "rag", "preview"],
   "preview": true,
   "prerequisites": [
-    "Fabric capacity (F2+, Trial, or PPU) \u2014 same tenant as Foundry",
+    "Fabric capacity (F2+, Trial, or PPU) - same tenant as Foundry",
     "Azure subscription with Microsoft Foundry quota for gpt-5-mini",
     "Tenant setting 'cross-geo processing & storing for AI' enabled",
     "Owner or Contributor + User Access Administrator on the resource group"

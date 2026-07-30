@@ -29,7 +29,7 @@
     },
     {
       "fileName": "equipment_catalog.csv",
-      "description": "Equipment master data — machine ID, type, production line, install date",
+      "description": "Equipment master data - machine ID, type, production line, install date",
       "format": "csv",
       "rows": 50
     }

@@ -1,4 +1,4 @@
-"""Power BI Report builder — generates a professional PBIR-Legacy report."""
+"""Power BI Report builder - generates a professional PBIR-Legacy report."""
 
 import base64
 import json
@@ -156,7 +156,7 @@ def build_manufacturing_report_definition(semantic_model_id: str) -> dict:
     p1 = [
         # Header
         _textbox("hdr1", 20, 5, 500, 35, "Manufacturing Quality Control", "20"),
-        _textbox("sub1", 520, 12, 400, 25, "Executive Overview — 90 Day Analysis", "11", False),
+        _textbox("sub1", 520, 12, 400, 25, "Executive Overview - 90 Day Analysis", "11", False),
 
         # Row 1: KPI Cards (5 across)
         _kpi_card("c_oee",     20,  45, P, "Avg OEE %",              "OEE",             "#0078D4"),
@@ -199,7 +199,7 @@ def build_manufacturing_report_definition(semantic_model_id: str) -> dict:
         # Detail table
         _table("e_tbl", 20, 420, 1230, 280, E,
             ["reading_date", "machine_id", "production_line", "shift", "health_score", "health_status", "anomaly_rate", "avg_temperature", "avg_vibration", "temp_anomaly_count", "vibration_anomaly_count"],
-            "Equipment Health Detail — All Machines"),
+            "Equipment Health Detail - All Machines"),
     ]
 
     # ═══════════════════════════════════════════════════════════
@@ -225,7 +225,7 @@ def build_manufacturing_report_definition(semantic_model_id: str) -> dict:
         # Line scorecard table
         _table("p_score", 20, 450, 1230, 250, L,
             ["production_line", "overall_oee", "overall_yield", "overall_defect_rate", "total_units_all_time", "total_defects_all_time", "total_downtime_all_time", "operating_days", "products_produced", "units_per_day"],
-            "Production Line Scorecard — All-Time Performance"),
+            "Production Line Scorecard - All-Time Performance"),
     ]
 
     # ═══════════════════════════════════════════════════════════
@@ -291,7 +291,7 @@ def build_retail_report_definition(semantic_model_id: str) -> dict:
 
     p1 = [
         _textbox("rh1", 20, 5, 500, 35, "Retail Sales & Inventory Analytics", "20"),
-        _textbox("rs1", 520, 12, 400, 25, "Sales Overview — 90 Day Analysis", "11", False),
+        _textbox("rs1", 520, 12, 400, 25, "Sales Overview - 90 Day Analysis", "11", False),
         _kpi_card("r_rev",     20,  45, S, "Total Revenue",          "Total Revenue",     "#0078D4"),
         _kpi_card("r_units",  230,  45, S, "Total Units Sold",       "Units Sold",        "#107C10"),
         _kpi_card("r_txn",   440,  45, S, "Transaction Count",       "Transactions",      "#5C2D91"),
@@ -334,7 +334,7 @@ def build_retail_report_definition(semantic_model_id: str) -> dict:
         _line("m_trend", 850, 155, 400, 260, S, "transaction_date", "Gross Margin", "Daily Margin Trend"),
         _table("m_tbl", 20, 430, 1230, 270, S,
             ["transaction_date", "store_name", "region", "category", "subcategory", "total_revenue", "total_cost", "gross_margin", "margin_pct", "avg_basket_size", "transaction_count"],
-            "Sales Detail — Revenue, Cost & Margin"),
+            "Sales Detail - Revenue, Cost & Margin"),
     ]
 
     config = {"version": "5.54", "themeCollection": {"baseTheme": {"name": "CY25SU12", "version": "2.5.0", "type": 2}}, "activeSectionIndex": 0, "defaultDrillFilterOtherVisuals": True}
@@ -458,9 +458,9 @@ def build_energy_ml_report_definition(semantic_model_id: str) -> dict:
     P = "gold_ml_predictions"
     S = "gold_ml_summary"
 
-    # Page 1 — Model Performance
+    # Page 1 - Model Performance
     p1 = [
-        _textbox("mh1", 20, 5, 600, 35, "Outage Prediction — Model Performance", "20"),
+        _textbox("mh1", 20, 5, 600, 35, "Outage Prediction - Model Performance", "20"),
         _textbox("ms1", 620, 12, 400, 25, "RandomForest Classifier", "11", False),
         _kpi_card("m_auc",   20,  45, M, "Model AUC",       "AUC-ROC",        "#0078D4"),
         _kpi_card("m_acc",  230,  45, M, "Model Accuracy",  "Accuracy",       "#107C10"),
@@ -472,7 +472,7 @@ def build_energy_ml_report_definition(semantic_model_id: str) -> dict:
         _table("m_fi_tbl", 795, 155, 465, 545, F, ["feature", "importance"], "Feature Importance Detail"),
     ]
 
-    # Page 2 — Outage Predictions
+    # Page 2 - Outage Predictions
     p2 = [
         _textbox("ph1", 20, 5, 600, 35, "Outage Predictions", "20"),
         _textbox("ps1", 620, 12, 400, 25, "Per Substation-Day Scoring", "11", False),
@@ -488,7 +488,7 @@ def build_energy_ml_report_definition(semantic_model_id: str) -> dict:
         _table("p_tbl", 830, 430, 430, 270, P, ["substation_id", "region", "risk_level", "outage_probability", "predicted_outage", "had_outage"], "Prediction Detail"),
     ]
 
-    # Page 3 — Substation Risk
+    # Page 3 - Substation Risk
     p3 = [
         _textbox("sh1", 20, 5, 600, 35, "Substation Risk Summary", "20"),
         _textbox("ss1", 620, 12, 400, 25, "Aggregated Risk by Substation", "11", False),

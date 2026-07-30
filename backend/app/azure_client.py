@@ -23,7 +23,7 @@ ARM_API_VERSION = "2022-12-01"
 RG_API_VERSION = "2021-04-01"
 RBAC_API_VERSION = "2022-04-01"
 SQL_API_VERSION = "2021-11-01"
-# Microsoft Foundry / Cognitive Services (preview — used by the Fabric+Foundry scenario)
+# Microsoft Foundry / Cognitive Services (preview - used by the Fabric+Foundry scenario)
 COG_API_VERSION = "2025-12-01"          # accounts, projects, deployments, connections
 MODEL_CAPACITY_API_VERSION = "2024-10-01"  # modelCapacities quota pre-flight
 # Azure AI Search (Foundry IQ retrieval engine for the Fabric data agent)
@@ -34,11 +34,11 @@ SEARCH_INDEX_DATA_READER = "1407120a-92aa-4202-b7e9-c0e197c71c8f"
 SEARCH_SERVICE_CONTRIBUTOR = "7ca78c08-252a-4471-8644-bb5ff32d4ba0"
 COGNITIVE_SERVICES_USER = "a97b65f3-24c7-4388-baec-2e87135dc908"
 # "Azure AI Developer" carries Microsoft.MachineLearningServices/workspaces/*/action
-# (incl. .../agents/*) — the action the Foundry Agent Service checks at create-agent.
+# (incl. .../agents/*) - the action the Foundry Agent Service checks at create-agent.
 AZURE_AI_DEVELOPER = "64702f94-c441-49e6-a78b-ef80e0188fee"
 # "Foundry User" (formerly "Azure AI User") grants the Microsoft.CognitiveServices/*
 # data-plane (model/inference) but has NO MachineLearningServices actions, so it alone
-# cannot create agents — use it ALONGSIDE Azure AI Developer, not instead of it.
+# cannot create agents - use it ALONGSIDE Azure AI Developer, not instead of it.
 FOUNDRY_USER = "53ca6127-db72-4b80-b1b0-d745d6d5456d"
 
 
@@ -134,7 +134,7 @@ class AzureClient:
                     500,
                     f"ARM operation {status}: {err.get('message', str(body)[:200])}",
                 )
-            # "inprogress", "running", "accepted", or unknown — keep polling
+            # "inprogress", "running", "accepted", or unknown - keep polling
             logger.debug("ARM LRO status: %s", status)
             await asyncio.sleep(6)
         raise AzureError(504, f"ARM operation timed out after {timeout}s")
@@ -211,7 +211,7 @@ class AzureClient:
             await self._arm_request("PUT", url, json=body)
         except AzureError as e:
             if e.status == 409:
-                return  # already assigned — not an error
+                return  # already assigned - not an error
             raise
 
     async def assign_role(
@@ -244,7 +244,7 @@ class AzureClient:
         }
         # A just-created managed identity can take up to ~1 min to replicate in
         # Microsoft Entra; until then ARM rejects the assignment with a 400
-        # "principal ... does not exist". Retry through that window — giving up
+        # "principal ... does not exist". Retry through that window - giving up
         # skips the whole RBAC step and the knowledge base then breaks at RUNTIME
         # (the Search identity can't call Foundry) even though the deploy shows
         # success.
@@ -261,7 +261,7 @@ class AzureClient:
                 )
                 if propagating and attempt < 5:
                     logger.info(
-                        "Role assignment principal %s not yet replicated (attempt %d/6) — retrying in 12s",
+                        "Role assignment principal %s not yet replicated (attempt %d/6) - retrying in 12s",
                         principal_id, attempt + 1,
                     )
                     await asyncio.sleep(12)
@@ -306,7 +306,7 @@ class AzureClient:
         out = []
         for loc in resp.json().get("value", []):
             meta = loc.get("metadata") or {}
-            # Skip logical/edge regions — only offer real datacenter regions.
+            # Skip logical/edge regions - only offer real datacenter regions.
             if meta.get("regionType") and meta["regionType"] != "Physical":
                 continue
             out.append(
@@ -320,8 +320,8 @@ class AzureClient:
     ) -> dict:
         """Create the resource group if absent, else reuse the existing one.
 
-        A resource group's location is only metadata — the resources inside it may
-        live in any region — so an RG that already exists in a *different* region is
+        A resource group's location is only metadata - the resources inside it may
+        live in any region - so an RG that already exists in a *different* region is
         still perfectly usable (e.g. an eastus RG from a Shortcuts demo reused by a
         westus2 Mirroring demo). ARM rejects a PUT that would change an existing
         RG's location ("Invalid resource group location ... already exists in
@@ -338,7 +338,7 @@ class AzureClient:
         # governance policies (e.g. AzureSQL_PublicNetwork_Modify force-disables
         # public network access on SQL servers, which breaks Fabric Mirroring).
         # The tag is inert in tenants without those policies. Only set on RGs WE
-        # create — existing RGs are never modified.
+        # create - existing RGs are never modified.
         resp = await self._arm_request(
             "PUT", url, json={"location": location, "tags": {"SecurityControl": "Ignore"}}
         )
@@ -355,7 +355,7 @@ class AzureClient:
     ) -> dict:
         """
         Create an ADLS Gen2-enabled storage account (StorageV2 + HNS).
-        Handles ARM LRO — polls until provisioned. Returns the account object.
+        Handles ARM LRO - polls until provisioned. Returns the account object.
         """
         url = (
             f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
@@ -375,7 +375,7 @@ class AzureClient:
         }
         resp = await self._arm_client.put(url, json=body)
         if resp.status_code == 409:
-            # Account already exists — check if it's ours
+            # Account already exists - check if it's ours
             detail = resp.text[:300]
             try:
                 err_code = resp.json().get("error", {}).get("code", "")
@@ -396,7 +396,7 @@ class AzureClient:
             raise AzureError(resp.status_code, detail)
 
         if resp.status_code == 202:
-            # Poll the resource's own provisioningState directly — the Azure-AsyncOperation
+            # Poll the resource's own provisioningState directly - the Azure-AsyncOperation
             # URL can lag behind reality (still "InProgress" after the account is live).
             _poll_start = time.time()
             _poll_timeout = 600
@@ -410,24 +410,24 @@ class AzureClient:
                         return acct
                     if pstate in ("failed", "canceled"):
                         raise AzureError(500, f"Storage account provisioning {pstate}")
-                    # "creating" / "resolvingdns" / etc. — keep polling
+                    # "creating" / "resolvingdns" / etc. - keep polling
                 except AzureError as e:
                     if e.status == 404:
-                        continue  # Not yet visible in ARM — keep waiting
+                        continue  # Not yet visible in ARM - keep waiting
                     raise
             raise AzureError(
                 504,
                 f"Storage account provisioning timed out after {_poll_timeout}s. "
-                "Check the Azure portal — if it succeeded, you can retry.",
+                "Check the Azure portal - if it succeeded, you can retry.",
             )
         elif resp.status_code in (200, 201):
-            # Synchronous create — verify provisioningState before returning
+            # Synchronous create - verify provisioningState before returning
             try:
                 pstate = (
                     resp.json().get("properties", {}).get("provisioningState") or "succeeded"
                 ).lower()
                 if pstate not in ("succeeded", ""):
-                    # Already-exists but still provisioning (rare) — do one GET poll
+                    # Already-exists but still provisioning (rare) - do one GET poll
                     await asyncio.sleep(5)
             except Exception:
                 pass
@@ -488,7 +488,7 @@ class AzureClient:
     ) -> str:
         """Primary admin key of an Azure AI Search service (via ARM). Lets the
         backend call the Search data-plane with api-key auth instead of a per-user
-        delegated token — so the Foundry IQ steps work for EVERY user, not only
+        delegated token - so the Foundry IQ steps work for EVERY user, not only
         ones who have consented to the search.azure.com scope."""
         url = (
             f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
@@ -560,7 +560,7 @@ class AzureClient:
     ) -> None:
         """
         Upload bytes to Azure Blob Storage using SharedKey authentication.
-        Uses the REST API directly — no extra SDK required.
+        Uses the REST API directly - no extra SDK required.
         """
         url = f"https://{account_name}.blob.core.windows.net/{container}/{blob_name}"
         now = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
@@ -618,7 +618,7 @@ class AzureClient:
         entra_admin_tenant_id: str,
     ) -> dict:
         """Create a logical Azure SQL server with a system-assigned managed
-        identity (SAMI) — a hard prerequisite for Fabric Database Mirroring —
+        identity (SAMI) - a hard prerequisite for Fabric Database Mirroring -
         configured for **Microsoft Entra-only authentication** (no SQL login/
         password). The deploying user is set as the Entra ID administrator.
 
@@ -640,11 +640,11 @@ class AzureClient:
             # MCAPS/SFI governance (MCAPSGovDeployPolicies → AzureSQL_PublicNetwork_Modify,
             # verified live 2026-07-13) force-disables public network access on new SQL
             # servers UNLESS the server or its RG carries SecurityControl=Ignore. Fabric
-            # Mirroring needs the public endpoint, so tag the server itself — covers
+            # Mirroring needs the public endpoint, so tag the server itself - covers
             # user-provided RGs we don't own. Inert outside MCAPS-governed tenants.
             "tags": {"SecurityControl": "Ignore"},
             "properties": {
-                # Microsoft Entra-only authentication — no administratorLogin/password.
+                # Microsoft Entra-only authentication - no administratorLogin/password.
                 "administrators": {
                     "administratorType": "ActiveDirectory",
                     "principalType": "User",
@@ -675,8 +675,8 @@ class AzureClient:
             raise AzureError(resp.status_code, detail)
 
         # Follow the async operation (Azure-AsyncOperation header) so that async
-        # provisioning failures — e.g. 'ProvisioningDisabled: region restricted' in
-        # governed subscriptions — surface immediately with the real message,
+        # provisioning failures - e.g. 'ProvisioningDisabled: region restricted' in
+        # governed subscriptions - surface immediately with the real message,
         # instead of silently 404ing the resource GET until the 600s timeout.
         async_url = resp.headers.get("Azure-AsyncOperation") or resp.headers.get("Location")
         if async_url:
@@ -688,7 +688,7 @@ class AzureClient:
                     op = await self._arm_client.get(async_url)
                 except httpx.TransportError as e:
                     # Transient network blip (ConnectTimeout/ConnectError/ReadTimeout)
-                    # while polling — keep waiting rather than failing the deploy.
+                    # while polling - keep waiting rather than failing the deploy.
                     logger.debug("SQL provisioning poll network error (retrying): %s", e)
                     continue
                 if op.status_code >= 400:
@@ -699,10 +699,10 @@ class AzureClient:
                     return await self.get_sql_server(subscription_id, resource_group, server_name)
                 if status in ("failed", "canceled", "cancelled"):
                     raise AzureError(500, f"SQL server provisioning failed: {_extract_arm_error(ob)}")
-                # InProgress / Accepted / Running — keep polling
+                # InProgress / Accepted / Running - keep polling
             raise AzureError(504, f"SQL server provisioning timed out after {timeout}s")
 
-        # Fallback: no async header — poll the resource's own provisioningState.
+        # Fallback: no async header - poll the resource's own provisioningState.
         start = time.time()
         timeout = 600
         while time.time() - start < timeout:
@@ -716,7 +716,7 @@ class AzureClient:
                 if state in ("disabled",):
                     raise AzureError(500, f"SQL server provisioning ended in state '{state}'")
             except httpx.TransportError as e:
-                # Transient network blip while polling — keep waiting.
+                # Transient network blip while polling - keep waiting.
                 logger.debug("SQL provisioning poll network error (retrying): %s", e)
                 continue
             except AzureError as e:
@@ -767,7 +767,7 @@ class AzureClient:
 
         Some governed subscriptions carry a Modify policy that silently flips
         publicNetworkAccess to Disabled at creation even though we request
-        Enabled — which then 400s the firewall-rule call. A direct PATCH after
+        Enabled - which then 400s the firewall-rule call. A direct PATCH after
         creation usually sticks (unless a Deny policy blocks the property)."""
         url = (
             f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
@@ -785,7 +785,7 @@ class AzureClient:
         database_name: str,
         location: str,
     ) -> dict:
-        """Create a Standard S3 database (100 DTU — the minimum DTU tier that
+        """Create a Standard S3 database (100 DTU - the minimum DTU tier that
         Fabric Mirroring supports; Free/Basic/<100 DTU tiers are rejected).
         Handles the 202 LRO by polling the database status."""
         url = (
@@ -895,7 +895,7 @@ class AzureClient:
                             raise AzureError(
                                 404,
                                 f"{what} never appeared in ARM after the create was "
-                                f"accepted — it was not provisioned.",
+                                f"accepted - it was not provisioned.",
                             )
                     continue  # not yet visible in ARM
                 raise
@@ -921,7 +921,7 @@ class AzureClient:
 
     async def _cog_put(self, url: str, body: dict, what: str, poll_timeout: int = 600) -> dict:
         """Idempotent PUT of a Cognitive Services resource, resilient to ARM gateway
-        timeouts. A 502/503/504 on the PUT does NOT mean the create failed — the
+        timeouts. A 502/503/504 on the PUT does NOT mean the create failed - the
         resource provider has very likely accepted the request and is provisioning in
         the background. On a transient gateway error we retry the PUT a few times,
         then fall back to polling the resource's own provisioningState rather than
@@ -951,7 +951,7 @@ class AzureClient:
             if state == "succeeded":
                 return resp.json()
             return await self._poll_cog_provisioning(url, what, timeout=poll_timeout)
-        # Every PUT attempt hit a gateway timeout — the resource may still be coming up.
+        # Every PUT attempt hit a gateway timeout - the resource may still be coming up.
         logger.warning("%s: all PUT attempts hit a gateway timeout; polling in case the "
                        "provider accepted the create. Last error: %s", what, last)
         return await self._poll_cog_provisioning(url, what, timeout=poll_timeout)
@@ -1046,7 +1046,7 @@ class AzureClient:
         project_name: str, connection_name: str, workspace_id: str, artifact_id: str,
     ) -> dict:
         """Create a project connection to a published Fabric data agent, carrying the
-        Fabric workspace-id + artifact-id. PREVIEW and best-effort — the connection
+        Fabric workspace-id + artifact-id. PREVIEW and best-effort - the connection
         shape for Fabric data agents is evolving, so the deployer treats a failure
         here as a skippable step (the user can add the connection in the portal)."""
         url = (
@@ -1079,7 +1079,7 @@ class AzureClient:
         self, subscription_id: str, resource_group: str, account_name: str
     ) -> bool:
         """Delete the Foundry account. Model deployments cascade, but nested
-        **projects do NOT** — ARM rejects the account delete with
+        **projects do NOT** - ARM rejects the account delete with
         ``CannotDeleteResource`` while any project exists. So delete the
         projects first, then the account. 404-tolerant: returns False if the
         account was already gone."""
@@ -1102,9 +1102,9 @@ class AzureClient:
                         await self._arm_client.delete(
                             f"{base}/projects/{proj_name}?api-version={COG_API_VERSION}"
                         )
-                    except Exception as pe:  # noqa: BLE001 — best-effort per project
+                    except Exception as pe:  # noqa: BLE001 - best-effort per project
                         logger.warning("[foundry] project '%s' delete failed: %s", proj_name, pe)
-        except Exception as le:  # noqa: BLE001 — listing is best-effort
+        except Exception as le:  # noqa: BLE001 - listing is best-effort
             logger.warning("[foundry] could not list projects for '%s': %s", account_name, le)
 
         # 2. Delete the account.
@@ -1119,7 +1119,7 @@ class AzureClient:
     # The new Foundry grounds a Fabric data agent through Foundry IQ, which runs
     # on an Azure AI Search service. We provision the service (with a managed
     # identity so it can call the Foundry account back), then the caller wires the
-    # 3-way RBAC. Standing-cost resource — teardown must always remove it.
+    # 3-way RBAC. Standing-cost resource - teardown must always remove it.
 
     async def register_search_provider(self, subscription_id: str) -> None:
         """Register the Microsoft.Search resource provider on the subscription
@@ -1155,7 +1155,7 @@ class AzureClient:
                 "replicaCount": 1,
                 "partitionCount": 1,
                 "hostingMode": "default",
-                # Allow BOTH Entra-ID (RBAC — used by the project + Foundry IQ runtime)
+                # Allow BOTH Entra-ID (RBAC - used by the project + Foundry IQ runtime)
                 # AND admin api-keys, so the backend can create the Foundry IQ knowledge
                 # source/base with the admin key (fetched via ARM) WITHOUT each user
                 # consenting to the search.azure.com delegated scope. Keyless-only made
@@ -1179,7 +1179,7 @@ class AzureClient:
                 continue
             if resp.status_code >= 400:
                 raise AzureError(resp.status_code, self._arm_error_detail(resp))
-            break  # accepted — poll for the terminal state below
+            break  # accepted - poll for the terminal state below
         # Even if every PUT attempt gateway-timed-out, the service may still be
         # provisioning; the poll below picks it up (or times out if it never appears).
 
@@ -1237,7 +1237,7 @@ class AzureClient:
         """Best-effort delete of every billable Azure resource a demo deploy
         recorded in the job's ``azure_resources`` metadata: the mirroring SQL
         server plus the Foundry account and Azure AI Search service (both
-        standing-cost). Returns a per-resource status dict — never raises, so a
+        standing-cost). Returns a per-resource status dict - never raises, so a
         partial cleanup still reports what happened to each resource."""
         out: dict = {}
         sub = az.get("subscriptionId")

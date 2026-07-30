@@ -1,10 +1,10 @@
-"""Job state store for deployment jobs — in-memory with JSON-file persistence.
+"""Job state store for deployment jobs - in-memory with JSON-file persistence.
 
 Job history previously lived only in memory, so every backend restart (App
-Service deploys, scale events) silently wiped the monitoring page — users
+Service deploys, scale events) silently wiped the monitoring page - users
 thought their deployments had vanished. Terminal jobs are now snapshotted to a
 JSON file (App Service's /home persists across restarts) and reloaded on boot.
-Running jobs are NOT restored — their asyncio task died with the old process —
+Running jobs are NOT restored - their asyncio task died with the old process -
 they're marked failed on load so the UI tells the truth.
 """
 
@@ -99,7 +99,7 @@ class JobStore:
                 try:
                     status = rec["status"]
                     # A job that was mid-flight when the process died can never
-                    # resume — surface that instead of a forever-"running" row.
+                    # resume - surface that instead of a forever-"running" row.
                     if status in ("pending", "running"):
                         status = "failed"
                         rec["error"] = rec.get("error") or "Interrupted by a service restart."
@@ -123,7 +123,7 @@ class JobStore:
                     logger.warning("Skipping corrupt persisted job record: %s", e)
             logger.info("Restored %d persisted jobs from %s", len(self._jobs), PERSIST_PATH)
         except Exception as e:
-            # Persistence is best-effort — never block startup on a bad file.
+            # Persistence is best-effort - never block startup on a bad file.
             logger.warning("Could not load persisted jobs (%s); starting empty", e)
 
     def _save(self) -> None:
@@ -170,7 +170,7 @@ class JobStore:
         self._jobs[job_id] = job
         self._evict_old_jobs(user_id)
         self._save()
-        # Usage analytics — deferred import to avoid a circular dependency
+        # Usage analytics - deferred import to avoid a circular dependency
         # (analytics reads PERSIST_PATH from this module).
         from app.analytics import record_deployment_event
         record_deployment_event(
@@ -233,7 +233,7 @@ class JobStore:
 
         # Snapshot on the events that change what the monitoring page shows.
         # Terminal transitions come through set_status; the "done"/"workspace"
-        # steps carry the workspace id — cheap enough to save on every step.
+        # steps carry the workspace id - cheap enough to save on every step.
         if event_type in ("plan", "step", "error"):
             self._save()
 
@@ -309,7 +309,7 @@ class JobStore:
         if job._events:
             return list(job._events)
         # The in-memory event log doesn't survive restarts, but the persisted
-        # steps carry the full outcome — rebuild a replay so the deployment
+        # steps carry the full outcome - rebuild a replay so the deployment
         # progress page still works for finished jobs.
         if not job.steps:
             return []

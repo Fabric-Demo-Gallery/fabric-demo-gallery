@@ -34,7 +34,7 @@ const EVENT_LABEL: Record<string, { label: string; color: string }> = {
 };
 
 // Fault-domain classifier for failed deploys: distinguishes failures the USER
-// must resolve (input conflicts, tenant settings, consent, quota — not product
+// must resolve (input conflicts, tenant settings, consent, quota - not product
 // bugs) from app/platform failures. Patterns mirror errorHelp.ts's non-retryable
 // user-environment cases. Unknown errors default to app-side so real problems
 // are never hidden behind a "user error" label.
@@ -42,7 +42,7 @@ const USER_FAULT_PATTERNS = [
   "already exists", "choose a different name", "invalid character", // input
   "feature is not available", // tenant can't create Fabric items
   "lacks a service principal", "aadsts", "consent", "conditional access", // tenant auth
-  "sufficient scopes", // stale consent — re-sign-in fixes
+  "sufficient scopes", // stale consent - re-sign-in fixes
   "quota", "not registered", "disallowed by policy", "public network", // subscription
   "paused", "no active fabric capacity", // capacity state
   "unauthorized", "sign-in expired", // session
@@ -66,12 +66,12 @@ function timeAgo(iso: string): string {
 }
 
 function formatDuration(s: number | null): string {
-  if (s === null) return "—";
+  if (s === null) return "-";
   if (s < 90) return `${Math.round(s)}s`;
   return `${(s / 60).toFixed(1)} min`;
 }
 
-/** Last N days ending today, as YYYY-MM-DD (UTC) — keeps the chart gap-free. */
+/** Last N days ending today, as YYYY-MM-DD (UTC) - keeps the chart gap-free. */
 function lastDays(n: number): string[] {
   const out: string[] = [];
   const now = new Date();
@@ -313,7 +313,7 @@ export default function StatsClient() {
           )}
         </div>
         <div className={styles.subtitle}>
-          Live deployment activity across the gallery. This page shows aggregates only — no individual names appear here.
+          Live deployment activity across the gallery. This page shows aggregates only - no individual names appear here.
         </div>
 
         {error && <div className={styles.error}>{error}</div>}
@@ -333,7 +333,7 @@ export default function StatsClient() {
               </div>
               <div className={styles.card}>
                 <div className={styles.cardLabel}><EyeRegular fontSize={14} aria-hidden />Demo views</div>
-                <div className={styles.cardValue}>{stats.total_views ?? "—"}</div>
+                <div className={styles.cardValue}>{stats.total_views ?? "-"}</div>
                 <div className={styles.cardSub}>demo pages opened</div>
               </div>
               <div className={styles.card}>
@@ -343,13 +343,13 @@ export default function StatsClient() {
               </div>
               <div className={styles.card}>
                 <div className={styles.cardLabel}><PeopleRegular fontSize={14} aria-hidden />Active users</div>
-                <div className={styles.cardValue}>{stats.distinct_users_7d ?? "—"}</div>
-                <div className={styles.cardSub}>last 7 days · {stats.distinct_users_30d ?? "—"} in 30 days</div>
+                <div className={styles.cardValue}>{stats.distinct_users_7d ?? "-"}</div>
+                <div className={styles.cardSub}>last 7 days · {stats.distinct_users_30d ?? "-"} in 30 days</div>
               </div>
               <div className={styles.card}>
                 <div className={styles.cardLabel}><CheckmarkCircleRegular fontSize={14} aria-hidden />Success rate</div>
                 <div className={styles.cardValue}>
-                  {stats.success_rate === null ? "—" : `${Math.round(stats.success_rate * 100)}%`}
+                  {stats.success_rate === null ? "-" : `${Math.round(stats.success_rate * 100)}%`}
                 </div>
                 <div className={styles.cardSub}>of finished deployments</div>
               </div>
@@ -363,12 +363,12 @@ export default function StatsClient() {
             {stats.total_deployments === 0 ? (
               <div className={styles.panel}>
                 <div className={styles.empty}>
-                  No deployments recorded yet — stats appear here as soon as someone deploys a demo.
+                  No deployments recorded yet - stats appear here as soon as someone deploys a demo.
                 </div>
               </div>
             ) : (
               <>
-                <div className={styles.sectionTitle}>Deployments — last 30 days</div>
+                <div className={styles.sectionTitle}>Deployments - last 30 days</div>
                 <div className={styles.panel}>
                   <div className={styles.chart} role="img" aria-label="Deployments per day, last 30 days">
                     {days.map((d) => {
@@ -478,7 +478,7 @@ export default function StatsClient() {
                                 <td className={`${styles.td} ${styles.num}`}>{d.started}</td>
                                 <td className={`${styles.td} ${styles.num}`} style={{ color: "#3fb950" }}>{d.completed}</td>
                                 <td className={`${styles.td} ${styles.num}`} style={{ color: d.failed ? "#f85149" : undefined }}>{d.failed}</td>
-                                <td className={`${styles.td} ${styles.num}`}>{d.success_rate === null ? "—" : `${Math.round(d.success_rate * 100)}%`}</td>
+                                <td className={`${styles.td} ${styles.num}`}>{d.success_rate === null ? "-" : `${Math.round(d.success_rate * 100)}%`}</td>
                                 <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`}>{formatDuration(d.median_duration_s)}</td>
                               </tr>
                             ))}
@@ -513,7 +513,7 @@ export default function StatsClient() {
                                 <td className={`${styles.td} ${styles.num}`}>{d.started}</td>
                                 <td className={`${styles.td} ${styles.num}`} style={{ color: "#3fb950" }}>{d.completed}</td>
                                 <td className={`${styles.td} ${styles.num}`} style={{ color: d.failed ? "#f85149" : undefined }}>{d.failed}</td>
-                                <td className={`${styles.td} ${styles.num}`}>{d.success_rate === null ? "—" : `${Math.round(d.success_rate * 100)}%`}</td>
+                                <td className={`${styles.td} ${styles.num}`}>{d.success_rate === null ? "-" : `${Math.round(d.success_rate * 100)}%`}</td>
                                 <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`}>{formatDuration(d.median_duration_s)}</td>
                               </tr>
                             ))}
@@ -554,7 +554,7 @@ export default function StatsClient() {
                               const n = stats.by_hour_utc?.[String(h)] ?? 0;
                               const max = Math.max(1, ...Object.values(stats.by_hour_utc ?? {}));
                               return (
-                                <div key={h} className={styles.chartCol} title={`${String(h).padStart(2, "0")}:00 UTC — ${n}`}>
+                                <div key={h} className={styles.chartCol} title={`${String(h).padStart(2, "0")}:00 UTC - ${n}`}>
                                   <div className={styles.chartBar} style={{ height: `${(n / max) * 100}%`, backgroundColor: n === 0 ? "#21262d" : undefined }} />
                                 </div>
                               );
@@ -571,7 +571,7 @@ export default function StatsClient() {
                               const n = stats.by_weekday?.[String(d)] ?? 0;
                               const max = Math.max(1, ...Object.values(stats.by_weekday ?? {}));
                               return (
-                                <div key={d} className={styles.chartCol} title={`${label} — ${n}`}>
+                                <div key={d} className={styles.chartCol} title={`${label} - ${n}`}>
                                   <div className={styles.chartBar} style={{ height: `${(n / max) * 100}%`, backgroundColor: n === 0 ? "#21262d" : undefined }} />
                                 </div>
                               );
@@ -584,7 +584,7 @@ export default function StatsClient() {
                   </>
                 )}
 
-                {/* ── Recent activity (no identities — truncated hash only) ── */}
+                {/* ── Recent activity (no identities - truncated hash only) ── */}
                 {stats.recent && stats.recent.length > 0 && (
                   <>
                     <div className={styles.sectionTitle}>Recent activity</div>
@@ -604,7 +604,7 @@ export default function StatsClient() {
                           <tbody>
                             {stats.recent.map((e, i) => {
                               // User-side failures (name conflicts, tenant/consent/quota
-                              // issues) aren't product failures — amber + explicit label
+                              // issues) aren't product failures - amber + explicit label
                               // so they read differently from app/platform failures.
                               // The server classifies from the FULL error text (which the
                               // public API omits); client classification is only a
@@ -629,7 +629,7 @@ export default function StatsClient() {
                                     </td>
                                     <td className={styles.td} style={joined}>{demoTitle(e.demo_id)}</td>
                                     <td className={`${styles.td} ${styles.tdMuted}`} style={joined}>{scenarioLabel(e.scenario_id)}</td>
-                                    <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`} style={joined}>{e.duration_s !== undefined ? formatDuration(e.duration_s) : "—"}</td>
+                                    <td className={`${styles.td} ${styles.num} ${styles.tdMuted}`} style={joined}>{e.duration_s !== undefined ? formatDuration(e.duration_s) : "-"}</td>
                                     <td className={`${styles.td} ${styles.tdMuted}`} style={{ fontFamily: "Consolas, monospace", fontSize: 12, ...joined }}>#{e.user}</td>
                                   </tr>
                                   {e.error && (

@@ -1,4 +1,4 @@
-"""Deployment orchestrator — reads a demo manifest and provisions all Fabric items."""
+"""Deployment orchestrator - reads a demo manifest and provisions all Fabric items."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ DEMOS_DIR = _APP_DIR.parent / "demos" if (_APP_DIR.parent / "demos").exists() el
 
 # ── Real-Time Intelligence: build a KQL schema script that creates the table
 #    and seeds a sample of CSV rows via `.ingest inline` (runs under the Fabric
-#    token during KQL database provisioning — no Spark, no Kusto token needed).
+#    token during KQL database provisioning - no Spark, no Kusto token needed).
 _RTI_MAX_SEED_ROWS = 5000
 _RTI_MAX_SEED_BYTES = 2 * 1024 * 1024  # ~2 MB of inline data keeps the definition payload small
 _DT_FORMATS = (
@@ -351,7 +351,7 @@ async def deploy_demo(
     items = manifest["fabricItems"]
     scenario_id = scenario_id if scenario_id is not None else manifest.get("id")
 
-    # Mirroring scenario has a fundamentally different flow — delegate.
+    # Mirroring scenario has a fundamentally different flow - delegate.
     if any(i["type"] == "MirroredDatabase" for i in items):
         async for ev in _deploy_mirroring(
             client=client,
@@ -371,7 +371,7 @@ async def deploy_demo(
             yield ev
         return
 
-    # Fabric IQ ontology scenario — Lakehouse + Eventhouse + 2 notebooks that
+    # Fabric IQ ontology scenario - Lakehouse + Eventhouse + 2 notebooks that
     # build a semantic ontology and an ontology-grounded data agent. Delegate.
     if scenario_id == "genai-applications":
         async for ev in _deploy_fabric_iq(
@@ -386,7 +386,7 @@ async def deploy_demo(
             yield ev
         return
 
-    # Fabric + Foundry AI agent scenario — standard Fabric deploy + a published
+    # Fabric + Foundry AI agent scenario - standard Fabric deploy + a published
     # data agent + a Microsoft Foundry agent grounded on it. Delegate.
     if scenario_id == "fabric-foundry-agent":
         async for ev in _deploy_fabric_foundry(
@@ -435,7 +435,7 @@ async def deploy_demo(
         except FabricError:
             pass  # If the list call fails, let the create attempt handle it
 
-    # Detect shortcut items — forks the data ingestion path
+    # Detect shortcut items - forks the data ingestion path
     shortcuts = [i for i in items if i["type"] == "Shortcut"]
     has_shortcut = len(shortcuts) > 0
 
@@ -552,7 +552,7 @@ async def deploy_demo(
                 if e.status == 409:
                     step.detail = f"A workspace named '{workspace_name}' already exists. Please choose a different name."
                 elif e.status == 403:
-                    # Surface Fabric's actual reason — a 403 here can be workspace-create
+                    # Surface Fabric's actual reason - a 403 here can be workspace-create
                     # rights OR capacity-assignment rights on the selected capacity, and
                     # only Fabric's message says which. Don't hide it behind a guess.
                     step.detail = (
@@ -588,7 +588,7 @@ async def deploy_demo(
             step.detail = eventhouse_uri or "Created"
             yield {"event": "step", "data": step.to_dict()}
 
-        # 2b. KQL Databases (explicit — only when a manifest defines them; RTI relies
+        # 2b. KQL Databases (explicit - only when a manifest defines them; RTI relies
         #     on the Eventhouse's auto-created default database instead).
         kql_db_name = ""
         for kdb in kql_databases:
@@ -610,15 +610,15 @@ async def deploy_demo(
             yield {"event": "step", "data": step.to_dict()}
 
         # When no explicit KQL Database is in the manifest, Fabric auto-creates one
-        # with the same display name as the Eventhouse — use that name.
+        # with the same display name as the Eventhouse - use that name.
         if not kql_db_name and eventhouses:
             kql_db_name = eventhouses[0]["name"]
 
-        # KQL database item id of the (default) database — resolved during the seed
+        # KQL database item id of the (default) database - resolved during the seed
         # step and reused for the Eventstream's Eventhouse destination.
         kql_db_item_id = ""
 
-        # 2c. Create the table (Fabric API — no Kusto token) and seed sample data
+        # 2c. Create the table (Fabric API - no Kusto token) and seed sample data
         #     (best-effort, Kusto data plane) into the Eventhouse's default DB (RTI).
         if _do_seed:
             step = _find_step(steps, "seed-kql")
@@ -681,7 +681,7 @@ async def deploy_demo(
                     step.status = "completed"
                     reason = f" ({seed_err})" if seed_err else ""
                     step.detail = (
-                        f"Table '{_seed_table}' created. Historical seed skipped{reason} — "
+                        f"Table '{_seed_table}' created. Historical seed skipped{reason} - "
                         "the live Eventstream will populate data."
                     )
                 else:
@@ -707,7 +707,7 @@ async def deploy_demo(
             step.item_id = lh_id
             yield {"event": "step", "data": step.to_dict()}
 
-        # 3. Upload data — fork on whether this is a shortcut deployment
+        # 3. Upload data - fork on whether this is a shortcut deployment
         shortcut_name = shortcuts[0]["name"] if shortcuts else "raw_data"
         nb_variables = {}
         if eventhouse_uri:
@@ -738,12 +738,12 @@ async def deploy_demo(
                 await azure_client.create_storage_account(
                     subscription_id, resource_group, acct_name, azure_location
                 )
-                # Remember it for teardown ONLY if we generated the name — never
+                # Remember it for teardown ONLY if we generated the name - never
                 # auto-delete a storage account the user already owned.
                 if not storage_account_name:
                     created_storage_account = acct_name
                 # Grant Storage Blob Data Contributor so OAuth uploads work.
-                # Non-fatal — user may already have access via a group or higher role.
+                # Non-fatal - user may already have access via a group or higher role.
                 caller_oid = azure_client.get_caller_oid()
                 if caller_oid:
                     try:
@@ -788,7 +788,7 @@ async def deploy_demo(
             connection_id = ""
             try:
                 # Unique connection name per deploy (include the workspace id) so we
-                # never reuse a stale connection — the embedded User Delegation SAS
+                # never reuse a stale connection - the embedded User Delegation SAS
                 # expires after a few hours, and a reused expired connection makes
                 # the shortcut creation fail with HTTP 400.
                 conn_result = await client.create_connection_oauth(
@@ -839,7 +839,7 @@ async def deploy_demo(
                     except FabricError as sc_err:
                         if sc_err.status == 409:
                             # Shortcut already exists (e.g. re-deploying same workspace)
-                            logger.info("[shortcut] 409 — shortcut '%s' already exists, treating as success", sc["name"])
+                            logger.info("[shortcut] 409 - shortcut '%s' already exists, treating as success", sc["name"])
                             step.status = "completed"
                             step.detail = f"Files/{sc['name']} already exists (reused)"
                             shortcut_created = True
@@ -852,7 +852,7 @@ async def deploy_demo(
                 for sc in shortcuts:
                     step = _find_step(steps, f"shortcut:{sc['name']}")
                     step.status = "skipped"
-                    step.detail = "Skipped — no Fabric connection available"
+                    step.detail = "Skipped - no Fabric connection available"
                     yield {"event": "step", "data": step.to_dict()}
 
             if shortcut_created:
@@ -912,13 +912,13 @@ async def deploy_demo(
         # busy capacity rejects them outright. To minimise that, when there are
         # 2+ notebooks to run we orchestrate them inside ONE shared Spark session
         # via notebookutils.notebook.runMultiple (the documented "high concurrency
-        # session sharing" pattern) — the deploy then only has to win capacity
+        # session sharing" pattern) - the deploy then only has to win capacity
         # admission once instead of once per notebook, and puts ~3× less pressure
         # on the Spark API rate limit.
         #
         # Two budgets: a single notebook gets 30 min, but the orchestrator runs
         # the WHOLE medallion pipeline (3-5 notebooks) inside one session, so it
-        # needs a much larger budget — otherwise a pipeline that is legitimately
+        # needs a much larger budget - otherwise a pipeline that is legitimately
         # running on a busy/small capacity gets killed mid-run and looks like it
         # "never finishes".
         notebook_timeout = 1800
@@ -930,13 +930,13 @@ async def deploy_demo(
             if not notebook_ids.get(nb["name"]):
                 step = _find_step(steps, f"run:{nb['name']}")
                 step.status = "failed"
-                step.detail = "Notebook was not created — skipping execution"
+                step.detail = "Notebook was not created - skipping execution"
                 yield {"event": "step", "data": step.to_dict()}
 
         # The single-session orchestrator (notebookutils.notebook.runMultiple)
         # is DISABLED. It reliably failed with
-        # System_Cancelled_Session_Statements_Failed on EVERY capacity — including
-        # F32/F64 with plenty of headroom — because packing all medallion
+        # System_Cancelled_Session_Statements_Failed on EVERY capacity - including
+        # F32/F64 with plenty of headroom - because packing all medallion
         # notebooks into one shared Spark session via reference runs destabilised
         # the session mid-pipeline. The direct path below (one clean Spark session
         # per notebook, sequential, with retry) is proven to deploy end-to-end
@@ -981,13 +981,13 @@ async def deploy_demo(
                     # Only retry when the Spark *session could not be created*
                     # (capacity 430 / Livy admission). That happens before any
                     # work runs, so retrying is cheap and safe. A failure AFTER
-                    # the session starts — an in-notebook error, or a run that
-                    # exceeds the pipeline timeout — fails fast: re-running the
+                    # the session starts - an in-notebook error, or a run that
+                    # exceeds the pipeline timeout - fails fast: re-running the
                     # whole pipeline would just repeat the same long, doomed run.
                     if attempt < max_attempts - 1 and _is_admission_error(e.detail):
                         wait = _retry_wait_seconds(e.detail, attempt)
                         for st in run_steps:
-                            st.detail = f"Spark capacity busy — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
+                            st.detail = f"Spark capacity busy - retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
                             yield {"event": "step", "data": st.to_dict()}
                         await asyncio.sleep(wait)
                         continue
@@ -1045,7 +1045,7 @@ async def deploy_demo(
                         last_err = e
                         if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
                             wait = _retry_wait_seconds(e.detail, attempt)
-                            step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
+                            step.detail = f"Spark capacity busy / transient hiccup - retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s…"
                             yield {"event": "step", "data": step.to_dict()}
                             await asyncio.sleep(wait)
                             continue
@@ -1072,7 +1072,7 @@ async def deploy_demo(
                 step.detail = conn_string
             else:
                 step.status = "completed"
-                step.detail = "Skipped — no lakehouse"
+                step.detail = "Skipped - no lakehouse"
             yield {"event": "step", "data": step.to_dict()}
 
         # 7. Semantic models (with dynamic SQL endpoint injection)
@@ -1124,7 +1124,7 @@ async def deploy_demo(
                 step.item_id = result.get("id")
                 step.status = "completed"
             else:
-                # No hand-authored model — auto-generate one from the gold tables.
+                # No hand-authored model - auto-generate one from the gold tables.
                 schema = await _discover_gold_schema()
                 if schema:
                     definition = build_generic_model_definition(
@@ -1137,9 +1137,9 @@ async def deploy_demo(
                     step.status = "completed"
                     step.detail = f"Auto-generated Direct Lake model over {len(schema)} gold tables"
                 else:
-                    # Genuinely nothing to model — be honest, not falsely green.
+                    # Genuinely nothing to model - be honest, not falsely green.
                     step.status = "skipped"
-                    step.detail = "Skipped — no gold tables found to model"
+                    step.detail = "Skipped - no gold tables found to model"
             yield {"event": "step", "data": step.to_dict()}
 
 
@@ -1162,13 +1162,13 @@ async def deploy_demo(
                     # than failed (red) so a healthy deploy isn't shown as broken.
                     logger.warning("Semantic model refresh did not complete: %s", e.detail)
                     step.status = "skipped"
-                    step.detail = "Direct Lake model frames automatically on first query — no action needed."
+                    step.detail = "Direct Lake model frames automatically on first query - no action needed."
             else:
                 step.status = "completed"
-                step.detail = "Skipped — no model created"
+                step.detail = "Skipped - no model created"
             yield {"event": "step", "data": step.to_dict()}
 
-        # 8. Reports (Power BI) — create with PBIR-Legacy definition
+        # 8. Reports (Power BI) - create with PBIR-Legacy definition
         for rp in reports:
             step = _find_step(steps, f"report:{rp['name']}")
             step.status = "running"
@@ -1208,7 +1208,7 @@ async def deploy_demo(
                     step.detail = f"Unexpected: {str(e)[:200]}"
             else:
                 step.status = "skipped"
-                step.detail = "Skipped — no semantic model available"
+                step.detail = "Skipped - no semantic model available"
             yield {"event": "step", "data": step.to_dict()}
 
         # 8b. Eventstreams (Custom Endpoint source → Eventhouse destination for the live demo)
@@ -1313,7 +1313,7 @@ async def deploy_demo(
                 step.detail = f"Dashboard not created: {str(e)[:150]}. You can add it manually in Fabric."
             yield {"event": "step", "data": step.to_dict()}
 
-        # 8e. Reflexes (Activator) — created empty. The Activator rule format
+        # 8e. Reflexes (Activator) - created empty. The Activator rule format
         #     (ReflexEntities.json) is not reliably authorable via the API; the
         #     supported path is the UI ('Set alert' on a dashboard tile/queryset),
         #     so we create the item and let the user add the rule there.
@@ -1433,7 +1433,7 @@ async def _capacity_inactive_error(
     client: FabricClient, capacity_id: str | None, workspace_id: str | None
 ) -> str | None:
     """Pre-flight: when a NEW workspace is requested on a specific capacity,
-    return a user-facing error if that capacity isn't active — so we fail fast
+    return a user-facing error if that capacity isn't active - so we fail fast
     with a clear message instead of dying mid-deploy with Fabric's cryptic
     "Target capacity is not in active state".
 
@@ -1444,7 +1444,7 @@ async def _capacity_inactive_error(
         return None
     try:
         active = await client.list_capacities()  # already filtered to state == active
-    except Exception as e:  # noqa: BLE001 — pre-flight is advisory, never fatal
+    except Exception as e:  # noqa: BLE001 - pre-flight is advisory, never fatal
         logger.warning("Capacity pre-flight skipped (list_capacities failed): %s", e)
         return None
     if any((c.get("id") or "").lower() == capacity_id.lower() for c in active):
@@ -1471,7 +1471,7 @@ async def _best_effort_teardown(
     left orphaned (and an Azure SQL server doesn't keep billing).
 
     ``workspace_created`` must be False when the deploy targeted a PRE-EXISTING
-    workspace (workspace reuse) — the user's workspace and everything already in
+    workspace (workspace reuse) - the user's workspace and everything already in
     it must never be auto-deleted; only resources this deploy created are.
 
     Never raises. Returns ``(note, ws_still_exists)`` where ``note`` is a short
@@ -1483,16 +1483,16 @@ async def _best_effort_teardown(
     failed: list[str] = []
     ws_still_exists = False
 
-    # SQL server first — it's the resource that keeps billing if left behind.
+    # SQL server first - it's the resource that keeps billing if left behind.
     if azure_client and subscription_id and resource_group and sql_server:
         try:
             await azure_client.delete_sql_server(subscription_id, resource_group, sql_server)
             cleaned.append("Azure SQL server")
-        except Exception as te:  # noqa: BLE001 — teardown must never mask the real error
+        except Exception as te:  # noqa: BLE001 - teardown must never mask the real error
             logger.warning("[teardown] SQL server '%s' delete failed: %s", sql_server, te)
             failed.append(f"Azure SQL server '{sql_server}'")
 
-    # Foundry account next — it (and its model deployment) also bill if left behind.
+    # Foundry account next - it (and its model deployment) also bill if left behind.
     if azure_client and subscription_id and resource_group and foundry_account:
         try:
             await azure_client.delete_foundry_account(subscription_id, resource_group, foundry_account)
@@ -1501,7 +1501,7 @@ async def _best_effort_teardown(
             logger.warning("[teardown] Foundry account '%s' delete failed: %s", foundry_account, te)
             failed.append(f"Foundry account '{foundry_account}'")
 
-    # Azure AI Search — a STANDING-cost resource; must always be removed.
+    # Azure AI Search - a STANDING-cost resource; must always be removed.
     if azure_client and subscription_id and resource_group and search_service:
         try:
             await azure_client.delete_search_service(subscription_id, resource_group, search_service)
@@ -1519,9 +1519,9 @@ async def _best_effort_teardown(
             failed.append(f"storage account '{storage_account}'")
 
     if ws_id and not workspace_created:
-        # Pre-existing workspace (reuse deploy) — never auto-delete it; the demo
+        # Pre-existing workspace (reuse deploy) - never auto-delete it; the demo
         # items it now contains are left for the user to review/remove.
-        logger.info("[teardown] workspace %s pre-existed — skipping delete", ws_id)
+        logger.info("[teardown] workspace %s pre-existed - skipping delete", ws_id)
         ws_still_exists = True
     elif ws_id:
         try:
@@ -1538,7 +1538,7 @@ async def _best_effort_teardown(
     if failed:
         parts.append(
             "Could not auto-remove " + ", ".join(failed)
-            + " — please delete manually to avoid charges."
+            + " - please delete manually to avoid charges."
         )
     return " ".join(parts), ws_still_exists
 
@@ -1690,7 +1690,7 @@ def _is_transient_run_error(detail: str) -> bool:
     that's worth retrying (cold-start, a platform-cancelled session, first-run
     flakiness, throttling) rather than a real error in the notebook code.
 
-    Covers System_Cancelled_Session_State — the Spark session being cancelled by
+    Covers System_Cancelled_Session_State - the Spark session being cancelled by
     the platform before the notebook ran, which a single retry almost always
     clears. Without this, one transient cancellation killed the whole deploy.
     """
@@ -1707,7 +1707,7 @@ def _is_transient_run_error(detail: str) -> bool:
         "430",
         "throttl",
         # Transient Fabric / infrastructure server errors ("Fabric returned a
-        # server error" — gateway, internal, service-unavailable). These are not
+        # server error" - gateway, internal, service-unavailable). These are not
         # notebook code errors and almost always clear on a retry.
         "internalerror",
         "internal server error",
@@ -1748,8 +1748,8 @@ def _is_capacity_error(detail: str) -> bool:
 def _is_admission_error(detail: str) -> bool:
     """True only when the Spark *session could not be created* (capacity 430 /
     Livy admission). These failures happen BEFORE any notebook runs, so retrying
-    is cheap and safe. Anything that fails AFTER the session starts — an
-    in-notebook error, or a run that exceeds the pipeline timeout — is NOT an
+    is cheap and safe. Anything that fails AFTER the session starts - an
+    in-notebook error, or a run that exceeds the pipeline timeout - is NOT an
     admission error and must fail fast rather than re-run the whole pipeline."""
     d = (detail or "").lower()
     return (
@@ -1766,7 +1766,7 @@ def _friendly_capacity_error(detail: str) -> str:
     """Turn a raw 430/TooManyRequestsForCapacity error into clear, actionable
     guidance. A notebook job submitted through the Fabric public API can't be
     queued (by design), so when the capacity has no free Spark vCores the deploy
-    can't proceed — the only fix is on the capacity side, not in the demo."""
+    can't proceed - the only fix is on the capacity side, not in the demo."""
     if _is_capacity_error(detail):
         return (
             "Your Fabric capacity is out of Spark compute right now "
@@ -1782,7 +1782,7 @@ def _friendly_capacity_error(detail: str) -> str:
     if "did not finish within" in d or "timed out" in d:
         return (
             "The deployment didn't finish in time and was stopped. The notebooks "
-            "were running but took longer than the allowed window — usually "
+            "were running but took longer than the allowed window - usually "
             "because the Fabric capacity is busy or under-sized. Try again when "
             "the capacity is less loaded, or use a larger capacity (an F-SKU), "
             "then redeploy."
@@ -1799,13 +1799,13 @@ def _build_orchestrator_source(
 
     ``optional_names`` are best-effort activities (e.g. the cosmetic dashboard):
     if one of them fails, the pipeline data is still good, so the deploy is NOT
-    failed — the failure is logged and the run still exits successfully.
+    failed - the failure is logged and the run still exits successfully.
 
     Why: each ``run_notebook`` API call creates its own Livy/Spark session. On
     constrained Fabric capacities (Trial / small F-SKUs) firing one session per
     notebook (bronze → silver → gold) means the deploy has to win capacity
     admission three separate times, and notebook jobs submitted via the public
-    API are never queued — so a busy capacity returns HTTP 430. Running them as a
+    API are never queued - so a busy capacity returns HTTP 430. Running them as a
     single sequential DAG inside one session (the documented "high concurrency
     session sharing" pattern for small capacities) means the deploy only needs to
     win admission once and puts ~3× less pressure on the Spark API rate limit.
@@ -2011,7 +2011,7 @@ async def _deploy_mirroring(
                 return
             yield {"event": "step", "data": step.to_dict()}
 
-        # 1b. Workspace identity — the secret-less Microsoft Entra principal the
+        # 1b. Workspace identity - the secret-less Microsoft Entra principal the
         # Mirrored Database connection authenticates with (no service principal
         # to register, no interactive sign-in). Its SP name == the workspace name.
         step = _find_step(steps, "ws-identity")
@@ -2118,7 +2118,7 @@ async def _deploy_mirroring(
         # Iterate regions, using a FRESH globally-unique server name for each region
         # attempt (unless the caller pinned an explicit name). This prevents a
         # self-inflicted 409 "name already taken": a region-restricted create
-        # returns 202 first and only fails async, which leaves the name reserved —
+        # returns 202 first and only fails async, which leaves the name reserved -
         # reusing it in the next region would then 409 and be misreported as a name
         # collision rather than the real region restriction.
         for _region in region_candidates:
@@ -2148,7 +2148,7 @@ async def _deploy_mirroring(
                     "already" in _msg or "not available" in _msg or "taken" in _msg
                 ) and ("name" in _msg or "server" in _msg):
                     if sql_server_name:
-                        # Caller pinned a name we can't change — fail clearly.
+                        # Caller pinned a name we can't change - fail clearly.
                         raise FabricError(
                             409,
                             f"SQL server name '{sql_server_name}' is already taken globally. "
@@ -2159,7 +2159,7 @@ async def _deploy_mirroring(
 
         if srv is None:
             # If every region we attempted was region-restricted, the subscription
-            # simply can't provision Azure SQL there — say so plainly and point the
+            # simply can't provision Azure SQL there - say so plainly and point the
             # user at the region picker, rather than a misleading "name taken".
             if _restricted_regions and len(_restricted_regions) == len(_tried_regions):
                 raise FabricError(
@@ -2167,7 +2167,7 @@ async def _deploy_mirroring(
                     "Your Azure subscription is restricted from provisioning Azure SQL in all "
                     f"attempted regions ({', '.join(_tried_regions)}). Pick a region your "
                     "subscription allows in the Azure Region dropdown and retry. If none work, "
-                    "your subscription likely has a provisioning policy on Azure SQL — request an "
+                    "your subscription likely has a provisioning policy on Azure SQL - request an "
                     "exception via Azure support (Issue type: 'Service and subscription limits').",
                 )
             raise FabricError(
@@ -2179,7 +2179,7 @@ async def _deploy_mirroring(
 
         try:
             sami_principal_id = (srv.get("identity") or {}).get("principalId", "")
-            # 'Allow Azure services' — required by both Fabric Spark and the mirroring service
+            # 'Allow Azure services' - required by both Fabric Spark and the mirroring service
             try:
                 await azure_client.create_sql_firewall_rule(
                     subscription_id, resource_group, sql_server,
@@ -2188,7 +2188,7 @@ async def _deploy_mirroring(
             except AzureError as e:
                 # Governed subscriptions (seen live: MngEnvMCAP035102, 2026-07-10) can
                 # carry a Modify policy that flips publicNetworkAccess to Disabled at
-                # creation even though we request Enabled — the firewall PUT then 400s
+                # creation even though we request Enabled - the firewall PUT then 400s
                 # with "public network interface for the server is disabled". Re-enable
                 # once and retry; if a Deny policy blocks even that, fail with guidance.
                 if "public network" in (e.detail or "").lower():
@@ -2234,7 +2234,7 @@ async def _deploy_mirroring(
             "ROW_CAP": str(row_cap),
         }
 
-        # 5. Seed notebook — create and run (writes tables with PKs via JDBC)
+        # 5. Seed notebook - create and run (writes tables with PKs via JDBC)
         notebook_ids: dict[str, str] = {}
         for nb in seed_notebooks:
             step = _find_step(steps, f"notebook:{nb['name']}")
@@ -2257,7 +2257,7 @@ async def _deploy_mirroring(
             step.detail = (
                 "Loading tables, then registering the Fabric workspace identity in Azure SQL. "
                 "The identity can take 1–3 min to propagate in Microsoft Entra before SQL can "
-                "resolve it — this step is waiting on that, not stuck."
+                "resolve it - this step is waiting on that, not stuck."
             )
             yield {"event": "step", "data": step.to_dict()}
 
@@ -2285,7 +2285,7 @@ async def _deploy_mirroring(
                     last_err = e
                     if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
                         wait = _retry_wait_seconds(e.detail, attempt)
-                        step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
+                        step.detail = f"Spark capacity busy / transient hiccup - retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
                         yield {"event": "step", "data": step.to_dict()}
                         await asyncio.sleep(wait)
                         continue
@@ -2331,7 +2331,7 @@ async def _deploy_mirroring(
         md = await client.create_mirrored_database(ws_id, mirrored_name, connection_id)
         md_id = md["id"]
         created_ids[mirrored_name] = md_id
-        # start_mirroring self-verifies (retries until Running) — a fresh mirrored
+        # start_mirroring self-verifies (retries until Running) - a fresh mirrored
         # DB often ignores the first startMirroring call.
         try:
             await client.start_mirroring(ws_id, md_id)
@@ -2345,7 +2345,7 @@ async def _deploy_mirroring(
         step = _find_step(steps, "mirror-sync")
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
-        # One mirrored table per CSV — exclude helper files (e.g. _generate_data.py,
+        # One mirrored table per CSV - exclude helper files (e.g. _generate_data.py,
         # .gitkeep) that are staged in the data folder but never become tables.
         expected = max(1, len([f for f in data_files if f.suffix.lower() == ".csv"]))
         table_status = await client.wait_for_mirrored_tables(ws_id, md_id, expected, timeout=900)
@@ -2359,14 +2359,14 @@ async def _deploy_mirroring(
             step.detail = f"{len(replicating)} tables replicating"
         else:
             step.detail = (
-                f"{len(replicating)}/{expected} tables replicating so far — initial sync "
+                f"{len(replicating)}/{expected} tables replicating so far - initial sync "
                 "can take a few more minutes; check the mirrored database item."
             )
         yield {"event": "step", "data": step.to_dict()}
 
         # 9. Exploration notebooks (created with mirror context, not auto-run).
         # These are conveniences added AFTER replication is already live, so a
-        # transient failure here must NOT fail (and tear down) a working mirror —
+        # transient failure here must NOT fail (and tear down) a working mirror -
         # mark the step skipped and carry on to "done".
         nb_variables["MIRRORED_DB_ID"] = md_id
         for nb in explore_notebooks:
@@ -2382,14 +2382,14 @@ async def _deploy_mirroring(
                 created_ids[nb["name"]] = result["id"]
                 step.status = "completed"
                 step.item_id = result["id"]
-            except (FabricError, Exception) as e:  # noqa: BLE001 — non-critical step
+            except (FabricError, Exception) as e:  # noqa: BLE001 - non-critical step
                 logger.warning("[mirroring] explore notebook '%s' creation skipped: %s", nb["name"], e)
                 step.status = "skipped"
                 detail = e.detail if isinstance(e, FabricError) else str(e)
                 step.detail = f"Optional notebook skipped (mirroring is live): {detail[:160]}"
             yield {"event": "step", "data": step.to_dict()}
 
-        # Done — include Azure metadata so teardown can delete the SQL server
+        # Done - include Azure metadata so teardown can delete the SQL server
         step = _find_step(steps, "done")
         step.status = "completed"
         step.detail = json.dumps({
@@ -2479,7 +2479,7 @@ async def _foundry_quota_warning(
 ) -> str | None:
     """Advisory model-quota pre-flight (never fatal): return a human note if the
     chosen model has no capacity in the requested region. Mirrors the spirit of
-    ``_capacity_inactive_error`` — a listing hiccup must not block the deploy."""
+    ``_capacity_inactive_error`` - a listing hiccup must not block the deploy."""
     if not azure_client or not subscription_id:
         return None
     caps = await azure_client.check_model_capacity(subscription_id, model_name, model_version)
@@ -2522,7 +2522,7 @@ async def _deploy_fabric_foundry(
 
     workspace → lakehouse → upload CSVs → run batch notebooks (populate gold
     tables) → create & PUBLISH a Fabric data agent over the lakehouse (via item
-    definition — no notebook/SDK) → provision a Microsoft Foundry account +
+    definition - no notebook/SDK) → provision a Microsoft Foundry account +
     project + gpt-4o-mini → provision Azure AI Search (Foundry IQ engine) →
     wire the 3-way managed-identity RBAC → create the Foundry IQ knowledge
     source + base → create the project connection + agent grounded on it.
@@ -2539,12 +2539,12 @@ async def _deploy_fabric_foundry(
     # Model candidates, newest first. gpt-4o-mini (2024-07-18) is in "Deprecating"
     # state: subscriptions that deployed it in the past can keep using it, but NEW
     # subscriptions are refused ("cannot be used for new deployments"). Try the
-    # current GA model first, then fall back — the legacy entries still work for
+    # current GA model first, then fall back - the legacy entries still work for
     # older subscriptions and regions where the newer models lack quota.
     MODEL_CANDIDATES: list[tuple[str, str]] = [
         ("gpt-5-mini", "2025-08-07"),    # GA (retires 2027-02-06)
         ("gpt-4.1-mini", "2025-04-14"),  # deprecated for new subs; widely quota'd
-        ("gpt-4o-mini", "2024-07-18"),   # legacy — existing subscriptions only
+        ("gpt-4o-mini", "2024-07-18"),   # legacy - existing subscriptions only
     ]
     MODEL_NAME, MODEL_VERSION = MODEL_CANDIDATES[0]
     DEPLOYMENT_NAME = MODEL_NAME
@@ -2554,14 +2554,14 @@ async def _deploy_fabric_foundry(
     run_notebooks = [nb for nb in notebooks if nb.get("order") is not None]
     data_agents = [i for i in items if i["type"] == "DataAgent"]
     agent_name = data_agents[0]["name"] if data_agents else "analytics_data_agent"
-    # Derive the data-agent instructions from THIS demo's manifest — the scenario
+    # Derive the data-agent instructions from THIS demo's manifest - the scenario
     # deploys for all industries, so hardcoded domain wording would mislead the
     # agent on every demo but one.
     try:
         _mani = load_manifest(demo_id)
         _domain = _mani.get("industry") or _mani.get("title") or demo_id
         _desc = (_mani.get("description") or "").strip().rstrip(".")
-    except Exception:  # noqa: BLE001 — never let manifest quirks block a deploy
+    except Exception:  # noqa: BLE001 - never let manifest quirks block a deploy
         _domain, _desc = demo_id, ""
     da_instructions = (
         f"You answer questions about {_domain} data in this lakehouse"
@@ -2705,7 +2705,7 @@ async def _deploy_fabric_foundry(
                     last_err = e
                     if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
                         wait = _retry_wait_seconds(e.detail, attempt)
-                        step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
+                        step.detail = f"Spark capacity busy / transient hiccup - retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
                         yield {"event": "step", "data": step.to_dict()}
                         await asyncio.sleep(wait)
                         continue
@@ -2736,7 +2736,7 @@ async def _deploy_fabric_foundry(
                 },
             )
             await client.run_notebook(ws_id, nb["id"], lakehouse_id, lh_name, timeout=900)
-            # The notebook writes its outcome to the lakehouse — read it back.
+            # The notebook writes its outcome to the lakehouse - read it back.
             pub: dict = {}
             try:
                 pr = await client._storage_client.get(
@@ -2754,7 +2754,7 @@ async def _deploy_fabric_foundry(
             step.status = "completed"
             step.item_id = artifact_id
             step.detail = f"Published '{agent_name}' (id {artifact_id})"
-        except (FabricError, Exception) as e:  # noqa: BLE001 — degrade gracefully
+        except (FabricError, Exception) as e:  # noqa: BLE001 - degrade gracefully
             logger.warning("[foundry] data agent publish skipped: %s", e)
             step.status = "skipped"
             detail = e.detail if isinstance(e, FabricError) else str(e)
@@ -2781,8 +2781,8 @@ async def _deploy_fabric_foundry(
             )
             project_principal_id = (proj.get("identity") or {}).get("principalId", "")
             step.status = "completed"
-            step.detail = f"{foundry_account} / {foundry_project}" + (f" — note: {qwarn}" if qwarn else "")
-        except (AzureError, Exception) as e:  # noqa: BLE001 — preview; degrade gracefully
+            step.detail = f"{foundry_account} / {foundry_project}" + (f" - note: {qwarn}" if qwarn else "")
+        except (AzureError, Exception) as e:  # noqa: BLE001 - preview; degrade gracefully
             logger.warning("[foundry] account/project provisioning skipped: %s", e)
             step.status = "skipped"
             detail = e.detail if isinstance(e, AzureError) else str(e)
@@ -2821,11 +2821,11 @@ async def _deploy_fabric_foundry(
                 step.detail = f"{DEPLOYMENT_NAME} ({MODEL_NAME} {MODEL_VERSION})"
             else:
                 step.status = "skipped"
-                step.detail = f"Model deployment skipped: {last_detail[:140]}" + (f" — {qwarn}" if qwarn else "")
+                step.detail = f"Model deployment skipped: {last_detail[:140]}" + (f" - {qwarn}" if qwarn else "")
                 next_steps.append(f"Deploy '{MODEL_NAME}' in the Foundry project.")
         else:
             step.status = "skipped"
-            step.detail = "Skipped — no Foundry account"
+            step.detail = "Skipped - no Foundry account"
         yield {"event": "step", "data": step.to_dict()}
 
         # 9. Provision Azure AI Search (the Foundry IQ retrieval engine).
@@ -2850,17 +2850,17 @@ async def _deploy_fabric_foundry(
                 step.status = "skipped"
                 detail = e.detail if isinstance(e, AzureError) else str(e)
                 # A 504 means the PUT was accepted but provisioning didn't finish inside
-                # our poll window — the service almost certainly comes up shortly after,
+                # our poll window - the service almost certainly comes up shortly after,
                 # so it is NOT lost. Name it so the user can re-run (to attach) or delete
                 # it, instead of silently leaving a billable S1 service orphaned.
                 if isinstance(e, AzureError) and e.status == 504 and search_service:
                     step.detail = (
                         f"Azure AI Search '{search_service}' still provisioning past the wait "
-                        f"window — re-run the deploy to attach to it, or delete it if abandoned."
+                        f"window - re-run the deploy to attach to it, or delete it if abandoned."
                     )
                     next_steps.append(
                         f"Azure AI Search '{search_service}' was still provisioning when the deploy "
-                        f"gave up — re-run to finish Foundry IQ, or delete the service to avoid charges."
+                        f"gave up - re-run to finish Foundry IQ, or delete the service to avoid charges."
                     )
                 else:
                     step.detail = f"Azure AI Search skipped: {detail[:140]}"
@@ -2868,7 +2868,7 @@ async def _deploy_fabric_foundry(
                 search_service = ""
         else:
             step.status = "skipped"
-            step.detail = "Skipped — no Foundry account"
+            step.detail = "Skipped - no Foundry account"
         yield {"event": "step", "data": step.to_dict()}
 
         # 10. Wire the managed-identity RBAC.
@@ -2896,13 +2896,13 @@ async def _deploy_fabric_foundry(
                 await azure_client.assign_role(foundry_scope, COGNITIVE_SERVICES_USER, search_principal_id)
                 # Grant the agent-creating identities the Foundry data-plane role on
                 # the project. VERIFIED end-to-end: a token carrying only "Foundry User"
-                # (Microsoft.CognitiveServices/*) can create agents — the 403's
+                # (Microsoft.CognitiveServices/*) can create agents - the 403's
                 # "MachineLearningServices/agents" wording is misleading. We grant to
                 # BOTH identities the agent step may use:
-                #   • the deploying USER (caller) — makes a delegated ai.azure.com token
+                #   • the deploying USER (caller) - makes a delegated ai.azure.com token
                 #     (agent_token) work; reliable because the user is in their own
                 #     tenant and owns the resources just created; and
-                #   • the backend MANAGED IDENTITY — the no-consent fallback, which only
+                #   • the backend MANAGED IDENTITY - the no-consent fallback, which only
                 #     works when the deploy targets the gallery's own tenant (a single-
                 #     tenant MI can't be granted in another tenant's directory).
                 # "Azure AI Developer" is added too (broader agent actions).
@@ -2920,14 +2920,14 @@ async def _deploy_fabric_foundry(
                             try:
                                 await azure_client.assign_role(_scope, _role, principal_id, principal_type)
                                 ok = True
-                            except Exception as ge:  # noqa: BLE001 — best-effort per assignment
+                            except Exception as ge:  # noqa: BLE001 - best-effort per assignment
                                 err = str(ge)
                                 logger.warning("[foundry] grant %s/%s skipped: %s", label, _role, ge)
                     grant_notes.append(f"{label}: {'ok' if ok else 'FAILED ' + err[:80]}")
 
-                # The deploying user — enables the delegated agent_token path.
+                # The deploying user - enables the delegated agent_token path.
                 await _grant_foundry_role(azure_client.get_caller_oid(), "User", "user")
-                # The backend managed identity — the no-consent fallback.
+                # The backend managed identity - the no-consent fallback.
                 if not agent_token:
                     try:
                         backend_mi_agent_token = await azure_client.get_managed_identity_token("https://ai.azure.com")
@@ -2939,16 +2939,16 @@ async def _deploy_fabric_foundry(
                         backend_mi_agent_token = None
                         grant_notes.append("backend-mi: token unavailable")
                 step.status = "completed"
-                step.detail = "Foundry role grants — " + "; ".join(grant_notes)
+                step.detail = "Foundry role grants - " + "; ".join(grant_notes)
             except (AzureError, Exception) as e:  # noqa: BLE001
                 logger.warning("[foundry] rbac skipped: %s", e)
                 step.status = "skipped"
                 detail = e.detail if isinstance(e, AzureError) else str(e)
-                step.detail = f"RBAC skipped — grant roles manually: {detail[:120]}"
+                step.detail = f"RBAC skipped - grant roles manually: {detail[:120]}"
                 next_steps.append("Grant the Foundry project + search managed identities their roles.")
         else:
             step.status = "skipped"
-            step.detail = "Skipped — search service or identities unavailable"
+            step.detail = "Skipped - search service or identities unavailable"
         yield {"event": "step", "data": step.to_dict()}
 
         # 11. Create the Foundry IQ knowledge source + base (Search data-plane).
@@ -2959,7 +2959,7 @@ async def _deploy_fabric_foundry(
         step.status = "running"
         yield {"event": "step", "data": step.to_dict()}
         # Prefer the Search service ADMIN KEY (fetched via ARM with the management
-        # token every user grants) so this works for EVERYONE — not just users who
+        # token every user grants) so this works for EVERYONE - not just users who
         # consented to the search.azure.com delegated scope. Fall back to the user's
         # delegated search token if the key can't be fetched.
         search_key = None
@@ -2985,7 +2985,7 @@ async def _deploy_fabric_foundry(
                 await iq.close()
         else:
             step.status = "skipped"
-            step.detail = "Skipped — search service or data agent unavailable"
+            step.detail = "Skipped - search service or data agent unavailable"
             next_steps.append("In Foundry IQ: create a knowledge base over the Fabric data agent.")
         yield {"event": "step", "data": step.to_dict()}
 
@@ -3005,7 +3005,7 @@ async def _deploy_fabric_foundry(
                 foundry_key = await azure_client.get_cognitive_account_key(subscription_id, resource_group, foundry_account)
             except Exception as e:  # noqa: BLE001
                 logger.warning("[foundry] foundry account key fetch failed: %s", e)
-        # Which identity actually creates the agent — surfaced in the step detail so a
+        # Which identity actually creates the agent - surfaced in the step detail so a
         # failure is diagnosable (user-token = delegated; backend-mi = no-consent MI).
         _auth_label = (
             "user-token" if agent_token else
@@ -3023,7 +3023,7 @@ async def _deploy_fabric_foundry(
                     subscription_id, resource_group, foundry_account, foundry_project,
                     conn_name, search_endpoint, kb_name,
                 )
-                # Retry on 401/403 — the backend-MI role assignment may still be
+                # Retry on 401/403 - the backend-MI role assignment may still be
                 # propagating through Entra / the data-plane when we first call the
                 # agents API (can take a couple of minutes).
                 agent = {}
@@ -3040,22 +3040,22 @@ async def _deploy_fabric_foundry(
                         raise
                 agent_created = agent.get("name", f"{demo_id}-agent")
                 step.status = "completed"
-                step.detail = f"Agent '{agent_created}' ready (auth: {_auth_label}) — ask it about your data"
+                step.detail = f"Agent '{agent_created}' ready (auth: {_auth_label}) - ask it about your data"
             except Exception as e:  # noqa: BLE001
                 logger.warning("[foundry] agent creation skipped: %s", e)
                 step.status = "skipped"
-                step.detail = f"Agent skipped (auth: {_auth_label}) — {str(e)[:280]}"
+                step.detail = f"Agent skipped (auth: {_auth_label}) - {str(e)[:280]}"
                 next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
             finally:
                 await ag.close()
         else:
             step.status = "skipped"
-            step.detail = "Skipped — knowledge base unavailable; finish in the Foundry portal"
+            step.detail = "Skipped - knowledge base unavailable; finish in the Foundry portal"
             if kb_ready:
                 next_steps.append("In Foundry: New Agent → Add knowledge → your knowledge base.")
         yield {"event": "step", "data": step.to_dict()}
 
-        # Done — include Foundry + Azure metadata so the UI can link out and
+        # Done - include Foundry + Azure metadata so the UI can link out and
         # teardown can delete the billable resources.
         step = _find_step(steps, "done")
         step.status = "completed"
@@ -3265,7 +3265,7 @@ async def _deploy_fabric_iq(
         step.detail = eventhouse_uri or "Created"
         yield {"event": "step", "data": step.to_dict()}
         if not eventhouse_uri:
-            raise FabricError(500, "Could not resolve the Eventhouse query URI — cannot bind the ontology's time-series data.")
+            raise FabricError(500, "Could not resolve the Eventhouse query URI - cannot bind the ontology's time-series data.")
 
         # 4. Upload the accelerator wheel + ontology package to Files/
         step = _find_step(steps, "upload")
@@ -3277,7 +3277,7 @@ async def _deploy_fabric_iq(
         step.detail = f"Uploaded {whl_filename} + {iq_filename}"
         yield {"event": "step", "data": step.to_dict()}
 
-        # Shared notebook variables (superset — unused placeholders are ignored).
+        # Shared notebook variables (superset - unused placeholders are ignored).
         nb_variables = {
             "WHL_FILENAME": whl_filename,
             "IQ_FILENAME": iq_filename,
@@ -3332,7 +3332,7 @@ async def _deploy_fabric_iq(
                     last_err = e
                     if attempt < max_attempts - 1 and _is_transient_run_error(e.detail):
                         wait = _retry_wait_seconds(e.detail, attempt)
-                        step.detail = f"Spark capacity busy / transient hiccup — retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
+                        step.detail = f"Spark capacity busy / transient hiccup - retrying ({attempt + 1}/{max_attempts - 1}) in {wait}s..."
                         yield {"event": "step", "data": step.to_dict()}
                         await asyncio.sleep(wait)
                         continue
@@ -3374,10 +3374,10 @@ async def _deploy_fabric_iq(
                 # The notebook verifies the graph model's first refresh and
                 # re-publishes the ontology to self-heal a failed one. If it
                 # STILL isn't Completed, the ontology agent will answer with
-                # "The Graph Model is not ready" — tell the user what to do.
+                # "The Graph Model is not ready" - tell the user what to do.
                 if da.get("graphRefreshOk") is False:
                     next_steps.append(
-                        "The ontology's graph model refresh did not complete — the ontology "
+                        "The ontology's graph model refresh did not complete - the ontology "
                         "agent may report 'Graph Model is not ready'. Open the ontology in the "
                         "Fabric portal and re-save it (or re-run the create-ontology notebook) "
                         "to trigger a new graph refresh."
@@ -3391,7 +3391,7 @@ async def _deploy_fabric_iq(
                 # than two cryptic per-agent failures.
                 if onto_agent.get("status") == "unsupported_sku" or direct_agent.get("status") == "unsupported_sku":
                     next_steps.append(
-                        "Data agents were skipped — they require a paid Fabric capacity "
+                        "Data agents were skipped - they require a paid Fabric capacity "
                         "(F2+ with Copilot/AI enabled). This workspace is on a Trial/unsupported "
                         "SKU. The ontology, lakehouse and eventhouse are fully deployed; re-deploy "
                         "on a paid F-SKU to auto-create both agents."
@@ -3399,10 +3399,10 @@ async def _deploy_fabric_iq(
                 else:
                     if onto_agent.get("status") != "published":
                         reason = onto_agent.get("error") or f"stopped at step '{onto_agent.get('step', 'unknown')}'"
-                        next_steps.append(f"Ontology data agent incomplete — {reason[:150]}")
+                        next_steps.append(f"Ontology data agent incomplete - {reason[:150]}")
                     if direct_agent.get("status") != "published":
                         reason = direct_agent.get("error") or f"stopped at step '{direct_agent.get('step', 'unknown')}'"
-                        next_steps.append(f"Direct (LH+EH) data agent incomplete — {reason[:150]}")
+                        next_steps.append(f"Direct (LH+EH) data agent incomplete - {reason[:150]}")
         except Exception as e:  # noqa: BLE001
             logger.warning("[fabric-iq] could not read data_agent_result.json: %s", e)
             next_steps.append(f"Create the Fabric data agents over '{ontology_name}' in the portal.")

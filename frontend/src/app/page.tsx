@@ -4,7 +4,7 @@ import { industries } from "@/lib/industryCatalog";
 // Server component wrapper: the gallery UI is a client component whose body is
 // NOT prerendered into static HTML (it bails out to client rendering), so any
 // SEO markup placed inside it never reaches crawlers. JSON-LD must live here.
-// ItemList mirrors the visible industry cards — Bing rich results + Copilot.
+// ItemList mirrors the visible industry cards - Bing rich results + Copilot.
 const HOME_ITEMLIST_LD = {
   "@context": "https://schema.org",
   "@type": "ItemList",

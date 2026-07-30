@@ -23,13 +23,13 @@
     },
     {
       "fileName": "accounts.csv",
-      "description": "Account master data — account type, balance, credit limit, open date, status",
+      "description": "Account master data - account type, balance, credit limit, open date, status",
       "format": "csv",
       "rows": 5000
     },
     {
       "fileName": "customers.csv",
-      "description": "Customer profiles — age group, region, segment (Retail/SME/Corporate), risk tier",
+      "description": "Customer profiles - age group, region, segment (Retail/SME/Corporate), risk tier",
       "format": "csv",
       "rows": 2000
     }

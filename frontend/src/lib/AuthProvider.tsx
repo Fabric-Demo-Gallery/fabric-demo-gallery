@@ -48,11 +48,11 @@ interface AuthState {
   /** Pre-consent the Foundry data-plane resources (Search + Agent) in one popup.
    * Resolves "ok" when tokens are silently available or consent just completed;
    * "cached-skip" when a prior consent exists but silent acquisition is blocked
-   * (CA policies / guest accounts) — the deploy proceeds on backend fallbacks and
+   * (CA policies / guest accounts) - the deploy proceeds on backend fallbacks and
    * the UI should offer the re-authorize action. */
   ensureFoundryConsent: () => Promise<"ok" | "cached-skip">;
   /** Clear the per-account "consent completed" flag so the next deploy re-runs the
-   * consent popup — escape hatch for tenants whose CA policies block silent tokens
+   * consent popup - escape hatch for tenants whose CA policies block silent tokens
    * (they'd otherwise be stuck in degraded agent deploys forever). */
   resetFoundryConsent: () => void;
 }
@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // MSAL v3 requires initialize() before any interactive call. It's idempotent,
       // so awaiting it here makes a click that lands before the mount-time init
-      // finishes still work — otherwise loginRedirect throws
+      // finishes still work - otherwise loginRedirect throws
       // "uninitialized_public_client_application" and the button silently no-ops.
       await msalInstance.initialize();
       await msalInstance.loginRedirect({
@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Login failed:", e);
       // A prior interrupted redirect can leave MSAL's interaction flag set, so
       // loginRedirect throws "interaction_in_progress" and nothing happens. Surface
-      // it instead of swallowing, and tell the user to refresh — a page load runs
+      // it instead of swallowing, and tell the user to refresh - a page load runs
       // handleRedirectPromise() which clears the stuck flag.
       if (/interaction_in_progress/i.test(msg)) {
         setAuthError("A previous sign-in didn't finish. Please refresh the page, then click Sign in again.");
@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw e;
         }
         // A missing first-party service principal (AADSTS650052) is a TENANT
-        // configuration problem — a popup would fail with the exact same error
+        // configuration problem - a popup would fail with the exact same error
         // (and can hang the deploy on MSAL's popup monitor). Fail fast instead
         // so the UI can show the admin fix immediately.
         const silentMsg = e instanceof Error ? e.message : String(e);
@@ -221,7 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Pre-acquire the Foundry data-plane consent (Azure AI Search + Foundry Agent)
   // in ONE popup, tied to a fresh user gesture. Browsers only allow a popup
   // within the activation window of a click, so requesting these late in the
-  // deploy flow (after several awaits) gets the popup blocked — which is why the
+  // deploy flow (after several awaits) gets the popup blocked - which is why the
   // knowledge-base + agent steps silently skipped. Calling this first, straight
   // off the Deploy click, fires a single consent popup covering BOTH resources;
   // the deploy then reads each token silently with no further popup.
@@ -230,19 +230,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Remember a completed consent per account. Some tenants grant the consent
     // but still refuse SILENT ai.azure.com tokens afterwards (CA policies,
     // guest accounts). Gating the popup on silent-acquire alone then re-prompts
-    // on EVERY deploy — and each popup burns the click's activation window, so
+    // on EVERY deploy - and each popup burns the click's activation window, so
     // any later token popup in the deploy gets blocked and escalates to a
     // full-page redirect that kills the deploy UI.
     const consentKey = `foundry_consent_${account.homeAccountId}`;
     try {
-      // Already consented (e.g. a prior deploy)? Gate on the AGENT scope — it's the
+      // Already consented (e.g. a prior deploy)? Gate on the AGENT scope - it's the
       // one that actually blocks agent creation, and it's granted together with
       // Search in the popup below, so a missing agent scope must re-trigger consent.
       await msalInstance.acquireTokenSilent({ scopes: agentScopes, account });
       localStorage.setItem(consentKey, "1");
       return "ok";
     } catch {
-      // Silent failed — but if this account already completed the consent popup
+      // Silent failed - but if this account already completed the consent popup
       // once, don't re-prompt: the deploy degrades the KB/agent steps to manual
       // follow-ups instead (by design), which beats a popup storm. Report it so
       // the UI can surface the re-authorize action (otherwise the user has no
@@ -251,7 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // One interactive consent covering EVERY resource the deploy needs: Search
       // (primary token) + Foundry Agent + Storage + ARM via extraScopesToConsent.
       // First-time users previously consented only Search+Agent here, so the
-      // storage/management tokens later in the deploy still needed interaction —
+      // storage/management tokens later in the deploy still needed interaction -
       // but the click's popup-activation window was already spent, the second
       // popup got blocked, and the deploy died with a cryptic auth error that
       // looked like it needed a refresh/re-sign-in. Consenting everything in

@@ -1,4 +1,4 @@
-"""Azure ARM proxy endpoints — subscriptions and resource groups."""
+"""Azure ARM proxy endpoints - subscriptions and resource groups."""
 
 import re
 from fastapi import APIRouter, Depends, HTTPException, Request

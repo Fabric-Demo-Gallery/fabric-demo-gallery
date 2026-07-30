@@ -53,13 +53,13 @@ export const popupRedirectUri =
 //           Connection.ReadWrite.All, OneLake.ReadWrite.All, Capacity.Read.All
 // Capacity.Read.All is required by GET /v1/capacities (the capacity picker).
 // Without it in the token's scp claim, users consenting from OTHER tenants get
-// 403 on the capacities call even though sign-in succeeds — tenants that had
+// 403 on the capacities call even though sign-in succeeds - tenants that had
 // admin-consented the app's full permission list never hit this, which is why
 // it only reproduced for external users.
 // NOTE: KQLDatabase.ReadWrite.All is intentionally NOT requested at sign-in. It's
 // only needed for the optional RTI history seed, so it's acquired incrementally
 // via `kustoScopes` / getKustoToken. Keeping the up-front consent set small avoids
-// "Need admin approval" in tenants that restrict consent for unverified apps —
+// "Need admin approval" in tenants that restrict consent for unverified apps -
 // an expanding sign-in scope set forces re-consent that such tenants block.
 export const fabricScopes = [
   "https://api.fabric.microsoft.com/Workspace.ReadWrite.All",
@@ -76,7 +76,7 @@ export const fabricScopes = [
   "https://api.fabric.microsoft.com/Capacity.Read.All",
 ];
 
-// Separate OneLake scope — needs its own token for shortcut creation (OneLake.ReadWrite.All)
+// Separate OneLake scope - needs its own token for shortcut creation (OneLake.ReadWrite.All)
 export const oneLakeScopes = ["https://api.fabric.microsoft.com/OneLake.ReadWrite.All"];
 
 // Scopes needed for OneLake (storage). user_impersonation (NOT .default):
@@ -87,13 +87,13 @@ export const oneLakeScopes = ["https://api.fabric.microsoft.com/OneLake.ReadWrit
 // permission, so silent flows are unaffected.
 export const storageScopes = ["https://storage.azure.com/user_impersonation"];
 
-// Scopes needed for Azure Resource Manager (ARM) — used for ADLS Gen2 provisioning
+// Scopes needed for Azure Resource Manager (ARM) - used for ADLS Gen2 provisioning
 export const managementScopes = ["https://management.azure.com/user_impersonation"];
 
-// Azure AI Search data-plane — Foundry IQ knowledge source + base (fabric-foundry-agent scenario)
+// Azure AI Search data-plane - Foundry IQ knowledge source + base (fabric-foundry-agent scenario)
 export const searchScopes = ["https://search.azure.com/user_impersonation"];
 
-// Microsoft Foundry Agent Service data-plane — create the grounded agent.
+// Microsoft Foundry Agent Service data-plane - create the grounded agent.
 // user_impersonation (not .default) so the consent popup can grant it dynamically.
 export const agentScopes = ["https://ai.azure.com/user_impersonation"];
 
@@ -102,7 +102,7 @@ export const agentScopes = ["https://ai.azure.com/user_impersonation"];
 // principal in every tenant (causes AADSTS500011 at sign-in), so we request the
 // Fabric-audience KQLDatabase scope instead. The table itself is created via the
 // Fabric definition API (no data-plane token needed), and the live Eventstream is
-// the primary data source — so a failed/again-skipped seed is non-fatal.
+// the primary data source - so a failed/again-skipped seed is non-fatal.
 export const kustoScopes = ["https://api.fabric.microsoft.com/KQLDatabase.ReadWrite.All"];
 
 
