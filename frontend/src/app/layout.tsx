@@ -21,8 +21,14 @@ export const metadata: Metadata = {
   // treat them as duplicates and can split ranking signals or index the wrong
   // host. metadataBase + relative canonical makes every page point at www.
   alternates: { canonical: "/" },
+  // favicon.ico lives in public/ (NOT app/): the app-dir convention hardcodes
+  // sizes="16x16" on the link tag, and Bing renders SERP site icons at 32x32,
+  // so the declared size undersold the ico's real 16/32/48 layers.
   icons: {
-    icon: "/pwa-192.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
+      { url: "/pwa-192.png", sizes: "192x192", type: "image/png" },
+    ],
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
