@@ -8,6 +8,9 @@ import {
   Avatar,
   Text,
   makeStyles,
+  Popover,
+  PopoverTrigger,
+  PopoverSurface,
   RendererProvider,
   SSRProvider,
   createDOMRenderer,
@@ -30,6 +33,7 @@ import {
 } from "@fluentui/react-icons";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/AuthProvider";
+import AdminConsentNote from "@/lib/AdminConsentNote";
 import { DeploymentProvider } from "@/lib/DeploymentContext";
 import { BrowserUtils } from "@azure/msal-browser";
 import NextLink from "next/link";
@@ -220,19 +224,37 @@ function Navbar() {
               </Button>
             </>
           ) : (
-            <Button
-              size="small"
-              icon={<PersonRegular />}
-              onClick={login}
-              style={{
-                backgroundColor: "#238636",
-                color: "#ffffff",
-                border: "1px solid rgba(240,246,252,0.1)",
-                borderRadius: "6px",
-              }}
-            >
-              Sign in
-            </Button>
+            /* Hovering (or focusing) Sign in previews the admin-consent guidance
+               so first-time visitors know what the approval screen means before
+               they commit to the popup. */
+            <Popover openOnHover withArrow positioning="below-end">
+              <PopoverTrigger disableButtonEnhancement>
+                <Button
+                  size="small"
+                  icon={<PersonRegular />}
+                  onClick={login}
+                  style={{
+                    backgroundColor: "#238636",
+                    color: "#ffffff",
+                    border: "1px solid rgba(240,246,252,0.1)",
+                    borderRadius: "6px",
+                  }}
+                >
+                  Sign in
+                </Button>
+              </PopoverTrigger>
+              <PopoverSurface
+                style={{
+                  backgroundColor: "#0d1117",
+                  border: "1px solid #30363d",
+                  borderRadius: 8,
+                  padding: 12,
+                  maxWidth: 380,
+                }}
+              >
+                <AdminConsentNote variant="hover" />
+              </PopoverSurface>
+            </Popover>
           )
         )}
       </div>

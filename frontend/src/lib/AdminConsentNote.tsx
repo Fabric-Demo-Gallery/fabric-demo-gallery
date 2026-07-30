@@ -80,9 +80,10 @@ const useStyles = makeStyles({
   },
 });
 
-export default function AdminConsentNote() {
+export default function AdminConsentNote({ variant = "card" }: { variant?: "card" | "hover" }) {
   const { account } = useAuth();
   const s = useStyles();
+  const isHover = variant === "hover";
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
   // mounted gate: keep this sign-in guidance OUT of the prerendered HTML - it was
@@ -93,22 +94,32 @@ export default function AdminConsentNote() {
     setMounted(true);
     setDismissed(typeof window !== "undefined" && localStorage.getItem("fdg_admin_consent_note") === "dismissed");
   }, []);
-  if (!mounted || account || dismissed) return null;
+  // Hover variant lives inside a popover surface that only mounts client-side on
+  // open, so the prerender/dismissal gates don't apply and steps show directly.
+  if (account) return null;
+  if (!isHover && (!mounted || dismissed)) return null;
+  const showSteps = isHover || expanded;
   return (
     // data-nosnippet: tells Google not to use this guidance as the search
     // snippet (it's sign-in help, not page content).
-    <div className={s.card} data-nosnippet="">
+    <div
+      className={s.card}
+      style={isHover ? { marginTop: 0, backgroundColor: "transparent", border: "none", padding: 0 } : undefined}
+      data-nosnippet=""
+    >
       <span className={s.iconWrap}><ShieldKeyholeRegular fontSize={16} /></span>
       <div className={s.content}>
         <div className={s.title}>First time signing in from your organization?</div>
         <div className={s.sub}>
           If you hit <strong>&ldquo;Need admin approval&rdquo;</strong>, a one&#8209;time admin consent unblocks your whole tenant.{" "}
-          <button className={s.toggle} onClick={() => setExpanded((v) => !v)}>
-            {expanded ? "Hide steps" : "How to approve"}
-            <ChevronDownRegular fontSize={13} className={s.chevron} style={{ transform: expanded ? "rotate(180deg)" : "none" }} />
-          </button>
+          {!isHover && (
+            <button className={s.toggle} onClick={() => setExpanded((v) => !v)}>
+              {expanded ? "Hide steps" : "How to approve"}
+              <ChevronDownRegular fontSize={13} className={s.chevron} style={{ transform: expanded ? "rotate(180deg)" : "none" }} />
+            </button>
+          )}
         </div>
-        {expanded && (
+        {showSteps && (
           <div className={s.details}>
             <div className={s.method}>
               <div className={s.methodTitle}>You have an admin account</div>
@@ -121,13 +132,15 @@ export default function AdminConsentNote() {
           </div>
         )}
       </div>
-      <button
-        className={s.dismiss}
-        onClick={() => { localStorage.setItem("fdg_admin_consent_note", "dismissed"); setDismissed(true); }}
-        aria-label="Dismiss"
-      >
-        <DismissRegular fontSize={14} />
-      </button>
+      {!isHover && (
+        <button
+          className={s.dismiss}
+          onClick={() => { localStorage.setItem("fdg_admin_consent_note", "dismissed"); setDismissed(true); }}
+          aria-label="Dismiss"
+        >
+          <DismissRegular fontSize={14} />
+        </button>
+      )}
     </div>
   );
 }
