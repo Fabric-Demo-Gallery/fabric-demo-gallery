@@ -61,6 +61,7 @@ import {
 import type { FluentIcon } from "@fluentui/react-icons";
 import { DEMOS } from "@/lib/demoCatalog";
 import { PRESENTER } from "@/lib/presenterContent";
+import AdminConsentNote from "@/lib/AdminConsentNote";
 import { explainError, classifyAuthError, type AuthError } from "@/lib/errorHelp";
 
 // Coerce an SSE error payload's `message` into a readable string. The backend
@@ -3215,13 +3216,18 @@ export default function DemoDetailPage() {
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      appearance="primary"
-                      style={{ width: "100%" }}
-                      onClick={login}
-                    >
-                      Sign in to deploy
-                    </Button>
+                    <div>
+                      <Button
+                        appearance="primary"
+                        style={{ width: "100%" }}
+                        onClick={login}
+                      >
+                        Sign in to deploy
+                      </Button>
+                      {/* Consent guidance lives HERE (next to the sign-in action),
+                          not as a global banner - it only matters at this moment. */}
+                      <AdminConsentNote />
+                    </div>
                   )}
                   {authError && (
                     <div style={{ marginTop: 8, color: "#f85149", fontSize: 12 }}>

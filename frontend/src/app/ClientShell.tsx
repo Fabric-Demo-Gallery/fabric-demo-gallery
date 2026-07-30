@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   FluentProvider,
   webDarkTheme,
@@ -27,9 +27,6 @@ import {
   PersonRegular,
   SignOutRegular,
   OpenRegular,
-  ShieldKeyholeRegular,
-  ChevronDownRegular,
-  DismissRegular,
 } from "@fluentui/react-icons";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { useAuth } from "@/lib/AuthProvider";
@@ -243,135 +240,6 @@ function Navbar() {
   );
 }
 
-const useNoteStyles = makeStyles({
-  bar: {
-    background: "linear-gradient(180deg, #0f1f3d 0%, #0d1a33 100%)",
-    borderBottom: "1px solid rgba(56,139,253,0.3)",
-  },
-  inner: {
-    maxWidth: "1080px",
-    margin: "0 auto",
-    display: "flex",
-    alignItems: "flex-start",
-    columnGap: "12px",
-    paddingTop: "12px",
-    paddingBottom: "12px",
-    paddingLeft: "24px",
-    paddingRight: "24px",
-  },
-  iconWrap: {
-    flexShrink: 0,
-    width: "30px",
-    height: "30px",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(56,139,253,0.15)",
-    color: "#58a6ff",
-    marginTop: "1px",
-  },
-  content: { flexGrow: 1, minWidth: 0, fontSize: "12.5px", lineHeight: "1.5", color: "#b6c2cf" },
-  title: { fontWeight: 600, color: "#e6edf3", fontSize: "13px" },
-  sub: { marginTop: "2px" },
-  toggle: {
-    backgroundColor: "transparent",
-    border: "none",
-    padding: "0",
-    color: "#58a6ff",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "12.5px",
-    display: "inline-flex",
-    alignItems: "center",
-    columnGap: "2px",
-    ":hover": { textDecorationLine: "underline" },
-  },
-  chevron: { transitionProperty: "transform", transitionDuration: "0.15s" },
-  details: {
-    marginTop: "10px",
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: "10px",
-  },
-  method: {
-    backgroundColor: "rgba(56,139,253,0.07)",
-    border: "1px solid rgba(56,139,253,0.18)",
-    borderRadius: "8px",
-    paddingTop: "9px",
-    paddingBottom: "9px",
-    paddingLeft: "11px",
-    paddingRight: "11px",
-  },
-  methodTitle: { fontWeight: 600, color: "#e6edf3", marginBottom: "3px", fontSize: "12px" },
-  dismiss: {
-    flexShrink: 0,
-    backgroundColor: "transparent",
-    border: "none",
-    color: "#8b949e",
-    cursor: "pointer",
-    display: "flex",
-    padding: "2px",
-    borderRadius: "4px",
-    ":hover": { color: "#e6edf3", backgroundColor: "rgba(255,255,255,0.06)" },
-  },
-});
-
-function AdminConsentNote() {
-  const { account } = useAuth();
-  const s = useNoteStyles();
-  const [dismissed, setDismissed] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  // mounted gate: keep this sign-in guidance OUT of the prerendered HTML - it was
-  // once scraped as the search snippet (Bing ignores data-nosnippet). Server and
-  // first client render both return null, so hydration stays consistent.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-    setDismissed(typeof window !== "undefined" && localStorage.getItem("fdg_admin_consent_note") === "dismissed");
-  }, []);
-  if (!mounted || account || dismissed) return null;
-  return (
-    // data-nosnippet: tells Google not to use this banner text as the search
-    // snippet (it's sign-in guidance, not page content). Bing ignores the
-    // attribute but prefers the (now richer) meta description anyway.
-    <div className={s.bar} data-nosnippet="">
-      <div className={s.inner}>
-        <span className={s.iconWrap}><ShieldKeyholeRegular fontSize={18} /></span>
-        <div className={s.content}>
-          <div className={s.title}>First time signing in from your organization?</div>
-          <div className={s.sub}>
-            If you hit <strong>&ldquo;Need admin approval&rdquo;</strong>, a one&#8209;time admin consent unblocks your whole tenant.{" "}
-            <button className={s.toggle} onClick={() => setExpanded((v) => !v)}>
-              {expanded ? "Hide steps" : "How to approve"}
-              <ChevronDownRegular fontSize={14} className={s.chevron} style={{ transform: expanded ? "rotate(180deg)" : "none" }} />
-            </button>
-          </div>
-          {expanded && (
-            <div className={s.details}>
-              <div className={s.method}>
-                <div className={s.methodTitle}>You have an admin account</div>
-                On the approval screen pick <strong>&ldquo;Have an admin account? Sign in with that account&rdquo;</strong>, sign in as a <strong>Global Administrator</strong>, and click <strong>Accept</strong>.
-              </div>
-              <div className={s.method}>
-                <div className={s.methodTitle}>You can self&#8209;elevate (sandbox tenant)</div>
-                <strong>Azure portal</strong> &rarr; search <strong>Privileged Identity Management</strong> &rarr; <strong>My roles</strong> &rarr; <strong>Activate</strong> the <strong>Global Administrator</strong> role (just&#8209;in&#8209;time), then approve.
-              </div>
-            </div>
-          )}
-        </div>
-        <button
-          className={s.dismiss}
-          onClick={() => { localStorage.setItem("fdg_admin_consent_note", "dismissed"); setDismissed(true); }}
-          aria-label="Dismiss"
-        >
-          <DismissRegular fontSize={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function ClientShell({ children }: { children: ReactNode }) {
   // If this document is the MSAL sign-in/consent popup (or a hidden auth iframe) -
   // i.e. the redirect target after auth - do NOT mount the app here. The window that
@@ -439,7 +307,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
   return (
     <>
       <Navbar />
-      <AdminConsentNote />
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
         {/* #8b949e: #484f58 on #010409 was 2.2:1 contrast - Lighthouse WCAG AA flag */}

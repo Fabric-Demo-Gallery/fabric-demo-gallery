@@ -2,7 +2,7 @@
 
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { makeStyles } from "@fluentui/react-components";
 import {
   BuildingFactory24Regular,
@@ -21,6 +21,7 @@ import {
 import type { FluentIcon } from "@fluentui/react-icons";
 import { industries } from "@/lib/industryCatalog";
 import { DEMOS } from "@/lib/demoCatalog";
+import { fetchStats } from "@/lib/api";
 
 // Self-hosted product demo video, served from /public (same-origin). This avoids
 // YouTube's embed referrer/bot-check gates entirely - it just plays for everyone.
@@ -90,6 +91,12 @@ const useStyles = makeStyles({
     display: "flex",
     gap: "40px",
     marginTop: "32px",
+  },
+  /* Quiet proof line under the hero copy - factual, no badges. */
+  heroProof: {
+    marginTop: "14px",
+    fontSize: "13px",
+    color: "#8b949e",
   },
   heroStat: {},
   heroStatNum: {
@@ -419,6 +426,20 @@ function HeroVideo() {
 export default function HomeClient() {
   const styles = useStyles();
 
+  // Live deployment count from the public aggregate stats endpoint (no PII).
+  // Rendered only once loaded and only past a floor, so the hero never shows
+  // a missing or embarrassingly small number; on any failure it stays absent.
+  const [deployCount, setDeployCount] = useState<number | null>(null);
+  useEffect(() => {
+    fetchStats()
+      .then((s) => {
+        if (typeof s.total_deployments === "number" && s.total_deployments >= 25) {
+          setDeployCount(s.total_deployments);
+        }
+      })
+      .catch(() => { /* stats are decorative - never block the page */ });
+  }, []);
+
   // Join each enabled industry with its mapped demo metadata.
   const cards = useMemo(
     () =>
@@ -440,6 +461,10 @@ export default function HomeClient() {
               <div className={styles.heroDesc}>
                 Browse production-ready Fabric demos by industry, then deploy a complete
                 environment in minutes.
+              </div>
+              <div className={styles.heroProof}>
+                {deployCount !== null && <>{deployCount.toLocaleString("en-US")} deployments · </>}
+                {cards.length} industries · 6 scenarios · Open source
               </div>
             </div>
             <div className={styles.heroVideoCol}>
