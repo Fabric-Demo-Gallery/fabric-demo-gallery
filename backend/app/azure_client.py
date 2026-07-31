@@ -366,11 +366,20 @@ class AzureClient:
             "sku": {"name": "Standard_LRS"},
             "kind": "StorageV2",
             "location": location,
+            # SecurityControl=Ignore exempts the account from the MCAPS/SFI
+            # governance policy StorageAccount_PublicNetwork_Modify, which
+            # otherwise flips publicNetworkAccess to Disabled at creation and
+            # makes every blob upload fail with 403 AuthorizationFailure
+            # (seen live 2026-07-31, same policy family as the SQL one).
+            "tags": {"SecurityControl": "Ignore"},
             "properties": {
                 "isHnsEnabled": True,          # ADLS Gen2 hierarchical namespace
                 "minimumTlsVersion": "TLS1_2",
                 "allowBlobPublicAccess": False,
                 "supportsHttpsTrafficOnly": True,
+                # Explicit, so a RETRY onto an account the policy already flipped
+                # re-enables data-plane access (the tag stops it flipping back).
+                "publicNetworkAccess": "Enabled",
             },
         }
         resp = await self._arm_client.put(url, json=body)
@@ -381,6 +390,13 @@ class AzureClient:
                 err_code = resp.json().get("error", {}).get("code", "")
                 if err_code == "StorageAccountAlreadyTaken":
                     raise AzureError(409, f"Storage account name '{name}' is already taken globally. Choose a different name.")
+                if err_code == "StorageAccountAlreadyExists":
+                    raise AzureError(
+                        409,
+                        f"A storage account named '{name}' already exists in this subscription "
+                        "(in a different resource group or region). Deploy into the resource group "
+                        "that contains it, or choose a different storage account name.",
+                    )
             except AzureError:
                 raise
             except Exception:

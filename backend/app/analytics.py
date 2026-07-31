@@ -60,6 +60,7 @@ _USER_FAULT_PATTERNS = [
     "lacks a service principal", "aadsts", "consent", "conditional access",  # tenant auth
     "sufficient scopes",  # stale consent - re-sign-in fixes
     "quota", "not registered", "disallowed by policy", "public network",  # subscription
+    "authorizationfailure",  # storage data plane blocked by network policy (SFI)
     "paused", "no active fabric capacity",  # capacity state
     "unauthorized", "sign-in expired",  # session
 ]

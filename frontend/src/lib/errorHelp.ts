@@ -198,6 +198,20 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     };
   }
 
+  // Blob upload blocked by a subscription policy (MCAPS/SFI flips public
+  // network access off on new storage accounts; the data-plane error code
+  // AuthorizationFailure means network rules, NOT permissions - documented at
+  // learn.microsoft.com/troubleshoot/azure/azure-storage/blobs/authentication/
+  // storage-troubleshoot-403-errors). Must precede the generic 403 bucket.
+  if (m.includes("authorizationfailure") && (m.includes("adls") || m.includes("blob") || m.includes("storage"))) {
+    return {
+      title: "Subscription policy blocks storage public access",
+      guidance:
+        "Your Azure subscription has a policy (standard in Microsoft sandbox/MCAPS subscriptions) that disables public network access on new storage accounts, so uploading the sample data was rejected. The app now tags the storage accounts it creates with SecurityControl=Ignore, which exempts them - simply retry the deploy with the same settings. If it still fails, re-enable access on the account yourself: az storage account update -n <account> -g <resource-group> --public-network-access Enabled - then retry.",
+      retryable: true,
+    };
+  }
+
   // Deploy watchdog 504: notebooks ran past the allowed window. The workspace
   // and items exist and notebook jobs may still finish server-side.
   if (m.includes("504") || m.includes("didn't finish in time") || m.includes("did not finish in time")) {
