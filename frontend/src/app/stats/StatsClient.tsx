@@ -170,6 +170,16 @@ const useStyles = makeStyles({
     transitionDuration: "0.3s",
     ":hover": { backgroundColor: "#388bfd" },
   },
+  // Count label sitting on top of each day's bar.
+  chartValue: {
+    fontSize: "10px",
+    lineHeight: "12px",
+    color: "#8b949e",
+    textAlign: "center" as const,
+    marginBottom: "3px",
+    whiteSpace: "nowrap" as const,
+    fontVariantNumeric: "tabular-nums",
+  },
   chartAxis: {
     display: "flex",
     justifyContent: "space-between",
@@ -375,10 +385,13 @@ export default function StatsClient() {
                       const n = stats.per_day[d] ?? 0;
                       return (
                         <div key={d} className={styles.chartCol} title={`${d}: ${n} deployment${n === 1 ? "" : "s"}`}>
+                          {n > 0 && <div className={styles.chartValue}>{n}</div>}
                           <div
                             className={styles.chartBar}
                             style={{
-                              height: `${(n / perDayMax) * 100}%`,
+                              // 85% cap leaves room for the count label above
+                              // the tallest bar inside the fixed-height chart.
+                              height: `${(n / perDayMax) * 85}%`,
                               backgroundColor: n === 0 ? "#21262d" : undefined,
                             }}
                           />
