@@ -76,6 +76,18 @@ export function classifyAuthError(raw: string | null | undefined): AuthError | n
       retryable: true,
     };
   }
+  // msal-browser v5 waitForBridgeResponse: popup/iframe auth response never
+  // arrived within the timeout (~60s) - slow MFA, a popup left sitting, or a
+  // popup hidden behind the window.
+  if (m.includes("timed_out") && m.includes("msal")) {
+    return {
+      code: "timed_out",
+      title: "Sign-in didn't finish in time",
+      guidance:
+        "The sign-in window didn't complete within the allowed time (about a minute). Click Deploy again and finish the sign-in or MFA prompt promptly. If you never saw a sign-in window, check whether it opened behind this one or was blocked by the browser.",
+      retryable: true,
+    };
+  }
   if (m.includes("user_cancelled")) {
     return {
       code: "user_cancelled",
