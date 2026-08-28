@@ -248,6 +248,17 @@ export function explainError(raw: string | null | undefined): FriendlyError {
     };
   }
 
+  // A cell inside the notebook failed. The cancelled Spark session is the
+  // symptom, so this must precede the Spark/Livy cold-start case below.
+  if (m.includes("statements_failed")) {
+    return {
+      title: "A notebook in this demo hit an error",
+      guidance:
+        "One of the demo's notebook cells failed while it was running, so Fabric cancelled the Spark session. This is a bug in the demo, not a problem with your capacity, permissions or account, and retrying will hit the same error. Please report it on GitHub with the demo name and the step that failed (for example run:04_reporting_views) so it can be fixed.",
+      retryable: false,
+    };
+  }
+
   // Spark / Livy cold-start - transient
   if (m.includes("livy") || (m.includes("spark") && (m.includes("session") || m.includes("start")))) {
     return {

@@ -1695,12 +1695,17 @@ def _is_transient_run_error(detail: str) -> bool:
     clears. Without this, one transient cancellation killed the whole deploy.
     """
     d = (detail or "").lower()
+    # A statement that ran and failed is an error in the notebook code: retrying
+    # re-runs the same broken cell and burns another Spark session. Check it
+    # first - System_Cancelled_Session_Statements_Failed also matches the
+    # "cancelled_session" and "system_cancelled_session_state" signatures below.
+    if "statements_failed" in d:
+        return False
     signatures = (
         "livy",
         "failed to create livy session",
         "system_cancelled_session_state",
         "cancelled_session",
-        "session_statements_failed",
         "sessiontimeout",
         "session timed out",
         "toomanyrequests",
@@ -1779,6 +1784,14 @@ def _friendly_capacity_error(detail: str) -> str:
             "session to use as little capacity as possible."
         )
     d = (detail or "").lower()
+    if "statements_failed" in d:
+        return (
+            "A notebook cell failed while it was running, so Fabric cancelled the "
+            "Spark session (System_Cancelled_Session_Statements_Failed). This is an "
+            "error in the demo's notebook code, not a capacity, permission or "
+            "account problem, so retrying will hit the same error. Please report "
+            "the demo and the step that failed so it can be fixed."
+        )
     if "did not finish within" in d or "timed out" in d:
         return (
             "The deployment didn't finish in time and was stopped. The notebooks "
