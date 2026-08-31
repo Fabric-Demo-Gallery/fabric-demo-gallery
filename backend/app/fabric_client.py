@@ -90,6 +90,15 @@ class FabricClient:
                 detail = msg[:500]
             except Exception:
                 pass
+            # Fabric's own text for this one is four words and names neither cause.
+            if resp.status_code == 403 and "feature is not available" in detail.lower():
+                detail = (
+                    "The feature is not available: either the tenant setting 'Users can "
+                    "create Fabric items' is off, or the capacity is not Fabric enabled "
+                    "(Premium Per User does not support Fabric items). A Fabric admin can "
+                    "enable the setting, or switch to an F SKU capacity or start a free "
+                    "Fabric trial, then redeploy."
+                )
             raise FabricError(resp.status_code, detail)
         return resp
 
