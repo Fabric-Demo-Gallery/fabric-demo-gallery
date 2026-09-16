@@ -61,7 +61,6 @@ import {
 import type { FluentIcon } from "@fluentui/react-icons";
 import { DEMOS } from "@/lib/demoCatalog";
 import { PRESENTER } from "@/lib/presenterContent";
-import AdminConsentNote from "@/lib/AdminConsentNote";
 import { explainError, classifyAuthError, type AuthError } from "@/lib/errorHelp";
 
 // Coerce an SSE error payload's `message` into a readable string. The backend
@@ -3224,9 +3223,6 @@ export default function DemoDetailPage() {
                       >
                         Sign in to deploy
                       </Button>
-                      {/* Consent guidance lives HERE (next to the sign-in action),
-                          not as a global banner - it only matters at this moment. */}
-                      <AdminConsentNote />
                     </div>
                   )}
                   {authError && (

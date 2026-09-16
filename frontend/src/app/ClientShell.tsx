@@ -8,9 +8,6 @@ import {
   Avatar,
   Text,
   makeStyles,
-  Popover,
-  PopoverTrigger,
-  PopoverSurface,
   RendererProvider,
   SSRProvider,
   createDOMRenderer,
@@ -224,37 +221,19 @@ function Navbar() {
               </Button>
             </>
           ) : (
-            /* Hovering (or focusing) Sign in previews the admin-consent guidance
-               so first-time visitors know what the approval screen means before
-               they commit to the popup. */
-            <Popover openOnHover withArrow positioning="below-end">
-              <PopoverTrigger disableButtonEnhancement>
-                <Button
-                  size="small"
-                  icon={<PersonRegular />}
-                  onClick={login}
-                  style={{
-                    backgroundColor: "#238636",
-                    color: "#ffffff",
-                    border: "1px solid rgba(240,246,252,0.1)",
-                    borderRadius: "6px",
-                  }}
-                >
-                  Sign in
-                </Button>
-              </PopoverTrigger>
-              <PopoverSurface
-                style={{
-                  backgroundColor: "#0d1117",
-                  border: "1px solid #30363d",
-                  borderRadius: 8,
-                  padding: 12,
-                  maxWidth: 380,
-                }}
-              >
-                <AdminConsentNote variant="hover" />
-              </PopoverSurface>
-            </Popover>
+            <Button
+              size="small"
+              icon={<PersonRegular />}
+              onClick={login}
+              style={{
+                backgroundColor: "#238636",
+                color: "#ffffff",
+                border: "1px solid rgba(240,246,252,0.1)",
+                borderRadius: "6px",
+              }}
+            >
+              Sign in
+            </Button>
           )
         )}
       </div>
@@ -329,6 +308,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
   return (
     <>
       <Navbar />
+      <AdminConsentNote />
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
         {/* #8b949e: #484f58 on #010409 was 2.2:1 contrast - Lighthouse WCAG AA flag */}

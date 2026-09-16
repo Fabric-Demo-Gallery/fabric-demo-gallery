@@ -43,7 +43,7 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 
 ## How it works
 
-1. **Sign in with Microsoft Entra.** The site is a static Next.js app using MSAL in the browser. Sign-in and all consent happen against your own tenant; some organizations require a one-time admin approval (the site shows a banner with instructions, and `?clientId=` lets you bring your own app registration instead).
+1. **Sign in with Microsoft Entra.** The site is a static Next.js app using MSAL in the browser. Sign-in and all consent happen against your own tenant; some organizations require a one-time admin approval. A non-dismissible ribbon below the navigation stays visible while signed out, explains Global Administrator consent, and offers expandable approval steps. It disappears after sign-in. `?clientId=` lets you bring your own app registration instead.
 2. **Your tokens, your tenant.** When you click Deploy, the browser acquires delegated Microsoft Entra tokens (Fabric, OneLake, and, for Azure scenarios, ARM) and passes them to the backend for the duration of the deployment. The backend orchestrates Fabric REST API calls with your identity. Tokens are held in memory for the running job only and are never stored.
 3. **Watch it build.** The backend streams every provisioning step back to the page over SSE: workspace, lakehouse, data upload, notebooks, semantic model, report, and scenario-specific items. A typical Standard demo lands in about 5 to 10 minutes.
 4. **Everything lands in YOUR tenant.** The result is a normal Fabric workspace on your capacity, fully yours to open, modify, present, or delete. The Monitoring page tracks your deployments and offers one-click cleanup, which also removes any Azure resources a scenario created.

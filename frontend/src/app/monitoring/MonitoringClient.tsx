@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthProvider";
-import AdminConsentNote from "@/lib/AdminConsentNote";
 import { getJobs, deleteJobWorkspace, cancelJob } from "@/lib/api";
 import type { JobSummary } from "@/lib/api";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
@@ -263,9 +262,6 @@ export default function MonitoringClient() {
           <Button appearance="primary" onClick={login}>
             Sign in with Microsoft
           </Button>
-          <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "left" }}>
-            <AdminConsentNote />
-          </div>
         </div>
       </div>
     );
