@@ -43,6 +43,9 @@ ENTITIES = [
     Entity("MerchantCategory", "merchant_categories", [
         Prop("CategoryId", "category_id", "String", ident=True, display=True),
     ]),
+    # ts_table: the Kusto-side table is named txn_events, NOT transactions —
+    # 'transactions' is a reserved word in Kusto command parsing and the Spark
+    # Kusto connector emits it unquoted (table create hangs/fails at ingestion).
     Entity("Transaction", "transactions", [
         Prop("TransactionId", "transaction_id", "String", ident=True, display=True),
         Prop("AccountId", "account_id"),
@@ -53,7 +56,7 @@ ENTITIES = [
         Prop("Country", "country"),
         Prop("IsFlaggedFraud", "is_flagged_fraud", "Boolean"),
         Prop("Amount", "amount", "Double", ts=True),
-    ]),
+    ], ts_table="txn_events"),
 ]
 
 RELATIONSHIP_TYPES = [
@@ -97,8 +100,8 @@ def build():
                          [[r["transaction_id"], r["account_id"], r["customer_id"], r["merchant_category"], r["transaction_type"], r["channel"], r["country"], r["is_flagged_fraud"]] for r in txns_c]),
     }
     events_tables = {
-        "transactions": (["transaction_id", "timestamp_utc", "amount"],
-                         [[r["transaction_id"], r["transaction_date"], r["amount"]] for r in txns_c]),
+        "txn_events": (["transaction_id", "timestamp_utc", "amount"],
+                       [[r["transaction_id"], r["transaction_date"], r["amount"]] for r in txns_c]),
     }
 
     write_iq(OUT, ENTITIES, RELATIONSHIP_TYPES, BINDING_RELATIONSHIP, instance_tables, events_tables)
