@@ -28,6 +28,16 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 - **Fabric IQ** — builds a semantic ontology over the industry's data spanning a Lakehouse and an Eventhouse, binds it to real tables, and exposes it through a Fabric Data Agent for natural-language analytics over business entities and relationships
 - **Fabric & Foundry AI Agent** — deploys a Fabric data foundation, publishes a Fabric data agent over it, then provisions a Microsoft Foundry agent grounded on that data (preview; provisions billable Azure Foundry + AI Search resources in your subscription)
 
+### Apps & AI
+
+The Manufacturing page also lists **Apps & AI** demos: AI applications that run in your Azure subscription instead of a Fabric workspace. Each one deploys a Microsoft Foundry model behind Azure Container Apps into its own new resource group:
+
+- **Technical Drawing Analysis**: extracts title block fields, dimensions, tolerances, surface finish, and GD&T from engineering drawings
+- **Delivery Note Extraction**: OCR plus a multimodal model for scanned delivery notes at goods receipt, with grounded fields and a review workflow
+- **Demand Portfolio Planning**: an agentic, human-in-the-loop funnel from business demand to project plan (Microsoft Agent Framework)
+
+Access to the deployed app is limited to the IP addresses you enter (your current IP is pre-filled) unless you choose public access. See [apps-ai/README.md](apps-ai/README.md) for how these are built and deployed.
+
 ## Features
 
 - **One-click deployment** — Select an industry and scenario, pick your capacity, click Deploy
@@ -53,7 +63,8 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 - A Microsoft Entra account and a Microsoft Fabric capacity you can assign workspaces to (any paid F-SKU or a Fabric trial)
 - Permission to create Fabric items (tenant setting "Users can create Fabric items")
 - For the Azure-provisioning scenarios (Mirroring, Shortcuts, Foundry AI Agent): an Azure subscription where you can create resources
-- Cost awareness: deployed items consume capacity units on your Fabric capacity, and the Azure scenarios create billable resources (Azure SQL DB, ADLS Gen2, or Foundry + AI Search). Delete the workspace from the Monitoring page when you are done; the cleanup removes the Azure resources too.
+- For the Apps & AI demos: an Azure subscription where you are Owner (or Contributor + User Access Administrator), with Foundry model quota in the chosen region
+- Cost awareness: deployed items consume capacity units on your Fabric capacity, and the Azure scenarios create billable resources (Azure SQL DB, ADLS Gen2, or Foundry + AI Search). Delete the workspace from the Monitoring page when you are done; the cleanup removes the Azure resources too. Apps & AI demos run two always-on Container Apps plus pay-per-token Foundry usage; Monitoring's Delete removes their resource group.
 
 ## Screenshots
 
@@ -164,13 +175,15 @@ swa deploy out --deployment-token YOUR_TOKEN --env production
 
 ```
 fabric-demo-gallery/
+├── apps-ai/                     # Apps & AI demo sources (images built by CI) + shared Bicep
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app, CORS, rate limiting
 │   │   ├── auth.py              # MSAL token handling
 │   │   ├── deployer.py          # Deployment orchestrator (standard + mirroring)
+│   │   ├── apps_ai.py           # Apps & AI deployment (Foundry + Container Apps via ARM)
 │   │   ├── fabric_client.py     # Fabric REST API wrapper
-│   │   ├── azure_client.py      # ARM client (Azure SQL, ADLS, storage)
+│   │   ├── azure_client.py      # ARM client (Azure SQL, ADLS, storage, Foundry, deployments)
 │   │   ├── report_builder.py    # Power BI report definitions
 │   │   └── routers/             # API endpoints
 │   └── requirements.txt
@@ -181,7 +194,8 @@ fabric-demo-gallery/
 │   │   ├── mirroring.json       # Per-sector mirroring spec
 │   │   ├── data/                # Sample CSVs
 │   │   └── notebooks/           # Per-scenario notebooks (incl. ml/)
-│   └── _scenarios/              # Shared scenario templates + mirroring notebooks
+│   ├── _scenarios/              # Shared scenario templates + mirroring notebooks
+│   └── _apps/                   # Apps & AI catalog + compiled ARM template
 ├── frontend/
 │   ├── src/app/                 # Next.js pages (gallery, demo detail, monitoring)
 │   ├── src/lib/                 # MSAL, auth provider, error mapping

@@ -1,0 +1,73 @@
+name: Apps & AI images
+
+# Builds the public container images the gallery deploys for the Apps & AI
+# demos (see demos/_apps/apps.json). Pull requests only build; pushes to main
+# publish ghcr.io/<owner>/<repo>/<app>-<component>:latest plus a sha tag.
+on:
+  pull_request:
+    paths:
+      - "apps-ai/**"
+      - ".github/workflows/apps-ai-images.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps-ai/**"
+      - ".github/workflows/apps-ai-images.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [technical-drawing-analysis, delivery-note-extraction, demand-portfolio-planning]
+        component: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve build context
+        id: ctx
+        run: |
+          if [ "${{ matrix.component }}" = "backend" ]; then
+            echo "context=apps-ai/${{ matrix.app }}" >> "$GITHUB_OUTPUT"
+            echo "file=apps-ai/${{ matrix.app }}/backend/Dockerfile" >> "$GITHUB_OUTPUT"
+          else
+            echo "context=apps-ai/${{ matrix.app }}/frontend" >> "$GITHUB_OUTPUT"
+            echo "file=apps-ai/${{ matrix.app }}/frontend/Dockerfile" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # metadata-action lowercases this to the path demos/_apps/apps.json expects.
+          images: ghcr.io/${{ github.repository }}/${{ matrix.app }}-${{ matrix.component }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
+          labels: |
+            org.opencontainers.image.description=Fabric Demo Gallery - ${{ matrix.app }} ${{ matrix.component }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ steps.ctx.outputs.context }}
+          file: ${{ steps.ctx.outputs.file }}
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.app }}-${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}-${{ matrix.component }}

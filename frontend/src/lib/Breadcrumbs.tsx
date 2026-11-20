@@ -38,6 +38,9 @@ export function Breadcrumbs({
     if (scenarioTitle) {
       crumbs.push({ label: scenarioTitle });
     }
+    if (pageName && !deploymentType) {
+      crumbs.push({ label: pageName });
+    }
   } else if (pageName) {
     crumbs.push({ label: pageName });
   }

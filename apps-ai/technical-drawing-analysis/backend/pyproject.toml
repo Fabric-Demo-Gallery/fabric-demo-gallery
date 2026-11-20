@@ -1,0 +1,34 @@
+[project]
+name = "technical-drawing-analysis-backend"
+version = "0.1.0"
+description = "Backend for the technical drawing analysis demo"
+requires-python = ">=3.12"
+dependencies = [
+    "azure-identity>=1.25.1",
+    "azure-monitor-opentelemetry>=1.6.0",
+    "fastapi>=0.115.0",
+    "openai>=2.6.0",
+    "opentelemetry-instrumentation-openai-v2>=2.0b0",
+    "pillow>=11.0.0",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.10.1",
+    "python-multipart>=0.0.20",
+    "uvicorn[standard]>=0.35.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/technical_drawing_analysis"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+

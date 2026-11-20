@@ -1,0 +1,70 @@
+{
+  "imageRegistry": "ghcr.io/fabric-demo-gallery/fabric-demo-gallery",
+  "imageTag": "latest",
+  "template": "container-apps.json",
+  "regions": [
+    "swedencentral",
+    "germanywestcentral",
+    "westeurope",
+    "francecentral",
+    "uksouth",
+    "eastus",
+    "eastus2",
+    "westus3"
+  ],
+  "defaultRegion": "swedencentral",
+  "apps": [
+    {
+      "id": "technical-drawing-analysis",
+      "industry": "Manufacturing",
+      "title": "Technical Drawing Analysis",
+      "namePrefix": "tdraw",
+      "backendPort": 8000,
+      "backendEnv": [
+        { "name": "CORS_ALLOWED_ORIGINS", "value": "*" },
+        { "name": "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "value": "span_only" },
+        { "name": "OTEL_SEMCONV_STABILITY_OPT_IN", "value": "gen_ai_latest_experimental" }
+      ],
+      "modelCandidates": [
+        ["gpt-5.4", "2026-03-05"],
+        ["gpt-5.4-mini", "2026-03-17"],
+        ["gpt-4.1", "2025-04-14"]
+      ]
+    },
+    {
+      "id": "delivery-note-extraction",
+      "industry": "Manufacturing",
+      "title": "Delivery Note Extraction",
+      "namePrefix": "dnote",
+      "backendPort": 8000,
+      "backendEnv": [
+        { "name": "AZURE_FOUNDRY_REASONING_EFFORT", "value": "none" },
+        { "name": "CORS_ALLOWED_ORIGINS", "value": "*" },
+        { "name": "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "value": "span_only" },
+        { "name": "OTEL_SEMCONV_STABILITY_OPT_IN", "value": "gen_ai_latest_experimental" }
+      ],
+      "modelCandidates": [
+        ["gpt-5.4", "2026-03-05"],
+        ["gpt-5.4-mini", "2026-03-17"],
+        ["gpt-4.1-mini", "2025-04-14"]
+      ]
+    },
+    {
+      "id": "demand-portfolio-planning",
+      "industry": "Manufacturing",
+      "title": "Demand Portfolio Planning",
+      "namePrefix": "dpp",
+      "backendPort": 8138,
+      "backendEnv": [
+        { "name": "AGENT_INSTRUCTIONS_DIR", "value": "/app/agent-instructions" },
+        { "name": "ENABLE_INSTRUMENTATION", "value": "true" },
+        { "name": "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "value": "true" }
+      ],
+      "modelCandidates": [
+        ["gpt-5.4-mini", "2026-03-17"],
+        ["gpt-5.4", "2026-03-05"],
+        ["gpt-4.1-mini", "2025-04-14"]
+      ]
+    }
+  ]
+}

@@ -367,10 +367,12 @@ export interface JobSummary {
   demo_id: string;
   workspace_name: string;
   scenario_id: string | null;
-  status: "pending" | "running" | "completed" | "failed";
+  status: "pending" | "running" | "completed" | "failed" | "cancelled";
   created_at: string;
   updated_at: string;
   workspace_id: string | null;
+  /** Azure resources the job owns (Apps & AI: subscription, resource group, appUrl). */
+  azure_resources?: Record<string, string> | null;
   error: string | null;
   step_summary: {
     total: number;
@@ -465,6 +467,76 @@ export async function cancelJob(token: string, jobId: string): Promise<void> {
     const text = await res.text();
     throw new Error(`Failed to cancel deployment: ${text.slice(0, 200)}`);
   }
+}
+
+// ── Apps & AI (Azure-hosted apps) ───────────────────────────────────────────
+
+export const APPS_AI_SCENARIO = "apps-ai";
+
+export interface AppsCatalogInfo {
+  regions: string[];
+  defaultRegion: string;
+  apps: { id: string; title: string; industry: string }[];
+}
+
+async function appsError(res: Response): Promise<string> {
+  const body: unknown = await res.json().catch(() => null);
+  const detail = body && typeof body === "object" && "detail" in body ? body.detail : null;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((d) => (d && typeof d === "object" && "msg" in d ? String(d.msg) : String(d))).join("; ");
+  return `Request failed (${res.status})`;
+}
+
+export async function fetchAppsCatalog(): Promise<AppsCatalogInfo> {
+  const res = await fetch(`${API_BASE}/api/apps`);
+  if (!res.ok) throw new Error("Failed to load the Apps & AI catalog");
+  return res.json();
+}
+
+/** The caller's public IPv4 as seen by the gallery backend (null if unknown). */
+export async function fetchClientIp(): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/apps/client-ip`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const body: { ip?: string | null } = await res.json();
+    return body.ip || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function deployApp(
+  token: string,
+  managementToken: string,
+  appId: string,
+  body: { subscription_id: string; location: string; public_access: boolean; allowed_ip_ranges: string[] }
+): Promise<{ job_id: string; resource_group: string }> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (managementToken) headers["X-Management-Token"] = managementToken;
+  const res = await fetch(`${API_BASE}/api/apps/${encodeURIComponent(appId)}/deploy`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await appsError(res));
+  return res.json();
+}
+
+/** Delete the resource group an Apps & AI deployment created. */
+export async function deleteAppResources(
+  token: string,
+  jobId: string,
+  managementToken?: string
+): Promise<void> {
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (managementToken) headers["X-Management-Token"] = managementToken;
+  const res = await fetch(`${API_BASE}/api/apps/jobs/${encodeURIComponent(jobId)}/resources`, {
+    method: "DELETE",
+    headers,
+  });
+  if (!res.ok) throw new Error(await appsError(res));
 }
 
 // ── Live Eventstream replay (Real-Time Intelligence demo) ────────────────────

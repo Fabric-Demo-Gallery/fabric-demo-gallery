@@ -289,6 +289,15 @@ class JobStore:
             job.updated_at = datetime.now(timezone.utc)
             self._save()
 
+    def set_azure_resources(self, job_id: str, azure_resources: dict | None) -> None:
+        """Record (or clear, with None) the Azure resources a job owns, as soon as
+        they exist - so cleanup works even if the job is cancelled midway."""
+        job = self._jobs.get(job_id)
+        if job:
+            job.azure_resources = azure_resources
+            job.updated_at = datetime.now(timezone.utc)
+            self._save()
+
     def subscribe(self, job_id: str) -> asyncio.Queue | None:
         job = self._jobs.get(job_id)
         if not job:
