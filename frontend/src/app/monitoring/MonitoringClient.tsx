@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthProvider";
-import { getJobs, deleteJobWorkspace, cancelJob } from "@/lib/api";
+import { getJobs, deleteJobWorkspace, cancelJob, deleteAppResources, APPS_AI_SCENARIO } from "@/lib/api";
 import type { JobSummary } from "@/lib/api";
+import { APPS } from "@/lib/appsCatalog";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { explainError } from "@/lib/errorHelp";
 import { TagBadge } from "@/lib/TagBadge";
@@ -36,7 +37,10 @@ const DEMO_TITLES: Record<string, string> = {
   "manufacturing-qc": "Quality Control Analytics",
   "retail-sales": "Sales & Inventory Analytics",
   "energy-grid": "Smart Grid Monitoring",
+  ...Object.fromEntries(Object.values(APPS).map((a) => [a.id, a.title])),
 };
+
+const isAppJob = (job: JobSummary) => job.scenario_id === APPS_AI_SCENARIO;
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -209,7 +213,11 @@ export default function MonitoringClient() {
       try {
         mgmt = (await getManagementToken()) || undefined;
       } catch { /* non-fatal - workspace still gets deleted */ }
-      await deleteJobWorkspace(token, job.job_id, mgmt);
+      if (isAppJob(job)) {
+        await deleteAppResources(token, job.job_id, mgmt);
+      } else {
+        await deleteJobWorkspace(token, job.job_id, mgmt);
+      }
       await fetchJobs();
     } catch (e: unknown) {
       setActionError(e instanceof Error ? e.message : "Delete failed");
@@ -322,7 +330,7 @@ export default function MonitoringClient() {
           <thead>
             <tr>
               <th scope="col" className={styles.th}>Demo</th>
-              <th scope="col" className={styles.th}>Workspace</th>
+              <th scope="col" className={styles.th}>Workspace / resource group</th>
               <th scope="col" className={styles.th}>Started</th>
               <th scope="col" className={styles.th}>Status</th>
               <th scope="col" className={styles.th}>Progress</th>
@@ -388,7 +396,9 @@ export default function MonitoringClient() {
                         icon={<EyeRegular />}
                         onClick={() =>
                           router.push(
-                            `/demos/${job.demo_id}?job_id=${job.job_id}${
+                            isAppJob(job)
+                              ? `/apps/${job.demo_id}?job_id=${job.job_id}`
+                              : `/demos/${job.demo_id}?job_id=${job.job_id}${
                               job.scenario_id
                                 ? `&mode=custom&scenario=${job.scenario_id}`
                                 : ""
@@ -421,6 +431,30 @@ export default function MonitoringClient() {
                           Open
                         </Button>
                       )}
+                      {isAppJob(job) && job.status === "completed" && job.azure_resources?.appUrl && (
+                        <Button
+                          appearance="subtle"
+                          size="small"
+                          icon={<OpenRegular />}
+                          as="a"
+                          href={job.azure_resources.appUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Open
+                        </Button>
+                      )}
+                      {isAppJob(job) && job.status !== "running" && job.status !== "pending" && job.azure_resources?.resourceGroup && (
+                        <Button
+                          appearance="subtle"
+                          size="small"
+                          icon={<DeleteRegular />}
+                          onClick={() => setConfirmAction({ kind: "delete", job })}
+                          disabled={deletingJob === job.job_id}
+                        >
+                          {deletingJob === job.job_id ? "..." : "Delete"}
+                        </Button>
+                      )}
                       {(job.status === "failed" || job.status === "completed") &&
                         job.workspace_id && (
                           <Button
@@ -449,11 +483,15 @@ export default function MonitoringClient() {
         <DialogSurface>
           <DialogBody>
             <DialogTitle>
-              {confirmAction?.kind === "delete" ? "Delete workspace?" : "Cancel deployment?"}
+              {confirmAction?.kind === "delete"
+                ? confirmAction && isAppJob(confirmAction.job) ? "Delete resources?" : "Delete workspace?"
+                : "Cancel deployment?"}
             </DialogTitle>
             <DialogContent>
               {confirmAction?.kind === "delete"
-                ? <>This permanently deletes the workspace <strong>“{confirmAction.job.workspace_name}”</strong> and every item in it. This can&apos;t be undone.</>
+                ? isAppJob(confirmAction.job)
+                  ? <>This deletes the Azure resource group <strong>“{confirmAction.job.workspace_name}”</strong> and everything in it: the app, the Foundry account, and its model deployment. This can&apos;t be undone.</>
+                  : <>This permanently deletes the workspace <strong>“{confirmAction.job.workspace_name}”</strong> and every item in it. This can&apos;t be undone.</>
                 : <>The deployment of <strong>“{confirmAction?.job.workspace_name}”</strong> will be marked cancelled. Anything already created is kept.</>}
             </DialogContent>
             <DialogActions>

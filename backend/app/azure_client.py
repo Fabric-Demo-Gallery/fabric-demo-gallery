@@ -28,6 +28,9 @@ COG_API_VERSION = "2025-12-01"          # accounts, projects, deployments, conne
 MODEL_CAPACITY_API_VERSION = "2024-10-01"  # modelCapacities quota pre-flight
 # Azure AI Search (Foundry IQ retrieval engine for the Fabric data agent)
 SEARCH_API_VERSION = "2023-11-01"
+# ARM template deployments + Container Apps (Apps & AI demos)
+DEPLOYMENTS_API_VERSION = "2024-03-01"
+CONTAINER_APPS_API_VERSION = "2024-03-01"
 # Built-in role definition GUIDs (used for the Foundry IQ RBAC wiring)
 STORAGE_BLOB_DATA_CONTRIBUTOR = "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
 SEARCH_INDEX_DATA_READER = "1407120a-92aa-4202-b7e9-c0e197c71c8f"
@@ -1345,3 +1348,156 @@ class AzureClient:
         if resp.status_code >= 400:
             raise AzureError(resp.status_code, resp.text[:300])
         return True
+
+    # ── ARM template deployments (Apps & AI demos) ───────────────────────
+
+    async def resource_group_exists(self, subscription_id: str, name: str) -> bool:
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{name}"
+            f"?api-version={RG_API_VERSION}"
+        )
+        resp = await self._arm_client.get(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, self._arm_error_detail(resp))
+        return True
+
+    async def create_tagged_resource_group(
+        self, subscription_id: str, name: str, location: str, tags: dict[str, str]
+    ) -> dict:
+        """Create a NEW resource group the gallery owns end to end (and may delete)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{name}"
+            f"?api-version={RG_API_VERSION}"
+        )
+        resp = await self._arm_request("PUT", url, json={"location": location, "tags": tags})
+        return resp.json()
+
+    async def delete_resource_group(self, subscription_id: str, name: str) -> bool:
+        """Start deleting a resource group. Returns False if it was already gone.
+        ARM finishes the delete asynchronously; callers don't wait for it."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{name}"
+            f"?api-version={RG_API_VERSION}"
+        )
+        resp = await self._arm_client.delete(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, self._arm_error_detail(resp))
+        return True
+
+    async def register_providers(
+        self, subscription_id: str, namespaces: list[str], timeout: int = 300
+    ) -> None:
+        """Register resource providers (idempotent) and wait until each reports
+        Registered. New subscriptions fail deployments with
+        MissingSubscriptionRegistration until this has run."""
+        base = f"{ARM_API}/subscriptions/{subscription_id}/providers"
+        pending: list[str] = []
+        for ns in namespaces:
+            resp = await self._arm_client.get(f"{base}/{ns}?api-version=2021-04-01")
+            if resp.status_code < 400 and resp.json().get("registrationState") == "Registered":
+                continue
+            await self._arm_request("POST", f"{base}/{ns}/register?api-version=2021-04-01")
+            pending.append(ns)
+        start = time.time()
+        while pending and time.time() - start < timeout:
+            await asyncio.sleep(10)
+            still: list[str] = []
+            for ns in pending:
+                resp = await self._arm_client.get(f"{base}/{ns}?api-version=2021-04-01")
+                if resp.status_code >= 400 or resp.json().get("registrationState") != "Registered":
+                    still.append(ns)
+            pending = still
+        if pending:
+            raise AzureError(
+                504,
+                f"Resource provider registration did not finish for {', '.join(pending)}. "
+                "Register them in the Azure portal (Subscription > Resource providers), then retry.",
+            )
+
+    async def list_caller_permissions(self, subscription_id: str) -> list[dict]:
+        """Return the caller's effective RBAC permissions at subscription scope."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/providers/Microsoft.Authorization"
+            f"/permissions?api-version=2022-04-01"
+        )
+        resp = await self._arm_request("GET", url)
+        return resp.json().get("value", [])
+
+    async def deploy_template(
+        self, subscription_id: str, resource_group: str, deployment_name: str,
+        template: dict, parameters: dict,
+    ) -> dict:
+        """Start an incremental resource-group deployment of an ARM template."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourcegroups/{resource_group}"
+            f"/providers/Microsoft.Resources/deployments/{deployment_name}"
+            f"?api-version={DEPLOYMENTS_API_VERSION}"
+        )
+        body = {
+            "properties": {
+                "mode": "Incremental",
+                "template": template,
+                "parameters": {k: {"value": v} for k, v in parameters.items()},
+            }
+        }
+        resp = await self._arm_request("PUT", url, json=body)
+        return resp.json()
+
+    async def get_deployment(
+        self, subscription_id: str, resource_group: str, deployment_name: str
+    ) -> dict:
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourcegroups/{resource_group}"
+            f"/providers/Microsoft.Resources/deployments/{deployment_name}"
+            f"?api-version={DEPLOYMENTS_API_VERSION}"
+        )
+        resp = await self._arm_request("GET", url)
+        return resp.json()
+
+    async def deployment_failure_detail(
+        self, subscription_id: str, resource_group: str, deployment_name: str
+    ) -> str:
+        """Collect the per-resource error messages of a failed deployment - the
+        top-level error is usually just 'At least one resource deployment
+        operation failed'."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourcegroups/{resource_group}"
+            f"/providers/Microsoft.Resources/deployments/{deployment_name}/operations"
+            f"?api-version={DEPLOYMENTS_API_VERSION}"
+        )
+        try:
+            resp = await self._arm_request("GET", url)
+        except AzureError as e:
+            return e.detail
+        messages: list[str] = []
+        for op in resp.json().get("value", []):
+            props = op.get("properties", {})
+            if (props.get("provisioningState") or "").lower() != "failed":
+                continue
+            target = (props.get("targetResource") or {}).get("resourceName", "")
+            status_msg = props.get("statusMessage") or {}
+            err = status_msg.get("error") if isinstance(status_msg, dict) else None
+            msg = _extract_arm_error({"error": err}) if err else json.dumps(status_msg)[:300]
+            messages.append(f"{target}: {msg}" if target else msg)
+        return " | ".join(messages)[:900]
+
+    async def get_container_app_revision_state(
+        self, subscription_id: str, resource_group: str, app_name: str
+    ) -> tuple[str, str]:
+        """Return (runningState, healthState) of the app's latest revision."""
+        base = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.App/containerApps/{app_name}"
+        )
+        app = (await self._arm_request("GET", f"{base}?api-version={CONTAINER_APPS_API_VERSION}")).json()
+        revision = app.get("properties", {}).get("latestRevisionName")
+        if not revision:
+            return "", ""
+        rev = (await self._arm_request(
+            "GET", f"{base}/revisions/{revision}?api-version={CONTAINER_APPS_API_VERSION}"
+        )).json().get("properties", {})
+        return rev.get("runningState", ""), rev.get("healthState", "")

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { industries } from "@/lib/industryCatalog";
 import { DEMOS } from "@/lib/demoCatalog";
+import { appsForIndustry } from "@/lib/appsCatalog";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 
 // Mirror of the gallery's item-symbol renderer so the "Includes" strip looks
@@ -181,6 +182,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
   if (!industry) return notFound();
 
   const demo = industry.demoId ? DEMOS[industry.demoId] : undefined;
+  const apps = appsForIndustry(industry.slug);
   const uniqueTypes = demo
     ? Array.from(new Set(demo.fabricItems.map((i) => i.type)))
     : [];
@@ -233,6 +235,31 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
             </div>
           </DeployOption>
         </div>
+        {apps.length > 0 && (
+          <section aria-labelledby="apps-ai-heading" style={{ marginTop: "40px" }}>
+            <h2 id="apps-ai-heading" style={{ ...styles.aboutTitle, fontSize: "18px", margin: "0 0 6px 0" }}>
+              Apps &amp; AI
+            </h2>
+            <p style={{ ...styles.aboutText, marginBottom: "20px" }}>
+              AI applications that run in your Azure subscription - Microsoft Foundry models behind Azure
+              Container Apps. Each deploys into its own resource group in about 10-15 minutes.
+            </p>
+            <div style={styles.grid}>
+              {apps.map((app) => (
+                <Link key={app.id} href={`/apps/${app.id}`} style={{ textDecoration: "none", display: "block" }}>
+                  <div style={styles.card}>
+                    <h3 style={{ ...styles.cardTitle, marginTop: 0 }}>{app.title}</h3>
+                    <div style={styles.cardDesc}>{app.description}</div>
+                    <div style={styles.itemStrip}>
+                      <span style={styles.itemStripLabel}>Runs on</span>
+                      <span style={{ fontSize: "12px", color: "#8b949e" }}>Microsoft Foundry · Azure Container Apps</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
         {/* Server-rendered supporting copy - Bing flagged industry pages as
             "insufficient content" (only a heading + two card labels). Real,
             useful text about what actually deploys. */}
