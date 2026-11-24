@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { industries } from "@/lib/industryCatalog";
 import { DEMOS } from "@/lib/demoCatalog";
+import { agentPackForIndustry } from "@/lib/agentPacks";
 import { Breadcrumbs } from "@/lib/Breadcrumbs";
 
 // Mirror of the gallery's item-symbol renderer so the "Includes" strip looks
@@ -181,6 +182,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
   if (!industry) return notFound();
 
   const demo = industry.demoId ? DEMOS[industry.demoId] : undefined;
+  const agentPack = agentPackForIndustry(industry.slug);
   const uniqueTypes = demo
     ? Array.from(new Set(demo.fabricItems.map((i) => i.type)))
     : [];
@@ -233,6 +235,36 @@ export default async function IndustryPage({ params }: { params: Promise<{ indus
             </div>
           </DeployOption>
         </div>
+        {agentPack && (
+          <section aria-labelledby="ai-agents-heading" style={{ marginTop: "40px" }}>
+            <h2 id="ai-agents-heading" style={{ ...styles.aboutTitle, fontSize: "18px", margin: "0 0 6px 0" }}>
+              AI Agents
+            </h2>
+            <p style={{ ...styles.aboutText, marginBottom: "20px" }}>
+              Microsoft Foundry agents grounded on this industry&apos;s data and documents. One deploy creates all{" "}
+              {agentPack.agents.length} in your Azure subscription in about {agentPack.estimatedTime} - no Fabric
+              capacity needed.
+            </p>
+            <div style={styles.grid}>
+              {agentPack.agents.map((agent) => (
+                <Link
+                  key={agent.id}
+                  href={`/ai-agents/${agentPack.id}#${agent.id}`}
+                  style={{ textDecoration: "none", display: "block" }}
+                >
+                  <div style={styles.card}>
+                    <h3 style={{ ...styles.cardTitle, marginTop: 0 }}>{agent.title}</h3>
+                    <div style={styles.cardDesc}>{agent.description}</div>
+                    <div style={styles.itemStrip}>
+                      <span style={styles.itemStripLabel}>Uses</span>
+                      <span style={{ fontSize: "12px", color: "#8b949e" }}>{agent.tools.join(" · ")}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
         {/* Server-rendered supporting copy - Bing flagged industry pages as
             "insufficient content" (only a heading + two card labels). Real,
             useful text about what actually deploys. */}

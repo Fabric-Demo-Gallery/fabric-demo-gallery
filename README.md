@@ -28,6 +28,17 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 - **Fabric IQ** — builds a semantic ontology over the industry's data spanning a Lakehouse and an Eventhouse, binds it to real tables, and exposes it through a Fabric Data Agent for natural-language analytics over business entities and relationships
 - **Fabric & Foundry AI Agent** — deploys a Fabric data foundation, publishes a Fabric data agent over it, then provisions a Microsoft Foundry agent grounded on that data (preview; provisions billable Azure Foundry + AI Search resources in your subscription)
 
+### AI Agents
+
+Industries can also offer an **AI agent pack**: Microsoft Foundry agents grounded on the industry's demo data, deployed into your Azure subscription. No Fabric capacity is needed. Manufacturing ships four:
+
+- **Maintenance Assistant**: File Search over alarm codes, sensor limits, the PM plan and lockout/tagout, plus Code Interpreter over machine history
+- **Quality Root-Cause Analyst**: Python analysis with charts over batches, equipment and sensor data
+- **Shift Handover Reporter**: a structured handover with output vs. plan, failures and machine watch list
+- **Visual Inspection Assistant**: vision over part photos and drawings, grounded on the inspection standard
+
+One deploy creates a dedicated resource group with a Foundry account, project and model, then the agents. You chat with them in the Foundry agent playground. See [demos/_agents/README.md](demos/_agents/README.md).
+
 ## Features
 
 - **One-click deployment** — Select an industry and scenario, pick your capacity, click Deploy
@@ -53,7 +64,8 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 - A Microsoft Entra account and a Microsoft Fabric capacity you can assign workspaces to (any paid F-SKU or a Fabric trial)
 - Permission to create Fabric items (tenant setting "Users can create Fabric items")
 - For the Azure-provisioning scenarios (Mirroring, Shortcuts, Foundry AI Agent): an Azure subscription where you can create resources
-- Cost awareness: deployed items consume capacity units on your Fabric capacity, and the Azure scenarios create billable resources (Azure SQL DB, ADLS Gen2, or Foundry + AI Search). Delete the workspace from the Monitoring page when you are done; the cleanup removes the Azure resources too.
+- For the AI agent packs: an Azure subscription where you are Owner (or Contributor + User Access Administrator), with Foundry model quota in the chosen region
+- Cost awareness: deployed items consume capacity units on your Fabric capacity, and the Azure scenarios create billable resources (Azure SQL DB, ADLS Gen2, or Foundry + AI Search). Delete the workspace from the Monitoring page when you are done; the cleanup removes the Azure resources too. AI agent packs are pay-per-use (tokens, Code Interpreter sessions, a few MB of File Search storage); Monitoring's Delete removes their resource group.
 
 ## Screenshots
 
@@ -169,8 +181,9 @@ fabric-demo-gallery/
 │   │   ├── main.py              # FastAPI app, CORS, rate limiting
 │   │   ├── auth.py              # MSAL token handling
 │   │   ├── deployer.py          # Deployment orchestrator (standard + mirroring)
+│   │   ├── agent_packs.py       # AI agent packs (Foundry agents in the user's subscription)
 │   │   ├── fabric_client.py     # Fabric REST API wrapper
-│   │   ├── azure_client.py      # ARM client (Azure SQL, ADLS, storage)
+│   │   ├── azure_client.py      # ARM client (Azure SQL, ADLS, storage, Foundry)
 │   │   ├── report_builder.py    # Power BI report definitions
 │   │   └── routers/             # API endpoints
 │   └── requirements.txt
@@ -181,7 +194,8 @@ fabric-demo-gallery/
 │   │   ├── mirroring.json       # Per-sector mirroring spec
 │   │   ├── data/                # Sample CSVs
 │   │   └── notebooks/           # Per-scenario notebooks (incl. ml/)
-│   └── _scenarios/              # Shared scenario templates + mirroring notebooks
+│   ├── _scenarios/              # Shared scenario templates + mirroring notebooks
+│   └── _agents/                 # AI agent packs: instructions, knowledge documents, pack.json
 ├── frontend/
 │   ├── src/app/                 # Next.js pages (gallery, demo detail, monitoring)
 │   ├── src/lib/                 # MSAL, auth provider, error mapping

@@ -367,10 +367,12 @@ export interface JobSummary {
   demo_id: string;
   workspace_name: string;
   scenario_id: string | null;
-  status: "pending" | "running" | "completed" | "failed";
+  status: "pending" | "running" | "completed" | "failed" | "cancelled";
   created_at: string;
   updated_at: string;
   workspace_id: string | null;
+  /** Azure resources the job owns (AI agent packs: subscription, resource group, portalUrl). */
+  azure_resources?: Record<string, string> | null;
   error: string | null;
   step_summary: {
     total: number;
@@ -465,6 +467,68 @@ export async function cancelJob(token: string, jobId: string): Promise<void> {
     const text = await res.text();
     throw new Error(`Failed to cancel deployment: ${text.slice(0, 200)}`);
   }
+}
+
+// ── AI agent packs (Foundry agents in the user's subscription) ─────────────
+
+export const AI_AGENTS_SCENARIO = "ai-agents";
+
+export interface AgentPackInfo {
+  id: string;
+  industry: string;
+  title: string;
+  regions: string[];
+  defaultRegion: string;
+  agents: { id: string; title: string }[];
+}
+
+async function apiError(res: Response): Promise<string> {
+  const body: unknown = await res.json().catch(() => null);
+  const detail = body && typeof body === "object" && "detail" in body ? body.detail : null;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((d) => (d && typeof d === "object" && "msg" in d ? String(d.msg) : String(d))).join("; ");
+  return `Request failed (${res.status})`;
+}
+
+export async function fetchAgentPacks(): Promise<AgentPackInfo[]> {
+  const res = await fetch(`${API_BASE}/api/agent-packs`);
+  if (!res.ok) throw new Error("Failed to load the AI agent catalog");
+  return res.json();
+}
+
+export async function deployAgentPack(
+  token: string,
+  tokens: { management: string; agent: string },
+  packId: string,
+  body: { subscription_id: string; location: string }
+): Promise<{ job_id: string; resource_group: string }> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (tokens.management) headers["X-Management-Token"] = tokens.management;
+  if (tokens.agent) headers["X-Agent-Token"] = tokens.agent;
+  const res = await fetch(`${API_BASE}/api/agent-packs/${encodeURIComponent(packId)}/deploy`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await apiError(res));
+  return res.json();
+}
+
+/** Delete the resource group an agent pack deployment created. */
+export async function deleteAgentPackResources(
+  token: string,
+  jobId: string,
+  managementToken?: string
+): Promise<void> {
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (managementToken) headers["X-Management-Token"] = managementToken;
+  const res = await fetch(`${API_BASE}/api/agent-packs/jobs/${encodeURIComponent(jobId)}/resources`, {
+    method: "DELETE",
+    headers,
+  });
+  if (!res.ok) throw new Error(await apiError(res));
 }
 
 // ── Live Eventstream replay (Real-Time Intelligence demo) ────────────────────

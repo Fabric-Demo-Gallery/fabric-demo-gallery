@@ -49,3 +49,10 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* AI agent pack page: stack the deploy panel under the content on narrow screens. */
+@media (max-width: 900px) {
+  .fdg-agents-layout {
+    grid-template-columns: 1fr !important;
+  }
+}

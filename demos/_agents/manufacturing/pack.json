@@ -1,0 +1,87 @@
+{
+  "id": "manufacturing",
+  "industry": "Manufacturing",
+  "title": "Manufacturing AI Agents",
+  "regions": [
+    "swedencentral",
+    "germanywestcentral",
+    "westeurope",
+    "francecentral",
+    "uksouth",
+    "eastus",
+    "eastus2",
+    "westus3"
+  ],
+  "defaultRegion": "swedencentral",
+  "modelCandidates": [
+    [
+      "gpt-5.4-mini",
+      "2026-03-17"
+    ],
+    [
+      "gpt-5.4",
+      "2026-03-05"
+    ],
+    [
+      "gpt-4.1-mini",
+      "2025-04-14"
+    ]
+  ],
+  "dataFiles": {
+    "equipment_catalog.csv": "manufacturing-qc/data/equipment_catalog.csv",
+    "production_batches.csv": "manufacturing-qc/data/production_batches.csv",
+    "sensor_readings.csv": "manufacturing-qc/data/sensor_readings.csv"
+  },
+  "agents": [
+    {
+      "id": "maintenance-assistant",
+      "title": "Maintenance Assistant",
+      "instructions": "instructions/maintenance-assistant.md",
+      "knowledge": [
+        "knowledge/alarm-code-reference.md",
+        "knowledge/sensor-limits.md",
+        "knowledge/preventive-maintenance-plan.md",
+        "knowledge/lockout-tagout-procedure.md"
+      ],
+      "data": [
+        "equipment_catalog.csv",
+        "production_batches.csv",
+        "sensor_readings.csv"
+      ]
+    },
+    {
+      "id": "quality-analyst",
+      "title": "Quality Root-Cause Analyst",
+      "instructions": "instructions/quality-analyst.md",
+      "knowledge": [
+        "knowledge/sensor-limits.md",
+        "knowledge/quality-inspection-standard.md"
+      ],
+      "data": [
+        "equipment_catalog.csv",
+        "production_batches.csv",
+        "sensor_readings.csv"
+      ]
+    },
+    {
+      "id": "shift-handover",
+      "title": "Shift Handover Reporter",
+      "instructions": "instructions/shift-handover.md",
+      "knowledge": [],
+      "data": [
+        "equipment_catalog.csv",
+        "production_batches.csv",
+        "sensor_readings.csv"
+      ]
+    },
+    {
+      "id": "visual-inspector",
+      "title": "Visual Inspection Assistant",
+      "instructions": "instructions/visual-inspector.md",
+      "knowledge": [
+        "knowledge/quality-inspection-standard.md"
+      ],
+      "data": []
+    }
+  ]
+}

@@ -94,6 +94,7 @@ def _get_az_cli_token(resource: str) -> str:
         "https://storage.azure.com",
         "https://management.azure.com",
         "https://kusto.fabric.microsoft.com",
+        "https://ai.azure.com",
     }
     if resource not in _ALLOWED_RESOURCES:
         raise HTTPException(status_code=400, detail="Invalid resource")
@@ -155,6 +156,15 @@ async def get_kusto_token(request: Request) -> str:
     if tok:
         return tok
     return _get_az_cli_token("https://kusto.fabric.microsoft.com")
+
+
+async def get_agent_token(request: Request) -> str:
+    """Get a delegated Foundry (``ai.azure.com``) token for the project data plane
+    (files, vector stores, agents). Falls back to the az CLI in dev."""
+    tok = request.headers.get("x-agent-token", "")
+    if tok:
+        return tok
+    return _get_az_cli_token("https://ai.azure.com")
 
 def get_user_id(token: str) -> str:
     """Extract the user id (oid or sub claim) from a VERIFIED JWT.
