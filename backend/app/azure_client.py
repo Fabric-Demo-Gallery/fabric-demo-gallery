@@ -26,6 +26,8 @@ SQL_API_VERSION = "2021-11-01"
 # Microsoft Foundry / Cognitive Services (preview - used by the Fabric+Foundry scenario)
 COG_API_VERSION = "2025-12-01"          # accounts, projects, deployments, connections
 MODEL_CAPACITY_API_VERSION = "2024-10-01"  # modelCapacities quota pre-flight
+DEPLOYMENTS_API_VERSION = "2024-03-01"  # ARM template deployments
+LOGIC_API_VERSION = "2019-05-01"  # Logic Apps (Consumption) workflows and runs
 # Azure AI Search (Foundry IQ retrieval engine for the Fabric data agent)
 SEARCH_API_VERSION = "2023-11-01"
 # Built-in role definition GUIDs (used for the Foundry IQ RBAC wiring)
@@ -976,8 +978,9 @@ class AzureClient:
         self, subscription_id: str, model_name: str, model_version: str, model_format: str = "OpenAI"
     ) -> list[dict]:
         """Return per-region available capacity for a model (advisory pre-flight).
-        Returns a list of {location, availableCapacity}; empty on any failure so a
-        listing hiccup never blocks an otherwise-valid deploy."""
+        Returns a list of {location, availableCapacity, skuName} - one entry per
+        deployment SKU (GlobalStandard, Standard, DataZoneStandard, ...); empty on
+        any failure so a listing hiccup never blocks an otherwise-valid deploy."""
         url = (
             f"{ARM_API}/subscriptions/{subscription_id}/providers/Microsoft.CognitiveServices"
             f"/modelCapacities?api-version={MODEL_CAPACITY_API_VERSION}"
@@ -994,6 +997,7 @@ class AzureClient:
             out.append({
                 "location": entry.get("location", ""),
                 "availableCapacity": props.get("availableCapacity", 0),
+                "skuName": props.get("skuName", ""),
             })
         return out
 
@@ -1345,3 +1349,171 @@ class AzureClient:
         if resp.status_code >= 400:
             raise AzureError(resp.status_code, resp.text[:300])
         return True
+
+    # ── Dedicated resource groups (AI agent packs) ──────────────────────
+
+    async def resource_group_exists(self, subscription_id: str, name: str) -> bool:
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{name}"
+            f"?api-version={RG_API_VERSION}"
+        )
+        resp = await self._arm_client.get(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, self._arm_error_detail(resp))
+        return True
+
+    async def create_tagged_resource_group(
+        self, subscription_id: str, name: str, location: str, tags: dict[str, str]
+    ) -> dict:
+        """Create a NEW resource group the gallery owns end to end (and may delete)."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{name}"
+            f"?api-version={RG_API_VERSION}"
+        )
+        resp = await self._arm_request("PUT", url, json={"location": location, "tags": tags})
+        return resp.json()
+
+    async def delete_resource_group(self, subscription_id: str, name: str) -> bool:
+        """Start deleting a resource group. Returns False if it was already gone.
+        ARM finishes the delete asynchronously; callers don't wait for it."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{name}"
+            f"?api-version={RG_API_VERSION}"
+        )
+        resp = await self._arm_client.delete(url)
+        if resp.status_code == 404:
+            return False
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, self._arm_error_detail(resp))
+        return True
+
+    async def register_providers(
+        self, subscription_id: str, namespaces: list[str], timeout: int = 300
+    ) -> None:
+        """Register resource providers (idempotent) and wait until each reports
+        Registered. New subscriptions fail with MissingSubscriptionRegistration
+        until this has run."""
+        base = f"{ARM_API}/subscriptions/{subscription_id}/providers"
+        pending: list[str] = []
+        for ns in namespaces:
+            resp = await self._arm_client.get(f"{base}/{ns}?api-version=2021-04-01")
+            if resp.status_code < 400 and resp.json().get("registrationState") == "Registered":
+                continue
+            await self._arm_request("POST", f"{base}/{ns}/register?api-version=2021-04-01")
+            pending.append(ns)
+        start = time.time()
+        while pending and time.time() - start < timeout:
+            await asyncio.sleep(10)
+            still: list[str] = []
+            for ns in pending:
+                resp = await self._arm_client.get(f"{base}/{ns}?api-version=2021-04-01")
+                if resp.status_code >= 400 or resp.json().get("registrationState") != "Registered":
+                    still.append(ns)
+            pending = still
+        if pending:
+            raise AzureError(
+                504,
+                f"Resource provider registration did not finish for {', '.join(pending)}. "
+                "Register them in the Azure portal (Subscription > Resource providers), then retry.",
+            )
+
+    async def list_caller_permissions(self, subscription_id: str) -> list[dict]:
+        """Return the caller's effective RBAC permissions at subscription scope."""
+        url = (
+            f"{ARM_API}/subscriptions/{subscription_id}/providers/Microsoft.Authorization"
+            f"/permissions?api-version=2022-04-01"
+        )
+        resp = await self._arm_request("GET", url)
+        return resp.json().get("value", [])
+
+    # ── ARM template deployments (AI agent pack infrastructure) ────────
+
+    def _deployment_url(self, subscription_id: str, resource_group: str, name: str, suffix: str = "") -> str:
+        return (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Resources/deployments/{name}{suffix}?api-version={DEPLOYMENTS_API_VERSION}"
+        )
+
+    async def start_template_deployment(
+        self, subscription_id: str, resource_group: str, name: str, template: dict, parameters: dict
+    ) -> None:
+        """Start an incremental resource-group deployment; poll it with get_template_deployment."""
+        body = {
+            "properties": {
+                "mode": "Incremental",
+                "template": template,
+                "parameters": {k: {"value": v} for k, v in parameters.items()},
+            }
+        }
+        await self._arm_request("PUT", self._deployment_url(subscription_id, resource_group, name), json=body)
+
+    async def get_template_deployment(self, subscription_id: str, resource_group: str, name: str) -> dict:
+        resp = await self._arm_request("GET", self._deployment_url(subscription_id, resource_group, name))
+        return resp.json().get("properties", {})
+
+    async def template_deployment_error(self, subscription_id: str, resource_group: str, name: str) -> str:
+        """The failed operations' messages - the deployment's own error is usually generic."""
+        try:
+            resp = await self._arm_request(
+                "GET", self._deployment_url(subscription_id, resource_group, name, "/operations")
+            )
+        except AzureError as e:
+            return e.detail
+        messages = []
+        for op in resp.json().get("value", []):
+            props = op.get("properties", {})
+            if props.get("provisioningState") != "Failed":
+                continue
+            target = (props.get("targetResource") or {}).get("resourceName", "")
+            error = (props.get("statusMessage") or {}).get("error") or {}
+            detail = _extract_arm_error({"error": error}) if error else json.dumps(props.get("statusMessage"))[:300]
+            messages.append(f"{target}: {detail}" if target else detail)
+        return " | ".join(messages)[:600] or "The infrastructure deployment failed."
+
+    # ── Logic Apps (Consumption) runs ───────────────────────────────────
+
+    def _workflow_url(self, subscription_id: str, resource_group: str, workflow: str, suffix: str = "") -> str:
+        return (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Logic/workflows/{workflow}{suffix}?api-version={LOGIC_API_VERSION}"
+        )
+
+    async def get_workflow_callback_url(
+        self, subscription_id: str, resource_group: str, workflow: str, trigger: str = "manual"
+    ) -> dict:
+        """The Request trigger's signed URL: {value, basePath, queries{api-version, sp, sv, sig}}."""
+        url = self._workflow_url(subscription_id, resource_group, workflow, f"/triggers/{trigger}/listCallbackUrl")
+        resp = await self._arm_request("POST", url)
+        return resp.json()
+
+    async def get_workflow_run(self, subscription_id: str, resource_group: str, workflow: str, run: str) -> dict:
+        resp = await self._arm_request("GET", self._workflow_url(subscription_id, resource_group, workflow, f"/runs/{run}"))
+        return resp.json()
+
+    async def list_workflow_run_actions(
+        self, subscription_id: str, resource_group: str, workflow: str, run: str
+    ) -> list[dict]:
+        """Top-level and nested actions of a run (Logic Apps flattens scopes in this list)."""
+        url: str | None = self._workflow_url(subscription_id, resource_group, workflow, f"/runs/{run}/actions")
+        actions: list[dict] = []
+        while url:
+            resp = await self._arm_request("GET", url)
+            body = resp.json()
+            actions.extend(body.get("value", []))
+            url = body.get("nextLink")
+        return actions
+
+    @staticmethod
+    async def read_run_content(link: str) -> object:
+        """Fetch an action's outputsLink/inputsLink content. The link carries its own
+        SAS signature, so it is fetched without the ARM bearer token."""
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(link)
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, resp.text[:300])
+        try:
+            return resp.json()
+        except ValueError:
+            return resp.text

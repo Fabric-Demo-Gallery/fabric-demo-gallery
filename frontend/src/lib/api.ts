@@ -367,10 +367,12 @@ export interface JobSummary {
   demo_id: string;
   workspace_name: string;
   scenario_id: string | null;
-  status: "pending" | "running" | "completed" | "failed";
+  status: "pending" | "running" | "completed" | "failed" | "cancelled";
   created_at: string;
   updated_at: string;
   workspace_id: string | null;
+  /** Azure resources the job owns (AI agent packs: subscription, resource group, portalUrl). */
+  azure_resources?: Record<string, string> | null;
   error: string | null;
   step_summary: {
     total: number;
@@ -465,6 +467,181 @@ export async function cancelJob(token: string, jobId: string): Promise<void> {
     const text = await res.text();
     throw new Error(`Failed to cancel deployment: ${text.slice(0, 200)}`);
   }
+}
+
+// ── AI agent packs (Foundry agents in the user's subscription) ─────────────
+
+export const AI_AGENTS_SCENARIO = "ai-agents";
+
+export interface AgentPackInfo {
+  id: string;
+  industry: string;
+  title: string;
+  regions: string[];
+  defaultRegion: string;
+  agents: { id: string; title: string }[];
+}
+
+async function apiError(res: Response): Promise<string> {
+  const body: unknown = await res.json().catch(() => null);
+  const detail = body && typeof body === "object" && "detail" in body ? body.detail : null;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((d) => (d && typeof d === "object" && "msg" in d ? String(d.msg) : String(d))).join("; ");
+  return `Request failed (${res.status})`;
+}
+
+export async function fetchAgentPacks(): Promise<AgentPackInfo[]> {
+  const res = await fetch(`${API_BASE}/api/agent-packs`);
+  if (!res.ok) throw new Error("Failed to load the AI agent catalog");
+  return res.json();
+}
+
+export async function deployAgentPack(
+  token: string,
+  tokens: { management: string; agent: string },
+  packId: string,
+  body: { subscription_id: string; location: string }
+): Promise<{ job_id: string; resource_group: string }> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (tokens.management) headers["X-Management-Token"] = tokens.management;
+  if (tokens.agent) headers["X-Agent-Token"] = tokens.agent;
+  const res = await fetch(`${API_BASE}/api/agent-packs/${encodeURIComponent(packId)}/deploy`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await apiError(res));
+  return res.json();
+}
+
+/** Delete the resource group an agent pack deployment created. */
+export async function deleteAgentPackResources(
+  token: string,
+  jobId: string,
+  managementToken?: string
+): Promise<void> {
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (managementToken) headers["X-Management-Token"] = managementToken;
+  const res = await fetch(`${API_BASE}/api/agent-packs/jobs/${encodeURIComponent(jobId)}/resources`, {
+    method: "DELETE",
+    headers,
+  });
+  if (!res.ok) throw new Error(await apiError(res));
+}
+
+// ── Agent pack live demo: incident workflow, plant system, evaluations ──────
+
+export interface PackTokens {
+  /** Gallery sign-in (Fabric) token - identifies the job owner. */
+  token: string;
+  management?: string;
+  agent?: string;
+}
+
+export interface IncidentStep {
+  id: string;
+  title: string;
+  agent: string;
+  status: "pending" | "running" | "waiting" | "completed" | "failed" | "skipped";
+  output?: string | null;
+  data?: Record<string, unknown> | null;
+  error?: string;
+}
+
+export interface WorkOrderDraft {
+  machine_id: string;
+  priority: string;
+  title: string;
+  description: string;
+}
+
+export interface IncidentReport {
+  incident_id: string;
+  triage: Record<string, unknown>;
+  diagnosis: string;
+  inspection: string;
+  work_order: string;
+  handover: string;
+}
+
+export interface IncidentStatus {
+  incidentId: string;
+  status: string;
+  startedAt?: string;
+  endedAt?: string;
+  steps: IncidentStep[];
+  awaitingApproval: boolean;
+  draft?: WorkOrderDraft | null;
+  report?: IncidentReport | null;
+}
+
+export interface PlantBoard {
+  workOrders: { id: string; machine_id: string; priority: string; title: string; description: string; status: string; requested_by: string; created_at: string }[];
+  qualityHolds: { id: string; batch_id: string; machine_id: string; production_line: string; product: string; reason: string; status: string; requested_by: string; created_at: string }[];
+}
+
+export interface EvaluationResult {
+  agent: string;
+  title: string;
+  status: string;
+  reportUrl: string;
+  queries: number;
+  criteria: { name: string; average: number | null; scale: number; passed: number; scored: number }[];
+  error?: string;
+}
+
+function packHeaders(t: PackTokens, json = false): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (json) headers["Content-Type"] = "application/json";
+  if (t.token) headers["Authorization"] = `Bearer ${t.token}`;
+  if (t.management) headers["X-Management-Token"] = t.management;
+  if (t.agent) headers["X-Agent-Token"] = t.agent;
+  return headers;
+}
+
+async function packRequest<T>(t: PackTokens, jobId: string, path: string, method = "GET", body?: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}/api/agent-packs/jobs/${encodeURIComponent(jobId)}/${path}`, {
+    method,
+    headers: packHeaders(t, body !== undefined),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error(await apiError(res));
+  return res.json();
+}
+
+export function startIncident(
+  t: PackTokens,
+  jobId: string,
+  body: { line: string; shift: string; date: string; photo: string }
+): Promise<{ incidentId: string }> {
+  return packRequest(t, jobId, "incidents", "POST", body);
+}
+
+export function getIncident(t: PackTokens, jobId: string, incidentId: string): Promise<IncidentStatus> {
+  return packRequest(t, jobId, `incidents/${encodeURIComponent(incidentId)}`);
+}
+
+export function decideIncident(
+  t: PackTokens,
+  jobId: string,
+  incidentId: string,
+  body: { decision: "approved" | "rejected"; comment: string }
+): Promise<{ status: string }> {
+  return packRequest(t, jobId, `incidents/${encodeURIComponent(incidentId)}/decision`, "POST", body);
+}
+
+export function getPlantBoard(t: PackTokens, jobId: string): Promise<PlantBoard> {
+  return packRequest(t, jobId, "board");
+}
+
+export function getEvaluations(t: PackTokens, jobId: string): Promise<EvaluationResult[]> {
+  return packRequest(t, jobId, "evaluations");
+}
+
+export function rerunEvaluations(t: PackTokens, jobId: string): Promise<{ started: number }> {
+  return packRequest(t, jobId, "evaluations", "POST", {});
 }
 
 // ── Live Eventstream replay (Real-Time Intelligence demo) ────────────────────

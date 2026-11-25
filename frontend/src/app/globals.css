@@ -49,3 +49,29 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* AI agent pack page: stack the deploy panel under the content on narrow screens. */
+@media (max-width: 900px) {
+  .fdg-agents-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Agent answers rendered from Markdown (AI agent pack live demo) */
+.fdg-markdown > :first-child { margin-top: 0; }
+.fdg-markdown > :last-child { margin-bottom: 0; }
+.fdg-markdown h1, .fdg-markdown h2, .fdg-markdown h3, .fdg-markdown h4 {
+  color: #e6edf3;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 14px 0 6px 0;
+}
+.fdg-markdown p { margin: 0 0 8px 0; }
+.fdg-markdown ul, .fdg-markdown ol { margin: 0 0 8px 0; padding-left: 20px; }
+.fdg-markdown li { margin-bottom: 2px; }
+.fdg-markdown code { background: #161b22; border-radius: 4px; padding: 1px 4px; font-size: 12px; }
+.fdg-markdown pre { background: #161b22; border-radius: 6px; padding: 8px; overflow-x: auto; }
+.fdg-markdown table { border-collapse: collapse; margin: 6px 0 10px 0; font-size: 12px; }
+.fdg-markdown th, .fdg-markdown td { border: 1px solid #30363d; padding: 4px 8px; text-align: left; vertical-align: top; }
+.fdg-markdown th { color: #e6edf3; background: #161b22; }
+.fdg-markdown a { color: #58a6ff; }

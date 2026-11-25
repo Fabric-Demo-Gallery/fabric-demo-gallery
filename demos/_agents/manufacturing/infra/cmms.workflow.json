@@ -1,0 +1,268 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccount": {
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "method": "POST",
+        "relativePath": "{resource}",
+        "schema": {}
+      }
+    }
+  },
+  "actions": {
+    "Route": {
+      "type": "Switch",
+      "expression": "@triggerOutputs()?['relativePathParameters']?['resource']",
+      "cases": {
+        "Create_work_order": {
+          "case": "workorders",
+          "actions": {
+            "Work_order_id": {
+              "type": "Compose",
+              "inputs": "WO-@{formatDateTime(utcNow(), 'yyMMdd-HHmmss')}"
+            },
+            "Insert_work_order": {
+              "type": "Http",
+              "runAfter": {
+                "Work_order_id": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "method": "POST",
+                "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/workorders",
+                "headers": {
+                  "Accept": "application/json;odata=nometadata",
+                  "Content-Type": "application/json",
+                  "x-ms-version": "2020-12-06",
+                  "Prefer": "return-no-content"
+                },
+                "body": {
+                  "PartitionKey": "wo",
+                  "RowKey": "@{outputs('Work_order_id')}",
+                  "machine_id": "@{coalesce(triggerBody()?['machine_id'], '')}",
+                  "priority": "@{coalesce(triggerBody()?['priority'], 'P3')}",
+                  "title": "@{coalesce(triggerBody()?['title'], 'Maintenance request')}",
+                  "description": "@{coalesce(triggerBody()?['description'], '')}",
+                  "requested_by": "@{coalesce(triggerBody()?['requested_by'], 'agent')}",
+                  "status": "Open",
+                  "created_at": "@{utcNow()}"
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://storage.azure.com/"
+                }
+              }
+            },
+            "Work_order_created": {
+              "type": "Response",
+              "kind": "Http",
+              "runAfter": {
+                "Insert_work_order": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "statusCode": 201,
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "work_order_id": "@{outputs('Work_order_id')}",
+                  "status": "Open",
+                  "machine_id": "@{coalesce(triggerBody()?['machine_id'], '')}",
+                  "priority": "@{coalesce(triggerBody()?['priority'], 'P3')}"
+                }
+              }
+            }
+          }
+        },
+        "Place_quality_hold": {
+          "case": "qualityholds",
+          "actions": {
+            "Hold_id": {
+              "type": "Compose",
+              "inputs": "QH-@{formatDateTime(utcNow(), 'yyMMdd-HHmmss')}"
+            },
+            "Insert_hold": {
+              "type": "Http",
+              "runAfter": {
+                "Hold_id": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "method": "POST",
+                "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/qualityholds",
+                "headers": {
+                  "Accept": "application/json;odata=nometadata",
+                  "Content-Type": "application/json",
+                  "x-ms-version": "2020-12-06",
+                  "Prefer": "return-no-content"
+                },
+                "body": {
+                  "PartitionKey": "qh",
+                  "RowKey": "@{outputs('Hold_id')}",
+                  "batch_id": "@{coalesce(triggerBody()?['batch_id'], '')}",
+                  "machine_id": "@{coalesce(triggerBody()?['machine_id'], '')}",
+                  "production_line": "@{coalesce(triggerBody()?['production_line'], '')}",
+                  "product": "@{coalesce(triggerBody()?['product'], '')}",
+                  "reason": "@{coalesce(triggerBody()?['reason'], '')}",
+                  "requested_by": "@{coalesce(triggerBody()?['requested_by'], 'agent')}",
+                  "status": "On hold",
+                  "created_at": "@{utcNow()}"
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://storage.azure.com/"
+                }
+              }
+            },
+            "Hold_placed": {
+              "type": "Response",
+              "kind": "Http",
+              "runAfter": {
+                "Insert_hold": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "statusCode": 201,
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "hold_id": "@{outputs('Hold_id')}",
+                  "status": "On hold",
+                  "batch_id": "@{coalesce(triggerBody()?['batch_id'], '')}"
+                }
+              }
+            }
+          }
+        },
+        "Board": {
+          "case": "board",
+          "actions": {
+            "List_work_orders": {
+              "type": "Http",
+              "inputs": {
+                "method": "GET",
+                "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/workorders()?$top=100",
+                "headers": {
+                  "Accept": "application/json;odata=nometadata",
+                  "x-ms-version": "2020-12-06"
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://storage.azure.com/"
+                }
+              }
+            },
+            "List_holds": {
+              "type": "Http",
+              "inputs": {
+                "method": "GET",
+                "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/qualityholds()?$top=100",
+                "headers": {
+                  "Accept": "application/json;odata=nometadata",
+                  "x-ms-version": "2020-12-06"
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://storage.azure.com/"
+                }
+              }
+            },
+            "Board_contents": {
+              "type": "Response",
+              "kind": "Http",
+              "runAfter": {
+                "List_work_orders": [
+                  "Succeeded"
+                ],
+                "List_holds": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "statusCode": 200,
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "work_orders": "@body('List_work_orders')?['value']",
+                  "quality_holds": "@body('List_holds')?['value']"
+                }
+              }
+            }
+          }
+        },
+        "Record_approval": {
+          "case": "approvals",
+          "actions": {
+            "Upsert_approval": {
+              "type": "Http",
+              "inputs": {
+                "method": "PUT",
+                "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/approvals(PartitionKey='incident',RowKey='@{triggerBody()?['incident_id']}')",
+                "headers": {
+                  "Accept": "application/json;odata=nometadata",
+                  "Content-Type": "application/json",
+                  "x-ms-version": "2020-12-06"
+                },
+                "body": {
+                  "status": "@{triggerBody()?['decision']}",
+                  "comment": "@{coalesce(triggerBody()?['comment'], '')}",
+                  "decided_by": "@{coalesce(triggerBody()?['decided_by'], 'presenter')}",
+                  "decided_at": "@{utcNow()}"
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://storage.azure.com/"
+                }
+              }
+            },
+            "Approval_recorded": {
+              "type": "Response",
+              "kind": "Http",
+              "runAfter": {
+                "Upsert_approval": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "statusCode": 200,
+                "body": {
+                  "status": "@{triggerBody()?['decision']}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "default": {
+        "actions": {
+          "Unknown_resource": {
+            "type": "Response",
+            "kind": "Http",
+            "inputs": {
+              "statusCode": 404,
+              "body": {
+                "error": "Unknown resource"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "outputs": {}
+}

@@ -1,0 +1,230 @@
+{
+  "id": "manufacturing",
+  "industry": "Manufacturing",
+  "title": "Manufacturing AI Agents",
+  "regions": [
+    "swedencentral",
+    "germanywestcentral",
+    "westeurope",
+    "francecentral",
+    "uksouth",
+    "eastus",
+    "eastus2",
+    "westus3"
+  ],
+  "defaultRegion": "swedencentral",
+  "modelCandidates": [
+    [
+      "gpt-5.4-mini",
+      "2026-03-17"
+    ],
+    [
+      "gpt-5.4",
+      "2026-03-05"
+    ],
+    [
+      "gpt-4.1-mini",
+      "2025-04-14"
+    ]
+  ],
+  "dataFiles": {
+    "equipment_catalog.csv": "manufacturing-qc/data/equipment_catalog.csv",
+    "production_batches.csv": "manufacturing-qc/data/production_batches.csv",
+    "sensor_readings.csv": "manufacturing-qc/data/sensor_readings.csv"
+  },
+  "infra": {
+    "template": "infra/main.json",
+    "openapi": "infra/plant-maintenance.openapi.json",
+    "toolName": "plant_maintenance_system",
+    "toolDescription": "The plant maintenance system (CMMS): create work orders, place quality holds, list open work orders and holds.",
+    "providers": [
+      "Microsoft.Logic",
+      "Microsoft.Storage",
+      "Microsoft.OperationalInsights",
+      "Microsoft.Insights"
+    ]
+  },
+  "agents": [
+    {
+      "id": "maintenance-assistant",
+      "title": "Maintenance Assistant",
+      "instructions": "instructions/maintenance-assistant.md",
+      "knowledge": [
+        "knowledge/alarm-code-reference.md",
+        "knowledge/sensor-limits.md",
+        "knowledge/preventive-maintenance-plan.md",
+        "knowledge/lockout-tagout-procedure.md",
+        "knowledge/work-order-procedure.md"
+      ],
+      "data": [
+        "equipment_catalog.csv",
+        "production_batches.csv",
+        "sensor_readings.csv"
+      ],
+      "actions": [
+        "createWorkOrder",
+        "getBoard"
+      ]
+    },
+    {
+      "id": "quality-analyst",
+      "title": "Quality Root-Cause Analyst",
+      "instructions": "instructions/quality-analyst.md",
+      "knowledge": [
+        "knowledge/sensor-limits.md",
+        "knowledge/quality-inspection-standard.md",
+        "knowledge/quality-hold-procedure.md"
+      ],
+      "data": [
+        "equipment_catalog.csv",
+        "production_batches.csv",
+        "sensor_readings.csv"
+      ],
+      "actions": [
+        "placeQualityHold",
+        "getBoard"
+      ]
+    },
+    {
+      "id": "shift-handover",
+      "title": "Shift Handover Reporter",
+      "instructions": "instructions/shift-handover.md",
+      "knowledge": [],
+      "data": [
+        "equipment_catalog.csv",
+        "production_batches.csv",
+        "sensor_readings.csv"
+      ],
+      "actions": [
+        "getBoard"
+      ]
+    },
+    {
+      "id": "visual-inspector",
+      "title": "Visual Inspection Assistant",
+      "instructions": "instructions/visual-inspector.md",
+      "knowledge": [
+        "knowledge/quality-inspection-standard.md"
+      ],
+      "data": []
+    }
+  ],
+  "evaluations": {
+    "maintenance-assistant": [
+      "What does alarm WR-180 mean on a welding robot, and what should I check first?",
+      "Which work orders are open in the maintenance system right now?",
+      "How did MCH-0046 run on 2025-03-17? Give its average temperature and vibration against the warning limits."
+    ],
+    "quality-analyst": [
+      "Which production line had the highest defect rate over the whole data period? Give the numbers.",
+      "Which batches of 2025-03-17 are above the quality hold threshold? Only list them, do not place holds.",
+      "Does machine age affect failure events? Answer briefly with evidence."
+    ],
+    "shift-handover": [
+      "Write the handover for the last shift on Line-B.",
+      "Which machines on Line-C exceeded a warning limit in the last shift?"
+    ]
+  },
+  "incident": {
+    "approvalAction": "Wait_for_approval",
+    "draftAction": "Work_order_draft",
+    "reportAction": "Incident_report",
+    "steps": [
+      {
+        "id": "triage",
+        "title": "Quality triage and holds",
+        "agent": "quality-analyst",
+        "start": "Start_Triage",
+        "done": "Triage_summary",
+        "watch": [
+          "Run_Triage",
+          "Start_Triage",
+          "Wait_Triage",
+          "Triage_report",
+          "Extract_Triage_fields",
+          "Triage_fields",
+          "If_holds",
+          "Run_Holds",
+          "Start_Holds",
+          "Wait_Holds",
+          "Holds_report",
+          "Triage_summary"
+        ],
+        "output": "Triage_summary",
+        "data": "Triage_fields"
+      },
+      {
+        "id": "inspection",
+        "title": "Inspect the part photo",
+        "agent": "visual-inspector",
+        "start": "Start_Inspection",
+        "done": "Inspection_report",
+        "watch": [
+          "Run_Inspection",
+          "Start_Inspection",
+          "Wait_Inspection",
+          "Inspection_report"
+        ],
+        "output": "Inspection_report"
+      },
+      {
+        "id": "diagnosis",
+        "title": "Diagnose the machine and propose a work order",
+        "agent": "maintenance-assistant",
+        "start": "Start_Diagnosis",
+        "done": "Work_order_draft",
+        "watch": [
+          "Run_Diagnosis",
+          "Start_Diagnosis",
+          "Wait_Diagnosis",
+          "Diagnosis_report",
+          "Extract_Work_order_draft",
+          "Work_order_draft"
+        ],
+        "output": "Diagnosis_report",
+        "data": "Work_order_draft"
+      },
+      {
+        "id": "approval",
+        "title": "Approve the work order",
+        "agent": "supervisor",
+        "start": "Request_approval",
+        "done": "Approval_decision",
+        "watch": [
+          "Request_approval",
+          "Wait_for_approval",
+          "Approval_decision"
+        ],
+        "data": "Approval_decision"
+      },
+      {
+        "id": "work-order",
+        "title": "Create the approved work order",
+        "agent": "maintenance-assistant",
+        "start": "Start_Work_order",
+        "done": "Work_order_report",
+        "watch": [
+          "Run_Work_order",
+          "Start_Work_order",
+          "Wait_Work_order",
+          "Work_order_report"
+        ],
+        "output": "Work_order_report"
+      },
+      {
+        "id": "handover",
+        "title": "Write the shift handover",
+        "agent": "shift-handover",
+        "start": "Start_Handover",
+        "done": "Handover_report",
+        "watch": [
+          "Run_Handover",
+          "Start_Handover",
+          "Wait_Handover",
+          "Handover_report"
+        ],
+        "output": "Handover_report"
+      }
+    ]
+  }
+}
