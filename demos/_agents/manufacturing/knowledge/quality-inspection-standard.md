@@ -41,6 +41,9 @@ drawings are reviewed before release.
 - **Porosity:** surface pores > 1 mm or > 3 per 100 mm → Major.
 - **Undercut:** > 0.5 mm → Major.
 - **Spatter:** Minor; remove it before painting.
+- Process causes to check for porosity and heavy spatter: shielding gas flow,
+  a clogged nozzle or gas diffuser, a worn contact tip, torch overheating (alarm
+  WR-180), and oil or rust on the base metal.
 
 ### Assembly
 - **Missing fastener or part:** Critical.

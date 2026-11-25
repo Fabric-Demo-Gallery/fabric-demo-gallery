@@ -531,6 +531,119 @@ export async function deleteAgentPackResources(
   if (!res.ok) throw new Error(await apiError(res));
 }
 
+// ── Agent pack live demo: incident workflow, plant system, evaluations ──────
+
+export interface PackTokens {
+  /** Gallery sign-in (Fabric) token - identifies the job owner. */
+  token: string;
+  management?: string;
+  agent?: string;
+}
+
+export interface IncidentStep {
+  id: string;
+  title: string;
+  agent: string;
+  status: "pending" | "running" | "waiting" | "completed" | "failed" | "skipped";
+  output?: string | null;
+  data?: Record<string, unknown> | null;
+  error?: string;
+}
+
+export interface WorkOrderDraft {
+  machine_id: string;
+  priority: string;
+  title: string;
+  description: string;
+}
+
+export interface IncidentReport {
+  incident_id: string;
+  triage: Record<string, unknown>;
+  diagnosis: string;
+  inspection: string;
+  work_order: string;
+  handover: string;
+}
+
+export interface IncidentStatus {
+  incidentId: string;
+  status: string;
+  startedAt?: string;
+  endedAt?: string;
+  steps: IncidentStep[];
+  awaitingApproval: boolean;
+  draft?: WorkOrderDraft | null;
+  report?: IncidentReport | null;
+}
+
+export interface PlantBoard {
+  workOrders: { id: string; machine_id: string; priority: string; title: string; description: string; status: string; requested_by: string; created_at: string }[];
+  qualityHolds: { id: string; batch_id: string; machine_id: string; production_line: string; product: string; reason: string; status: string; requested_by: string; created_at: string }[];
+}
+
+export interface EvaluationResult {
+  agent: string;
+  title: string;
+  status: string;
+  reportUrl: string;
+  queries: number;
+  criteria: { name: string; average: number | null; scale: number; passed: number; scored: number }[];
+  error?: string;
+}
+
+function packHeaders(t: PackTokens, json = false): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (json) headers["Content-Type"] = "application/json";
+  if (t.token) headers["Authorization"] = `Bearer ${t.token}`;
+  if (t.management) headers["X-Management-Token"] = t.management;
+  if (t.agent) headers["X-Agent-Token"] = t.agent;
+  return headers;
+}
+
+async function packRequest<T>(t: PackTokens, jobId: string, path: string, method = "GET", body?: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}/api/agent-packs/jobs/${encodeURIComponent(jobId)}/${path}`, {
+    method,
+    headers: packHeaders(t, body !== undefined),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error(await apiError(res));
+  return res.json();
+}
+
+export function startIncident(
+  t: PackTokens,
+  jobId: string,
+  body: { line: string; shift: string; date: string; photo: string }
+): Promise<{ incidentId: string }> {
+  return packRequest(t, jobId, "incidents", "POST", body);
+}
+
+export function getIncident(t: PackTokens, jobId: string, incidentId: string): Promise<IncidentStatus> {
+  return packRequest(t, jobId, `incidents/${encodeURIComponent(incidentId)}`);
+}
+
+export function decideIncident(
+  t: PackTokens,
+  jobId: string,
+  incidentId: string,
+  body: { decision: "approved" | "rejected"; comment: string }
+): Promise<{ status: string }> {
+  return packRequest(t, jobId, `incidents/${encodeURIComponent(incidentId)}/decision`, "POST", body);
+}
+
+export function getPlantBoard(t: PackTokens, jobId: string): Promise<PlantBoard> {
+  return packRequest(t, jobId, "board");
+}
+
+export function getEvaluations(t: PackTokens, jobId: string): Promise<EvaluationResult[]> {
+  return packRequest(t, jobId, "evaluations");
+}
+
+export function rerunEvaluations(t: PackTokens, jobId: string): Promise<{ started: number }> {
+  return packRequest(t, jobId, "evaluations", "POST", {});
+}
+
 // ── Live Eventstream replay (Real-Time Intelligence demo) ────────────────────
 
 export interface StreamSession {

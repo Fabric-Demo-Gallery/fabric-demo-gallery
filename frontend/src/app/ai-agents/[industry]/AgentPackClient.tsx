@@ -30,6 +30,8 @@ import { Breadcrumbs } from "@/lib/Breadcrumbs";
 import { AGENT_PACKS, AGENT_PACK_PREREQUISITES, AGENT_PACK_RESOURCES } from "@/lib/agentPacks";
 import { deleteAgentPackResources, deployAgentPack, fetchAgentPacks, fetchSubscriptions, getJob } from "@/lib/api";
 import type { AzureSubscription, JobDetail } from "@/lib/api";
+import { EvaluationsPanel, IncidentPanel, PlantBoardPanel, PresenterScript } from "./LiveDemo";
+import type { TokenGetter } from "./LiveDemo";
 
 const REGION_NAMES: Record<string, string> = {
   swedencentral: "Sweden Central",
@@ -110,7 +112,19 @@ export default function AgentPackClient({ packId }: { packId: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
+  const [boardKey, setBoardKey] = useState(0);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const getTokens = useCallback<TokenGetter>(
+    async (opts) => {
+      const token = await getFabricToken({ allowRedirect: false });
+      const management = await getManagementToken({ allowRedirect: false });
+      const agent = opts?.agent ? await getAgentToken({ allowRedirect: false }) : undefined;
+      return { token, management, agent };
+    },
+    [getFabricToken, getManagementToken, getAgentToken]
+  );
+  const refreshBoard = useCallback(() => setBoardKey((k) => k + 1), []);
 
   useEffect(() => {
     fetchAgentPacks()
@@ -175,6 +189,14 @@ export default function AgentPackClient({ packId }: { packId: string }) {
   const az = job?.azure_resources;
   const portalUrl = az?.portalUrl || "";
   const canDeploy = !!account && !!subscription && !!region && !deploying && !running;
+  const live = !!jobId && job?.status === "completed" && !deleted && !!az?.resourceGroup;
+  const agentTitles = Object.fromEntries(pack.agents.map((a) => [a.id, a.title]));
+  const agentLinks: Record<string, string> = {};
+  try {
+    const done = job?.steps.find((st) => st.name === "done");
+    const detail = done?.detail ? (JSON.parse(done.detail) as { agents?: { id: string; portalUrl?: string }[] }) : null;
+    for (const a of detail?.agents ?? []) if (a.portalUrl) agentLinks[a.id] = a.portalUrl;
+  } catch { /* older deployments have no per-agent links */ }
 
   const handleDeploy = async () => {
     setDeploying(true);
@@ -240,14 +262,56 @@ export default function AgentPackClient({ packId }: { packId: string }) {
             <h1 style={s.title}>{pack.title}</h1>
             <p style={s.lead}>{pack.longDescription}</p>
 
+            {live && jobId && pack.incident && az?.incidentWorkflow && (
+              <>
+                <IncidentPanel
+                  pack={pack}
+                  jobId={jobId}
+                  getTokens={getTokens}
+                  agentTitles={agentTitles}
+                  onBoardChanged={refreshBoard}
+                />
+                <PlantBoardPanel jobId={jobId} getTokens={getTokens} refreshKey={boardKey} />
+                <EvaluationsPanel jobId={jobId} getTokens={getTokens} tracingUrl={az.tracingUrl} workflowUrl={az.workflowUrl} />
+              </>
+            )}
+            {!(live && az?.incidentWorkflow) && pack.incident && (
+              <section style={s.card} aria-labelledby="incident-preview-title">
+                <h2 id="incident-preview-title" style={s.cardTitle}>{pack.incident.title}</h2>
+                <div style={{ marginBottom: 8 }}>
+                  <span style={s.tool}>Multi-agent workflow</span>
+                  <span style={s.tool}>Human approval</span>
+                  <span style={s.tool}>Tracing + evaluations</span>
+                </div>
+                <p style={s.cardText}>{pack.incident.summary}</p>
+                <ol style={s.list}>{pack.incident.flow.map((f) => <li key={f}>{f}</li>)}</ol>
+                <Caption1 style={{ display: "block", color: "#8b949e", marginTop: 10 }}>
+                  {live
+                    ? "This deployment predates the incident workflow - deploy again to get it."
+                    : "Deploy the agents to run it live from this page. The work orders and quality holds the agents create show up on a maintenance board here."}
+                </Caption1>
+              </section>
+            )}
+            <PresenterScript pack={pack} />
+
             {pack.agents.map((agent) => (
               <section key={agent.id} id={agent.id} style={s.card} aria-labelledby={`${agent.id}-title`}>
-                <h2 id={`${agent.id}-title`} style={s.cardTitle}>{agent.title}</h2>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
+                  <h2 id={`${agent.id}-title`} style={s.cardTitle}>{agent.title}</h2>
+                  {live && agentLinks[agent.id] && (
+                    <Button size="small" appearance="subtle" icon={<OpenRegular />} as="a" href={agentLinks[agent.id]} target="_blank" rel="noopener noreferrer">
+                      Chat in Foundry
+                    </Button>
+                  )}
+                </div>
                 <div style={{ marginBottom: 8 }}>
                   {agent.tools.map((t) => <span key={t} style={s.tool}>{t}</span>)}
                 </div>
                 <p style={s.cardText}>{agent.description}</p>
                 <Caption1 style={{ display: "block", color: "#8b949e" }}>Grounded on: {agent.grounding}</Caption1>
+                {agent.actions && (
+                  <Caption1 style={{ display: "block", color: "#8b949e" }}>Actions: {agent.actions}</Caption1>
+                )}
                 <span style={s.label}>Try asking</span>
                 {agent.prompts.map((p) => <CopyPrompt key={p} text={p} />)}
                 {agent.samples && agent.samples.length > 0 && (
@@ -356,7 +420,7 @@ export default function AgentPackClient({ packId }: { packId: string }) {
                 {job.status === "completed" && !deleted && (
                   <MessageBar intent="success" style={{ marginTop: 6 }}>
                     <MessageBarBody>
-                      Your agents are ready. Open the Foundry portal, pick an agent and paste one of the questions on this page.
+                      Your agents are ready. Run the incident on this page, or open an agent in Foundry and paste one of the questions.
                       {az?.foundryProject ? ` Project: ${az.foundryProject}.` : ""}
                     </MessageBarBody>
                   </MessageBar>
@@ -396,7 +460,7 @@ export default function AgentPackClient({ packId }: { packId: string }) {
             <DialogTitle>Delete resources?</DialogTitle>
             <DialogContent>
               This deletes the resource group <strong>“{az?.resourceGroup}”</strong> and everything in it: the Foundry
-              account, the model and the agents. This can&apos;t be undone.
+              account, the model, the agents, the workflows and the maintenance board. This can&apos;t be undone.
             </DialogContent>
             <DialogActions>
               <Button appearance="secondary" onClick={() => setConfirmDelete(false)}>Keep it</Button>

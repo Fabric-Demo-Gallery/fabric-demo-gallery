@@ -1,0 +1,2143 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.46.1.21595",
+      "templateHash": "12198243250926554429"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "foundryAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing Foundry (AIServices) account in this resource group."
+      }
+    },
+    "foundryProjectName": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing Foundry project under the account."
+      }
+    },
+    "modelDeploymentName": {
+      "type": "string",
+      "metadata": {
+        "description": "Model deployment used for the workflow extraction steps and evaluations."
+      }
+    }
+  },
+  "variables": {
+    "$fxv#0": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "storageAccount": {
+          "type": "String"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "method": "POST",
+            "relativePath": "{resource}",
+            "schema": {}
+          }
+        }
+      },
+      "actions": {
+        "Route": {
+          "type": "Switch",
+          "expression": "@triggerOutputs()?['relativePathParameters']?['resource']",
+          "cases": {
+            "Create_work_order": {
+              "case": "workorders",
+              "actions": {
+                "Work_order_id": {
+                  "type": "Compose",
+                  "inputs": "WO-@{formatDateTime(utcNow(), 'yyMMdd-HHmmss')}"
+                },
+                "Insert_work_order": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Work_order_id": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/workorders",
+                    "headers": {
+                      "Accept": "application/json;odata=nometadata",
+                      "Content-Type": "application/json",
+                      "x-ms-version": "2020-12-06",
+                      "Prefer": "return-no-content"
+                    },
+                    "body": {
+                      "PartitionKey": "wo",
+                      "RowKey": "@{outputs('Work_order_id')}",
+                      "machine_id": "@{coalesce(triggerBody()?['machine_id'], '')}",
+                      "priority": "@{coalesce(triggerBody()?['priority'], 'P3')}",
+                      "title": "@{coalesce(triggerBody()?['title'], 'Maintenance request')}",
+                      "description": "@{coalesce(triggerBody()?['description'], '')}",
+                      "requested_by": "@{coalesce(triggerBody()?['requested_by'], 'agent')}",
+                      "status": "Open",
+                      "created_at": "@{utcNow()}"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://storage.azure.com/"
+                    }
+                  }
+                },
+                "Work_order_created": {
+                  "type": "Response",
+                  "kind": "Http",
+                  "runAfter": {
+                    "Insert_work_order": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "statusCode": 201,
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "work_order_id": "@{outputs('Work_order_id')}",
+                      "status": "Open",
+                      "machine_id": "@{coalesce(triggerBody()?['machine_id'], '')}",
+                      "priority": "@{coalesce(triggerBody()?['priority'], 'P3')}"
+                    }
+                  }
+                }
+              }
+            },
+            "Place_quality_hold": {
+              "case": "qualityholds",
+              "actions": {
+                "Hold_id": {
+                  "type": "Compose",
+                  "inputs": "QH-@{formatDateTime(utcNow(), 'yyMMdd-HHmmss')}"
+                },
+                "Insert_hold": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Hold_id": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/qualityholds",
+                    "headers": {
+                      "Accept": "application/json;odata=nometadata",
+                      "Content-Type": "application/json",
+                      "x-ms-version": "2020-12-06",
+                      "Prefer": "return-no-content"
+                    },
+                    "body": {
+                      "PartitionKey": "qh",
+                      "RowKey": "@{outputs('Hold_id')}",
+                      "batch_id": "@{coalesce(triggerBody()?['batch_id'], '')}",
+                      "machine_id": "@{coalesce(triggerBody()?['machine_id'], '')}",
+                      "production_line": "@{coalesce(triggerBody()?['production_line'], '')}",
+                      "product": "@{coalesce(triggerBody()?['product'], '')}",
+                      "reason": "@{coalesce(triggerBody()?['reason'], '')}",
+                      "requested_by": "@{coalesce(triggerBody()?['requested_by'], 'agent')}",
+                      "status": "On hold",
+                      "created_at": "@{utcNow()}"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://storage.azure.com/"
+                    }
+                  }
+                },
+                "Hold_placed": {
+                  "type": "Response",
+                  "kind": "Http",
+                  "runAfter": {
+                    "Insert_hold": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "statusCode": 201,
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "hold_id": "@{outputs('Hold_id')}",
+                      "status": "On hold",
+                      "batch_id": "@{coalesce(triggerBody()?['batch_id'], '')}"
+                    }
+                  }
+                }
+              }
+            },
+            "Board": {
+              "case": "board",
+              "actions": {
+                "List_work_orders": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/workorders()?$top=100",
+                    "headers": {
+                      "Accept": "application/json;odata=nometadata",
+                      "x-ms-version": "2020-12-06"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://storage.azure.com/"
+                    }
+                  }
+                },
+                "List_holds": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/qualityholds()?$top=100",
+                    "headers": {
+                      "Accept": "application/json;odata=nometadata",
+                      "x-ms-version": "2020-12-06"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://storage.azure.com/"
+                    }
+                  }
+                },
+                "Board_contents": {
+                  "type": "Response",
+                  "kind": "Http",
+                  "runAfter": {
+                    "List_work_orders": [
+                      "Succeeded"
+                    ],
+                    "List_holds": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "statusCode": 200,
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "work_orders": "@body('List_work_orders')?['value']",
+                      "quality_holds": "@body('List_holds')?['value']"
+                    }
+                  }
+                }
+              }
+            },
+            "Record_approval": {
+              "case": "approvals",
+              "actions": {
+                "Upsert_approval": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "PUT",
+                    "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/approvals(PartitionKey='incident',RowKey='@{triggerBody()?['incident_id']}')",
+                    "headers": {
+                      "Accept": "application/json;odata=nometadata",
+                      "Content-Type": "application/json",
+                      "x-ms-version": "2020-12-06"
+                    },
+                    "body": {
+                      "status": "@{triggerBody()?['decision']}",
+                      "comment": "@{coalesce(triggerBody()?['comment'], '')}",
+                      "decided_by": "@{coalesce(triggerBody()?['decided_by'], 'presenter')}",
+                      "decided_at": "@{utcNow()}"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://storage.azure.com/"
+                    }
+                  }
+                },
+                "Approval_recorded": {
+                  "type": "Response",
+                  "kind": "Http",
+                  "runAfter": {
+                    "Upsert_approval": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "statusCode": 200,
+                    "body": {
+                      "status": "@{triggerBody()?['decision']}"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "actions": {
+              "Unknown_resource": {
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                  "statusCode": 404,
+                  "body": {
+                    "error": "Unknown resource"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "$fxv#1": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "projectEndpoint": {
+          "type": "String"
+        },
+        "model": {
+          "type": "String"
+        },
+        "storageAccount": {
+          "type": "String"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "method": "POST",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "line": {
+                  "type": "string"
+                },
+                "shift": {
+                  "type": "string"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "photo": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Init_diagnosis": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "diagnosis",
+                "type": "string",
+                "value": "No machine-related cause was found, so no maintenance diagnosis was needed."
+              }
+            ]
+          }
+        },
+        "Init_work_order": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_diagnosis": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "workOrder",
+                "type": "string",
+                "value": "No work order was requested."
+              }
+            ]
+          }
+        },
+        "Init_inspection": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_work_order": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "inspection",
+                "type": "string",
+                "value": "No part photo was provided."
+              }
+            ]
+          }
+        },
+        "Init_holds": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_inspection": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "holds",
+                "type": "string",
+                "value": "No batch was above the hold threshold, so no hold was placed."
+              }
+            ]
+          }
+        },
+        "Run_Triage": {
+          "type": "Until",
+          "runAfter": {
+            "Init_HandoverAttempt": [
+              "Succeeded"
+            ]
+          },
+          "expression": "@or(not(equals(variables('TriageResult')?['status'], 'failed')), greaterOrEquals(variables('TriageAttempt'), 3))",
+          "limit": {
+            "count": 3,
+            "timeout": "PT30M"
+          },
+          "actions": {
+            "Count_Triage": {
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "TriageAttempt",
+                "value": 1
+              }
+            },
+            "Backoff_Triage": {
+              "type": "Wait",
+              "runAfter": {
+                "Count_Triage": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "interval": {
+                  "count": "@add(mul(sub(variables('TriageAttempt'), 1), 30), 1)",
+                  "unit": "Second"
+                }
+              }
+            },
+            "Start_Triage": {
+              "type": "Http",
+              "runAfter": {
+                "Backoff_Triage": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "method": "POST",
+                "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "agent_reference": {
+                    "type": "agent_reference",
+                    "name": "quality-analyst"
+                  },
+                  "input": "Incident @{workflow()?['run']?['name']}: production reports a defect spike on @{triggerBody()?['line']}, @{triggerBody()?['shift']} shift of @{triggerBody()?['date']}. Investigate it with the data: compare the shift's defect rate with the line's normal level, find which machine, product or batches drive it, and name the single most likely machine. Then classify every batch of the shift with the Quality Hold Procedure (batch defect rate above 10 % = hold, above 8 % up to 10 % = watch, otherwise normal) and list the batches per class with their defect rates. Do not place any holds in this step - that is done next. Keep the answer under 200 words.",
+                  "background": true
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://ai.azure.com"
+                }
+              }
+            },
+            "Wait_Triage": {
+              "type": "Until",
+              "runAfter": {
+                "Start_Triage": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@not(contains(createArray('queued', 'in_progress'), body('Poll_Triage')?['status']))",
+              "limit": {
+                "count": 200,
+                "timeout": "PT15M"
+              },
+              "actions": {
+                "Delay_Triage": {
+                  "type": "Wait",
+                  "inputs": {
+                    "interval": {
+                      "count": 4,
+                      "unit": "Second"
+                    }
+                  }
+                },
+                "Poll_Triage": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Delay_Triage": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "@{parameters('projectEndpoint')}/openai/v1/responses/@{body('Start_Triage')?['id']}",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://ai.azure.com"
+                    }
+                  }
+                }
+              }
+            },
+            "Save_Triage": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Wait_Triage": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "TriageResult",
+                "value": "@body('Poll_Triage')"
+              }
+            }
+          }
+        },
+        "Triage_messages": {
+          "type": "Query",
+          "runAfter": {
+            "Run_Triage": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@coalesce(variables('TriageResult')?['output'], json('[]'))",
+            "where": "@equals(item()?['type'], 'message')"
+          }
+        },
+        "Triage_report": {
+          "type": "Compose",
+          "runAfter": {
+            "Triage_messages": [
+              "Succeeded"
+            ]
+          },
+          "inputs": "@coalesce(last(body('Triage_messages'))?['content']?[0]?['text'], concat('The agent did not finish (status: ', string(variables('TriageResult')?['status']), ').'))"
+        },
+        "Extract_Triage_fields": {
+          "type": "Http",
+          "runAfter": {
+            "Triage_report": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "model": "@{parameters('model')}",
+              "input": "Extract the incident triage fields from this analysis. Use an empty string when a value is not stated.\n\n@{outputs('Triage_report')}",
+              "text": {
+                "format": {
+                  "type": "json_schema",
+                  "name": "Triage_fields",
+                  "strict": true,
+                  "schema": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "summary",
+                      "root_cause",
+                      "machine_id",
+                      "machine_related",
+                      "defect_rate_pct",
+                      "hold_batches"
+                    ],
+                    "properties": {
+                      "summary": {
+                        "type": "string",
+                        "description": "Two sentences: what happened and why."
+                      },
+                      "root_cause": {
+                        "type": "string"
+                      },
+                      "machine_id": {
+                        "type": "string",
+                        "description": "Most likely machine, e.g. MCH-0046, or empty."
+                      },
+                      "machine_related": {
+                        "type": "boolean"
+                      },
+                      "defect_rate_pct": {
+                        "type": "number"
+                      },
+                      "hold_batches": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Batch IDs classified as hold (not watch or normal), e.g. B-04049; empty if none."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "authentication": {
+              "type": "ManagedServiceIdentity",
+              "audience": "https://ai.azure.com"
+            }
+          }
+        },
+        "Triage_fields_json_messages": {
+          "type": "Query",
+          "runAfter": {
+            "Extract_Triage_fields": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@body('Extract_Triage_fields')?['output']",
+            "where": "@equals(item()?['type'], 'message')"
+          }
+        },
+        "Triage_fields": {
+          "type": "Compose",
+          "runAfter": {
+            "Triage_fields_json_messages": [
+              "Succeeded"
+            ]
+          },
+          "inputs": "@json(last(body('Triage_fields_json_messages'))?['content']?[0]?['text'])"
+        },
+        "If_holds": {
+          "type": "If",
+          "runAfter": {
+            "Triage_fields": [
+              "Succeeded"
+            ]
+          },
+          "expression": {
+            "and": [
+              {
+                "greater": [
+                  "@length(coalesce(outputs('Triage_fields')?['hold_batches'], json('[]')))",
+                  0
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Run_Holds": {
+              "type": "Until",
+              "runAfter": {},
+              "expression": "@or(not(or(equals(variables('HoldsResult')?['status'], 'failed'), not(contains(string(coalesce(variables('HoldsResult')?['output'], '')), 'plant_maintenance_system_placeQualityHold')))), greaterOrEquals(variables('HoldsAttempt'), 3))",
+              "limit": {
+                "count": 3,
+                "timeout": "PT30M"
+              },
+              "actions": {
+                "Count_Holds": {
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "HoldsAttempt",
+                    "value": 1
+                  }
+                },
+                "Backoff_Holds": {
+                  "type": "Wait",
+                  "runAfter": {
+                    "Count_Holds": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "interval": {
+                      "count": "@add(mul(sub(variables('HoldsAttempt'), 1), 30), 1)",
+                      "unit": "Second"
+                    }
+                  }
+                },
+                "Start_Holds": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Backoff_Holds": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "agent_reference": {
+                        "type": "agent_reference",
+                        "name": "quality-analyst"
+                      },
+                      "input": "Place the quality holds now: call the placeQualityHold operation of the plant_maintenance_system tool (a direct tool call - it is not available in Code Interpreter) once for each of these batches: @{join(outputs('Triage_fields')?['hold_batches'], ', ')}. Put the defect numbers from your analysis in the reason. Do not place any other holds. Reply with one line per hold: batch ID - the hold ID the tool returned.",
+                      "background": true,
+                      "tool_choice": "required",
+                      "previous_response_id": "@{variables('TriageResult')?['id']}"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://ai.azure.com"
+                    }
+                  }
+                },
+                "Wait_Holds": {
+                  "type": "Until",
+                  "runAfter": {
+                    "Start_Holds": [
+                      "Succeeded"
+                    ]
+                  },
+                  "expression": "@not(contains(createArray('queued', 'in_progress'), body('Poll_Holds')?['status']))",
+                  "limit": {
+                    "count": 200,
+                    "timeout": "PT15M"
+                  },
+                  "actions": {
+                    "Delay_Holds": {
+                      "type": "Wait",
+                      "inputs": {
+                        "interval": {
+                          "count": 4,
+                          "unit": "Second"
+                        }
+                      }
+                    },
+                    "Poll_Holds": {
+                      "type": "Http",
+                      "runAfter": {
+                        "Delay_Holds": [
+                          "Succeeded"
+                        ]
+                      },
+                      "inputs": {
+                        "method": "GET",
+                        "uri": "@{parameters('projectEndpoint')}/openai/v1/responses/@{body('Start_Holds')?['id']}",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://ai.azure.com"
+                        }
+                      }
+                    }
+                  }
+                },
+                "Save_Holds": {
+                  "type": "SetVariable",
+                  "runAfter": {
+                    "Wait_Holds": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "name": "HoldsResult",
+                    "value": "@body('Poll_Holds')"
+                  }
+                }
+              }
+            },
+            "Holds_messages": {
+              "type": "Query",
+              "runAfter": {
+                "Run_Holds": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "from": "@coalesce(variables('HoldsResult')?['output'], json('[]'))",
+                "where": "@equals(item()?['type'], 'message')"
+              }
+            },
+            "Holds_report": {
+              "type": "Compose",
+              "runAfter": {
+                "Holds_messages": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": "@coalesce(last(body('Holds_messages'))?['content']?[0]?['text'], concat('The agent did not finish (status: ', string(variables('HoldsResult')?['status']), ').'))"
+            },
+            "Set_holds": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Holds_report": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "holds",
+                "value": "@{outputs('Holds_report')}"
+              }
+            }
+          },
+          "else": {
+            "actions": {}
+          }
+        },
+        "Triage_summary": {
+          "type": "Compose",
+          "runAfter": {
+            "If_holds": [
+              "Succeeded",
+              "Failed",
+              "Skipped"
+            ]
+          },
+          "inputs": "@{outputs('Triage_report')}\n\n**Quality holds placed:**\n\n@{variables('holds')}"
+        },
+        "If_photo": {
+          "type": "If",
+          "runAfter": {
+            "Triage_summary": [
+              "Succeeded"
+            ]
+          },
+          "expression": {
+            "and": [
+              {
+                "not": {
+                  "equals": [
+                    "@coalesce(triggerBody()?['photo'], '')",
+                    ""
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": {
+            "Run_Inspection": {
+              "type": "Until",
+              "runAfter": {},
+              "expression": "@or(not(equals(variables('InspectionResult')?['status'], 'failed')), greaterOrEquals(variables('InspectionAttempt'), 3))",
+              "limit": {
+                "count": 3,
+                "timeout": "PT30M"
+              },
+              "actions": {
+                "Count_Inspection": {
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "InspectionAttempt",
+                    "value": 1
+                  }
+                },
+                "Backoff_Inspection": {
+                  "type": "Wait",
+                  "runAfter": {
+                    "Count_Inspection": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "interval": {
+                      "count": "@add(mul(sub(variables('InspectionAttempt'), 1), 30), 1)",
+                      "unit": "Second"
+                    }
+                  }
+                },
+                "Start_Inspection": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Backoff_Inspection": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "agent_reference": {
+                        "type": "agent_reference",
+                        "name": "visual-inspector"
+                      },
+                      "input": [
+                        {
+                          "role": "user",
+                          "content": [
+                            {
+                              "type": "input_text",
+                              "text": "Incident @{workflow()?['run']?['name']}: this photo shows a part taken from @{triggerBody()?['line']}, @{triggerBody()?['shift']} shift of @{triggerBody()?['date']}. Inspect it against the quality inspection standard: list the defects with severity class, give a verdict and the likely process cause. Keep it under 150 words."
+                            },
+                            {
+                              "type": "input_image",
+                              "image_url": "@{triggerBody()?['photo']}"
+                            }
+                          ]
+                        }
+                      ],
+                      "background": true
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://ai.azure.com"
+                    }
+                  }
+                },
+                "Wait_Inspection": {
+                  "type": "Until",
+                  "runAfter": {
+                    "Start_Inspection": [
+                      "Succeeded"
+                    ]
+                  },
+                  "expression": "@not(contains(createArray('queued', 'in_progress'), body('Poll_Inspection')?['status']))",
+                  "limit": {
+                    "count": 200,
+                    "timeout": "PT15M"
+                  },
+                  "actions": {
+                    "Delay_Inspection": {
+                      "type": "Wait",
+                      "inputs": {
+                        "interval": {
+                          "count": 4,
+                          "unit": "Second"
+                        }
+                      }
+                    },
+                    "Poll_Inspection": {
+                      "type": "Http",
+                      "runAfter": {
+                        "Delay_Inspection": [
+                          "Succeeded"
+                        ]
+                      },
+                      "inputs": {
+                        "method": "GET",
+                        "uri": "@{parameters('projectEndpoint')}/openai/v1/responses/@{body('Start_Inspection')?['id']}",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://ai.azure.com"
+                        }
+                      }
+                    }
+                  }
+                },
+                "Save_Inspection": {
+                  "type": "SetVariable",
+                  "runAfter": {
+                    "Wait_Inspection": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "name": "InspectionResult",
+                    "value": "@body('Poll_Inspection')"
+                  }
+                }
+              }
+            },
+            "Inspection_messages": {
+              "type": "Query",
+              "runAfter": {
+                "Run_Inspection": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "from": "@coalesce(variables('InspectionResult')?['output'], json('[]'))",
+                "where": "@equals(item()?['type'], 'message')"
+              }
+            },
+            "Inspection_report": {
+              "type": "Compose",
+              "runAfter": {
+                "Inspection_messages": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": "@coalesce(last(body('Inspection_messages'))?['content']?[0]?['text'], concat('The agent did not finish (status: ', string(variables('InspectionResult')?['status']), ').'))"
+            },
+            "Set_inspection": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Inspection_report": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "inspection",
+                "value": "@{outputs('Inspection_report')}"
+              }
+            }
+          },
+          "else": {
+            "actions": {}
+          }
+        },
+        "If_machine_related": {
+          "type": "If",
+          "runAfter": {
+            "If_photo": [
+              "Succeeded",
+              "Failed",
+              "Skipped"
+            ]
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@outputs('Triage_fields')?['machine_related']",
+                  true
+                ]
+              },
+              {
+                "not": {
+                  "equals": [
+                    "@outputs('Triage_fields')?['machine_id']",
+                    ""
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": {
+            "Run_Diagnosis": {
+              "type": "Until",
+              "runAfter": {},
+              "expression": "@or(not(equals(variables('DiagnosisResult')?['status'], 'failed')), greaterOrEquals(variables('DiagnosisAttempt'), 3))",
+              "limit": {
+                "count": 3,
+                "timeout": "PT30M"
+              },
+              "actions": {
+                "Count_Diagnosis": {
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "DiagnosisAttempt",
+                    "value": 1
+                  }
+                },
+                "Backoff_Diagnosis": {
+                  "type": "Wait",
+                  "runAfter": {
+                    "Count_Diagnosis": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "interval": {
+                      "count": "@add(mul(sub(variables('DiagnosisAttempt'), 1), 30), 1)",
+                      "unit": "Second"
+                    }
+                  }
+                },
+                "Start_Diagnosis": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Backoff_Diagnosis": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "agent_reference": {
+                        "type": "agent_reference",
+                        "name": "maintenance-assistant"
+                      },
+                      "input": "Incident @{workflow()?['run']?['name']} on @{triggerBody()?['line']}, @{triggerBody()?['shift']} shift of @{triggerBody()?['date']}: quality found that machine @{outputs('Triage_fields')?['machine_id']} is the most likely cause of the defect spike. Triage: @{outputs('Triage_fields')?['summary']} Visual inspection of a part from the shift: @{variables('inspection')} Diagnose the machine from its sensor history, age and failure events, and connect it with the defects found in the inspection. Look up the applicable alarm and maintenance procedures. Then propose ONE work order following the work order procedure: priority, title and ordered tasks. Do NOT create the work order yet - it needs approval first. Keep it under 250 words.",
+                      "background": true
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://ai.azure.com"
+                    }
+                  }
+                },
+                "Wait_Diagnosis": {
+                  "type": "Until",
+                  "runAfter": {
+                    "Start_Diagnosis": [
+                      "Succeeded"
+                    ]
+                  },
+                  "expression": "@not(contains(createArray('queued', 'in_progress'), body('Poll_Diagnosis')?['status']))",
+                  "limit": {
+                    "count": 200,
+                    "timeout": "PT15M"
+                  },
+                  "actions": {
+                    "Delay_Diagnosis": {
+                      "type": "Wait",
+                      "inputs": {
+                        "interval": {
+                          "count": 4,
+                          "unit": "Second"
+                        }
+                      }
+                    },
+                    "Poll_Diagnosis": {
+                      "type": "Http",
+                      "runAfter": {
+                        "Delay_Diagnosis": [
+                          "Succeeded"
+                        ]
+                      },
+                      "inputs": {
+                        "method": "GET",
+                        "uri": "@{parameters('projectEndpoint')}/openai/v1/responses/@{body('Start_Diagnosis')?['id']}",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://ai.azure.com"
+                        }
+                      }
+                    }
+                  }
+                },
+                "Save_Diagnosis": {
+                  "type": "SetVariable",
+                  "runAfter": {
+                    "Wait_Diagnosis": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "name": "DiagnosisResult",
+                    "value": "@body('Poll_Diagnosis')"
+                  }
+                }
+              }
+            },
+            "Diagnosis_messages": {
+              "type": "Query",
+              "runAfter": {
+                "Run_Diagnosis": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "from": "@coalesce(variables('DiagnosisResult')?['output'], json('[]'))",
+                "where": "@equals(item()?['type'], 'message')"
+              }
+            },
+            "Diagnosis_report": {
+              "type": "Compose",
+              "runAfter": {
+                "Diagnosis_messages": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": "@coalesce(last(body('Diagnosis_messages'))?['content']?[0]?['text'], concat('The agent did not finish (status: ', string(variables('DiagnosisResult')?['status']), ').'))"
+            },
+            "Extract_Work_order_draft": {
+              "type": "Http",
+              "runAfter": {
+                "Diagnosis_report": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "method": "POST",
+                "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "model": "@{parameters('model')}",
+                  "input": "Extract the proposed work order from this maintenance diagnosis. Put the diagnosis summary and the ordered tasks in description.\n\n@{outputs('Diagnosis_report')}",
+                  "text": {
+                    "format": {
+                      "type": "json_schema",
+                      "name": "Work_order_draft",
+                      "strict": true,
+                      "schema": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "machine_id",
+                          "priority",
+                          "title",
+                          "description"
+                        ],
+                        "properties": {
+                          "machine_id": {
+                            "type": "string"
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": [
+                              "P1",
+                              "P2",
+                              "P3",
+                              "P4"
+                            ]
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "Diagnosis and ordered tasks, plain text."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://ai.azure.com"
+                }
+              }
+            },
+            "Work_order_draft_json_messages": {
+              "type": "Query",
+              "runAfter": {
+                "Extract_Work_order_draft": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "from": "@body('Extract_Work_order_draft')?['output']",
+                "where": "@equals(item()?['type'], 'message')"
+              }
+            },
+            "Work_order_draft": {
+              "type": "Compose",
+              "runAfter": {
+                "Work_order_draft_json_messages": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": "@json(last(body('Work_order_draft_json_messages'))?['content']?[0]?['text'])"
+            },
+            "Set_diagnosis": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Work_order_draft": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "diagnosis",
+                "value": "@{outputs('Diagnosis_report')}"
+              }
+            },
+            "Request_approval": {
+              "type": "Http",
+              "runAfter": {
+                "Set_diagnosis": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "method": "PUT",
+                "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/approvals(PartitionKey='incident',RowKey='@{workflow()?['run']?['name']}')",
+                "headers": {
+                  "Accept": "application/json;odata=nometadata",
+                  "Content-Type": "application/json",
+                  "x-ms-version": "2020-12-06"
+                },
+                "body": {
+                  "status": "pending",
+                  "machine_id": "@{outputs('Work_order_draft')?['machine_id']}",
+                  "priority": "@{outputs('Work_order_draft')?['priority']}",
+                  "title": "@{outputs('Work_order_draft')?['title']}",
+                  "requested_at": "@{utcNow()}"
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://storage.azure.com/"
+                }
+              }
+            },
+            "Wait_for_approval": {
+              "type": "Until",
+              "runAfter": {
+                "Request_approval": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@not(equals(body('Get_approval')?['status'], 'pending'))",
+              "limit": {
+                "count": 400,
+                "timeout": "PT30M"
+              },
+              "actions": {
+                "Delay_approval": {
+                  "type": "Wait",
+                  "inputs": {
+                    "interval": {
+                      "count": 5,
+                      "unit": "Second"
+                    }
+                  }
+                },
+                "Get_approval": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Delay_approval": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "https://@{parameters('storageAccount')}.table.core.windows.net/approvals(PartitionKey='incident',RowKey='@{workflow()?['run']?['name']}')",
+                    "headers": {
+                      "Accept": "application/json;odata=nometadata",
+                      "Content-Type": "application/json",
+                      "x-ms-version": "2020-12-06"
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://storage.azure.com/"
+                    }
+                  }
+                }
+              }
+            },
+            "Approval_decision": {
+              "type": "Compose",
+              "runAfter": {
+                "Wait_for_approval": [
+                  "Succeeded",
+                  "TimedOut",
+                  "Failed"
+                ]
+              },
+              "inputs": "@coalesce(body('Get_approval'), json('{\"status\": \"no decision\"}'))"
+            },
+            "If_approved": {
+              "type": "If",
+              "runAfter": {
+                "Approval_decision": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@outputs('Approval_decision')?['status']",
+                      "approved"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Run_Work_order": {
+                  "type": "Until",
+                  "runAfter": {},
+                  "expression": "@or(not(or(equals(variables('Work_orderResult')?['status'], 'failed'), not(contains(string(coalesce(variables('Work_orderResult')?['output'], '')), 'plant_maintenance_system_createWorkOrder')))), greaterOrEquals(variables('Work_orderAttempt'), 3))",
+                  "limit": {
+                    "count": 3,
+                    "timeout": "PT30M"
+                  },
+                  "actions": {
+                    "Count_Work_order": {
+                      "type": "IncrementVariable",
+                      "inputs": {
+                        "name": "Work_orderAttempt",
+                        "value": 1
+                      }
+                    },
+                    "Backoff_Work_order": {
+                      "type": "Wait",
+                      "runAfter": {
+                        "Count_Work_order": [
+                          "Succeeded"
+                        ]
+                      },
+                      "inputs": {
+                        "interval": {
+                          "count": "@add(mul(sub(variables('Work_orderAttempt'), 1), 30), 1)",
+                          "unit": "Second"
+                        }
+                      }
+                    },
+                    "Start_Work_order": {
+                      "type": "Http",
+                      "runAfter": {
+                        "Backoff_Work_order": [
+                          "Succeeded"
+                        ]
+                      },
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+                        "headers": {
+                          "Content-Type": "application/json"
+                        },
+                        "body": {
+                          "agent_reference": {
+                            "type": "agent_reference",
+                            "name": "maintenance-assistant"
+                          },
+                          "input": "Incident @{workflow()?['run']?['name']}: your proposed work order was approved by @{outputs('Approval_decision')?['decided_by']}. This is an approved action, not a question: call the createWorkOrder operation of the plant_maintenance_system tool now (a direct tool call - it is not available in Code Interpreter), without any analysis first, with exactly these fields - machine_id: @{outputs('Work_order_draft')?['machine_id']}, priority: @{outputs('Work_order_draft')?['priority']}, title: @{outputs('Work_order_draft')?['title']}, requested_by: maintenance-assistant (approved by @{outputs('Approval_decision')?['decided_by']}), description: @{outputs('Work_order_draft')?['description']} Then reply in one sentence with the work order ID the tool returned.",
+                          "background": true,
+                          "tool_choice": "required"
+                        },
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://ai.azure.com"
+                        }
+                      }
+                    },
+                    "Wait_Work_order": {
+                      "type": "Until",
+                      "runAfter": {
+                        "Start_Work_order": [
+                          "Succeeded"
+                        ]
+                      },
+                      "expression": "@not(contains(createArray('queued', 'in_progress'), body('Poll_Work_order')?['status']))",
+                      "limit": {
+                        "count": 200,
+                        "timeout": "PT15M"
+                      },
+                      "actions": {
+                        "Delay_Work_order": {
+                          "type": "Wait",
+                          "inputs": {
+                            "interval": {
+                              "count": 4,
+                              "unit": "Second"
+                            }
+                          }
+                        },
+                        "Poll_Work_order": {
+                          "type": "Http",
+                          "runAfter": {
+                            "Delay_Work_order": [
+                              "Succeeded"
+                            ]
+                          },
+                          "inputs": {
+                            "method": "GET",
+                            "uri": "@{parameters('projectEndpoint')}/openai/v1/responses/@{body('Start_Work_order')?['id']}",
+                            "authentication": {
+                              "type": "ManagedServiceIdentity",
+                              "audience": "https://ai.azure.com"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "Save_Work_order": {
+                      "type": "SetVariable",
+                      "runAfter": {
+                        "Wait_Work_order": [
+                          "Succeeded"
+                        ]
+                      },
+                      "inputs": {
+                        "name": "Work_orderResult",
+                        "value": "@body('Poll_Work_order')"
+                      }
+                    }
+                  }
+                },
+                "Work_order_messages": {
+                  "type": "Query",
+                  "runAfter": {
+                    "Run_Work_order": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "from": "@coalesce(variables('Work_orderResult')?['output'], json('[]'))",
+                    "where": "@equals(item()?['type'], 'message')"
+                  }
+                },
+                "Work_order_report": {
+                  "type": "Compose",
+                  "runAfter": {
+                    "Work_order_messages": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": "@coalesce(last(body('Work_order_messages'))?['content']?[0]?['text'], concat('The agent did not finish (status: ', string(variables('Work_orderResult')?['status']), ').'))"
+                },
+                "Set_work_order": {
+                  "type": "SetVariable",
+                  "runAfter": {
+                    "Work_order_report": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "name": "workOrder",
+                    "value": "@{outputs('Work_order_report')}"
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Set_work_order_rejected": {
+                    "type": "SetVariable",
+                    "runAfter": {},
+                    "inputs": {
+                      "name": "workOrder",
+                      "value": "The proposed work order (@{outputs('Work_order_draft')?['priority']}: @{outputs('Work_order_draft')?['title']}) was not approved: @{coalesce(outputs('Approval_decision')?['comment'], outputs('Approval_decision')?['status'], 'no decision in time')}."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "actions": {}
+          }
+        },
+        "Run_Handover": {
+          "type": "Until",
+          "runAfter": {
+            "If_machine_related": [
+              "Succeeded",
+              "Failed",
+              "Skipped"
+            ],
+            "If_photo": [
+              "Succeeded",
+              "Failed",
+              "Skipped"
+            ]
+          },
+          "expression": "@or(not(equals(variables('HandoverResult')?['status'], 'failed')), greaterOrEquals(variables('HandoverAttempt'), 3))",
+          "limit": {
+            "count": 3,
+            "timeout": "PT30M"
+          },
+          "actions": {
+            "Count_Handover": {
+              "type": "IncrementVariable",
+              "inputs": {
+                "name": "HandoverAttempt",
+                "value": 1
+              }
+            },
+            "Backoff_Handover": {
+              "type": "Wait",
+              "runAfter": {
+                "Count_Handover": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "interval": {
+                  "count": "@add(mul(sub(variables('HandoverAttempt'), 1), 30), 1)",
+                  "unit": "Second"
+                }
+              }
+            },
+            "Start_Handover": {
+              "type": "Http",
+              "runAfter": {
+                "Backoff_Handover": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "method": "POST",
+                "uri": "@{parameters('projectEndpoint')}/openai/v1/responses",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "agent_reference": {
+                    "type": "agent_reference",
+                    "name": "shift-handover"
+                  },
+                  "input": "First call the getBoard operation of the plant_maintenance_system tool (a direct tool call - it is not available in Code Interpreter) to read the open work orders and quality holds. Then write the handover for @{triggerBody()?['line']}, @{triggerBody()?['shift']} shift of @{triggerBody()?['date']} and add a section 'Incident @{workflow()?['run']?['name']}' that summarises what was done:\n- Quality triage: @{outputs('Triage_fields')?['summary']} Root cause: @{outputs('Triage_fields')?['root_cause']} Quality holds: @{variables('holds')}\n- Maintenance diagnosis: @{variables('diagnosis')}\n- Visual inspection: @{variables('inspection')}\n- Work order: @{variables('workOrder')}\nIn 'Open work orders & quality holds', list the records returned by getBoard. Keep the whole handover under 400 words.",
+                  "background": true
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://ai.azure.com"
+                }
+              }
+            },
+            "Wait_Handover": {
+              "type": "Until",
+              "runAfter": {
+                "Start_Handover": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@not(contains(createArray('queued', 'in_progress'), body('Poll_Handover')?['status']))",
+              "limit": {
+                "count": 200,
+                "timeout": "PT15M"
+              },
+              "actions": {
+                "Delay_Handover": {
+                  "type": "Wait",
+                  "inputs": {
+                    "interval": {
+                      "count": 4,
+                      "unit": "Second"
+                    }
+                  }
+                },
+                "Poll_Handover": {
+                  "type": "Http",
+                  "runAfter": {
+                    "Delay_Handover": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "@{parameters('projectEndpoint')}/openai/v1/responses/@{body('Start_Handover')?['id']}",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity",
+                      "audience": "https://ai.azure.com"
+                    }
+                  }
+                }
+              }
+            },
+            "Save_Handover": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Wait_Handover": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "HandoverResult",
+                "value": "@body('Poll_Handover')"
+              }
+            }
+          }
+        },
+        "Handover_messages": {
+          "type": "Query",
+          "runAfter": {
+            "Run_Handover": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@coalesce(variables('HandoverResult')?['output'], json('[]'))",
+            "where": "@equals(item()?['type'], 'message')"
+          }
+        },
+        "Handover_report": {
+          "type": "Compose",
+          "runAfter": {
+            "Handover_messages": [
+              "Succeeded"
+            ]
+          },
+          "inputs": "@coalesce(last(body('Handover_messages'))?['content']?[0]?['text'], concat('The agent did not finish (status: ', string(variables('HandoverResult')?['status']), ').'))"
+        },
+        "Incident_report": {
+          "type": "Compose",
+          "runAfter": {
+            "Handover_report": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "incident_id": "@{workflow()?['run']?['name']}",
+            "triage": "@outputs('Triage_fields')",
+            "quality_holds": "@variables('holds')",
+            "diagnosis": "@variables('diagnosis')",
+            "inspection": "@variables('inspection')",
+            "work_order": "@variables('workOrder')",
+            "handover": "@outputs('Handover_report')"
+          }
+        },
+        "Init_TriageResult": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_holds": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "TriageResult",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          }
+        },
+        "Init_TriageAttempt": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_TriageResult": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "TriageAttempt",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_HoldsResult": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_TriageAttempt": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "HoldsResult",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          }
+        },
+        "Init_HoldsAttempt": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_HoldsResult": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "HoldsAttempt",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_InspectionResult": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_HoldsAttempt": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "InspectionResult",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          }
+        },
+        "Init_InspectionAttempt": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_InspectionResult": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "InspectionAttempt",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_DiagnosisResult": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_InspectionAttempt": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "DiagnosisResult",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          }
+        },
+        "Init_DiagnosisAttempt": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_DiagnosisResult": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "DiagnosisAttempt",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_Work_orderResult": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_DiagnosisAttempt": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "Work_orderResult",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          }
+        },
+        "Init_Work_orderAttempt": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_Work_orderResult": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "Work_orderAttempt",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_HandoverResult": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_Work_orderAttempt": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "HandoverResult",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          }
+        },
+        "Init_HandoverAttempt": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_HandoverResult": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "HandoverAttempt",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "suffix": "[take(uniqueString(resourceGroup().id), 8)]",
+    "tags": {
+      "created-by": "fabric-demo-gallery"
+    },
+    "tableDataContributor": "0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3",
+    "azureAiUser": "53ca6127-db72-4b80-b1b0-d745d6d5456d",
+    "projectEndpoint": "[format('https://{0}.services.ai.azure.com/api/projects/{1}', parameters('foundryAccountName'), parameters('foundryProjectName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}/{2}', format('stfdg{0}', variables('suffix')), 'default', 'workorders')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/tableServices', format('stfdg{0}', variables('suffix')), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}/{2}', format('stfdg{0}', variables('suffix')), 'default', 'qualityholds')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/tableServices', format('stfdg{0}', variables('suffix')), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}/{2}', format('stfdg{0}', variables('suffix')), 'default', 'approvals')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/tableServices', format('stfdg{0}', variables('suffix')), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/tableServices",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}', format('stfdg{0}', variables('suffix')), 'default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[format('stfdg{0}', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "allowSharedKeyAccess": false,
+        "allowBlobPublicAccess": false,
+        "minimumTlsVersion": "TLS1_2",
+        "supportsHttpsTrafficOnly": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2023-09-01",
+      "name": "[format('log-fdg-{0}', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[format('appi-fdg-{0}', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "tags": "[variables('tags')]",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-fdg-{0}', variables('suffix')))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-fdg-{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts/projects/connections",
+      "apiVersion": "2025-06-01",
+      "name": "[format('{0}/{1}/{2}', parameters('foundryAccountName'), parameters('foundryProjectName'), 'appinsights')]",
+      "properties": {
+        "category": "AppInsights",
+        "target": "[resourceId('Microsoft.Insights/components', format('appi-fdg-{0}', variables('suffix')))]",
+        "authType": "ApiKey",
+        "isSharedToAll": true,
+        "credentials": {
+          "key": "[reference(resourceId('Microsoft.Insights/components', format('appi-fdg-{0}', variables('suffix'))), '2020-02-02').ConnectionString]"
+        },
+        "metadata": {
+          "ApiType": "Azure",
+          "ResourceId": "[resourceId('Microsoft.Insights/components', format('appi-fdg-{0}', variables('suffix')))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', format('appi-fdg-{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[format('logic-plant-cmms-{0}', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "state": "Enabled",
+        "definition": "[variables('$fxv#0')]",
+        "parameters": {
+          "storageAccount": {
+            "value": "[format('stfdg{0}', variables('suffix'))]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts/projects/connections",
+      "apiVersion": "2025-06-01",
+      "name": "[format('{0}/{1}/{2}', parameters('foundryAccountName'), parameters('foundryProjectName'), 'plant-cmms')]",
+      "properties": {
+        "category": "CustomKeys",
+        "target": "_",
+        "authType": "CustomKeys",
+        "isSharedToAll": true,
+        "credentials": {
+          "keys": {
+            "sig": "[listCallbackUrl(format('{0}/triggers/manual', resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix')))), '2019-05-01').queries.sig]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[format('logic-incident-response-{0}', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "state": "Enabled",
+        "definition": "[variables('$fxv#1')]",
+        "parameters": {
+          "projectEndpoint": {
+            "value": "[variables('projectEndpoint')]"
+          },
+          "model": {
+            "value": "[parameters('modelDeploymentName')]"
+          },
+          "storageAccount": {
+            "value": "[format('stfdg{0}', variables('suffix'))]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix')))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix'))), resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix'))), variables('tableDataContributor'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix'))), '2019-05-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('tableDataContributor'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix')))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix'))), resourceId('Microsoft.Logic/workflows', format('logic-incident-response-{0}', variables('suffix'))), variables('tableDataContributor'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Logic/workflows', format('logic-incident-response-{0}', variables('suffix'))), '2019-05-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('tableDataContributor'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Logic/workflows', format('logic-incident-response-{0}', variables('suffix')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', format('stfdg{0}', variables('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryAccountName'))]",
+      "name": "[guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryAccountName')), resourceId('Microsoft.Logic/workflows', format('logic-incident-response-{0}', variables('suffix'))), variables('azureAiUser'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Logic/workflows', format('logic-incident-response-{0}', variables('suffix'))), '2019-05-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('azureAiUser'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Logic/workflows', format('logic-incident-response-{0}', variables('suffix')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "cmmsBaseUrl": {
+      "type": "string",
+      "value": "[listCallbackUrl(format('{0}/triggers/manual', resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix')))), '2019-05-01').basePath]"
+    },
+    "cmmsApiVersion": {
+      "type": "string",
+      "value": "[listCallbackUrl(format('{0}/triggers/manual', resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix')))), '2019-05-01').queries['api-version']]"
+    },
+    "cmmsSp": {
+      "type": "string",
+      "value": "[listCallbackUrl(format('{0}/triggers/manual', resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix')))), '2019-05-01').queries.sp]"
+    },
+    "cmmsSv": {
+      "type": "string",
+      "value": "[listCallbackUrl(format('{0}/triggers/manual', resourceId('Microsoft.Logic/workflows', format('logic-plant-cmms-{0}', variables('suffix')))), '2019-05-01').queries.sv]"
+    },
+    "cmmsConnectionId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.CognitiveServices/accounts/projects/connections', parameters('foundryAccountName'), parameters('foundryProjectName'), 'plant-cmms')]"
+    },
+    "cmmsWorkflowName": {
+      "type": "string",
+      "value": "[format('logic-plant-cmms-{0}', variables('suffix'))]"
+    },
+    "incidentWorkflowName": {
+      "type": "string",
+      "value": "[format('logic-incident-response-{0}', variables('suffix'))]"
+    },
+    "appInsightsName": {
+      "type": "string",
+      "value": "[format('appi-fdg-{0}', variables('suffix'))]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[format('stfdg{0}', variables('suffix'))]"
+    }
+  }
+}

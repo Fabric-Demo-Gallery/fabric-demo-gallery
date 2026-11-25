@@ -1,0 +1,108 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Plant maintenance system",
+    "description": "Simulated plant maintenance system (CMMS): work orders and quality holds.",
+    "version": "1.0"
+  },
+  "paths": {
+    "/workorders": {
+      "post": {
+        "operationId": "createWorkOrder",
+        "summary": "Create a maintenance work order. Returns the new work order ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["machine_id", "priority", "title", "description"],
+                "properties": {
+                  "machine_id": {"type": "string", "description": "Machine ID from the equipment catalog, e.g. MCH-0046."},
+                  "priority": {"type": "string", "enum": ["P1", "P2", "P3", "P4"], "description": "Priority per the Work Order Procedure."},
+                  "title": {"type": "string", "description": "Under 80 characters: machine type, symptom and job."},
+                  "description": {"type": "string", "description": "Evidence, ordered tasks, spare parts and the Lockout/Tagout reminder."},
+                  "requested_by": {"type": "string", "description": "Who raised it, e.g. the agent name."}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {
+                "work_order_id": {"type": "string"},
+                "status": {"type": "string"},
+                "machine_id": {"type": "string"},
+                "priority": {"type": "string"}
+              }
+            }}}
+          }
+        }
+      }
+    },
+    "/qualityholds": {
+      "post": {
+        "operationId": "placeQualityHold",
+        "summary": "Place a quality hold on one production batch. Returns the new hold ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["batch_id", "machine_id", "reason"],
+                "properties": {
+                  "batch_id": {"type": "string", "description": "Batch ID, e.g. B-04049."},
+                  "machine_id": {"type": "string", "description": "Machine that produced the batch."},
+                  "production_line": {"type": "string"},
+                  "product": {"type": "string"},
+                  "reason": {"type": "string", "description": "Defect rate with the numbers, failure event, suspected cause."},
+                  "requested_by": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Hold placed",
+            "content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {
+                "hold_id": {"type": "string"},
+                "status": {"type": "string"},
+                "batch_id": {"type": "string"}
+              }
+            }}}
+          }
+        }
+      }
+    },
+    "/board": {
+      "post": {
+        "operationId": "getBoard",
+        "summary": "List the work orders and quality holds in the maintenance system (read-only).",
+        "requestBody": {
+          "required": false,
+          "content": {"application/json": {"schema": {"type": "object"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Board",
+            "content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {
+                "work_orders": {"type": "array", "items": {"type": "object"}},
+                "quality_holds": {"type": "array", "items": {"type": "object"}}
+              }
+            }}}
+          }
+        }
+      }
+    }
+  }
+}

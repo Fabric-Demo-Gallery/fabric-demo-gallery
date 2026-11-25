@@ -32,12 +32,12 @@ Every industry can be deployed as a **Standard** medallion demo, or via a **Cust
 
 Industries can also offer an **AI agent pack**: Microsoft Foundry agents grounded on the industry's demo data, deployed into your Azure subscription. No Fabric capacity is needed. Manufacturing ships four:
 
-- **Maintenance Assistant**: File Search over alarm codes, sensor limits, the PM plan and lockout/tagout, plus Code Interpreter over machine history
-- **Quality Root-Cause Analyst**: Python analysis with charts over batches, equipment and sensor data
-- **Shift Handover Reporter**: a structured handover with output vs. plan, failures and machine watch list
+- **Maintenance Assistant**: File Search over alarm codes, sensor limits, the PM plan and lockout/tagout, Code Interpreter over machine history, and work orders in a simulated maintenance system
+- **Quality Root-Cause Analyst**: Python analysis with charts over batches, equipment and sensor data, and quality holds in the maintenance system
+- **Shift Handover Reporter**: a structured handover with output vs. plan, failures, machine watch list and the open work orders and holds
 - **Visual Inspection Assistant**: vision over part photos and drawings, grounded on the inspection standard
 
-One deploy creates a dedicated resource group with a Foundry account, project and model, then the agents. You chat with them in the Foundry agent playground. See [demos/_agents/README.md](demos/_agents/README.md).
+One deploy (about 3-5 minutes) creates a dedicated resource group with a Foundry account, project and model, the agents, and around them: the simulated maintenance system the agents call through an OpenAPI tool, an Azure Logic Apps incident workflow that chains the agents from a defect spike to the shift handover and stops for your approval, and Application Insights tracing. The gallery page then runs incidents, shows the maintenance board and runs Foundry evaluations; you can also chat with each agent in Foundry. See [demos/_agents/README.md](demos/_agents/README.md).
 
 ## Features
 
@@ -65,7 +65,7 @@ One deploy creates a dedicated resource group with a Foundry account, project an
 - Permission to create Fabric items (tenant setting "Users can create Fabric items")
 - For the Azure-provisioning scenarios (Mirroring, Shortcuts, Foundry AI Agent): an Azure subscription where you can create resources
 - For the AI agent packs: an Azure subscription where you are Owner (or Contributor + User Access Administrator), with Foundry model quota in the chosen region
-- Cost awareness: deployed items consume capacity units on your Fabric capacity, and the Azure scenarios create billable resources (Azure SQL DB, ADLS Gen2, or Foundry + AI Search). Delete the workspace from the Monitoring page when you are done; the cleanup removes the Azure resources too. AI agent packs are pay-per-use (tokens, Code Interpreter sessions, a few MB of File Search storage); Monitoring's Delete removes their resource group.
+- Cost awareness: deployed items consume capacity units on your Fabric capacity, and the Azure scenarios create billable resources (Azure SQL DB, ADLS Gen2, or Foundry + AI Search). Delete the workspace from the Monitoring page when you are done; the cleanup removes the Azure resources too. AI agent packs are pay-per-use (tokens, Code Interpreter sessions, a few MB of File Search storage, Logic Apps Consumption actions, table storage and Application Insights ingestion); Monitoring's Delete removes their resource group.
 
 ## Screenshots
 

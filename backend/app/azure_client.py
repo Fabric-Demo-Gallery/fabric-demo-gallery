@@ -26,6 +26,8 @@ SQL_API_VERSION = "2021-11-01"
 # Microsoft Foundry / Cognitive Services (preview - used by the Fabric+Foundry scenario)
 COG_API_VERSION = "2025-12-01"          # accounts, projects, deployments, connections
 MODEL_CAPACITY_API_VERSION = "2024-10-01"  # modelCapacities quota pre-flight
+DEPLOYMENTS_API_VERSION = "2024-03-01"  # ARM template deployments
+LOGIC_API_VERSION = "2019-05-01"  # Logic Apps (Consumption) workflows and runs
 # Azure AI Search (Foundry IQ retrieval engine for the Fabric data agent)
 SEARCH_API_VERSION = "2023-11-01"
 # Built-in role definition GUIDs (used for the Foundry IQ RBAC wiring)
@@ -1425,3 +1427,93 @@ class AzureClient:
         )
         resp = await self._arm_request("GET", url)
         return resp.json().get("value", [])
+
+    # ── ARM template deployments (AI agent pack infrastructure) ────────
+
+    def _deployment_url(self, subscription_id: str, resource_group: str, name: str, suffix: str = "") -> str:
+        return (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Resources/deployments/{name}{suffix}?api-version={DEPLOYMENTS_API_VERSION}"
+        )
+
+    async def start_template_deployment(
+        self, subscription_id: str, resource_group: str, name: str, template: dict, parameters: dict
+    ) -> None:
+        """Start an incremental resource-group deployment; poll it with get_template_deployment."""
+        body = {
+            "properties": {
+                "mode": "Incremental",
+                "template": template,
+                "parameters": {k: {"value": v} for k, v in parameters.items()},
+            }
+        }
+        await self._arm_request("PUT", self._deployment_url(subscription_id, resource_group, name), json=body)
+
+    async def get_template_deployment(self, subscription_id: str, resource_group: str, name: str) -> dict:
+        resp = await self._arm_request("GET", self._deployment_url(subscription_id, resource_group, name))
+        return resp.json().get("properties", {})
+
+    async def template_deployment_error(self, subscription_id: str, resource_group: str, name: str) -> str:
+        """The failed operations' messages - the deployment's own error is usually generic."""
+        try:
+            resp = await self._arm_request(
+                "GET", self._deployment_url(subscription_id, resource_group, name, "/operations")
+            )
+        except AzureError as e:
+            return e.detail
+        messages = []
+        for op in resp.json().get("value", []):
+            props = op.get("properties", {})
+            if props.get("provisioningState") != "Failed":
+                continue
+            target = (props.get("targetResource") or {}).get("resourceName", "")
+            error = (props.get("statusMessage") or {}).get("error") or {}
+            detail = _extract_arm_error({"error": error}) if error else json.dumps(props.get("statusMessage"))[:300]
+            messages.append(f"{target}: {detail}" if target else detail)
+        return " | ".join(messages)[:600] or "The infrastructure deployment failed."
+
+    # ── Logic Apps (Consumption) runs ───────────────────────────────────
+
+    def _workflow_url(self, subscription_id: str, resource_group: str, workflow: str, suffix: str = "") -> str:
+        return (
+            f"{ARM_API}/subscriptions/{subscription_id}/resourceGroups/{resource_group}"
+            f"/providers/Microsoft.Logic/workflows/{workflow}{suffix}?api-version={LOGIC_API_VERSION}"
+        )
+
+    async def get_workflow_callback_url(
+        self, subscription_id: str, resource_group: str, workflow: str, trigger: str = "manual"
+    ) -> dict:
+        """The Request trigger's signed URL: {value, basePath, queries{api-version, sp, sv, sig}}."""
+        url = self._workflow_url(subscription_id, resource_group, workflow, f"/triggers/{trigger}/listCallbackUrl")
+        resp = await self._arm_request("POST", url)
+        return resp.json()
+
+    async def get_workflow_run(self, subscription_id: str, resource_group: str, workflow: str, run: str) -> dict:
+        resp = await self._arm_request("GET", self._workflow_url(subscription_id, resource_group, workflow, f"/runs/{run}"))
+        return resp.json()
+
+    async def list_workflow_run_actions(
+        self, subscription_id: str, resource_group: str, workflow: str, run: str
+    ) -> list[dict]:
+        """Top-level and nested actions of a run (Logic Apps flattens scopes in this list)."""
+        url: str | None = self._workflow_url(subscription_id, resource_group, workflow, f"/runs/{run}/actions")
+        actions: list[dict] = []
+        while url:
+            resp = await self._arm_request("GET", url)
+            body = resp.json()
+            actions.extend(body.get("value", []))
+            url = body.get("nextLink")
+        return actions
+
+    @staticmethod
+    async def read_run_content(link: str) -> object:
+        """Fetch an action's outputsLink/inputsLink content. The link carries its own
+        SAS signature, so it is fetched without the ARM bearer token."""
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(link)
+        if resp.status_code >= 400:
+            raise AzureError(resp.status_code, resp.text[:300])
+        try:
+            return resp.json()
+        except ValueError:
+            return resp.text
